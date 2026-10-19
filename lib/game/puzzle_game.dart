@@ -1,0 +1,249 @@
+import 'dart:math';
+
+import 'package:flame/components.dart';
+import 'package:flame/game.dart';
+import 'package:flutter/widgets.dart';
+
+import '../core/board.dart';
+import '../core/game_session.dart';
+import '../ui/block_painter.dart';
+import '../ui/palette.dart';
+import 'board_view.dart';
+import 'effects.dart';
+import 'game_controller.dart';
+import 'tray_piece.dart';
+
+/// The play area: board, tray and effects. Menus and the HUD are Flutter
+/// widgets layered on top; this scene only draws the game itself.
+class PuzzleGame extends FlameGame {
+  PuzzleGame({required this.controller, required this.topInset});
+
+  final GameController controller;
+
+  /// Height reserved at the top for the HUD.
+  final double topInset;
+
+  BlockSprites? sprites;
+  Rect boardRect = Rect.zero;
+  double cellSize = 1;
+  double trayCellSize = 1;
+
+  /// The stage shakes on big clears; everything sits inside it.
+  final stage = PositionComponent();
+  final boardView = BoardView();
+  final trays = [for (var i = 0; i < 3; i++) TrayPiece(i)];
+  Sparks? sparks;
+  TrayPiece? activeDrag;
+
+  double _shake = 0;
+  double _shakePower = 0;
+  final _rng = Random();
+
+  @override
+  Color backgroundColor() => const Color(0x00000000);
+
+  @override
+  Future<void> onLoad() async {
+    add(stage);
+    stage.add(boardView);
+    stage.addAll(trays);
+    controller.onPlaced = _onPlaced;
+    controller.onRevived = _onRevived;
+    controller.onRestarted = _onRestarted;
+    for (final t in trays) {
+      t.playAppear();
+    }
+  }
+
+  @override
+  void onRemove() {
+    controller.onPlaced = null;
+    controller.onRevived = null;
+    controller.onRestarted = null;
+    sprites?.dispose();
+    super.onRemove();
+  }
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    final w = size.x, h = size.y;
+    final usable = h - topInset;
+    final side = min(w - 36, usable / 1.5);
+    cellSize = side / Board.size;
+    trayCellSize = min(cellSize * 0.52, (side / 3) / 5.4);
+    final freeY = usable - side * 1.45;
+    final top = topInset + max(8, freeY * 0.35);
+    boardRect = Rect.fromLTWH((w - side) / 2, top, side, side);
+
+    final trayTop = boardRect.bottom + cellSize * 0.55;
+    final trayH = cellSize * 3.2;
+    final slotW = (w - 16) / 3;
+    for (var i = 0; i < 3; i++) {
+      trays[i].layout(Rect.fromLTWH(8 + slotW * i, trayTop, slotW, trayH));
+    }
+
+    final ratio =
+        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+    if (sprites?.cellSize != cellSize) {
+      sprites?.dispose();
+      sprites = BlockSprites(cellSize, ratio);
+    }
+    sparks?.removeFromParent();
+    sparks = Sparks(cellSize);
+    stage.add(sparks!..priority = 20);
+  }
+
+  Rect cellRect(int r, int c) => Rect.fromLTWH(
+    boardRect.left + c * cellSize,
+    boardRect.top + r * cellSize,
+    cellSize,
+    cellSize,
+  );
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (_shake > 0) {
+      _shake = max(0, _shake - dt);
+      final a = _shakePower * (_shake / 0.3);
+      stage.position = Vector2(
+        (_rng.nextDouble() - 0.5) * 2 * a,
+        (_rng.nextDouble() - 0.5) * 2 * a,
+      );
+    } else if (stage.position != Vector2.zero()) {
+      stage.position = Vector2.zero();
+    }
+  }
+
+  void _onPlaced(PlaceResult result, Piece piece) {
+    final out = result.outcome;
+    boardView.pop(out.placed);
+
+    if (out.lines > 0) {
+      _clearEffects(out.cleared, out.placed);
+      final center = _centerOf(out.placed);
+      stage.add(
+        PopText(
+          '+${formatInt(result.points)}',
+          position: Vector2(center.dx, center.dy),
+          fontSize: cellSize * 0.62,
+          color: Palette.accent,
+        )..priority = 30,
+      );
+      if (result.combo >= 2) {
+        stage.add(
+          PopText(
+            'Combo x${result.combo}!',
+            position: Vector2(
+              boardRect.center.dx,
+              boardRect.top + cellSize * 2,
+            ),
+            fontSize: cellSize * 0.85,
+            color: Palette.lighten(Palette.blocks[piece.color], 0.3),
+            rise: cellSize * 0.6,
+            life: 1.1,
+          )..priority = 30,
+        );
+      }
+      if (result.boardCleared) {
+        stage.add(
+          PopText(
+            'Tabuleiro limpo!',
+            position: Vector2(boardRect.center.dx, boardRect.center.dy),
+            fontSize: cellSize * 0.8,
+            color: Palette.good,
+            life: 1.4,
+            delay: 0.25,
+          )..priority = 30,
+        );
+      }
+      if (out.lines >= 2) {
+        _shake = 0.3;
+        _shakePower = cellSize * 0.06 * min(out.lines, 4);
+      }
+    }
+
+    if (result.newTray) {
+      for (final t in trays) {
+        t.playAppear();
+      }
+    }
+  }
+
+  void _onRevived(List<ClearedCell> cleared) {
+    _clearEffects(cleared, const []);
+    for (final t in trays) {
+      t.playAppear();
+    }
+  }
+
+  void _onRestarted() {
+    boardView.preview = null;
+    activeDrag = null;
+    for (final t in trays) {
+      t.playAppear();
+    }
+  }
+
+  void _clearEffects(List<ClearedCell> cleared, List<(int, int)> origin) {
+    final s = sprites;
+    final fx = sparks;
+    if (s == null || fx == null) return;
+    final from = origin.isEmpty ? const Offset(3.5, 3.5) : _avgCell(origin);
+    for (final cell in cleared) {
+      final dst = cellRect(cell.row, cell.col);
+      final delay =
+          0.028 *
+          (Offset(cell.col.toDouble(), cell.row.toDouble()) - from).distance;
+      final before = cell.before;
+      final color = before.type == CellType.rock
+          ? Palette.rock
+          : Palette.blocks[before.color];
+      if (cell.after.isEmpty) {
+        stage.add(
+          VanishingCell(
+            image: s.forCell(before),
+            overlay: before.gem ? s.gem : null,
+            rect: dst,
+            delay: delay,
+          )..priority = 5,
+        );
+      }
+      fx.burst(
+        dst.center,
+        before.gem ? Palette.gem : color,
+        count: before.gem ? 9 : 4,
+        delay: delay,
+      );
+      if (before.gem) {
+        stage.add(
+          PopText(
+            '+1',
+            position: Vector2(dst.center.dx, dst.center.dy),
+            fontSize: cellSize * 0.5,
+            color: Palette.gem,
+            delay: delay,
+          )..priority = 30,
+        );
+      }
+    }
+  }
+
+  Offset _avgCell(List<(int, int)> cells) {
+    var r = 0.0, c = 0.0;
+    for (final (cr, cc) in cells) {
+      r += cr;
+      c += cc;
+    }
+    return Offset(c / cells.length, r / cells.length);
+  }
+
+  Offset _centerOf(List<(int, int)> cells) {
+    final a = _avgCell(cells);
+    return Offset(
+      boardRect.left + (a.dx + 0.5) * cellSize,
+      boardRect.top + (a.dy + 0.5) * cellSize,
+    );
+  }
+}
