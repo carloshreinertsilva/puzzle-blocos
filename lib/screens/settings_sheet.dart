@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../ui/palette.dart';
+import '../ui/typography.dart';
+import '../ui/widgets.dart';
 
 Future<void> showSettings(BuildContext context, AppServices services) {
   return showModalBottomSheet(
@@ -32,17 +34,10 @@ class _SettingsState extends State<_Settings> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Configurações',
-              style: TextStyle(
-                color: Palette.text,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+            const OutlinedTitle('Configurações', size: 28),
             const SizedBox(height: 8),
             SwitchListTile(
-              title: const Text('Sons'),
+              title: Text('Sons', style: bodyText(17)),
               secondary: const Icon(Icons.volume_up_rounded),
               value: store.soundOn,
               onChanged: (v) async {
@@ -51,7 +46,7 @@ class _SettingsState extends State<_Settings> {
               },
             ),
             SwitchListTile(
-              title: const Text('Vibração'),
+              title: Text('Vibração', style: bodyText(17)),
               secondary: const Icon(Icons.vibration_rounded),
               value: store.hapticsOn,
               onChanged: (v) async {

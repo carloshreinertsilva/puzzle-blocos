@@ -58,3 +58,7 @@ for i, st in enumerate([3, 5, 7, 10, 12], start=1):
 save("win", seq([([note(s)], 0.5) for s in (3, 7, 10, 15)], 0.11))
 save("lose", seq([([note(s)], 0.45) for s in (7, 3, -2)], 0.16))
 save("revive", seq([([note(s)], 0.35) for s in (-2, 3, 7, 12)], 0.06))
+# Praise stingers: brighter and longer as the move gets bigger.
+save("praise2", seq([([note(s)], 0.3) for s in (10, 15, 19)], 0.05))
+save("praise3", seq([([note(s), note(s + 4)], 0.4) for s in (7, 12, 15, 19)], 0.07))
+save("praise4", seq([([note(s), note(s + 7)], 0.55) for s in (3, 7, 10, 15, 19, 22, 27)], 0.06))

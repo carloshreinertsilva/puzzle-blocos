@@ -4,9 +4,20 @@ Jogo de quebra-cabeça de blocos para Android e iOS (Flutter + Flame). O nome
 é provisório: troque `appTitle` em `lib/ui/palette.dart` e o nome exibido em
 `android/app/src/main/AndroidManifest.xml` e `ios/Runner/Info.plist`.
 
-Tabuleiro 8x8, três peças por rodada, linhas e colunas completas somem. Além
-do **modo infinito**, há um **modo de fases** com metas (pontos, quebrar
-pedras, coletar gemas) e dificuldade crescente.
+Tabuleiro 8x8, três peças por rodada, linhas e colunas completas somem. Modos:
+
+- **Fases**, com metas (pontos, quebrar pedras, coletar gemas), tabuleiros que
+  começam com desenhos e dificuldade crescente; o menu mostra o caminho de fases.
+- **Desafio diário**, igual para todo mundo no mesmo dia, com sequência de dias.
+- **Infinito**, com recorde.
+
+Jogadas que limpam linhas ganham elogios em níveis ("Boa!" → "Incrível!" →
+"Espetacular!" → "Lendário!"), com raios de luz, clarão, confete e som. Fontes:
+Lilita One e Fredoka (licença OFL, em `assets/fonts/`).
+
+Versão web publicada a cada push em https://puzzle-blocos.vercel.app (Vercel,
+`vercel.json` + `tool/vercel_build.sh`). Para testar só os efeitos de elogio:
+`flutter run -d chrome --dart-define=DEMO_PRAISE=true`.
 
 ## Como rodar
 
@@ -44,6 +55,11 @@ Para ver no navegador: `flutter run -d chrome`.
   Tabuleiro muito cheio também alivia o sorteio.
 - **Fases são fixas.** A fase 37 é igual para todo mundo (gerada a partir do
   número), o que permite comparar e ajustar.
+- **Começo animado.** Fases de pontos (e parte das de gemas) começam com um
+  desenho (coração, seta, escada…) cheio de linhas quase completas, então as
+  primeiras jogadas já limpam linhas. Os desenhos mais leves vêm primeiro.
+- **Novidades aos poucos.** Pedras, gemas, pedras reforçadas e fases com duas
+  metas aparecem com um cartão "Novidade!" na primeira vez.
 
 Para conferir a curva depois de mexer em `lib/core/level.dart`:
 
@@ -52,8 +68,9 @@ dart run tool/simulate.dart 1 90 40   # fases 1 a 90, 40 tentativas cada
 ```
 
 Na calibragem atual, o robô (mais fraco que uma pessoa e sem o ajuste
-invisível) vence cerca de 96% das fases 1–15 e 50% das fases 76–90; fases
-normais ~70%, difíceis ~50% e de alívio ~80%.
+invisível) vence cerca de 90% das fases 1–15 e 40% das fases 76–90; fases
+normais ~60%, difíceis ~40% e de alívio ~75%. Uma fase vencida leva em média
+~18 jogadas no começo e ~29 no geral.
 
 ## Anúncios
 

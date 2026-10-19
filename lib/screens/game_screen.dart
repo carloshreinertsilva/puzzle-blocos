@@ -6,15 +6,18 @@ import '../core/game_session.dart';
 import '../game/game_controller.dart';
 import '../game/puzzle_game.dart';
 import '../main.dart';
+import '../ui/level_text.dart';
 import '../ui/palette.dart';
+import '../ui/typography.dart';
 import '../ui/widgets.dart';
 
-/// A level or an endless run. The play area stays clean: a slim HUD on top,
-/// the board and the tray. No banners; cards only appear between attempts.
+/// A level, the daily challenge or an endless run. The play area stays
+/// clean: a slim HUD on top, the board and the tray. No banners; cards only
+/// appear before or after an attempt.
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.services, required this.endless});
+  const GameScreen({super.key, required this.services, required this.mode});
   final AppServices services;
-  final bool endless;
+  final GameMode mode;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -24,7 +27,7 @@ class _GameScreenState extends State<GameScreen> {
   late final GameController controller = GameController(
     store: widget.services.store,
     feedback: widget.services.feedback,
-    endless: widget.endless,
+    mode: widget.mode,
   );
   PuzzleGame? game;
   bool _busy = false;
@@ -119,7 +122,16 @@ class _GameScreenState extends State<GameScreen> {
   Widget _overlay() {
     Widget? card;
     final s = controller.session;
-    if (controller.paused) {
+    if (controller.intros.isNotEmpty) {
+      card = _IntroCard(
+        key: ValueKey(controller.intros.first),
+        intro: controller.intros.first,
+        onOk: () {
+          widget.services.feedback.click();
+          controller.dismissIntro();
+        },
+      );
+    } else if (controller.paused) {
       card = _PauseCard(
         onResume: () => controller.setPaused(false),
         onRestart: () {
@@ -129,11 +141,17 @@ class _GameScreenState extends State<GameScreen> {
         onExit: _exit,
       );
     } else if (controller.showOutcome && s.status == SessionStatus.won) {
-      card = _WinCard(
-        level: controller.level.number,
-        score: s.score,
-        onNext: _next,
-      );
+      card = controller.level.isDaily
+          ? _DailyWinCard(
+              score: s.score,
+              streak: widget.services.store.dailyStreak(controller.today),
+              onExit: _exit,
+            )
+          : _WinCard(
+              level: controller.level.number,
+              score: s.score,
+              onNext: _next,
+            );
     } else if (controller.showOutcome && s.status == SessionStatus.lost) {
       card = _LoseCard(
         endless: controller.endless,
@@ -161,7 +179,7 @@ class _GameScreenState extends State<GameScreen> {
       child: card == null
           ? const SizedBox.shrink()
           : Container(
-              key: ValueKey(card.runtimeType),
+              key: card.key ?? ValueKey(card.runtimeType),
               color: const Color(0x99080A20),
               alignment: Alignment.center,
               child: card,
@@ -193,14 +211,8 @@ class _Hud extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          level.isEndless
-                              ? 'Modo infinito'
-                              : 'Fase ${level.number}',
-                          style: const TextStyle(
-                            color: Palette.textDim,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          levelTitle(level),
+                          style: displayText(17, color: Palette.textDim),
                         ),
                         if (level.isHard) ...[
                           const SizedBox(width: 8),
@@ -225,10 +237,7 @@ class _Hud extends StatelessWidget {
                           FittedBox(
                             child: Text(
                               formatInt(controller.bestScore),
-                              style: const TextStyle(
-                                color: Palette.textDim,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: displayText(14, color: Palette.textDim),
                             ),
                           ),
                         ],
@@ -252,19 +261,12 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
     decoration: BoxDecoration(
       color: color,
       borderRadius: BorderRadius.circular(8),
     ),
-    child: Text(
-      text,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 11,
-        fontWeight: FontWeight.w900,
-      ),
-    ),
+    child: Text(text, style: displayText(12, color: Colors.white)),
   );
 }
 
@@ -279,12 +281,7 @@ class _AnimatedScore extends StatelessWidget {
     curve: Curves.easeOutCubic,
     builder: (context, v, _) => Text(
       formatInt(v.round()),
-      style: const TextStyle(
-        color: Palette.text,
-        fontSize: 34,
-        fontWeight: FontWeight.w900,
-        height: 1.1,
-      ),
+      style: displayText(38, shadows: textDrop).copyWith(height: 1.05),
     ),
   );
 }
@@ -321,7 +318,7 @@ class _Goals extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (final c in chips)
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 5), child: c),
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: c),
       ],
     );
   }
@@ -352,7 +349,7 @@ class _GoalChip extends StatelessWidget {
           icon,
           const SizedBox(width: 6),
           SizedBox(
-            width: 58,
+            width: 52,
             height: 8,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
@@ -374,26 +371,66 @@ class _GoalChip extends StatelessWidget {
                   color: Palette.good,
                   size: 18,
                 )
-              : Text(
-                  label,
-                  style: const TextStyle(
-                    color: Palette.text,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+              : Text(label, style: displayText(15)),
         ],
       ),
     );
   }
 }
 
-const _titleStyle = TextStyle(
-  color: Palette.text,
-  fontSize: 28,
-  fontWeight: FontWeight.w900,
-);
-const _bodyStyle = TextStyle(color: Palette.textDim, fontSize: 16);
+TextStyle get _bodyStyle => bodyText(16, color: Palette.textDim, weight: 500);
+
+class _IntroCard extends StatelessWidget {
+  const _IntroCard({super.key, required this.intro, required this.onOk});
+  final Intro intro;
+  final VoidCallback onOk;
+
+  @override
+  Widget build(BuildContext context) {
+    final (Widget icon, String title, String text) = switch (intro) {
+      Intro.rocks => (
+        const MiniGlyph(MiniIcon.rock, size: 56),
+        'Pedras',
+        'Complete a linha ou a coluna de uma pedra para quebrá-la. '
+            'Quebre todas para vencer a fase.',
+      ),
+      Intro.toughRocks => (
+        const MiniGlyph(MiniIcon.toughRock, size: 56),
+        'Pedras reforçadas',
+        'As pedras com rebites precisam de duas limpezas: '
+            'a primeira só racha.',
+      ),
+      Intro.gems => (
+        const MiniGlyph(MiniIcon.gem, size: 56),
+        'Gemas',
+        'Algumas peças trazem gemas. Limpe a linha onde elas estão '
+            'para coletar.',
+      ),
+      Intro.doubleGoal => (
+        const Icon(Icons.flag_rounded, color: Palette.accent, size: 56),
+        'Duas metas',
+        'Agora algumas fases pedem duas coisas ao mesmo tempo. '
+            'Fique de olho nas metas no topo da tela.',
+      ),
+    };
+    return CardPanel(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('NOVIDADE!', style: displayText(16, color: Palette.accent)),
+          const SizedBox(height: 12),
+          icon,
+          const SizedBox(height: 12),
+          OutlinedTitle(title, size: 30),
+          const SizedBox(height: 10),
+          Text(text, style: _bodyStyle, textAlign: TextAlign.center),
+          const SizedBox(height: 22),
+          ChunkyButton(label: 'Entendi!', big: true, onTap: onOk),
+        ],
+      ),
+    );
+  }
+}
 
 class _WinCard extends StatelessWidget {
   const _WinCard({
@@ -410,14 +447,10 @@ class _WinCard extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.emoji_events_rounded, color: Palette.accent, size: 64),
+        const Icon(Icons.emoji_events_rounded, color: Palette.accent, size: 72),
+        const SizedBox(height: 4),
+        OutlinedTitle('Fase $level\nconcluída!', size: 34),
         const SizedBox(height: 8),
-        Text(
-          'Fase $level concluída!',
-          style: _titleStyle,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 6),
         Text('${formatInt(score)} pontos', style: _bodyStyle),
         const SizedBox(height: 24),
         ChunkyButton(
@@ -425,6 +458,46 @@ class _WinCard extends StatelessWidget {
           icon: Icons.arrow_forward_rounded,
           big: true,
           onTap: onNext,
+        ),
+      ],
+    ),
+  );
+}
+
+class _DailyWinCard extends StatelessWidget {
+  const _DailyWinCard({
+    required this.score,
+    required this.streak,
+    required this.onExit,
+  });
+  final int score;
+  final int streak;
+  final VoidCallback onExit;
+
+  @override
+  Widget build(BuildContext context) => CardPanel(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.local_fire_department_rounded,
+          color: Palette.accentDeep,
+          size: 72,
+        ),
+        const OutlinedTitle('Desafio do dia\nconcluído!', size: 32),
+        const SizedBox(height: 8),
+        Text(
+          streak > 1 ? '$streak dias seguidos!' : 'Volte amanhã para outro!',
+          style: displayText(20, color: Palette.accent),
+        ),
+        const SizedBox(height: 4),
+        Text('${formatInt(score)} pontos', style: _bodyStyle),
+        const SizedBox(height: 24),
+        ChunkyButton(
+          label: 'Voltar ao menu',
+          icon: Icons.home_rounded,
+          big: true,
+          onTap: onExit,
         ),
       ],
     ),
@@ -457,8 +530,14 @@ class _LoseCard extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(newBest ? 'Novo recorde!' : 'Sem espaço!', style: _titleStyle),
-        const SizedBox(height: 6),
+        OutlinedTitle(
+          newBest ? 'Novo recorde!' : 'Sem espaço!',
+          size: 36,
+          colors: newBest
+              ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
+              : const [Color(0xFFFFFFFF), Color(0xFFFFB3B3)],
+        ),
+        const SizedBox(height: 8),
         Text(
           endless
               ? '${formatInt(score)} pontos · recorde ${formatInt(best)}'
@@ -476,11 +555,11 @@ class _LoseCard extends StatelessWidget {
             big: true,
             onTap: onRevive,
           ),
-          const Padding(
-            padding: EdgeInsets.only(top: 6, bottom: 14),
+          Padding(
+            padding: const EdgeInsets.only(top: 6, bottom: 14),
             child: Text(
               'Assista a um vídeo curto',
-              style: TextStyle(color: Palette.textDim, fontSize: 13),
+              style: bodyText(13, color: Palette.textDim, weight: 500),
             ),
           ),
         ],
@@ -493,10 +572,7 @@ class _LoseCard extends StatelessWidget {
         ),
         TextButton(
           onPressed: onExit,
-          child: const Text(
-            'Menu',
-            style: TextStyle(color: Palette.textDim, fontSize: 16),
-          ),
+          child: Text('Menu', style: displayText(18, color: Palette.textDim)),
         ),
       ],
     ),
@@ -518,7 +594,7 @@ class _PauseCard extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('Pausa', style: _titleStyle),
+        const OutlinedTitle('Pausa', size: 38),
         const SizedBox(height: 24),
         ChunkyButton(
           label: 'Continuar',
@@ -536,10 +612,7 @@ class _PauseCard extends StatelessWidget {
         ),
         TextButton(
           onPressed: onExit,
-          child: const Text(
-            'Menu',
-            style: TextStyle(color: Palette.textDim, fontSize: 16),
-          ),
+          child: Text('Menu', style: displayText(18, color: Palette.textDim)),
         ),
       ],
     ),

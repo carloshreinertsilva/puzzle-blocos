@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../core/board.dart';
 import '../core/game_session.dart';
 import '../ui/block_painter.dart';
+import '../ui/level_text.dart';
 import '../ui/palette.dart';
 import 'board_view.dart';
 import 'effects.dart';
@@ -35,6 +36,13 @@ class PuzzleGame extends FlameGame {
   Sparks? sparks;
   TrayPiece? activeDrag;
 
+  /// Build with --dart-define=DEMO_PRAISE=true to cycle through the praise
+  /// tiers every few seconds (for checking the effects without playing).
+  static const _demoPraise = bool.fromEnvironment('DEMO_PRAISE');
+  double _demoClock = 0;
+  int _demoTier = 0;
+
+  bool _announcePending = false;
   double _shake = 0;
   double _shakePower = 0;
   final _rng = Random();
@@ -50,9 +58,35 @@ class PuzzleGame extends FlameGame {
     controller.onPlaced = _onPlaced;
     controller.onRevived = _onRevived;
     controller.onRestarted = _onRestarted;
+    controller.onReady = _announce;
     for (final t in trays) {
       t.playAppear();
     }
+    if (controller.intros.isEmpty) _announce();
+  }
+
+  /// Shows the start banner on the next frame, once the layout is known.
+  void _announce() => _announcePending = true;
+
+  /// "Fase 12 / Colete 8 gemas" over the board when an attempt starts.
+  void _showAnnouncement() {
+    final level = controller.level;
+    stage.add(
+      PraiseBanner(
+        Praise(
+          2,
+          levelTitle(level),
+          level.isHard
+              ? const [Color(0xFFFFE3E3), Color(0xFFFF6B6B)]
+              : const [Color(0xFFFFFFFF), Color(0xFFFFD43B)],
+        ),
+        position: Vector2(boardRect.center.dx, boardRect.center.dy),
+        cellSize: cellSize * 0.85,
+        subtitle: goalSummary(level),
+        hold: 1.2,
+        maxWidth: boardRect.width,
+      )..priority = 40,
+    );
   }
 
   @override
@@ -60,6 +94,7 @@ class PuzzleGame extends FlameGame {
     controller.onPlaced = null;
     controller.onRevived = null;
     controller.onRestarted = null;
+    controller.onReady = null;
     sprites?.dispose();
     super.onRemove();
   }
@@ -104,6 +139,31 @@ class PuzzleGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
+    if (_announcePending && sprites != null) {
+      _announcePending = false;
+      _showAnnouncement();
+    }
+    if (_demoPraise && sprites != null && (_demoClock += dt) > 2.4) {
+      _demoClock = 0;
+      _demoTier = _demoTier % 4 + 1;
+      _celebrate(
+        PlaceResult(
+          outcome: PlaceOutcome(
+            placed: const [],
+            rows: const [],
+            cols: const [],
+            cleared: const [],
+            gems: 0,
+            rocksBroken: 0,
+          ),
+          points: 0,
+          combo: _demoTier,
+          boardCleared: false,
+          newTray: false,
+        ),
+        _demoTier,
+      );
+    }
     if (_shake > 0) {
       _shake = max(0, _shake - dt);
       final a = _shakePower * (_shake / 0.3);
@@ -131,37 +191,7 @@ class PuzzleGame extends FlameGame {
           color: Palette.accent,
         )..priority = 30,
       );
-      if (result.combo >= 2) {
-        stage.add(
-          PopText(
-            'Combo x${result.combo}!',
-            position: Vector2(
-              boardRect.center.dx,
-              boardRect.top + cellSize * 2,
-            ),
-            fontSize: cellSize * 0.85,
-            color: Palette.lighten(Palette.blocks[piece.color], 0.3),
-            rise: cellSize * 0.6,
-            life: 1.1,
-          )..priority = 30,
-        );
-      }
-      if (result.boardCleared) {
-        stage.add(
-          PopText(
-            'Tabuleiro limpo!',
-            position: Vector2(boardRect.center.dx, boardRect.center.dy),
-            fontSize: cellSize * 0.8,
-            color: Palette.good,
-            life: 1.4,
-            delay: 0.25,
-          )..priority = 30,
-        );
-      }
-      if (out.lines >= 2) {
-        _shake = 0.3;
-        _shakePower = cellSize * 0.06 * min(out.lines, 4);
-      }
+      _celebrate(result, out.lines);
     }
 
     if (result.newTray) {
@@ -169,6 +199,46 @@ class PuzzleGame extends FlameGame {
         t.playAppear();
       }
     }
+  }
+
+  void _celebrate(PlaceResult result, int lines) {
+    final praise = Praise.forClear(
+      lines: lines,
+      combo: result.combo,
+      boardCleared: result.boardCleared,
+      rng: _rng,
+    );
+    final at = Vector2(
+      boardRect.center.dx,
+      boardRect.top + boardRect.height * 0.4,
+    );
+    if (praise.tier >= 2) {
+      stage.add(
+        LightBurst(
+          position: at,
+          radius: boardRect.width * (0.35 + 0.1 * praise.tier),
+          color: praise.colors[praise.colors.length ~/ 2],
+        )..priority = 25,
+      );
+    }
+    stage.add(
+      PraiseBanner(
+        praise,
+        position: at,
+        cellSize: cellSize,
+        subtitle: result.combo >= 2 ? 'Combo x${result.combo}' : null,
+        maxWidth: boardRect.width,
+      )..priority = 40,
+    );
+    if (praise.tier >= 3) {
+      add(
+        ScreenFlash(Offset.zero & size.toSize(), strength: 0.12 * praise.tier),
+      );
+      sparks?.confetti(boardRect, count: 25 + 15 * (praise.tier - 2));
+    }
+    _shake = 0.3 + 0.05 * praise.tier;
+    _shakePower = cellSize * 0.05 * praise.tier;
+    controller.feedback.praise(praise.tier);
   }
 
   void _onRevived(List<ClearedCell> cleared) {

@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'services/feedback.dart';
 import 'services/progress_store.dart';
 import 'ui/palette.dart';
+import 'ui/typography.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class App extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         scaffoldBackgroundColor: Palette.bgTop,
+        fontFamily: Fonts.body,
         useMaterial3: true,
       ),
       home: HomeScreen(services: services),

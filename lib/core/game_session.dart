@@ -69,10 +69,18 @@ class GameSession {
     if (level.isEndless) {
       return 0.12 + 0.75 * (1 - exp(-score / 7000));
     }
-    return (level.difficulty - 0.07 * min(failStreak, 4)).clamp(0.0, 1.0);
+    // Pieces lag the goal difficulty a little: longer levels need room to
+    // breathe. The first levels are a warm-up.
+    final warmUp = _isWarmUp ? 0.1 : 0.0;
+    return (level.difficulty * 0.75 - warmUp - 0.07 * min(failStreak, 4)).clamp(
+      0.0,
+      1.0,
+    );
   }
 
-  double get _mercy => min(failStreak, 4) * 0.12;
+  bool get _isWarmUp => level.kind == LevelKind.level && level.number <= 3;
+
+  double get _mercy => min(failStreak, 4) * 0.12 + (_isWarmUp ? 0.25 : 0);
 
   bool canPlace(int slot, int r, int c) {
     final piece = tray[slot];

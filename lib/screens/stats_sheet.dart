@@ -1,0 +1,78 @@
+import 'package:flutter/material.dart';
+
+import '../main.dart';
+import '../ui/palette.dart';
+import '../ui/typography.dart';
+import '../ui/widgets.dart';
+
+Future<void> showStats(BuildContext context, AppServices services) {
+  final store = services.store;
+  final tiles = [
+    (Icons.flag_rounded, 'Fase atual', '${store.level}'),
+    (Icons.emoji_events_rounded, 'Recorde', formatInt(store.bestScore)),
+    (Icons.check_circle_rounded, 'Fases vencidas', formatInt(store.levelsWon)),
+    (Icons.sports_esports_rounded, 'Partidas', formatInt(store.gamesPlayed)),
+    (Icons.view_week_rounded, 'Linhas limpas', formatInt(store.linesCleared)),
+    (Icons.bolt_rounded, 'Maior combo', 'x${store.bestCombo}'),
+    (Icons.diamond_rounded, 'Gemas', formatInt(store.gemsCollected)),
+    (Icons.landscape_rounded, 'Pedras quebradas', formatInt(store.rocksBroken)),
+  ];
+  return showModalBottomSheet(
+    context: context,
+    backgroundColor: Palette.panel,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const OutlinedTitle('Estatísticas', size: 28),
+            const SizedBox(height: 16),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.4,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                for (final (icon, label, value) in tiles)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Palette.emptyCell,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(icon, color: Palette.accent, size: 26),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(value, style: displayText(20)),
+                              Text(
+                                label,
+                                style: bodyText(12, color: Palette.textDim),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}

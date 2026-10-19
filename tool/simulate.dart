@@ -15,7 +15,7 @@ void main(List<String> args) {
   final rng = Random(1);
   for (var n = first; n <= last; n++) {
     final level = LevelGenerator.build(n);
-    var wins = 0, moves = 0;
+    var wins = 0, moves = 0, winMoves = 0;
     for (var a = 0; a < attempts; a++) {
       final s = GameSession(level, rng: Random(rng.nextInt(1 << 30)));
       var m = 0;
@@ -25,7 +25,10 @@ void main(List<String> args) {
         s.place(move.$1, move.$2, move.$3);
         m++;
       }
-      if (s.status == SessionStatus.won) wins++;
+      if (s.status == SessionStatus.won) {
+        wins++;
+        winMoves += m;
+      }
       moves += m;
     }
     final kind = [
@@ -38,7 +41,8 @@ void main(List<String> args) {
     print(
       'level ${n.toString().padLeft(3)} d=${level.difficulty.toStringAsFixed(2)}'
       ' win=${(100 * wins / attempts).round().toString().padLeft(3)}%'
-      ' moves=${(moves / attempts).toStringAsFixed(0).padLeft(3)}$tag',
+      ' moves=${(moves / attempts).toStringAsFixed(0).padLeft(3)}'
+      ' winMoves=${(wins == 0 ? 0 : winMoves / wins).toStringAsFixed(0).padLeft(3)}$tag',
     );
   }
 }

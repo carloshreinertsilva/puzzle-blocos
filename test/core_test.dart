@@ -5,6 +5,7 @@ import 'package:puzzle_blocos/ads/ad_policy.dart';
 import 'package:puzzle_blocos/core/board.dart';
 import 'package:puzzle_blocos/core/game_session.dart';
 import 'package:puzzle_blocos/core/level.dart';
+import 'package:puzzle_blocos/core/patterns.dart';
 import 'package:puzzle_blocos/core/piece_generator.dart';
 import 'package:puzzle_blocos/core/shapes.dart';
 import 'package:puzzle_blocos/core/solver.dart';
@@ -156,6 +157,39 @@ void main() {
         final masks = level.buildBoard().rowMasks;
         expect(masks.contains(Board.fullRow), isFalse);
       }
+    });
+  });
+
+  group('Daily challenge and patterns', () {
+    test('the daily level is the same all day and differs by day', () {
+      final a = LevelGenerator.daily(DateTime(2026, 10, 19, 8));
+      final b = LevelGenerator.daily(DateTime(2026, 10, 19, 22));
+      final c = LevelGenerator.daily(DateTime(2026, 10, 20));
+      expect(a.initialCells.keys, b.initialCells.keys);
+      expect(a.isDaily, isTrue);
+      expect(a.goalCount, 2);
+      expect(
+        a.initialCells.keys.toSet().difference(c.initialCells.keys.toSet()),
+        isNotEmpty,
+      );
+    });
+
+    test('no drawing starts with a full line in any orientation', () {
+      for (final art in boardPatterns.values) {
+        for (var seed = 0; seed < 8; seed++) {
+          final board = Board();
+          for (final (r, c) in patternCells(art, Random(seed))) {
+            board.set(r, c, const Cell.block(0));
+          }
+          expect(board.rowMasks.contains(Board.fullRow), isFalse);
+          expect(board.rowMasks.fold(Board.fullRow, (a, b) => a & b), 0);
+        }
+      }
+    });
+
+    test('early levels start with a drawing', () {
+      expect(LevelGenerator.build(1).pattern, isNotNull);
+      expect(LevelGenerator.build(2).pattern, isNotNull);
     });
   });
 

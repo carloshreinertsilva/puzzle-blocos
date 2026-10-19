@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'block_painter.dart';
 import 'palette.dart';
+import 'typography.dart';
 
 /// Chunky rounded button with a 3D edge, used across menus and cards.
 class ChunkyButton extends StatefulWidget {
@@ -81,10 +82,9 @@ class _ChunkyButtonState extends State<ChunkyButton> {
                       ],
                       Text(
                         widget.label,
-                        style: TextStyle(
+                        style: displayText(
+                          widget.big ? 27 : 21,
                           color: widget.textColor,
-                          fontSize: widget.big ? 24 : 19,
-                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ],
@@ -147,7 +147,7 @@ class CardPanel extends StatelessWidget {
   );
 }
 
-enum MiniIcon { rock, gem, star }
+enum MiniIcon { rock, toughRock, gem, star }
 
 /// Tiny painted icons that match the board art.
 class MiniGlyph extends StatelessWidget {
@@ -170,6 +170,8 @@ class _GlyphPainter extends CustomPainter {
     switch (kind) {
       case MiniIcon.rock:
         BlockPainter.rock(canvas, rect, 1);
+      case MiniIcon.toughRock:
+        BlockPainter.rock(canvas, rect, 2);
       case MiniIcon.gem:
         BlockPainter.gem(canvas, rect.inflate(size.width * 0.35));
       case MiniIcon.star:
@@ -209,22 +211,7 @@ class Logo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        const Text(
-          appTitle,
-          style: TextStyle(
-            color: Palette.text,
-            fontSize: 40,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.5,
-            shadows: [
-              Shadow(
-                color: Color(0x99000000),
-                offset: Offset(0, 4),
-                blurRadius: 8,
-              ),
-            ],
-          ),
-        ),
+        const OutlinedTitle(appTitle, size: 46),
       ],
     );
   }
@@ -240,4 +227,64 @@ class _BlockLogoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BlockLogoPainter old) => old.color != color;
+}
+
+/// Chunky title text: dark outline, drop shadow and a light-to-color
+/// gradient fill, like the praise words in the game.
+class OutlinedTitle extends StatelessWidget {
+  const OutlinedTitle(
+    this.text, {
+    super.key,
+    this.size = 32,
+    this.colors = const [Color(0xFFFFFFFF), Color(0xFFFFE08A)],
+  });
+
+  final String text;
+  final double size;
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final outline = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size * 0.18
+      ..strokeJoin = StrokeJoin.round
+      ..color = const Color(0xFF2A1458);
+    return Stack(
+      children: [
+        Transform.translate(
+          offset: Offset(0, size * 0.08),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: displayText(size).copyWith(
+              foreground: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = size * 0.18
+                ..strokeJoin = StrokeJoin.round
+                ..color = const Color(0x66000000),
+              color: null,
+            ),
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: displayText(size).copyWith(foreground: outline, color: null),
+        ),
+        ShaderMask(
+          shaderCallback: (rect) => LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: colors,
+          ).createShader(rect),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: displayText(size, color: Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
 }

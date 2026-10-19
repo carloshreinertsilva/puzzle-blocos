@@ -21,6 +21,9 @@ class GameFeedback {
     'lose.wav',
     'revive.wav',
     'click.wav',
+    'praise2.wav',
+    'praise3.wav',
+    'praise4.wav',
   ];
 
   Future<void> preload() async {
@@ -51,6 +54,18 @@ class GameFeedback {
     _play('clear${combo.clamp(1, 5)}.wav');
     if (!store.hapticsOn) return;
     lines >= 2 ? HapticFeedback.heavyImpact() : HapticFeedback.mediumImpact();
+  }
+
+  /// Extra stinger for big moves (tier 2 and up), on top of the clear sound.
+  void praise(int tier) {
+    if (tier < 2) return;
+    _play('praise${tier.clamp(2, 4)}.wav', volume: 0.7);
+    if (store.hapticsOn && tier >= 3) {
+      Future.delayed(
+        const Duration(milliseconds: 120),
+        HapticFeedback.heavyImpact,
+      );
+    }
   }
 
   void win() => _play('win.wav');
