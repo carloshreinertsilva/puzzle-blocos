@@ -1,15 +1,15 @@
 {{flutter_js}}
 {{flutter_build_config}}
 
-// Same as Flutter's default bootstrap, plus: the loading screen in
-// index.html stays up until the game draws its first frame.
-//
-// Flutter only runs the WebAssembly build on Chrome-based browsers by
-// default. `?wasm=1` in the address also allows it on Safari and Firefox,
-// to compare before turning it on for everyone.
+// Same as Flutter's default bootstrap, plus:
+// - the loading screen in index.html stays up until the game draws its
+//   first frame;
+// - the WebAssembly build also runs on Safari (Flutter allows it only on
+//   Chrome-based browsers by default; on the iPhone it is much smoother).
+//   `?wasm=1` in the address also allows it on Firefox, to try it there.
 const tryWasm = new URLSearchParams(location.search).has('wasm');
 _flutter.loader.load({
-  config: tryWasm ? { wasmAllowList: { webkit: true, gecko: true } } : {},
+  config: { wasmAllowList: { webkit: true, gecko: tryWasm } },
   onEntrypointLoaded: async (engineInitializer) => {
     const appRunner = await engineInitializer.initializeEngine();
     await appRunner.runApp();
