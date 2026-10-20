@@ -88,10 +88,14 @@ test('pausa: continuar, reiniciar e voltar ao menu', async ({ page }) => {
   await waitForState(page, (s) => s.paused === true, 'pausado');
   await page.getByRole('button', { name: 'Continuar' }).click();
   await waitForState(page, (s) => s.paused === false, 'continuou');
+  await expect(page.getByRole('button', { name: 'Continuar' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Pausar' }).click();
   await page.getByRole('button', { name: 'Reiniciar' }).click();
   await waitForState(page, (s) => s.paused === false && s.score === 0, 'reiniciou');
+  // O cartão de pausa some com uma animação; espere ele sair antes de pausar
+  // de novo, senão há dois botões "Menu" na tela por um instante.
+  await expect(page.getByRole('button', { name: 'Reiniciar' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Pausar' }).click();
   await page.getByRole('button', { name: 'Menu' }).click();

@@ -1,13 +1,14 @@
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/services.dart';
 
 import 'progress_store.dart';
+import 'sound/sound_player.dart';
 
 /// Sound effects and vibration, both switchable in settings.
 class GameFeedback {
   GameFeedback(this.store);
 
   final ProgressStore store;
+  final _sound = SoundPlayer();
 
   static const _files = [
     'pick.wav',
@@ -28,7 +29,7 @@ class GameFeedback {
 
   Future<void> preload() async {
     try {
-      await FlameAudio.audioCache.loadAll(_files);
+      await _sound.loadAll(_files);
     } catch (_) {
       // Audio is a nicety; never block the game on it.
     }
@@ -36,7 +37,7 @@ class GameFeedback {
 
   void _play(String file, {double volume = 0.8}) {
     if (!store.soundOn) return;
-    FlameAudio.play(file, volume: volume).catchError((_) => AudioPlayer());
+    _sound.play(file, volume: volume);
   }
 
   void pick() {

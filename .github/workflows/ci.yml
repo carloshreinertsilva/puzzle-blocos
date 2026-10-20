@@ -43,7 +43,7 @@ jobs:
       - name: Testes de unidade
         run: flutter test
       - name: Versão web de teste
-        run: flutter build web --profile --no-web-resources-cdn --dart-define=TEST_BRIDGE=true -o build/web_test
+        run: flutter build web --profile --wasm --no-web-resources-cdn --dart-define=TEST_BRIDGE=true -o build/web_test
       - uses: actions/upload-artifact@v4
         with:
           name: web_test
