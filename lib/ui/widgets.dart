@@ -274,6 +274,15 @@ class OutlinedTitle extends StatelessWidget {
       ..strokeWidth = size * 0.18
       ..strokeJoin = StrokeJoin.round
       ..color = const Color(0xFF2A1458);
+    // Three stacked copies make the outlined look; read it out once.
+    return Semantics(
+      label: text,
+      excludeSemantics: true,
+      child: _layers(outline),
+    );
+  }
+
+  Widget _layers(Paint outline) {
     return Stack(
       children: [
         Transform.translate(

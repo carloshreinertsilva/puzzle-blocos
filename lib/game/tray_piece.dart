@@ -118,7 +118,10 @@ class TrayPiece extends PositionComponent
   @override
   void onDragUpdate(DragUpdateEvent event) {
     if (!_dragging) return;
-    _finger = event.canvasEndPosition - position;
+    // Follow the pointer by its movement. (In this Flame version the
+    // event's "end" position already adds the delta to the current
+    // position, which made the piece run one step ahead of the finger.)
+    _finger += event.localDelta;
     _center = _finger + _lift;
     _updateSnap();
   }
