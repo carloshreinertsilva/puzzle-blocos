@@ -1,0 +1,6 @@
+# Específicos de cada máquina ou recriáveis de graça (análise do código).
+.graphify_python
+.graphify_root
+cache/ast/
+cache/hook_sessions/
+cache/stat-index.json
