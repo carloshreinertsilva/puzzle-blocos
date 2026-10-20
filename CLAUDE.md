@@ -12,7 +12,7 @@ o `README.md`.
   os testes do navegador (`e2e/`, veja o README).
 - O PR só é mesclado com o **CI verde** (GitHub Actions: Flutter + Playwright
   nos 4 tamanhos de tela). A `main` publica sozinha na Vercel
-  (https://puzzle-blocos.vercel.app), então `main` precisa estar sempre boa.
+  (https://capiblocks.vercel.app), então `main` precisa estar sempre boa.
 - Textos para o usuário e mensagens de commit/PR em português.
 
 ## Pontos de atenção

@@ -24,7 +24,7 @@ Jogadas que limpam linhas ganham elogios em níveis ("Boa!" → "Incrível!" →
 "Espetacular!" → "Lendário!"), com raios de luz, clarão, confete e som. Fontes:
 Lilita One e Fredoka (licença OFL, em `assets/fonts/`).
 
-Versão web publicada a cada push em https://puzzle-blocos.vercel.app (Vercel,
+Versão web publicada a cada push em https://capiblocks.vercel.app (Vercel,
 `vercel.json` + `tool/vercel_build.sh`). Para testar só os efeitos de elogio:
 `flutter run -d chrome --dart-define=DEMO_PRAISE=true`.
 
