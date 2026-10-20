@@ -1,6 +1,6 @@
 {
-    "name": "Bloco a Bloco",
-    "short_name": "Bloco a Bloco",
+    "name": "CapiBlocks",
+    "short_name": "CapiBlocks",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#1C2155",

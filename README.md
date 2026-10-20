@@ -1,8 +1,10 @@
-# Bloco a Bloco
+# CapiBlocks
 
-Jogo de quebra-cabeça de blocos para Android e iOS (Flutter + Flame). O nome
-é provisório: troque `appTitle` em `lib/ui/palette.dart` e o nome exibido em
-`android/app/src/main/AndroidManifest.xml` e `ios/Runner/Info.plist`.
+Jogo de quebra-cabeça de blocos para Android e iOS (Flutter + Flame), com o
+Capi, a capivara construtora, como mascote. O nome aparece em `appTitle`
+(`lib/ui/palette.dart`), `web/index.html`, `web/manifest.json`,
+`android/app/src/main/AndroidManifest.xml` e `ios/Runner/Info.plist`; o
+pacote Dart e o repositório continuam `puzzle_blocos`.
 
 Tabuleiro 8x8, três peças por rodada, linhas e colunas completas somem. Modos:
 

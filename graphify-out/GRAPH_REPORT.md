@@ -1,7 +1,7 @@
 # Graph Report - puzzle-blocos  (2026-10-20)
 
 ## Corpus Check
-- 68 files · ~28,234 words
+- 68 files · ~28,227 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 30 file(s) not represented in the graph (top: .xml 7, (none) 6, .plist 4)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f5c6bd80`
+- Built from commit: `72ec0251`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -258,7 +258,7 @@ Nodes (9): AdCoordinator, ads, App, build, feedback, main, services, setPreferre
 
 ### Community 48 - "Bloco a Bloco — instruções para o Claude Code"
 Cohesion: 0.50
-Nodes (3): Bloco a Bloco — instruções para o Claude Code, Fluxo de trabalho, Pontos de atenção
+Nodes (3): CapiBlocks — instruções para o Claude Code, Fluxo de trabalho, Pontos de atenção
 
 ### Community 50 - "tutorial.dart"
 Cohesion: 0.17

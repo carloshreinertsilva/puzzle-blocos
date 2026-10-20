@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const appTitle = 'Bloco a Bloco';
+const appTitle = 'CapiBlocks';
 
 abstract final class Palette {
   static const bgTop = Color(0xFF1C2155);

@@ -252,10 +252,10 @@
     "semantic_hash": "8b670c830140d22376f6182f95582d21"
   },
   "lib/ui/palette.dart": {
-    "mtime": 1792446542.065395,
-    "seen": 1792504154.1614552,
-    "ast_hash": "f4d5cd0d75ebd523b30589a089f9f959",
-    "semantic_hash": "f4d5cd0d75ebd523b30589a089f9f959"
+    "mtime": 1792535617.8529046,
+    "seen": 1792535689.998915,
+    "ast_hash": "e67f02914ee9fe0bec1aca1c9a44b90b",
+    "semantic_hash": ""
   },
   "lib/ui/typography.dart": {
     "mtime": 1792448967.946136,
@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "web/manifest.json": {
-    "mtime": 1792528673.0434513,
-    "seen": 1792529019.9934843,
-    "ast_hash": "86f5be8229c2d441f56b714bc64d9bf3",
+    "mtime": 1792535617.8518224,
+    "seen": 1792535689.9989476,
+    "ast_hash": "8c9ffa1b83d0d531ef884c0243550528",
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
@@ -324,9 +324,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792535436.577452,
-    "seen": 1792535437.7076457,
-    "ast_hash": "784805a8b961f8051a6171f8d58020f3",
+    "mtime": 1792535617.869298,
+    "seen": 1792535689.9989545,
+    "ast_hash": "050f6cd3b492a0a54159b793798236d2",
     "semantic_hash": ""
   },
   "analysis_options.yaml": {
@@ -348,9 +348,9 @@
     "semantic_hash": ""
   },
   "web/index.html": {
-    "mtime": 1792528673.0407677,
-    "seen": 1792529019.993501,
-    "ast_hash": "36713875aeca1935f4d00fcf0a37d810",
+    "mtime": 1792535617.8510857,
+    "seen": 1792535689.9989786,
+    "ast_hash": "d6f5a4f14ae04f9faad51e390ce335fc",
     "semantic_hash": ""
   },
   "e2e/serve.py": {
@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1792515110.9208784,
-    "seen": 1792529019.9934888,
-    "ast_hash": "461793580e984deb2b88158d9f608cf1",
+    "mtime": 1792535617.8536556,
+    "seen": 1792535689.9989522,
+    "ast_hash": "0d0205452e06cdf4192ada0730239992",
     "semantic_hash": ""
   },
   "e2e/tests/onboarding.spec.ts": {
