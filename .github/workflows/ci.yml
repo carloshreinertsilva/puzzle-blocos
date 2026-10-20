@@ -8,8 +8,9 @@ on:
   push:
     branches: [main]
     paths-ignore: ['**.md', '.claude/**']
+  # Pull requests always run, so a required check never waits forever on a
+  # PR that only touches docs.
   pull_request:
-    paths-ignore: ['**.md', '.claude/**']
   workflow_dispatch:
 
 permissions:
