@@ -13,5 +13,6 @@ void installJsBridge(TestBridge bridge) {
     bridge.dragPath(slot.toDartInt, row.toDartInt, col.toDartInt),
   ).toJS).toJS;
   api['load'] = ((JSString json) => bridge.load(json.toDart).toJS).toJS;
+  api['win'] = (() => bridge.win().toJS).toJS;
   globalContext['__bb'] = api;
 }

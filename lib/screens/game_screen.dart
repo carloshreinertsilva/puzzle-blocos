@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
 import '../game/game_controller.dart';
+import '../game/onboarding.dart';
 import '../game/puzzle_game.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
 import '../ui/level_text.dart';
+import '../ui/capi.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -16,9 +18,19 @@ import '../ui/widgets.dart';
 /// clean: a slim HUD on top, the board and the tray. No banners; cards only
 /// appear before or after an attempt.
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.services, required this.mode});
+  const GameScreen({
+    super.key,
+    required this.services,
+    required this.mode,
+    this.onDone,
+  });
   final AppServices services;
   final GameMode mode;
+
+  /// Set while onboarding (the tutorial, then the first levels with no
+  /// menu): called when this stage is over. There is no way back to a menu
+  /// in the meantime.
+  final VoidCallback? onDone;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -33,7 +45,10 @@ class _GameScreenState extends State<GameScreen> {
   PuzzleGame? game;
   bool _busy = false;
 
-  static const hudHeight = 104.0;
+  /// The tutorial's top bar holds Capi and his speech bubble.
+  double get hudHeight => widget.mode == GameMode.tutorial ? 132 : 104;
+
+  bool get _onboarding => widget.onDone != null;
 
   @override
   void didChangeDependencies() {
@@ -79,6 +94,12 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> _next() => _guard(() async {
     widget.services.feedback.click();
     await widget.services.ads.betweenLevels(context, controller.level.number);
+    if (_onboarding && controller.level.number >= Onboarding.railLevels) {
+      // The first levels are done: on to the menu.
+      await widget.services.store.markSeen('menu');
+      widget.onDone!();
+      return;
+    }
     controller.restart();
   });
 
@@ -118,13 +139,22 @@ class _GameScreenState extends State<GameScreen> {
                   height: hudHeight,
                   child: ListenableBuilder(
                     listenable: controller,
-                    builder: (context, _) => _Hud(
-                      controller: controller,
-                      onPause: () => controller.setPaused(true),
-                    ),
+                    builder: (context, _) => controller.tutorial
+                        ? _TutorialBar(
+                            controller: controller,
+                            onSkip: controller.skipTutorial,
+                          )
+                        : _Hud(
+                            controller: controller,
+                            onPause: () => controller.setPaused(true),
+                          ),
                   ),
                 ),
               ),
+            ),
+            ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => _CapiPopUp(controller: controller),
             ),
             ListenableBuilder(
               listenable: controller,
@@ -139,7 +169,22 @@ class _GameScreenState extends State<GameScreen> {
   Widget _overlay() {
     Widget? card;
     final s = controller.session;
-    if (controller.intros.isNotEmpty) {
+    if (controller.tutorialFinished) {
+      card = Padding(
+        key: const ValueKey('tutorial-done'),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: CapiSays(
+            text: controller.capiLine,
+            mood: CapiMood.cheer,
+            capiSize: 110,
+            action: 'Bora!',
+            onAction: widget.onDone,
+          ),
+        ),
+      );
+    } else if (controller.intros.isNotEmpty) {
       card = _IntroCard(
         key: ValueKey(controller.intros.first),
         intro: controller.intros.first,
@@ -155,7 +200,7 @@ class _GameScreenState extends State<GameScreen> {
           controller.setPaused(false);
           _retry();
         },
-        onExit: _exit,
+        onExit: _onboarding ? null : _exit,
       );
     } else if (controller.showOutcome && s.status == SessionStatus.won) {
       card = controller.level.isDaily
@@ -178,7 +223,7 @@ class _GameScreenState extends State<GameScreen> {
         canRevive: controller.canRevive,
         onRevive: _revive,
         onRetry: _retry,
-        onExit: _exit,
+        onExit: _onboarding ? null : _exit,
       );
     }
     return AnimatedSwitcher(
@@ -201,6 +246,108 @@ class _GameScreenState extends State<GameScreen> {
               alignment: Alignment.center,
               child: card,
             ),
+    );
+  }
+}
+
+/// The tutorial's top bar: Capi talking, and a way to skip.
+/// Capi pops up from the bottom corner for a moment: cheering big moves,
+/// worried when the board fills up, pointing at a hint when the player is
+/// stuck. Never blocks touches.
+class _CapiPopUp extends StatelessWidget {
+  const _CapiPopUp({required this.controller});
+  final GameController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final reaction = controller.capiReaction;
+    final visible =
+        reaction != null &&
+        !controller.showOutcome &&
+        !controller.paused &&
+        controller.intros.isEmpty;
+    final mood = switch (reaction) {
+      CapiReaction.cheer => CapiMood.cheer,
+      CapiReaction.worried => CapiMood.worried,
+      _ => CapiMood.point,
+    };
+    return Positioned(
+      left: 8,
+      right: 8,
+      bottom: MediaQuery.paddingOf(context).bottom + 4,
+      child: IgnorePointer(
+        child: AnimatedSlide(
+          offset: visible ? Offset.zero : const Offset(0, 1.3),
+          duration: const Duration(milliseconds: 380),
+          curve: visible ? Curves.easeOutBack : Curves.easeIn,
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: CapiSays(
+                key: ValueKey(controller.capiSeq),
+                text: controller.capiSays,
+                mood: mood,
+                capiSize: 70,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TutorialBar extends StatelessWidget {
+  const _TutorialBar({required this.controller, required this.onSkip});
+  final GameController controller;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final finished = controller.tutorialFinished;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 22,
+            child: finished
+                ? null
+                : Align(
+                    alignment: Alignment.centerRight,
+                    child: Semantics(
+                      button: true,
+                      label: 'Pular tutorial',
+                      excludeSemantics: true,
+                      onTap: onSkip,
+                      child: GestureDetector(
+                        onTap: onSkip,
+                        child: Text(
+                          'Pular',
+                          style: displayText(16, color: Palette.textDim),
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              // The closing line shows in the middle of the screen.
+              child: finished
+                  ? null
+                  : CapiSays(
+                      text: controller.capiLine,
+                      mood: controller.capiCheer
+                          ? CapiMood.cheer
+                          : CapiMood.happy,
+                      capiSize: 84,
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -468,7 +615,7 @@ class _WinCard extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.emoji_events_rounded, color: Palette.accent, size: 72),
+        const Capi(size: 96, mood: CapiMood.cheer),
         const SizedBox(height: 4),
         OutlinedTitle('Fase $level\nconcluída!', size: 34),
         const SizedBox(height: 8),
@@ -544,13 +691,14 @@ class _LoseCard extends StatelessWidget {
   final bool canRevive;
   final VoidCallback onRevive;
   final VoidCallback onRetry;
-  final VoidCallback onExit;
+  final VoidCallback? onExit;
 
   @override
   Widget build(BuildContext context) => CardPanel(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        Capi(size: 84, mood: newBest ? CapiMood.cheer : CapiMood.sad),
         OutlinedTitle(
           newBest ? 'Novo recorde!' : 'Sem espaço!',
           size: 36,
@@ -591,10 +739,11 @@ class _LoseCard extends StatelessWidget {
           textColor: canRevive ? Palette.text : const Color(0xFF3A2200),
           onTap: onRetry,
         ),
-        TextButton(
-          onPressed: onExit,
-          child: Text('Menu', style: displayText(18, color: Palette.textDim)),
-        ),
+        if (onExit != null)
+          TextButton(
+            onPressed: onExit,
+            child: Text('Menu', style: displayText(18, color: Palette.textDim)),
+          ),
       ],
     ),
   );
@@ -608,7 +757,7 @@ class _PauseCard extends StatelessWidget {
   });
   final VoidCallback onResume;
   final VoidCallback onRestart;
-  final VoidCallback onExit;
+  final VoidCallback? onExit;
 
   @override
   Widget build(BuildContext context) => CardPanel(
@@ -631,10 +780,11 @@ class _PauseCard extends StatelessWidget {
           textColor: Palette.text,
           onTap: onRestart,
         ),
-        TextButton(
-          onPressed: onExit,
-          child: Text('Menu', style: displayText(18, color: Palette.textDim)),
-        ),
+        if (onExit != null)
+          TextButton(
+            onPressed: onExit,
+            child: Text('Menu', style: displayText(18, color: Palette.textDim)),
+          ),
       ],
     ),
   );

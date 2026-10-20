@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'block_painter.dart';
+import 'capi.dart';
 import 'palette.dart';
 import 'typography.dart';
 
@@ -207,34 +208,48 @@ class _GlyphPainter extends CustomPainter {
   bool shouldRepaint(_GlyphPainter old) => old.kind != kind;
 }
 
-/// Logo: the title over a row of tilted blocks.
+/// Logo: Capi beside the row of tilted blocks he built, over the title.
+/// Tapping Capi gets a tip ([onCapiTap]).
 class Logo extends StatelessWidget {
-  const Logo({super.key});
+  const Logo({super.key, this.onCapiTap});
+  final VoidCallback? onCapiTap;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(
-          height: 64,
+          height: 72,
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              for (var i = 0; i < 5; i++)
+              for (var i = 0; i < 4; i++)
                 Transform.rotate(
-                  angle: (i - 2) * 0.12,
+                  angle: (i - 1.5) * 0.12,
                   child: Padding(
-                    padding: EdgeInsets.only(top: (i - 2).abs() * 6.0),
+                    padding: EdgeInsets.only(bottom: 6 + (i - 1.5).abs() * 5),
                     child: CustomPaint(
-                      size: const Size.square(44),
+                      size: const Size.square(42),
                       painter: _BlockLogoPainter(Palette.blocks[i + 1]),
                     ),
                   ),
                 ),
+              const SizedBox(width: 4),
+              Semantics(
+                button: true,
+                label: 'Capi',
+                excludeSemantics: true,
+                onTap: onCapiTap,
+                child: GestureDetector(
+                  onTap: onCapiTap,
+                  child: const Capi(size: 72),
+                ),
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         const OutlinedTitle(appTitle, size: 46),
       ],
     );

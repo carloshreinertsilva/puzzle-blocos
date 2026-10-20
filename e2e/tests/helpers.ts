@@ -18,6 +18,9 @@ export type GameState = {
   board?: string[];
   tray?: (Piece | null)[];
   praises?: string[];
+  tutorialStep?: number;
+  capi?: string;
+  hint?: [number, number, number];
   geometry?: {
     board: { left: number; top: number; size: number; cell: number };
     slots: Box[];
@@ -25,8 +28,26 @@ export type GameState = {
   };
 };
 
-/** Opens the game with optional saved progress (shared_preferences keys). */
-export async function openApp(page: Page, saved: Record<string, string | number | boolean> = {}) {
+type Saved = Record<string, string | number | boolean>;
+
+/** A returning player: tutorial done, menu unlocked, Capi's news seen. */
+const VETERAN: Saved = {
+  seen_tutorial: true,
+  seen_menu: true,
+  seen_news_welcome: true,
+  seen_news_endless: true,
+  seen_news_daily: true,
+};
+
+/** Opens the game on the menu, with optional saved progress
+ * (shared_preferences keys) on top of a returning player's. */
+export async function openApp(page: Page, saved: Saved = {}) {
+  await openFresh(page, { ...VETERAN, ...saved });
+  await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
+}
+
+/** Opens the game with only [saved] stored: a new player by default. */
+export async function openFresh(page: Page, saved: Saved = {}) {
   await page.goto('/');
   if (Object.keys(saved).length > 0) {
     await page.evaluate((s) => {
@@ -35,7 +56,6 @@ export async function openApp(page: Page, saved: Record<string, string | number 
     await page.reload();
   }
   await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
-  await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
 }
 
 export async function state(page: Page): Promise<GameState> {

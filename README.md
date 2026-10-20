@@ -1,8 +1,10 @@
-# Bloco a Bloco
+# CapiBlocks
 
-Jogo de quebra-cabeça de blocos para Android e iOS (Flutter + Flame). O nome
-é provisório: troque `appTitle` em `lib/ui/palette.dart` e o nome exibido em
-`android/app/src/main/AndroidManifest.xml` e `ios/Runner/Info.plist`.
+Jogo de quebra-cabeça de blocos para Android e iOS (Flutter + Flame), com o
+Capi, a capivara construtora, como mascote. O nome aparece em `appTitle`
+(`lib/ui/palette.dart`), `web/index.html`, `web/manifest.json`,
+`android/app/src/main/AndroidManifest.xml` e `ios/Runner/Info.plist`; o
+pacote Dart e o repositório continuam `puzzle_blocos`.
 
 Tabuleiro 8x8, três peças por rodada, linhas e colunas completas somem. Modos:
 
@@ -10,6 +12,13 @@ Tabuleiro 8x8, três peças por rodada, linhas e colunas completas somem. Modos:
   começam com desenhos e dificuldade crescente; o menu mostra o caminho de fases.
 - **Desafio diário**, igual para todo mundo no mesmo dia, com sequência de dias.
 - **Infinito**, com recorde.
+
+Começo do jogo (`lib/game/onboarding.dart`, `lib/game/tutorial.dart`): quem
+abre pela primeira vez cai direto no tabuleiro, e o **Capi** (capivara
+construtora, mascote; desenho provisório em `lib/ui/capi.dart`) ensina em 3
+passos com balão de fala e uma mãozinha. Depois vêm as fases 1 a 3 seguidas,
+sem menu; o menu aparece ao vencer a fase 3. Infinito libera na fase 5 e o
+Desafio diário na fase 7.
 
 Jogadas que limpam linhas ganham elogios em níveis ("Boa!" → "Incrível!" →
 "Espetacular!" → "Lendário!"), com raios de luz, clarão, confete e som. Fontes:

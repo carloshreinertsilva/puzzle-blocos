@@ -112,6 +112,7 @@ class TrayPiece extends PositionComponent
     _finger = event.canvasPosition - position;
     _center = _finger + _lift;
     game.controller.feedback.pick();
+    game.controller.noteActivity();
     priority = 10;
   }
 

@@ -71,6 +71,9 @@ class TestBridge {
                 },
       ],
       'praises': praises,
+      if (c.tutorial) 'tutorialStep': c.tutorialStep,
+      if (c.tutorial) 'capi': c.capiLine,
+      if (c.hint case final h?) 'hint': [h.$1, h.$2, h.$3],
       if (g != null && g.cellSize > 1) 'geometry': g.testGeometry(),
     };
   }
@@ -87,6 +90,14 @@ class TestBridge {
     final p = controller?.session.tray[slot];
     if (g == null || p == null) return null;
     return g.dragPath(slot, p.shape, row, col);
+  }
+
+  /// Wins the current attempt (to reach later screens quickly).
+  bool win() {
+    final c = controller;
+    if (c == null) return false;
+    c.debugWin();
+    return true;
   }
 
   /// Sets up a scenario: [board] as 8 strings ('.', 'b', 'g', 'r', 'R') and

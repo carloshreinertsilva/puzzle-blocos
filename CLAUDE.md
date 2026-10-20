@@ -1,4 +1,4 @@
-# Bloco a Bloco — instruções para o Claude Code
+# CapiBlocks — instruções para o Claude Code
 
 Jogo de blocos em Flutter + Flame. Visão geral, dificuldade e anúncios: veja
 o `README.md`.
