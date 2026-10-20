@@ -19,6 +19,10 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     locale: 'pt-BR',
     deviceScaleFactor: 2,
+    // The full Chromium, not the lighter headless shell: with the
+    // WebAssembly renderer the shell crashed or froze about once every
+    // 100 tests; the full browser ran 156 in a row without a problem.
+    channel: 'chromium',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     launchOptions: {

@@ -11,6 +11,13 @@ Tabuleiro 8x8, três peças por rodada, linhas e colunas completas somem. Modos:
 - **Desafio diário**, igual para todo mundo no mesmo dia, com sequência de dias.
 - **Infinito**, com recorde.
 
+Começo do jogo (`lib/game/onboarding.dart`, `lib/game/tutorial.dart`): quem
+abre pela primeira vez cai direto no tabuleiro, e o **Capi** (capivara
+construtora, mascote; desenho provisório em `lib/ui/capi.dart`) ensina em 3
+passos com balão de fala e uma mãozinha. Depois vêm as fases 1 a 3 seguidas,
+sem menu; o menu aparece ao vencer a fase 3. Infinito libera na fase 5 e o
+Desafio diário na fase 7.
+
 Jogadas que limpam linhas ganham elogios em níveis ("Boa!" → "Incrível!" →
 "Espetacular!" → "Lendário!"), com raios de luz, clarão, confete e som. Fontes:
 Lilita One e Fredoka (licença OFL, em `assets/fonts/`).

@@ -1,7 +1,7 @@
 # Graph Report - puzzle-blocos  (2026-10-20)
 
 ## Corpus Check
-- 68 files · ~28,065 words
+- 68 files · ~28,234 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 30 file(s) not represented in the graph (top: .xml 7, (none) 6, .plist 4)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `207b4bfe`
+- Built from commit: `f5c6bd80`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

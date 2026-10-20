@@ -143,7 +143,6 @@ class _GameScreenState extends State<GameScreen> {
                         ? _TutorialBar(
                             controller: controller,
                             onSkip: controller.skipTutorial,
-                            onDone: widget.onDone,
                           )
                         : _Hud(
                             controller: controller,
@@ -166,7 +165,22 @@ class _GameScreenState extends State<GameScreen> {
   Widget _overlay() {
     Widget? card;
     final s = controller.session;
-    if (controller.intros.isNotEmpty) {
+    if (controller.tutorialFinished) {
+      card = Padding(
+        key: const ValueKey('tutorial-done'),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: CapiSays(
+            text: controller.capiLine,
+            mood: CapiMood.cheer,
+            capiSize: 110,
+            action: 'Bora!',
+            onAction: widget.onDone,
+          ),
+        ),
+      );
+    } else if (controller.intros.isNotEmpty) {
       card = _IntroCard(
         key: ValueKey(controller.intros.first),
         intro: controller.intros.first,
@@ -234,14 +248,9 @@ class _GameScreenState extends State<GameScreen> {
 
 /// The tutorial's top bar: Capi talking, and a way to skip.
 class _TutorialBar extends StatelessWidget {
-  const _TutorialBar({
-    required this.controller,
-    required this.onSkip,
-    required this.onDone,
-  });
+  const _TutorialBar({required this.controller, required this.onSkip});
   final GameController controller;
   final VoidCallback onSkip;
-  final VoidCallback? onDone;
 
   @override
   Widget build(BuildContext context) {
@@ -274,13 +283,16 @@ class _TutorialBar extends StatelessWidget {
           Expanded(
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: CapiSays(
-                text: controller.capiLine,
-                mood: controller.capiCheer ? CapiMood.cheer : CapiMood.happy,
-                capiSize: 84,
-                action: finished ? 'Bora!' : null,
-                onAction: onDone,
-              ),
+              // The closing line shows in the middle of the screen.
+              child: finished
+                  ? null
+                  : CapiSays(
+                      text: controller.capiLine,
+                      mood: controller.capiCheer
+                          ? CapiMood.cheer
+                          : CapiMood.happy,
+                      capiSize: 84,
+                    ),
             ),
           ),
         ],

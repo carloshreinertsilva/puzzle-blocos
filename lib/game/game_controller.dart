@@ -110,6 +110,13 @@ class GameController extends ChangeNotifier {
     if (tutorialFinished) {
       capiLine = Tutorial.done;
       store.markSeen('tutorial');
+      for (var r = 0; r < Board.size; r++) {
+        for (var c = 0; c < Board.size; c++) {
+          session.board.set(r, c, const Cell.empty());
+        }
+      }
+      session.tray = [null, null, null];
+      onRestarted?.call();
       return;
     }
     final step = Tutorial.steps[index];
