@@ -23,7 +23,16 @@ Avaliadas e não instaladas:
 - **Vercel Web Design Guidelines** e **Impeccable**: revisam HTML/CSS; o
   Flutter desenha num canvas, então quase nada se aplicaria. Úteis se
   fizermos um site (página da loja, política de privacidade).
-- **Superpowers**, **GSD** e **Planning with Files**: frameworks de fluxo de
-  trabalho que se sobrepõem entre si; vale escolher no máximo um. O GSD
-  original foi arquivado (mudou para open-gsd/gsd-core) e o Planning with
-  Files adiciona ganchos que rodam a cada ação.
+- **GSD** e **Planning with Files**: frameworks de fluxo de trabalho que se
+  sobrepõem ao Superpowers (abaixo). O GSD original foi arquivado (mudou para
+  open-gsd/gsd-core) e o Planning with Files adiciona ganchos que rodam a cada
+  ação.
+
+Plugin habilitado em `.claude/settings.json`: **Superpowers**
+([obra/superpowers](https://github.com/obra/superpowers), MIT), via o
+marketplace `obra/superpowers-marketplace`. Traz brainstorming, planos,
+desenvolvimento orientado a testes, depuração sistemática e revisão de código.
+O Claude Code oferece instalar o plugin ao abrir o projeto (é preciso confiar
+na pasta). Para instalar à mão: `/plugin marketplace add
+obra/superpowers-marketplace` e `/plugin install
+superpowers@superpowers-marketplace`.
