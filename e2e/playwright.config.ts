@@ -35,6 +35,12 @@ export default defineConfig({
     { name: 'iphone-se', use: { viewport: { width: 375, height: 667 } } },
     { name: 'iphone-pro-max', use: { viewport: { width: 430, height: 932 } } },
     { name: 'android-pequeno', use: { viewport: { width: 360, height: 640 } } },
-    { name: 'tablet', use: { viewport: { width: 820, height: 1180 } } },
+    // Tablet at 1x pixel density: at 2x it is the heaviest screen (1640x2360)
+    // and, rendered without a GPU on CI's 2 cores, drags could time out.
+    // Layout checks use CSS pixels, so they are unaffected.
+    {
+      name: 'tablet',
+      use: { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 1 },
+    },
   ],
 });
