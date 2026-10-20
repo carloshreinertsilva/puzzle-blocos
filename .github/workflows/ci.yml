@@ -1,0 +1,86 @@
+# Verifica o jogo a cada envio e a cada pull request:
+# 1. formatação, análise do código e testes de unidade (Flutter);
+# 2. versão web de teste (com a ponte de testes) gerada uma vez;
+# 3. testes Playwright de ponta a ponta, um job por tamanho de tela.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', '.claude/**']
+  pull_request:
+    paths-ignore: ['**.md', '.claude/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.47.7
+
+jobs:
+  flutter:
+    name: Flutter (análise e testes)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Formatação
+        run: dart format --output=none --set-exit-if-changed lib test tool
+      - name: Análise
+        run: flutter analyze
+      - name: Testes de unidade
+        run: flutter test
+      - name: Versão web de teste
+        run: flutter build web --profile --no-web-resources-cdn --dart-define=TEST_BRIDGE=true -o build/web_test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web_test
+          path: build/web_test
+          retention-days: 3
+
+  e2e:
+    name: Playwright (${{ matrix.project }})
+    needs: flutter
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [iphone-se, iphone-pro-max, android-pequeno, tablet]
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web_test
+          path: build/web_test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - run: npm ci
+      - name: Navegador (Chromium)
+        run: npx playwright install --with-deps chromium
+      - name: Testes de ponta a ponta
+        run: npx playwright test --project=${{ matrix.project }}
+      - name: Relatório
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-${{ matrix.project }}
+          path: e2e/playwright-report
+          retention-days: 14

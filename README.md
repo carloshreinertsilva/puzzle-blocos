@@ -31,6 +31,23 @@ flutter build ipa        # iOS (precisa de macOS + Xcode)
 
 Para ver no navegador: `flutter run -d chrome`.
 
+## Testes automáticos
+
+- `flutter test`: regras, gerador de peças e fases, política de anúncios.
+- `e2e/` (Playwright): o jogo rodando no navegador, com arrastos reais, em 4
+  tamanhos de tela (iPhone SE, iPhone Pro Max, Android pequeno, tablet). Usa
+  uma versão web com a ponte de testes (`--dart-define=TEST_BRIDGE=true`):
+
+  ```sh
+  cd e2e && npm ci && npm run build && npx playwright test
+  npx playwright show-report   # relatório com capturas
+  ```
+
+- **GitHub Actions** (`.github/workflows/ci.yml`) roda tudo a cada envio para
+  `main` e em cada pull request: formatação, análise, testes de unidade e um
+  job do Playwright por tamanho de tela. O relatório de cada tamanho fica nos
+  artefatos da execução.
+
 ## Como o jogo está organizado
 
 | Pasta | O que tem |
