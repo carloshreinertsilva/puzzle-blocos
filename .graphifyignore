@@ -1,0 +1,12 @@
+# O que o graphify (grafo de conhecimento do projeto) não deve ler.
+# Ícones e sons não dizem nada sobre o código e só gastariam tokens.
+*.png
+*.wav
+# Skills de terceiros e licenças: não são documentação do jogo.
+.claude/
+assets/fonts/
+# Gerados e dependências.
+build/
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/

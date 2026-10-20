@@ -48,6 +48,21 @@ Para ver no navegador: `flutter run -d chrome`.
   job do Playwright por tamanho de tela. O relatório de cada tamanho fica nos
   artefatos da execução.
 
+## Grafo do projeto (graphify)
+
+`graphify-out/` guarda um mapa do código e da documentação (graphify 0.9.92):
+`graph.json` (consultas), `GRAPH_REPORT.md` (resumo) e `graph.html` (abra no
+navegador). O Claude Code consulta esse mapa antes de ler arquivos, gastando
+menos tokens.
+
+```sh
+graphify query "Solver canPlaceAll PieceGenerator"   # termos do código (em inglês)
+graphify update .                                     # atualizar depois de mudar o código (grátis)
+```
+
+`.graphifyignore` deixa de fora ícones, sons, skills de terceiros e pastas
+geradas.
+
 ## Como o jogo está organizado
 
 | Pasta | O que tem |
