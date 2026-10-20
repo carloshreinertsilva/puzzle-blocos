@@ -3,7 +3,7 @@
   "private": true,
   "description": "Testes de ponta a ponta do jogo no navegador (Playwright).",
   "scripts": {
-    "build": "cd .. && flutter build web --profile --no-web-resources-cdn --dart-define=TEST_BRIDGE=true -o build/web_test",
+    "build": "cd .. && flutter build web --profile --wasm --no-web-resources-cdn --dart-define=TEST_BRIDGE=true -o build/web_test",
     "test": "playwright test",
     "report": "playwright show-report"
   },

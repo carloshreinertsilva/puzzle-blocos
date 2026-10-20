@@ -4,3 +4,7 @@
 cache/ast/
 cache/hook_sessions/
 cache/stat-index.json
+cache/last_query_stamp
+20*/
+.graphify_labels.pending.json
+.graphify_labels.json.sig

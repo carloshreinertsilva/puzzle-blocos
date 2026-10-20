@@ -17,4 +17,4 @@ export PATH="$FLUTTER_DIR/bin:$PATH"
 flutter config --no-analytics >/dev/null
 flutter --version
 flutter pub get
-flutter build web --release --no-web-resources-cdn
+flutter build web --release --wasm --no-web-resources-cdn

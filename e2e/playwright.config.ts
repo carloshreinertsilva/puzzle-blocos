@@ -27,7 +27,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: `python3 -m http.server ${PORT} --directory ../build/web_test`,
+    command: `python3 serve.py ${PORT} ../build/web_test`,
     port: PORT,
     reuseExistingServer: true,
   },

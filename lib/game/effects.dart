@@ -417,25 +417,34 @@ class PraiseBanner extends PositionComponent {
       );
     }
 
-    var x = -_width / 2;
-    for (var i = 0; i < _letters.length; i++) {
-      final (fill, outline, shadow) = _letters[i];
-      final local = ((_t - i * 0.035) / 0.28).clamp(0.0, 1.0);
-      if (local > 0) {
-        final s = easeOutBack(local);
-        // Gentle wave while the word is on screen.
-        final wave = sin(_t * 6 + i * 0.6) * fontSize * 0.04;
-        canvas.save();
-        canvas.translate(x + fill.width / 2, wave);
-        canvas.scale(s);
-        canvas.rotate((1 - local) * -0.4);
-        final o = Offset(-fill.width / 2, -fill.height / 2);
-        shadow.paint(canvas, o + Offset(0, fontSize * 0.09));
-        outline.paint(canvas, o);
-        fill.paint(canvas, o);
-        canvas.restore();
+    // Three passes (shadows, outlines, fills) so a letter's thick outline
+    // never covers the fill of the letter before it (the F's arm over "a").
+    for (var pass = 0; pass < 3; pass++) {
+      var x = -_width / 2;
+      for (var i = 0; i < _letters.length; i++) {
+        final (fill, outline, shadow) = _letters[i];
+        final local = ((_t - i * 0.035) / 0.28).clamp(0.0, 1.0);
+        if (local > 0) {
+          final s = easeOutBack(local);
+          // Gentle wave while the word is on screen.
+          final wave = sin(_t * 6 + i * 0.6) * fontSize * 0.04;
+          canvas.save();
+          canvas.translate(x + fill.width / 2, wave);
+          canvas.scale(s);
+          canvas.rotate((1 - local) * -0.4);
+          final o = Offset(-fill.width / 2, -fill.height / 2);
+          switch (pass) {
+            case 0:
+              shadow.paint(canvas, o + Offset(0, fontSize * 0.09));
+            case 1:
+              outline.paint(canvas, o);
+            default:
+              fill.paint(canvas, o);
+          }
+          canvas.restore();
+        }
+        x += fill.width;
       }
-      x += fill.width;
     }
 
     final sub = _sub;
