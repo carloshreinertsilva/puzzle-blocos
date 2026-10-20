@@ -154,6 +154,10 @@ class _GameScreenState extends State<GameScreen> {
             ),
             ListenableBuilder(
               listenable: controller,
+              builder: (context, _) => _CapiPopUp(controller: controller),
+            ),
+            ListenableBuilder(
+              listenable: controller,
               builder: (context, _) => _overlay(),
             ),
           ],
@@ -247,6 +251,53 @@ class _GameScreenState extends State<GameScreen> {
 }
 
 /// The tutorial's top bar: Capi talking, and a way to skip.
+/// Capi pops up from the bottom corner for a moment: cheering big moves,
+/// worried when the board fills up, pointing at a hint when the player is
+/// stuck. Never blocks touches.
+class _CapiPopUp extends StatelessWidget {
+  const _CapiPopUp({required this.controller});
+  final GameController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final reaction = controller.capiReaction;
+    final visible =
+        reaction != null &&
+        !controller.showOutcome &&
+        !controller.paused &&
+        controller.intros.isEmpty;
+    final mood = switch (reaction) {
+      CapiReaction.cheer => CapiMood.cheer,
+      CapiReaction.worried => CapiMood.worried,
+      _ => CapiMood.point,
+    };
+    return Positioned(
+      left: 8,
+      right: 8,
+      bottom: MediaQuery.paddingOf(context).bottom + 4,
+      child: IgnorePointer(
+        child: AnimatedSlide(
+          offset: visible ? Offset.zero : const Offset(0, 1.3),
+          duration: const Duration(milliseconds: 380),
+          curve: visible ? Curves.easeOutBack : Curves.easeIn,
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: CapiSays(
+                key: ValueKey(controller.capiSeq),
+                text: controller.capiSays,
+                mood: mood,
+                capiSize: 70,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TutorialBar extends StatelessWidget {
   const _TutorialBar({required this.controller, required this.onSkip});
   final GameController controller;
@@ -564,7 +615,7 @@ class _WinCard extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.emoji_events_rounded, color: Palette.accent, size: 72),
+        const Capi(size: 96, mood: CapiMood.cheer),
         const SizedBox(height: 4),
         OutlinedTitle('Fase $level\nconcluída!', size: 34),
         const SizedBox(height: 8),
@@ -647,6 +698,7 @@ class _LoseCard extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        Capi(size: 84, mood: newBest ? CapiMood.cheer : CapiMood.sad),
         OutlinedTitle(
           newBest ? 'Novo recorde!' : 'Sem espaço!',
           size: 36,

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
 import '../core/board.dart';
 import '../core/game_session.dart';
+import '../core/hint.dart';
 import '../core/level.dart';
 import '../core/shapes.dart';
 import '../services/feedback.dart';
@@ -14,6 +16,9 @@ enum GameMode { levels, endless, daily, tutorial }
 
 /// Mechanics explained with a short card the first time they show up.
 enum Intro { rocks, toughRocks, gems, doubleGoal }
+
+/// How Capi reacts during a game (a short pop-up beside the tray).
+enum CapiReaction { cheer, worried, hint }
 
 /// Connects the rules ([GameSession]) to the scene and the Flutter screens.
 class GameController extends ChangeNotifier {
@@ -61,6 +66,20 @@ class GameController extends ChangeNotifier {
   bool _tutorialWaiting = false;
   Timer? _tutorialTimer;
 
+  /// Outside the tutorial: Capi's pop-up (reaction and line), bumped by
+  /// [capiSeq] so the same reaction twice still shows twice.
+  CapiReaction? capiReaction;
+  String capiSays = '';
+  int capiSeq = 0;
+  Timer? _capiTimer;
+
+  /// After this long without a move, Capi suggests one.
+  static const idleHintAfter = Duration(seconds: 10);
+  Timer? _idleTimer;
+  (int, int, int)? _idleHint;
+  bool _warned = false;
+  final _rng = Random();
+
   bool get endless => mode == GameMode.endless;
   bool get tutorial => mode == GameMode.tutorial;
   bool get tutorialFinished =>
@@ -73,12 +92,55 @@ class GameController extends ChangeNotifier {
       !_tutorialWaiting &&
       !tutorialFinished;
 
-  /// Where the hint hand points: (tray slot, row, col), or null.
-  (int, int, int)? get tutorialHint {
-    if (!tutorial || !playing) return null;
+  /// Where the hint hand points: (tray slot, row, col), or null. In the
+  /// tutorial it is the step's move; otherwise Capi's suggestion when the
+  /// player has been still for a while.
+  (int, int, int)? get hint {
+    if (!playing) return null;
+    if (!tutorial) return _idleHint;
     final step = Tutorial.steps[tutorialStep];
     return (1, step.target.$1, step.target.$2);
   }
+
+  void _react(CapiReaction reaction, String line) {
+    capiReaction = reaction;
+    capiSays = line;
+    capiSeq++;
+    _capiTimer?.cancel();
+    _capiTimer = Timer(const Duration(milliseconds: 2600), () {
+      capiReaction = null;
+      notifyListeners();
+    });
+    notifyListeners();
+  }
+
+  /// The player touched a piece (or just moved): drop any hint and start
+  /// the idle clock again.
+  void noteActivity() {
+    _idleTimer?.cancel();
+    if (_idleHint != null) {
+      _idleHint = null;
+      if (capiReaction == CapiReaction.hint) capiReaction = null;
+      notifyListeners();
+    }
+    if (tutorial || session.status != SessionStatus.playing) return;
+    _idleTimer = Timer(idleHintAfter, () {
+      if (!playing) return noteActivity();
+      final move = suggestMove(session.board, session.tray);
+      if (move == null) return;
+      _idleHint = move;
+      _react(
+        CapiReaction.hint,
+        _pick(const [
+          'Que tal aqui?',
+          'Psiu! Tenta aqui.',
+          'Olha esse cantinho!',
+        ]),
+      );
+    });
+  }
+
+  String _pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
 
   void _start() {
     final config = switch (mode) {
@@ -100,7 +162,10 @@ class GameController extends ChangeNotifier {
     intros
       ..clear()
       ..addAll(_introsFor(config));
+    _warned = false;
+    capiReaction = null;
     if (tutorial) _loadTutorialStep(0);
+    noteActivity();
   }
 
   void _loadTutorialStep(int index, {String? say}) {
@@ -135,6 +200,21 @@ class GameController extends ChangeNotifier {
     session.tray = [null, Piece(shape), null];
     session.refreshStatus();
     onRestarted?.call();
+  }
+
+  /// Capi cheers big moves and gets worried once when the board fills up.
+  void _reactTo(PlaceResult result) {
+    final lines = result.outcome.lines;
+    if (lines >= 2 || (lines > 0 && result.combo >= 3)) {
+      _react(
+        CapiReaction.cheer,
+        _pick(const ['Uhul!', 'Mandou bem!', 'Que construção!', 'Isso aí!']),
+      );
+    } else if (!_warned &&
+        session.board.filledCount >= Board.size * Board.size * 0.6) {
+      _warned = true;
+      _react(CapiReaction.worried, 'Eita, tá enchendo! Limpa uma linha.');
+    }
   }
 
   void _afterTutorialMove(PlaceResult result) {
@@ -200,7 +280,10 @@ class GameController extends ChangeNotifier {
       _afterTutorialMove(result);
     } else if (session.status != SessionStatus.playing) {
       _finish();
+    } else {
+      _reactTo(result);
     }
+    noteActivity();
     notifyListeners();
   }
 
@@ -253,6 +336,7 @@ class GameController extends ChangeNotifier {
     }
     feedback.revive();
     showOutcome = false;
+    noteActivity();
     onRevived?.call(cleared);
     if (session.status != SessionStatus.playing) _finish();
     notifyListeners();
@@ -308,6 +392,8 @@ class GameController extends ChangeNotifier {
   void dispose() {
     _outcomeTimer?.cancel();
     _tutorialTimer?.cancel();
+    _capiTimer?.cancel();
+    _idleTimer?.cancel();
     super.dispose();
   }
 }

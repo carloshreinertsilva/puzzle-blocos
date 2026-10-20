@@ -51,7 +51,7 @@ void main() {
     addTearDown(c.dispose);
 
     // Step 1: any placement counts.
-    expect(c.tutorialHint, (1, 3, 3));
+    expect(c.hint, (1, 3, 3));
     c.place(1, 0, 0);
     expect(c.playing, isFalse);
     await tester.pump(const Duration(seconds: 2));
@@ -62,17 +62,42 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     expect(c.tutorialStep, 1);
     expect(c.capiLine, Tutorial.retry);
-    final (_, r, col) = c.tutorialHint!;
+    final (_, r, col) = c.hint!;
     c.place(1, r, col);
     await tester.pump(const Duration(seconds: 2));
     expect(c.tutorialStep, 2);
 
     // Step 3: two lines at once, then the tutorial is over.
-    final (_, r2, col2) = c.tutorialHint!;
+    final (_, r2, col2) = c.hint!;
     c.place(1, r2, col2);
     await tester.pump(const Duration(seconds: 2));
     expect(c.tutorialFinished, isTrue);
     expect(c.capiLine, Tutorial.done);
     expect(store.hasSeen('tutorial'), isTrue);
+  });
+
+  testWidgets('Capi suggests a move after a while without playing', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final store = await ProgressStore.load();
+    final c = GameController(
+      store: store,
+      feedback: GameFeedback(store),
+      mode: GameMode.endless,
+    );
+
+    expect(c.hint, isNull);
+    await tester.pump(GameController.idleHintAfter);
+    final hint = c.hint;
+    expect(hint, isNotNull);
+    expect(c.capiReaction, CapiReaction.hint);
+    final (slot, row, col) = hint!;
+    expect(c.session.canPlace(slot, row, col), isTrue);
+
+    // Touching a piece takes the hint away.
+    c.noteActivity();
+    expect(c.hint, isNull);
+    c.dispose(); // stops the idle clock before the test ends
   });
 }

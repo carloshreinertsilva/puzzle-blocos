@@ -66,11 +66,8 @@ class PuzzleGame extends FlameGame {
     for (final t in trays) {
       t.playAppear();
     }
-    if (controller.tutorial) {
-      stage.add(HintHand()..priority = 15);
-    } else if (controller.intros.isEmpty) {
-      _announce();
-    }
+    stage.add(HintHand()..priority = 15);
+    if (!controller.tutorial && controller.intros.isEmpty) _announce();
   }
 
   /// Shows the start banner on the next frame, once the layout is known.

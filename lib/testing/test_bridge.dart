@@ -73,7 +73,7 @@ class TestBridge {
       'praises': praises,
       if (c.tutorial) 'tutorialStep': c.tutorialStep,
       if (c.tutorial) 'capi': c.capiLine,
-      if (c.tutorialHint case final h?) 'hint': [h.$1, h.$2, h.$3],
+      if (c.hint case final h?) 'hint': [h.$1, h.$2, h.$3],
       if (g != null && g.cellSize > 1) 'geometry': g.testGeometry(),
     };
   }

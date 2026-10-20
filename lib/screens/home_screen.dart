@@ -37,6 +37,20 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  static const _tips = [
+    'Dica: guarde espaço para as peças grandes, como o quadradão 3x3.',
+    'Limpar duas linhas de uma vez vale muito mais pontos!',
+    'Limpando linhas em seguida você faz combo e multiplica os pontos.',
+    'Gemas só contam quando a linha ou a coluna delas some.',
+    'Ficou parado? Eu dou uma dica de onde encaixar a peça.',
+  ];
+  int _tipIndex = 0;
+
+  void _tip() {
+    widget.services.feedback.click();
+    setState(() => _hint = _tips[_tipIndex++ % _tips.length]);
+  }
+
   void _locked(String mode, int level) {
     widget.services.feedback.click();
     setState(
@@ -112,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    const Logo(),
+                    Logo(onCapiTap: _tip),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10),

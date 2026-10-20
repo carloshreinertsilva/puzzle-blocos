@@ -18,7 +18,7 @@ class HintHand extends Component with HasGameReference<PuzzleGame> {
 
   @override
   void render(Canvas canvas) {
-    final hint = game.controller.tutorialHint;
+    final hint = game.controller.hint;
     final sprites = game.sprites;
     final piece = hint == null ? null : game.controller.session.tray[hint.$1];
     if (hint == null || piece == null || sprites == null) return;
@@ -29,7 +29,7 @@ class HintHand extends Component with HasGameReference<PuzzleGame> {
     final cell = game.cellSize;
 
     // Ghost at the target.
-    final pulse = 0.25 + 0.15 * sin(_t / _loop * 2 * pi * 2);
+    final pulse = 0.35 + 0.15 * sin(_t / _loop * 2 * pi * 2);
     for (final (r, c) in shape.cells) {
       sprites.draw(
         canvas,

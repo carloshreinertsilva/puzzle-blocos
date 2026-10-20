@@ -6,7 +6,7 @@ import 'palette.dart';
 import 'typography.dart';
 import 'widgets.dart';
 
-enum CapiMood { happy, cheer }
+enum CapiMood { happy, cheer, worried, sad, point }
 
 /// Capi, the builder capybara: the game's mascot. Drawn in code (a first
 /// version until the final art), with a gentle idle bob.
@@ -62,6 +62,8 @@ class CapiPainter extends CustomPainter {
     canvas.scale(size.width / 100);
     final bob = sin(t * 2 * pi) * 1.6;
     final cheer = mood == CapiMood.cheer;
+    final worried = mood == CapiMood.worried;
+    final sad = mood == CapiMood.sad;
 
     // Shadow.
     canvas.drawOval(
@@ -89,6 +91,10 @@ class CapiPainter extends CustomPainter {
     if (cheer) {
       canvas.drawLine(const Offset(26, 66), Offset(14, 50 + bob), arm);
       canvas.drawLine(const Offset(74, 66), Offset(86, 50 + bob), arm);
+    } else if (mood == CapiMood.point) {
+      canvas.drawLine(const Offset(27, 70), const Offset(22, 84), arm);
+      canvas.drawLine(const Offset(74, 66), Offset(92, 52 + bob), arm);
+      canvas.drawCircle(Offset(94, 50 + bob), 4, Paint()..color = _furDark);
     } else {
       canvas.drawLine(const Offset(27, 70), const Offset(22, 84), arm);
       canvas.drawLine(const Offset(73, 70), const Offset(78, 84), arm);
@@ -126,12 +132,23 @@ class CapiPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round;
-    canvas.drawPath(
-      Path()
-        ..moveTo(43, cheer ? 57 : 58)
-        ..quadraticBezierTo(50, cheer ? 66 : 63, 57, cheer ? 57 : 58),
-      line,
-    );
+    if (worried) {
+      canvas.drawOval(const Rect.fromLTWH(46.5, 56, 7, 6), ink);
+    } else if (sad) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(43, 62)
+          ..quadraticBezierTo(50, 56, 57, 62),
+        line,
+      );
+    } else {
+      canvas.drawPath(
+        Path()
+          ..moveTo(43, cheer ? 57 : 58)
+          ..quadraticBezierTo(50, cheer ? 66 : 63, 57, cheer ? 57 : 58),
+        line,
+      );
+    }
 
     // Eyes: dots with a shine, or happy arcs when cheering.
     if (cheer) {
@@ -143,7 +160,23 @@ class CapiPainter extends CustomPainter {
           line..strokeWidth = 2.6,
         );
       }
+    } else if (sad) {
+      for (final x in [33.0, 60.0]) {
+        canvas.drawLine(Offset(x, 39), Offset(x + 7, 37), line);
+      }
     } else {
+      if (worried) {
+        // Raised, slanted brows and a drop of sweat.
+        canvas.drawLine(const Offset(32, 33.5), const Offset(40, 31.5), line);
+        canvas.drawLine(const Offset(60, 31.5), const Offset(68, 33.5), line);
+        canvas.drawPath(
+          Path()
+            ..moveTo(85, 34)
+            ..quadraticBezierTo(81, 42, 85, 44)
+            ..quadraticBezierTo(89, 42, 85, 34),
+          Paint()..color = const Color(0xFF7FD3FF),
+        );
+      }
       final blink = t > 0.94;
       for (final x in [36.5, 63.5]) {
         if (blink) {
