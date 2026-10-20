@@ -9,7 +9,7 @@ Code neste repositório. Cada pasta mantém a licença original.
 | `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | MIT | Procurar e avaliar outras skills no ecossistema (`npx skills find`) |
 | `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills) | Apache 2.0 | Direção visual distinta (tipografia, cores, layout) para telas e páginas |
 | `ui-ux-pro-max` | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | MIT | Base local de estilos, paletas, fontes e regras de UX, com regras para Flutter. Caminho do script ajustado para `$CLAUDE_PROJECT_DIR` |
-| `graphify-knowledge-graph` | [reason-machines/trending-skills](https://github.com/reason-machines/trending-skills) (commit `c61b1a4`) | sem arquivo de licença no repositório | Resumo não oficial (de terceiros) do [graphify](https://github.com/Graphify-Labs/graphify) (Graphify Labs, Apache 2.0; o endereço antigo `safishamsi/graphify` aponta para o mesmo repositório): transforma código e documentos num grafo consultável (`/graphify`). O arquivo original vinha dentro de um bloco de código e o `npx skills add` o ignorava; foi instalado sem esse invólucro. Precisa do programa `graphify` (`pip install graphifyy`), que **não** está instalado. A lista de linguagens deste resumo está desatualizada: a versão atual do graphify (0.9.92) **lê Dart**. Ao instalar o programa, `graphify install` traz a skill oficial, mais completa |
+| `graphify` | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) 0.9.92 (oficial; instalada com `graphify install --project`) | Apache 2.0 | Transforma código (inclusive Dart) e documentos num grafo consultável: `/graphify .` cria `graphify-out/`, depois `graphify query`, `path` e `explain`. Precisa do programa: `pip install graphifyy==0.9.92`. Registrada em `.claude/CLAUDE.md` |
 
 Proteção de git: `.claude/hooks/block-dangerous-git.sh` (ligada em
 `.claude/settings.json`), adaptada de `git-guardrails-claude-code`
@@ -37,3 +37,9 @@ O Claude Code oferece instalar o plugin ao abrir o projeto (é preciso confiar
 na pasta). Para instalar à mão: `/plugin marketplace add
 obra/superpowers-marketplace` e `/plugin install
 superpowers@superpowers-marketplace`.
+
+Sobre o graphify: o instalador também liga ganchos que chamam o programa a
+cada busca e leitura de arquivo, e escreve regras no `CLAUDE.md` da raiz.
+Isso **não** foi mantido: os ganchos falhariam em qualquer computador sem o
+programa e deixariam cada ação mais lenta. Para ligar depois, com o programa
+instalado: `graphify claude install`.
