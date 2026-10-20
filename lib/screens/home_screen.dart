@@ -67,11 +67,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         const Spacer(),
                         RoundIconButton(
                           icon: Icons.bar_chart_rounded,
+                          label: 'Estatísticas',
                           onTap: () => showStats(context, widget.services),
                         ),
                         const SizedBox(width: 8),
                         RoundIconButton(
                           icon: Icons.settings_rounded,
+                          label: 'Configurações',
                           onTap: () => showSettings(context, widget.services),
                         ),
                       ],

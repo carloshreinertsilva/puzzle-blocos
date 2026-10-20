@@ -9,6 +9,8 @@ import '../core/game_session.dart';
 import '../ui/block_painter.dart';
 import '../ui/level_text.dart';
 import '../ui/palette.dart';
+import '../core/shapes.dart';
+import '../testing/test_bridge.dart';
 import 'board_view.dart';
 import 'effects.dart';
 import 'game_controller.dart';
@@ -59,6 +61,7 @@ class PuzzleGame extends FlameGame {
     controller.onRevived = _onRevived;
     controller.onRestarted = _onRestarted;
     controller.onReady = _announce;
+    if (kTestBridge) TestBridge.instance.game = this;
     for (final t in trays) {
       t.playAppear();
     }
@@ -91,6 +94,9 @@ class PuzzleGame extends FlameGame {
 
   @override
   void onRemove() {
+    if (kTestBridge && TestBridge.instance.game == this) {
+      TestBridge.instance.game = null;
+    }
     controller.onPlaced = null;
     controller.onRevived = null;
     controller.onRestarted = null;
@@ -127,6 +133,39 @@ class PuzzleGame extends FlameGame {
     sparks?.removeFromParent();
     sparks = Sparks(cellSize);
     stage.add(sparks!..priority = 20);
+  }
+
+  /// How far above the finger a dragged piece floats.
+  double liftFor(int rows) => rows * cellSize / 2 + cellSize * 1.1;
+
+  /// Where things are on screen, for browser tests.
+  Map<String, Object?> testGeometry() => {
+    'board': {
+      'left': boardRect.left,
+      'top': boardRect.top,
+      'size': boardRect.width,
+      'cell': cellSize,
+    },
+    'slots': [
+      for (final t in trays)
+        {'x': t.position.x, 'y': t.position.y, 'w': t.size.x, 'h': t.size.y},
+    ],
+    'viewport': {'w': size.x, 'h': size.y, 'top': topInset},
+  };
+
+  /// Pointer path that drops [shape] from tray [slot] at (row, col): press
+  /// on the slot, release where the floating piece lines up with the cell.
+  Map<String, Object?> dragPath(int slot, Shape shape, int row, int col) {
+    final t = trays[slot];
+    final cx = boardRect.left + (col + shape.cols / 2) * cellSize;
+    final cy = boardRect.top + (row + shape.rows / 2) * cellSize;
+    return {
+      'from': {
+        'x': t.position.x + t.size.x / 2,
+        'y': t.position.y + t.size.y / 2,
+      },
+      'to': {'x': cx, 'y': cy + liftFor(shape.rows)},
+    };
   }
 
   Rect cellRect(int r, int c) => Rect.fromLTWH(
@@ -239,6 +278,7 @@ class PuzzleGame extends FlameGame {
     _shake = 0.3 + 0.05 * praise.tier;
     _shakePower = cellSize * 0.05 * praise.tier;
     controller.feedback.praise(praise.tier);
+    if (kTestBridge) TestBridge.instance.praises.add(praise.text);
   }
 
   void _onRevived(List<ClearedCell> cleared) {

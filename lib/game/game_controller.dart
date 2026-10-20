@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../core/board.dart';
 import '../core/game_session.dart';
 import '../core/level.dart';
+import '../core/shapes.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
 
@@ -177,6 +178,30 @@ class GameController extends ChangeNotifier {
     _start();
     onRestarted?.call();
     if (intros.isEmpty) onReady?.call();
+    notifyListeners();
+  }
+
+  /// Test scenarios only: replaces the board and/or the tray, then checks
+  /// for a win or loss as if a move had just been made.
+  void debugLoad({List<String>? board, List<Shape?>? tray}) {
+    if (board != null) {
+      for (var r = 0; r < Board.size; r++) {
+        for (var c = 0; c < Board.size; c++) {
+          session.board.set(r, c, switch (board[r][c]) {
+            'b' => const Cell.block(0),
+            'g' => const Cell.block(0, gem: true),
+            'r' => const Cell.rock(1),
+            'R' => const Cell.rock(2),
+            _ => const Cell.empty(),
+          });
+        }
+      }
+    }
+    if (tray != null) {
+      session.tray = [for (final s in tray) s == null ? null : Piece(s)];
+    }
+    session.refreshStatus();
+    if (session.status != SessionStatus.playing) _finish();
     notifyListeners();
   }
 

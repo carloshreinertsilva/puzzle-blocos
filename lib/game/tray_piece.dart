@@ -53,11 +53,7 @@ class TrayPiece extends PositionComponent
     return lerpDouble(game.trayCellSize, full * 0.94, _grow)!;
   }
 
-  Vector2 get _lift {
-    final p = piece;
-    final rows = p?.shape.rows ?? 1;
-    return Vector2(0, -(rows * game.cellSize / 2 + game.cellSize * 1.1));
-  }
+  Vector2 get _lift => Vector2(0, -game.liftFor(piece?.shape.rows ?? 1));
 
   @override
   void update(double dt) {

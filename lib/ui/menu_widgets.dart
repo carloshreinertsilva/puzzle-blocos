@@ -221,6 +221,8 @@ class _LevelPathState extends State<LevelPath>
       height: size,
       child: GestureDetector(
         onTap: current ? widget.onPlay : null,
+        // Only the current level is a button; the rest are labels.
+        behavior: HitTestBehavior.opaque,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -375,6 +377,17 @@ class MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: title,
+      hint: subtitle,
+      excludeSemantics: true,
+      onTap: onTap,
+      child: _card(),
+    );
+  }
+
+  Widget _card() {
     return GestureDetector(
       onTap: onTap,
       child: Container(

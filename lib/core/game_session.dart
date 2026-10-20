@@ -164,6 +164,10 @@ class GameSession {
     );
   }
 
+  /// Re-evaluates win/loss after the board or tray was changed from outside
+  /// (test scenarios).
+  void refreshStatus() => _updateStatus();
+
   void _updateStatus() {
     if (goalsMet) {
       status = SessionStatus.won;

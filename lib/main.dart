@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'ads/ad_service.dart';
 import 'screens/home_screen.dart';
 import 'services/feedback.dart';
+import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
 import 'ui/palette.dart';
 import 'ui/typography.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kTestBridge) {
+    // Browser tests find buttons through the accessibility tree.
+    SemanticsBinding.instance.ensureSemantics();
+    TestBridge.instance.install();
+  }
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final store = await ProgressStore.load();
   final feedback = GameFeedback(store);

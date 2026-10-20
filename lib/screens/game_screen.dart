@@ -6,6 +6,7 @@ import '../core/game_session.dart';
 import '../game/game_controller.dart';
 import '../game/puzzle_game.dart';
 import '../main.dart';
+import '../testing/test_bridge.dart';
 import '../ui/level_text.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
@@ -44,7 +45,23 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    if (kTestBridge) {
+      TestBridge.instance
+        ..screen = 'game'
+        ..controller = controller
+        ..praises.clear();
+    }
+  }
+
+  @override
   void dispose() {
+    if (kTestBridge && TestBridge.instance.controller == controller) {
+      TestBridge.instance
+        ..screen = 'home'
+        ..controller = null;
+    }
     controller.dispose();
     super.dispose();
   }
@@ -203,7 +220,11 @@ class _Hud extends StatelessWidget {
         children: [
           Row(
             children: [
-              RoundIconButton(icon: Icons.pause_rounded, onTap: onPause),
+              RoundIconButton(
+                icon: Icons.pause_rounded,
+                label: 'Pausar',
+                onTap: onPause,
+              ),
               Expanded(
                 child: Column(
                   children: [

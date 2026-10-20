@@ -35,6 +35,16 @@ class _ChunkyButtonState extends State<ChunkyButton> {
     final h = widget.big ? 64.0 : 52.0;
     final edge = widget.big ? 6.0 : 5.0;
     final pressed = _down ? edge - 1 : 0.0;
+    return Semantics(
+      button: true,
+      label: widget.label,
+      excludeSemantics: true,
+      onTap: widget.onTap,
+      child: _body(h, edge, pressed),
+    );
+  }
+
+  Widget _body(double h, double edge, double pressed) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _down = true),
       onTapCancel: () => setState(() => _down = false),
@@ -101,21 +111,35 @@ class _ChunkyButtonState extends State<ChunkyButton> {
 
 /// Small square icon button for the HUD (pause, settings).
 class RoundIconButton extends StatelessWidget {
-  const RoundIconButton({super.key, required this.icon, required this.onTap});
+  const RoundIconButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
   final IconData icon;
+
+  /// Read by screen readers (and by the browser tests).
+  final String label;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: Palette.panel.withValues(alpha: 0.8),
-    borderRadius: BorderRadius.circular(14),
-    child: InkWell(
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: label,
+    excludeSemantics: true,
+    onTap: onTap,
+    child: Material(
+      color: Palette.panel.withValues(alpha: 0.8),
       borderRadius: BorderRadius.circular(14),
-      onTap: onTap,
-      child: SizedBox(
-        width: 44,
-        height: 44,
-        child: Icon(icon, color: Palette.text, size: 24),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Icon(icon, color: Palette.text, size: 24),
+        ),
       ),
     ),
   );
