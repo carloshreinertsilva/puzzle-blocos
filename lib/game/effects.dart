@@ -240,8 +240,9 @@ class PopText extends PositionComponent {
     canvas.translate(0, -rise * easeOutCubic(t));
     canvas.scale(pop);
     final offset = Offset(-_fill.width / 2, -_fill.height / 2);
+    // A layer just around the text (an unbounded one covers the screen).
     canvas.saveLayer(
-      null,
+      (offset & _fill.size).inflate(fontSize * 0.3),
       Paint()..color = Colors.white.withValues(alpha: alpha.clamp(0.0, 1.0)),
     );
     _stroke.paint(canvas, offset);
@@ -407,7 +408,11 @@ class PraiseBanner extends PositionComponent {
     );
     if (alpha < 1) {
       canvas.saveLayer(
-        null,
+        Rect.fromCenter(
+          center: Offset(0, fontSize * 0.3),
+          width: _width + fontSize * 2,
+          height: fontSize * 3.2,
+        ),
         Paint()..color = Colors.white.withValues(alpha: alpha),
       );
     }

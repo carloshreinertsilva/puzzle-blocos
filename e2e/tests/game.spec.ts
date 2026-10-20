@@ -5,6 +5,8 @@ import { loadScenario, openApp, playMove, snap, startLevel, state, waitForState 
 const CHECKER = Array.from({ length: 8 }, (_, r) => (r % 2 ? '.b.b.b.b' : 'b.b.b.b.'));
 
 test('fase 1: joga peças de verdade, limpa linhas, vê elogios, vence e vai para a fase 2', async ({ page }, testInfo) => {
+  // A whole level is 20-60 real drags; without a GPU (CI) each takes ~3 s.
+  test.setTimeout(480_000);
   await openApp(page);
   let s = await startLevel(page);
   expect(s.level).toBe(1);
@@ -124,6 +126,6 @@ test('estatísticas e configurações abrem a partir do menu', async ({ page }) 
   await expect(page.getByText('Estatísticas'), 'título lido uma vez só').toHaveCount(1);
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Configurações' }).click();
-  await expect(page.getByText('Sons')).toBeVisible();
-  await expect(page.getByText('Vibração')).toBeVisible();
+  await expect(page.getByRole('switch', { name: 'Sons' })).toBeVisible();
+  await expect(page.getByRole('switch', { name: 'Vibração' })).toBeVisible();
 });

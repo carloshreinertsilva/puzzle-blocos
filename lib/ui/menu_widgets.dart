@@ -65,6 +65,12 @@ class _FloatingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final t = clock.value;
+    // One translucent layer for all blocks: a layer per block (full-screen
+    // each) made the menu crawl on slower devices.
+    canvas.saveLayer(
+      Offset.zero & size,
+      Paint()..color = Colors.white.withValues(alpha: 0.13),
+    );
     for (final b in blocks) {
       // Rise slowly and wrap around.
       final y = ((b.y - t * b.speed * 2) % 1.0) * (size.height + 80) - 40;
@@ -72,18 +78,14 @@ class _FloatingPainter extends CustomPainter {
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(t * 2 * pi * b.spin);
-      canvas.saveLayer(
-        null,
-        Paint()..color = Colors.white.withValues(alpha: 0.13),
-      );
       BlockPainter.block(
         canvas,
         Rect.fromCenter(center: Offset.zero, width: b.size, height: b.size),
         b.color,
       );
       canvas.restore();
-      canvas.restore();
     }
+    canvas.restore();
   }
 
   @override

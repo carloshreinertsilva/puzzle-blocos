@@ -48,7 +48,9 @@ export async function waitForState(
   message: string,
   timeout = 15_000,
 ) {
-  await expect.poll(async () => check(await state(page)), { message, timeout }).toBe(true);
+  await expect
+    .poll(async () => check(await state(page)), { message, timeout, intervals: [50, 100, 200, 400] })
+    .toBe(true);
   return state(page);
 }
 
@@ -72,7 +74,7 @@ export async function dragPiece(page: Page, slot: number, row: number, col: numb
   expect(path, `peça ${slot} existe`).not.toBeNull();
   await page.mouse.move(path.from.x, path.from.y);
   await page.mouse.down();
-  await page.mouse.move(path.to.x, path.to.y, { steps: 12 });
+  await page.mouse.move(path.to.x, path.to.y, { steps: 8 });
   await page.waitForTimeout(80);
   await page.mouse.up();
 }
