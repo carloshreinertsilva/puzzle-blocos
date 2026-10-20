@@ -8,8 +8,9 @@ import '../core/level.dart';
 import '../core/shapes.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
+import 'tutorial.dart';
 
-enum GameMode { levels, endless, daily }
+enum GameMode { levels, endless, daily, tutorial }
 
 /// Mechanics explained with a short card the first time they show up.
 enum Intro { rocks, toughRocks, gems, doubleGoal }
@@ -52,14 +53,36 @@ class GameController extends ChangeNotifier {
   Timer? _outcomeTimer;
   bool _counted = false;
 
+  /// Tutorial only: the current step (== steps.length once finished), what
+  /// Capi says, and whether a step change is on its way.
+  int tutorialStep = 0;
+  String capiLine = '';
+  bool capiCheer = false;
+  bool _tutorialWaiting = false;
+  Timer? _tutorialTimer;
+
   bool get endless => mode == GameMode.endless;
+  bool get tutorial => mode == GameMode.tutorial;
+  bool get tutorialFinished =>
+      tutorial && tutorialStep >= Tutorial.steps.length;
   LevelConfig get level => session.level;
   bool get playing =>
-      session.status == SessionStatus.playing && !paused && intros.isEmpty;
+      session.status == SessionStatus.playing &&
+      !paused &&
+      intros.isEmpty &&
+      !_tutorialWaiting &&
+      !tutorialFinished;
+
+  /// Where the hint hand points: (tray slot, row, col), or null.
+  (int, int, int)? get tutorialHint {
+    if (!tutorial || !playing) return null;
+    final step = Tutorial.steps[tutorialStep];
+    return (1, step.target.$1, step.target.$2);
+  }
 
   void _start() {
     final config = switch (mode) {
-      GameMode.endless => LevelConfig.endless(),
+      GameMode.endless || GameMode.tutorial => LevelConfig.endless(),
       GameMode.daily => LevelGenerator.daily(today),
       GameMode.levels => LevelGenerator.build(store.level),
     };
@@ -77,6 +100,56 @@ class GameController extends ChangeNotifier {
     intros
       ..clear()
       ..addAll(_introsFor(config));
+    if (tutorial) _loadTutorialStep(0);
+  }
+
+  void _loadTutorialStep(int index, {String? say}) {
+    tutorialStep = index;
+    _tutorialWaiting = false;
+    capiCheer = tutorialFinished;
+    if (tutorialFinished) {
+      capiLine = Tutorial.done;
+      store.markSeen('tutorial');
+      return;
+    }
+    final step = Tutorial.steps[index];
+    capiLine = say ?? step.say;
+    for (var r = 0; r < Board.size; r++) {
+      for (var c = 0; c < Board.size; c++) {
+        final ch = step.board[r][c];
+        session.board.set(
+          r,
+          c,
+          ch == '.' ? const Cell.empty() : Cell.block(int.parse(ch)),
+        );
+      }
+    }
+    final shape = allShapes.firstWhere((s) => s.id == step.piece);
+    session.tray = [null, Piece(shape), null];
+    session.refreshStatus();
+    onRestarted?.call();
+  }
+
+  void _afterTutorialMove(PlaceResult result) {
+    final step = Tutorial.steps[tutorialStep];
+    final ok = result.outcome.lines >= step.needLines;
+    _tutorialWaiting = true;
+    capiCheer = ok;
+    _tutorialTimer?.cancel();
+    _tutorialTimer = Timer(Duration(milliseconds: ok ? 1100 : 700), () {
+      ok
+          ? _loadTutorialStep(tutorialStep + 1)
+          : _loadTutorialStep(tutorialStep, say: Tutorial.retry);
+      notifyListeners();
+    });
+  }
+
+  /// Ends the tutorial right away (the "Pular" button).
+  void skipTutorial() {
+    if (!tutorial) return;
+    _tutorialTimer?.cancel();
+    _loadTutorialStep(Tutorial.steps.length);
+    notifyListeners();
   }
 
   List<Intro> _introsFor(LevelConfig c) => [
@@ -99,6 +172,8 @@ class GameController extends ChangeNotifier {
     if (!playing || !session.canPlace(slot, r, c)) return;
     final piece = session.tray[slot]!;
     final result = session.place(slot, r, c);
+    // The tutorial deals its own pieces, step by step.
+    if (tutorial) session.tray = [null, null, null];
 
     final out = result.outcome;
     if (out.lines > 0) {
@@ -114,7 +189,11 @@ class GameController extends ChangeNotifier {
     );
     onPlaced?.call(result, piece);
 
-    if (session.status != SessionStatus.playing) _finish();
+    if (tutorial) {
+      _afterTutorialMove(result);
+    } else if (session.status != SessionStatus.playing) {
+      _finish();
+    }
     notifyListeners();
   }
 
@@ -135,7 +214,7 @@ class GameController extends ChangeNotifier {
         );
       case GameMode.daily when won:
         store.completeDaily(today);
-      case GameMode.daily:
+      case GameMode.daily || GameMode.tutorial:
         break;
       case GameMode.endless:
         if (session.score > store.bestScore) {
@@ -181,6 +260,14 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Test scenarios only: wins the attempt as if the goals were met.
+  void debugWin() {
+    if (tutorial || session.status != SessionStatus.playing) return;
+    session.status = SessionStatus.won;
+    _finish();
+    notifyListeners();
+  }
+
   /// Test scenarios only: replaces the board and/or the tray, then checks
   /// for a win or loss as if a move had just been made.
   void debugLoad({List<String>? board, List<Shape?>? tray}) {
@@ -213,6 +300,7 @@ class GameController extends ChangeNotifier {
   @override
   void dispose() {
     _outcomeTimer?.cancel();
+    _tutorialTimer?.cancel();
     super.dispose();
   }
 }

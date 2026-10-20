@@ -104,7 +104,7 @@ test('pausa: continuar, reiniciar e voltar ao menu', async ({ page }) => {
 });
 
 test('desafio diário abre com duas metas', async ({ page }) => {
-  await openApp(page);
+  await openApp(page, { level: 7 });
   await page.getByRole('button', { name: 'Desafio diário' }).click();
   const s = await waitForState(page, (x) => x.screen === 'game' && x.kind === 'daily', 'desafio aberto');
   const g = s.goals!;
@@ -113,7 +113,7 @@ test('desafio diário abre com duas metas', async ({ page }) => {
 });
 
 test('modo infinito: pontua e não tem metas', async ({ page }) => {
-  await openApp(page);
+  await openApp(page, { level: 5 });
   await page.getByRole('button', { name: 'Infinito' }).click();
   let s = await waitForState(page, (x) => x.screen === 'game' && x.kind === 'endless' && x.status === 'playing', 'infinito aberto');
   expect(s.goals!.targetScore).toBe(0);

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../game/game_controller.dart';
+import '../game/onboarding.dart';
 import '../main.dart';
+import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
 import '../ui/widgets.dart';
@@ -18,8 +20,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  /// What Capi says over the menu (news first, then any hint), if anything.
+  late List<MenuNews> _news = Onboarding.pendingNews(widget.services.store);
+  String? _hint;
+
+  String? get _capiLine => _news.isNotEmpty ? _news.first.text : _hint;
+
+  void _dismissCapi() {
+    widget.services.feedback.click();
+    setState(() {
+      if (_news.isNotEmpty) {
+        widget.services.store.markSeen(_news.removeAt(0).key);
+      } else {
+        _hint = null;
+      }
+    });
+  }
+
+  void _locked(String mode, int level) {
+    widget.services.feedback.click();
+    setState(
+      () => _hint = 'Chegue na fase $level que eu libero o $mode pra você!',
+    );
+  }
+
   Future<void> _open(GameMode mode) async {
     widget.services.feedback.click();
+    if (mode == GameMode.endless) {
+      widget.services.store.markSeen('opened_endless');
+    }
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 280),
@@ -29,7 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
             FadeTransition(opacity: anim, child: child),
       ),
     );
-    setState(() {}); // level, record and streak may have changed
+    // Level, record and streak may have changed, and modes may unlock.
+    setState(() => _news = Onboarding.pendingNews(widget.services.store));
   }
 
   @override
@@ -38,6 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final today = DateTime.now();
     final dailyDone = store.dailyDone(today);
     final streak = store.dailyStreak(today);
+    final dailyOpen = Onboarding.dailyUnlocked(store);
+    final endlessOpen = Onboarding.endlessUnlocked(store);
+    final capiLine = _capiLine;
 
     return Scaffold(
       body: DecoratedBox(
@@ -99,32 +132,57 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: MenuCard(
-                            icon: dailyDone
-                                ? Icons.check_circle_rounded
-                                : Icons.calendar_today_rounded,
-                            color: Palette.blocks[0],
-                            title: 'Desafio diário',
-                            subtitle: dailyDone
-                                ? 'Feito! Volte amanhã'
-                                : streak > 0
-                                ? 'Sequência: $streak dias'
-                                : 'Um novo a cada dia',
-                            badge: dailyDone ? null : 'NOVO',
-                            onTap: () => _open(GameMode.daily),
-                          ),
+                          child: dailyOpen
+                              ? MenuCard(
+                                  icon: dailyDone
+                                      ? Icons.check_circle_rounded
+                                      : Icons.calendar_today_rounded,
+                                  color: Palette.blocks[0],
+                                  title: 'Desafio diário',
+                                  subtitle: dailyDone
+                                      ? 'Feito! Volte amanhã'
+                                      : streak > 0
+                                      ? 'Sequência: $streak dias'
+                                      : 'Um novo a cada dia',
+                                  badge: dailyDone ? null : 'NOVO',
+                                  onTap: () => _open(GameMode.daily),
+                                )
+                              : MenuCard(
+                                  icon: Icons.lock_rounded,
+                                  color: Palette.panelEdge,
+                                  title: 'Desafio diário',
+                                  subtitle:
+                                      'Libera na fase ${Onboarding.dailyAt}',
+                                  onTap: () => _locked(
+                                    'Desafio diário',
+                                    Onboarding.dailyAt,
+                                  ),
+                                ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: MenuCard(
-                            icon: Icons.all_inclusive_rounded,
-                            color: Palette.blocks[5],
-                            title: 'Infinito',
-                            subtitle: store.bestScore > 0
-                                ? 'Recorde ${formatInt(store.bestScore)}'
-                                : 'Sem metas, sem fim',
-                            onTap: () => _open(GameMode.endless),
-                          ),
+                          child: endlessOpen
+                              ? MenuCard(
+                                  icon: Icons.all_inclusive_rounded,
+                                  color: Palette.blocks[5],
+                                  title: 'Infinito',
+                                  subtitle: store.bestScore > 0
+                                      ? 'Recorde ${formatInt(store.bestScore)}'
+                                      : 'Sem metas, sem fim',
+                                  badge: store.hasSeen('opened_endless')
+                                      ? null
+                                      : 'NOVO',
+                                  onTap: () => _open(GameMode.endless),
+                                )
+                              : MenuCard(
+                                  icon: Icons.lock_rounded,
+                                  color: Palette.panelEdge,
+                                  title: 'Infinito',
+                                  subtitle:
+                                      'Libera na fase ${Onboarding.endlessAt}',
+                                  onTap: () =>
+                                      _locked('Infinito', Onboarding.endlessAt),
+                                ),
                         ),
                       ],
                     ),
@@ -133,6 +191,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            if (capiLine != null)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _dismissCapi,
+                  child: const ColoredBox(color: Color(0x88080A20)),
+                ),
+              ),
+            if (capiLine != null)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 24 + MediaQuery.paddingOf(context).bottom,
+                child: CapiSays(
+                  text: capiLine,
+                  capiSize: 96,
+                  action: _news.isNotEmpty ? 'Bora!' : 'Beleza!',
+                  onAction: _dismissCapi,
+                ),
+              ),
           ],
         ),
       ),

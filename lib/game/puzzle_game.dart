@@ -14,6 +14,7 @@ import '../testing/test_bridge.dart';
 import 'board_view.dart';
 import 'effects.dart';
 import 'game_controller.dart';
+import 'hint_hand.dart';
 import 'tray_piece.dart';
 
 /// The play area: board, tray and effects. Menus and the HUD are Flutter
@@ -65,7 +66,11 @@ class PuzzleGame extends FlameGame {
     for (final t in trays) {
       t.playAppear();
     }
-    if (controller.intros.isEmpty) _announce();
+    if (controller.tutorial) {
+      stage.add(HintHand()..priority = 15);
+    } else if (controller.intros.isEmpty) {
+      _announce();
+    }
   }
 
   /// Shows the start banner on the next frame, once the layout is known.

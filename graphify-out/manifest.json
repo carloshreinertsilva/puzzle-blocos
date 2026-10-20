@@ -30,22 +30,22 @@
     "semantic_hash": ""
   },
   "e2e/playwright.config.ts": {
-    "mtime": 1792528806.5985086,
-    "seen": 1792529019.9933488,
+    "mtime": 1792534815.1084719,
+    "seen": 1792534816.6197846,
     "ast_hash": "80043c6ad32d9b515d145cafedb92806",
     "semantic_hash": ""
   },
   "e2e/tests/game.spec.ts": {
-    "mtime": 1792528921.391523,
-    "seen": 1792529019.9933562,
-    "ast_hash": "6bb18fcf4c7a556564fd4554aa1ca6c7",
+    "mtime": 1792534678.9295607,
+    "seen": 1792534816.6197894,
+    "ast_hash": "408975fc8c5a9f5797c7b1ee5c774af9",
     "semantic_hash": ""
   },
   "e2e/tests/helpers.ts": {
-    "mtime": 1792499630.5846076,
-    "seen": 1792504154.161418,
-    "ast_hash": "54a125df9072083905f83e8655236c5d",
-    "semantic_hash": "54a125df9072083905f83e8655236c5d"
+    "mtime": 1792534678.929084,
+    "seen": 1792534816.6197906,
+    "ast_hash": "98dfe5cd382ea35655794252aeca244c",
+    "semantic_hash": ""
   },
   "e2e/tests/layout.spec.ts": {
     "mtime": 1792497590.521774,
@@ -150,22 +150,22 @@
     "semantic_hash": "865c4d214845693f4452ea566683a8ff"
   },
   "lib/game/effects.dart": {
-    "mtime": 1792499091.6228886,
-    "seen": 1792504154.1614377,
-    "ast_hash": "018748616983ffe908bf2c8b5b0c4051",
-    "semantic_hash": "018748616983ffe908bf2c8b5b0c4051"
+    "mtime": 1792532150.5457406,
+    "seen": 1792534816.6198177,
+    "ast_hash": "fea65a9f825000da73a71701f8b66c33",
+    "semantic_hash": ""
   },
   "lib/game/game_controller.dart": {
-    "mtime": 1792497015.4607627,
-    "seen": 1792504154.161439,
-    "ast_hash": "c73d9b57a36aa62fb5b73df50cd3a6ed",
-    "semantic_hash": "c73d9b57a36aa62fb5b73df50cd3a6ed"
+    "mtime": 1792534571.7970998,
+    "seen": 1792534816.6198187,
+    "ast_hash": "c2352399fca3735df22c9994b353f7ba",
+    "semantic_hash": ""
   },
   "lib/game/puzzle_game.dart": {
-    "mtime": 1792497019.345063,
-    "seen": 1792504154.16144,
-    "ast_hash": "d030cd93727ba8c3fe661d8317f60b83",
-    "semantic_hash": "d030cd93727ba8c3fe661d8317f60b83"
+    "mtime": 1792534538.7098289,
+    "seen": 1792534816.6198227,
+    "ast_hash": "fb39307171a88b2c183e8d6f0324cb69",
+    "semantic_hash": ""
   },
   "lib/game/tray_piece.dart": {
     "mtime": 1792497842.141058,
@@ -174,22 +174,22 @@
     "semantic_hash": "a48185300762895c0bf180f541b66a80"
   },
   "lib/main.dart": {
-    "mtime": 1792497044.3127456,
-    "seen": 1792504154.161442,
-    "ast_hash": "c9760adac538c8a5f9a50429cb943ca2",
-    "semantic_hash": "c9760adac538c8a5f9a50429cb943ca2"
+    "mtime": 1792534605.432976,
+    "seen": 1792534816.6198268,
+    "ast_hash": "36b0bd03ac2a1a4de081246e659d2bdd",
+    "semantic_hash": ""
   },
   "lib/screens/game_screen.dart": {
-    "mtime": 1792497015.4614754,
-    "seen": 1792504154.161443,
-    "ast_hash": "1a18c0065c2fa30233d3222e9976a75d",
-    "semantic_hash": "1a18c0065c2fa30233d3222e9976a75d"
+    "mtime": 1792534564.4469957,
+    "seen": 1792534816.6198282,
+    "ast_hash": "d382faa985e9513ca107345b478a9995",
+    "semantic_hash": ""
   },
   "lib/screens/home_screen.dart": {
-    "mtime": 1792497015.4617772,
-    "seen": 1792504154.1614442,
-    "ast_hash": "ed3f0c3e3415ca5f072558d6dd1bb817",
-    "semantic_hash": "ed3f0c3e3415ca5f072558d6dd1bb817"
+    "mtime": 1792534612.8520908,
+    "seen": 1792534816.6198294,
+    "ast_hash": "0bede6430b926b2ca40fcfee56a67466",
+    "semantic_hash": ""
   },
   "lib/screens/settings_sheet.dart": {
     "mtime": 1792449415.1881068,
@@ -222,16 +222,16 @@
     "semantic_hash": "d75d777baeb5d13c346d12430395913a"
   },
   "lib/testing/bridge_web.dart": {
-    "mtime": 1792497019.573063,
-    "seen": 1792504154.16145,
-    "ast_hash": "927bb52b0925606a68d4bc01cd997824",
-    "semantic_hash": "927bb52b0925606a68d4bc01cd997824"
+    "mtime": 1792534649.1580377,
+    "seen": 1792534816.6198425,
+    "ast_hash": "7a82f92a732c28ccdb839efef689956e",
+    "semantic_hash": ""
   },
   "lib/testing/test_bridge.dart": {
-    "mtime": 1792497019.577063,
-    "seen": 1792504154.161451,
-    "ast_hash": "06ff21511e4d4bccf8942cc698a8c712",
-    "semantic_hash": "06ff21511e4d4bccf8942cc698a8c712"
+    "mtime": 1792534678.9287534,
+    "seen": 1792534816.6198435,
+    "ast_hash": "27de202ed839826b427205309a31fea4",
+    "semantic_hash": ""
   },
   "lib/ui/block_painter.dart": {
     "mtime": 1792447079.876347,
@@ -354,8 +354,8 @@
     "semantic_hash": ""
   },
   "e2e/serve.py": {
-    "mtime": 1792528806.594742,
-    "seen": 1792529019.9933527,
+    "mtime": 1792534152.3672757,
+    "seen": 1792534816.6197875,
     "ast_hash": "a182dab9198afa3094fd446eab2b8466",
     "semantic_hash": ""
   },
@@ -378,15 +378,57 @@
     "semantic_hash": ""
   },
   "web/flutter_bootstrap.js": {
-    "mtime": 1792528662.3507335,
-    "seen": 1792529019.9934814,
-    "ast_hash": "bd5114a0b51a60f6227ce5b0600b1f51",
+    "mtime": 1792532150.5616417,
+    "seen": 1792534816.6198652,
+    "ast_hash": "bb8e33a5a406c22cb7024f1e277d10f6",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
     "mtime": 1792515110.9208784,
     "seen": 1792529019.9934888,
     "ast_hash": "461793580e984deb2b88158d9f608cf1",
+    "semantic_hash": ""
+  },
+  "e2e/tests/onboarding.spec.ts": {
+    "mtime": 1792534678.933125,
+    "seen": 1792534816.6197944,
+    "ast_hash": "b6694ae613d578fd7860951d78438a1a",
+    "semantic_hash": ""
+  },
+  "lib/game/hint_hand.dart": {
+    "mtime": 1792534533.6411164,
+    "seen": 1792534816.6198204,
+    "ast_hash": "97f13bf5af73edeb6fb993a98c5fff30",
+    "semantic_hash": ""
+  },
+  "lib/game/onboarding.dart": {
+    "mtime": 1792534472.655167,
+    "seen": 1792534816.6198215,
+    "ast_hash": "49355262e8b6724a6ea04d0124d77b69",
+    "semantic_hash": ""
+  },
+  "lib/game/tutorial.dart": {
+    "mtime": 1792534605.5371206,
+    "seen": 1792534816.6198251,
+    "ast_hash": "8a6152c318ef7afc0b8ac74090561b62",
+    "semantic_hash": ""
+  },
+  "lib/screens/root.dart": {
+    "mtime": 1792534605.5771205,
+    "seen": 1792534816.6198306,
+    "ast_hash": "589bd67c5619a61bc9e920d3fc4af40b",
+    "semantic_hash": ""
+  },
+  "lib/ui/capi.dart": {
+    "mtime": 1792534522.479639,
+    "seen": 1792534816.619846,
+    "ast_hash": "d70e6aa4231c0a7be3c927fc2d654523",
+    "semantic_hash": ""
+  },
+  "test/onboarding_test.dart": {
+    "mtime": 1792534636.7742496,
+    "seen": 1792534816.6198568,
+    "ast_hash": "074d8baa70a08749a8d91bc30e8ceee0",
     "semantic_hash": ""
   }
 }

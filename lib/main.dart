@@ -3,7 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'ads/ad_service.dart';
-import 'screens/home_screen.dart';
+import 'screens/root.dart';
 import 'services/feedback.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
@@ -51,7 +51,7 @@ class App extends StatelessWidget {
         fontFamily: Fonts.body,
         useMaterial3: true,
       ),
-      home: HomeScreen(services: services),
+      home: Root(services: services),
     );
   }
 }
