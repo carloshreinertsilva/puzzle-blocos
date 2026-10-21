@@ -16,7 +16,13 @@ Tabuleiro 8x8, três peças por rodada, linhas e colunas completas somem. Modos:
 Começo do jogo (`lib/game/onboarding.dart`, `lib/game/tutorial.dart`): quem
 abre pela primeira vez cai direto no tabuleiro, e o **Capi** (capivara
 construtora, mascote; desenho provisório em `lib/ui/capi.dart`) ensina em 3
-passos com balão de fala e uma mãozinha. Depois vêm as fases 1 a 3 seguidas,
+passos com balão de fala e uma mãozinha.
+
+Arte do Capi e do ícone em `art/` (arquivos-mestre `.vectorcraft`, feitos no
+VectorCraft da ArtCraft, e as exportações PNG/SVG). O Capi do jogo é
+desenhado em código (`lib/ui/capi.dart`) seguindo essa arte. Quando o
+jogador fica 10 s parado, o Capi leva a peça sugerida até o lugar
+(`lib/game/capi_carrier.dart`). Depois vêm as fases 1 a 3 seguidas,
 sem menu; o menu aparece ao vencer a fase 3. Infinito libera na fase 5 e o
 Desafio diário na fase 7.
 

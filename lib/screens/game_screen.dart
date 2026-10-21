@@ -261,8 +261,10 @@ class _CapiPopUp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reaction = controller.capiReaction;
+    // A hint is shown on the board by Capi carrying the piece.
     final visible =
         reaction != null &&
+        reaction != CapiReaction.hint &&
         !controller.showOutcome &&
         !controller.paused &&
         controller.intros.isEmpty;

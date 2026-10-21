@@ -12,6 +12,7 @@ import '../ui/palette.dart';
 import '../core/shapes.dart';
 import '../testing/test_bridge.dart';
 import 'board_view.dart';
+import 'capi_carrier.dart';
 import 'effects.dart';
 import 'game_controller.dart';
 import 'hint_hand.dart';
@@ -67,6 +68,7 @@ class PuzzleGame extends FlameGame {
       t.playAppear();
     }
     stage.add(HintHand()..priority = 15);
+    stage.add(CapiCarrier()..priority = 16);
     if (!controller.tutorial && controller.intros.isEmpty) _announce();
   }
 

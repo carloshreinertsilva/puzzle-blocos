@@ -1,17 +1,17 @@
-# Graph Report - puzzle-blocos  (2026-10-20)
+# Graph Report - puzzle-blocos  (2026-10-21)
 
 ## Corpus Check
-- 69 files · ~29,410 words
+- 70 files · ~32,934 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 30 file(s) not represented in the graph (top: .xml 7, (none) 6, .plist 4)
+- Unclassified: 32 file(s) not represented in the graph (top: .xml 7, (none) 6, .plist 4)
 
 ## Summary
-- 1023 nodes · 1287 edges · 57 communities (44 shown, 13 thin omitted)
+- 1044 nodes · 1319 edges · 58 communities (46 shown, 12 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4dc57bc6`
+- Built from commit: `d1237206`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -39,7 +39,7 @@
 - Prévia de encaixe no tabuleiro
 - HUD e cartões da partida
 - Formas das peças
-- Sons e vibração
+- capi_carrier.dart
 - State
 - Gerador de peças
 - Pacote dos testes e2e
@@ -66,8 +66,9 @@
 - hint_hand.dart
 - dart:math
 - board.dart
-- GameController
-- PuzzleGame
+- static const
+- package:flutter/material.dart
+- GameScreen
 
 ## God Nodes (most connected - your core abstractions)
 1. `Bloco a Bloco (block puzzle game)` - 10 edges
@@ -100,7 +101,7 @@
 - **CI pipeline: Flutter build with test bridge feeding Playwright e2e** — _github_workflows_ci_flutter_job, _github_workflows_ci_web_test_artifact, _github_workflows_ci_e2e_job, readme_test_bridge [EXTRACTED 1.00]
 - **Difficulty design principles** — readme_solver_always_playable, readme_sawtooth_difficulty, readme_invisible_adjustment, readme_deterministic_levels, readme_level_simulator [EXTRACTED 1.00]
 
-## Communities (57 total, 13 thin omitted)
+## Communities (58 total, 12 thin omitted)
 
 ### Community 0 - "Efeitos visuais e partículas"
 Cohesion: 0.04
@@ -111,8 +112,8 @@ Cohesion: 0.04
 Nodes (36): activeDrag, _announce, _announcePending, _avgCell, backgroundColor, boardRect, boardView, _celebrate (+28 more)
 
 ### Community 2 - "package:flutter/material.dart"
-Cohesion: 0.15
-Nodes (10): AppServices, build, createState, services, showModalBottomSheet, showSettings, showModalBottomSheet, showStats (+2 more)
+Cohesion: 0.20
+Nodes (8): AppServices, build, createState, services, _Settings, _SettingsState, showModalBottomSheet, showSettings
 
 ### Community 3 - "Tela de partida e cartões"
 Cohesion: 0.04
@@ -139,8 +140,8 @@ Cohesion: 0.06
 Nodes (31): blockColorCount, build, buildBoard, _compose, _cycle, daily, difficulty, gemChance (+23 more)
 
 ### Community 9 - "Paleta de cores"
-Cohesion: 0.06
-Nodes (30): accent, accentDeep, appTitle, backgroundGradient, bgBottom, bgTop, blocks, danger (+22 more)
+Cohesion: 0.08
+Nodes (24): accent, accentDeep, appTitle, backgroundGradient, bgBottom, bgTop, blocks, danger (+16 more)
 
 ### Community 10 - "Menu: caminho de fases"
 Cohesion: 0.07
@@ -159,7 +160,7 @@ Cohesion: 0.08
 Nodes (19): _appear, _appearDelay, _center, _dragging, _finger, _grow, layout, _lift (+11 more)
 
 ### Community 14 - "Botões e widgets"
-Cohesion: 0.08
+Cohesion: 0.07
 Nodes (20): big, _body, build, child, color, colors, createState, _down (+12 more)
 
 ### Community 15 - "Arte dos blocos"
@@ -179,8 +180,8 @@ Cohesion: 0.11
 Nodes (6): Flutter, AppDelegate, SceneDelegate, RunnerTests, UIKit, XCTest
 
 ### Community 19 - "Ponte de testes"
-Cohesion: 0.10
-Nodes (14): _cell, controller, dragPath, game, install, instance, kTestBridge, load (+6 more)
+Cohesion: 0.06
+Nodes (19): GameController, PuzzleGame, installJsBridge, api, installJsBridge, _cell, controller, dragPath (+11 more)
 
 ### Community 20 - "Prévia de encaixe no tabuleiro"
 Cohesion: 0.11
@@ -188,19 +189,19 @@ Nodes (15): _clock, col, cols, _glow, inLine, piece, PlacementPreview, pop (+7 m
 
 ### Community 21 - "HUD e cartões da partida"
 Cohesion: 0.09
-Nodes (21): _AnimatedScore, _CapiPopUp, _DailyWinCard, _GoalChip, _Goals, _Hud, _IntroCard, _LoseCard (+13 more)
+Nodes (22): _AnimatedScore, _CapiPopUp, _DailyWinCard, _GoalChip, _Goals, _Hud, _IntroCard, _LoseCard (+14 more)
 
 ### Community 22 - "Formas das peças"
 Cohesion: 0.12
 Nodes (14): allShapes, color, cols, id, name, rowMasks, rows, Shape (+6 more)
 
-### Community 23 - "Sons e vibração"
-Cohesion: 0.12
-Nodes (14): clear, click, _files, lose, pick, place, _play, praise (+6 more)
+### Community 23 - "capi_carrier.dart"
+Cohesion: 0.17
+Nodes (8): _bubble, _bubbleText, _drawBubble, _drawPiece, _loop, render, _t, update
 
 ### Community 24 - "State"
-Cohesion: 0.15
-Nodes (16): _FakeAd, _FakeAdState, GameScreen, _GameScreenState, HomeScreen, _HomeScreenState, Root, _RootState (+8 more)
+Cohesion: 0.25
+Nodes (8): _FakeAd, _FakeAdState, Capi, _CapiState, FloatingBlocks, _FloatingBlocksState, ChunkyButton, _ChunkyButtonState
 
 ### Community 25 - "Gerador de peças"
 Cohesion: 0.13
@@ -219,8 +220,8 @@ Cohesion: 0.18
 Nodes (10): background_color, description, display, icons, name, orientation, prefer_related_applications, short_name (+2 more)
 
 ### Community 29 - "sound_web.dart"
-Cohesion: 0.06
-Nodes (16): loadAll, PlatformSoundPlayer, play, loadAll, play, SoundPlayer, _buffers, _context (+8 more)
+Cohesion: 0.05
+Nodes (28): clear, click, _files, GameFeedback, lose, pick, place, _play (+20 more)
 
 ### Community 30 - "Gerador de sons"
 Cohesion: 0.33
@@ -243,20 +244,20 @@ Cohesion: 0.40
 Nodes (5): LightBurst, PopText, PraiseBanner, VanishingCell, PositionComponent
 
 ### Community 35 - "TrayPiece"
-Cohesion: 0.29
-Nodes (5): BoardView, ScreenFlash, Sparks, HintHand, TrayPiece
+Cohesion: 0.28
+Nodes (6): BoardView, CapiCarrier, ScreenFlash, Sparks, HintHand, TrayPiece
 
 ### Community 37 - "capi.dart"
-Cohesion: 0.08
-Nodes (20): action, _bob, build, CapiMood, CapiSays, capiSize, createState, dispose (+12 more)
+Cohesion: 0.06
+Nodes (29): action, _arm, _block, _bob, _bodyBottom, _bodyTop, build, CapiMood (+21 more)
 
 ### Community 40 - "home_screen.dart"
 Cohesion: 0.11
-Nodes (12): build, _capiLine, createState, _dismissCapi, _hint, _locked, _news, _open (+4 more)
+Nodes (14): build, _capiLine, createState, _dismissCapi, _hint, HomeScreen, _HomeScreenState, _locked (+6 more)
 
 ### Community 41 - "main.dart"
-Cohesion: 0.12
-Nodes (10): AdCoordinator, ads, App, build, feedback, main, services, setPreferredOrientations (+2 more)
+Cohesion: 0.13
+Nodes (9): AdCoordinator, ads, App, build, feedback, main, services, setPreferredOrientations (+1 more)
 
 ### Community 48 - "Bloco a Bloco — instruções para o Claude Code"
 Cohesion: 0.50
@@ -268,7 +269,7 @@ Nodes (10): board, done, needLines, piece, retry, say, steps, target (+2 more)
 
 ### Community 51 - "root.dart"
 Cohesion: 0.20
-Nodes (4): _advance, build, createState, services
+Nodes (6): _advance, build, createState, Root, _RootState, services
 
 ### Community 52 - "hint_hand.dart"
 Cohesion: 0.22
@@ -278,25 +279,33 @@ Nodes (4): _loop, render, _t, update
 Cohesion: 0.29
 Nodes (5): boardPatterns, flipH, flipV, last, transpose
 
+### Community 55 - "static const"
+Cohesion: 0.22
+Nodes (6): body, bodyText, display, displayText, Fonts, textDrop
+
+### Community 56 - "package:flutter/material.dart"
+Cohesion: 0.25
+Nodes (4): showModalBottomSheet, showStats, store, tiles
+
 ## Knowledge Gaps
-- **633 isolated node(s):** `@types/node`, `typescript`, `XCTest`, `minInterval`, `firstLevel` (+628 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 762 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **651 isolated node(s):** `@types/node`, `typescript`, `XCTest`, `minInterval`, `firstLevel` (+646 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 778 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ProgressStore` connect `Sons e vibração` to `main.dart`, `Política de anúncios`, `Progresso salvo e estatísticas`, `Controlador do jogo`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+- **Why does `ProgressStore` connect `sound_web.dart` to `main.dart`, `Política de anúncios`, `Progresso salvo e estatísticas`, `Controlador do jogo`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
 - **What connects `@types/node`, `typescript`, `XCTest` to the rest of the system?**
-  _633 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _651 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Efeitos visuais e partículas` be split into smaller, more focused modules?**
-  _Cohesion score 0.041666666666666664 - nodes in this community are weakly interconnected._
-- **Why does `GameController` connect `GameController` to `Ponte de testes`, `Cena Flame do jogo`, `Tela de partida e cartões`, `Controlador do jogo`?**
+  _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
+- **Why does `GameController` connect `Ponte de testes` to `Cena Flame do jogo`, `Tela de partida e cartões`, `Controlador do jogo`?**
   _High betweenness centrality (0.013) - this node is a cross-community bridge._
 - **Should `Cena Flame do jogo` be split into smaller, more focused modules?**
-  _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._
-- **Why does `GameSession` connect `Sessão de jogo (regras)` to `Tela de partida e cartões`, `Controlador do jogo`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
+  _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
 - **Should `Tela de partida e cartões` be split into smaller, more focused modules?**
   _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
+- **Should `Progresso salvo e estatísticas` be split into smaller, more focused modules?**
+  _Cohesion score 0.04830917874396135 - nodes in this community are weakly interconnected._
