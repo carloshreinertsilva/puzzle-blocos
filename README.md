@@ -33,6 +33,19 @@ jogadas de novo pelo caminho do menu para pegar as que faltam. O Desafio
 diário vale 3 estrelas e o Infinito 1 a cada 2.500 pontos (até 4 por
 partida). As estrelas são a moeda da Vila do Capi.
 
+Vila do Capi (`lib/core/village.dart`, `lib/village/`,
+`lib/screens/village_screen.dart`): uma ilha flutuante em perspectiva
+isométrica, desenhada em código (sem imagens), que ganha 12 coisas sempre na
+mesma ordem (canteiro de flores, cerquinha, banco, pé de acerola, barquinho,
+horta, poste, píer, casinha, balanço, fonte e roda-gigante), pagas com
+estrelas — 73 no total, o que dá para completar por volta da fase 25. Quase
+tudo se mexe: roda-gigante girando, balanço, fumaça da chaminé, chafariz,
+barquinho, cachoeira, borboletas, nuvens. Cada item cai do céu ao ser
+construído, e tocar num item (ou no Capi) faz ele pular e o Capi comentar; dá
+para dar zoom com pinça. Abre pelo cartão "Vila do Capi" no menu ou tocando no
+contador de estrelas. `lib/village/iso.dart` tem a projeção e as formas 3D
+(caixa, cilindro, bola, prisma) com luz vindo da esquerda e sombras.
+
 Jogadas que limpam linhas ganham elogios em níveis ("Boa!" → "Incrível!" →
 "Espetacular!" → "Lendário!"), com raios de luz, clarão, confete e som. Fontes:
 Lilita One e Fredoka (licença OFL, em `assets/fonts/`).

@@ -101,6 +101,10 @@ class ProgressStore {
     return true;
   }
 
+  /// Village items built so far (they are built in a fixed order).
+  int get villageBuilt => _prefs.getInt('villageBuilt') ?? 0;
+  Future<void> setVillageBuilt(int n) => _prefs.setInt('villageBuilt', n);
+
   bool get adsRemoved => _prefs.getBool('adsRemoved') ?? false;
 
   DateTime? get lastFullscreenAt {

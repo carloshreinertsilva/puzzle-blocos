@@ -43,6 +43,9 @@ test('depois da fase 3 o menu aparece com o Capi; modos liberam por fase', async
   await expect(page.getByText(/Essa é a nossa estrada/)).toBeVisible();
   await snap(page, testInfo, `menu-capi-${testInfo.project.name}`);
   await page.getByRole('button', { name: 'Bora!' }).click();
+  // Then Capi introduces his village.
+  await expect(page.getByText(/constrói a minha vila/)).toBeVisible();
+  await page.getByRole('button', { name: 'Bora!' }).click();
   await expect(page.getByRole('button', { name: /^Jogar · Fase 4/ })).toBeVisible();
 
   await page.getByRole('button', { name: 'Infinito' }).click();

@@ -161,12 +161,15 @@ class _LevelPathState extends State<LevelPath>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, box) {
-        const before = 2, after = 3;
+        final h = box.maxHeight;
+        // As many levels as fit without the circles touching (3 to 6).
+        final count = (h / 82).floor().clamp(3, 6);
+        final before = count >= 5 ? 2 : 1;
+        final after = count - before - 1;
         final first = max(1, widget.current - before);
         final levels = [
           for (var n = first; n <= widget.current + after; n++) n,
         ];
-        final h = box.maxHeight;
         final w = box.maxWidth;
         final step = h / (levels.length + 0.2);
         Offset at(int i) =>

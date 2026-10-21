@@ -35,6 +35,7 @@ const VETERAN: Saved = {
   seen_tutorial: true,
   seen_menu: true,
   seen_news_welcome: true,
+  seen_news_village: true,
   seen_news_endless: true,
   seen_news_daily: true,
 };

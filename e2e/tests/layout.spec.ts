@@ -56,3 +56,16 @@ test('cartões (novidade, derrota) cabem na tela', async ({ page }, testInfo) =>
   await ok.click();
   await waitForState(page, (s) => s.status === 'playing', 'jogando');
 });
+
+test('tela larga (computador): menu e vila não esticam os botões', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'tablet', 'um tamanho de computador basta');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page, { level: 7, stars: 20 });
+  const play = await page.getByRole('button', { name: /^Jogar · Fase/ }).boundingBox();
+  expect(play!.width, 'botão Jogar com largura de celular').toBeLessThanOrEqual(520);
+  await page.getByRole('button', { name: 'Vila do Capi' }).click();
+  await waitForState(page, (x) => x.screen === 'village', 'vila aberta');
+  const build = await page.getByRole('button', { name: 'Construir' }).boundingBox();
+  expect(build!.x, 'painel da vila centralizado').toBeGreaterThan(400);
+  await snap(page, testInfo, 'vila-computador');
+});

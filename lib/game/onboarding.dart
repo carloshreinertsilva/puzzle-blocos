@@ -21,6 +21,7 @@ abstract final class Onboarding {
   /// Capi's lines on the menu that the player has not seen yet, in order.
   static List<MenuNews> pendingNews(ProgressStore s) => [
     if (!s.hasSeen(MenuNews.welcome.key)) MenuNews.welcome,
+    if (!s.hasSeen(MenuNews.village.key)) MenuNews.village,
     if (endlessUnlocked(s) && !s.hasSeen(MenuNews.endless.key))
       MenuNews.endless,
     if (dailyUnlocked(s) && !s.hasSeen(MenuNews.daily.key)) MenuNews.daily,
@@ -32,6 +33,11 @@ enum MenuNews {
     'news_welcome',
     'Essa é a nossa estrada! Cada fase que você vence abre a próxima. '
         'Toque em Jogar para seguir.',
+  ),
+  village(
+    'news_village',
+    'E tem mais: com as estrelas das fases você constrói a minha vila! '
+        'Toque em Vila do Capi para ver.',
   ),
   endless(
     'news_endless',
