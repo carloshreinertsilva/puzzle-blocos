@@ -20,16 +20,18 @@ void main() {
 
     await s.setLevel(Onboarding.railLevels + 1);
     expect(Onboarding.menuUnlocked(s), isTrue);
-    expect(Onboarding.pendingNews(s), [MenuNews.welcome]);
+    expect(Onboarding.pendingNews(s), [MenuNews.welcome, MenuNews.village]);
     expect(Onboarding.endlessUnlocked(s), isFalse);
 
     await s.setLevel(Onboarding.dailyAt);
     expect(Onboarding.pendingNews(s), [
       MenuNews.welcome,
+      MenuNews.village,
       MenuNews.endless,
       MenuNews.daily,
     ]);
     await s.markSeen(MenuNews.welcome.key);
+    await s.markSeen(MenuNews.village.key);
     expect(Onboarding.pendingNews(s).first, MenuNews.endless);
   });
 

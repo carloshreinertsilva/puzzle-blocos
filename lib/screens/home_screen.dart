@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../game/game_controller.dart';
 import '../core/missions.dart';
+import '../core/village.dart';
 import '../game/onboarding.dart';
 import '../main.dart';
+import '../services/progress_store.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
@@ -11,6 +13,7 @@ import '../ui/widgets.dart';
 import 'game_screen.dart';
 import 'settings_sheet.dart';
 import 'stats_sheet.dart';
+import 'village_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.services});
@@ -59,6 +62,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _openVillage() async {
+    widget.services.feedback.click();
+    final play = await Navigator.of(context).push<bool>(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 280),
+        pageBuilder: (_, _, _) => VillageScreen(services: widget.services),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
+      ),
+    );
+    if (!mounted) return;
+    setState(() {});
+    // "Jogar" in the village: straight into the current level.
+    if (play == true) await _open(GameMode.levels);
+  }
+
   Future<void> _open(GameMode mode, {int? replayLevel}) async {
     widget.services.feedback.click();
     if (mode == GameMode.endless) {
@@ -78,6 +97,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Level, record and streak may have changed, and modes may unlock.
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
+  }
+
+  Widget _villageCard(ProgressStore store) {
+    final built = store.villageBuilt;
+    final next = Village.next(built);
+    final canBuild = next != null && store.stars >= next.cost;
+    return MenuCard(
+      icon: Icons.cottage_rounded,
+      color: Palette.blocks[3],
+      title: 'Vila do Capi',
+      subtitle: next == null
+          ? 'Vila completa!'
+          : '$built de ${Village.items.length} · próximo: ${next.name}',
+      badge: canBuild ? 'CONSTRUIR!' : null,
+      onTap: _openVillage,
+    );
   }
 
   @override
@@ -104,10 +139,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        StatChip(
-                          icon: Icons.star_rounded,
-                          color: Palette.accent,
-                          value: formatInt(store.stars),
+                        Semantics(
+                          button: true,
+                          label: '${store.stars} estrelas, abrir a vila',
+                          excludeSemantics: true,
+                          onTap: _openVillage,
+                          child: GestureDetector(
+                            onTap: _openVillage,
+                            behavior: HitTestBehavior.opaque,
+                            child: SizedBox(
+                              height: 44,
+                              child: Center(
+                                child: StatChip(
+                                  icon: Icons.star_rounded,
+                                  color: Palette.accent,
+                                  value: formatInt(store.stars),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         StatChip(
@@ -136,7 +186,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    Logo(onCapiTap: _tip),
+                    Logo(
+                      onCapiTap: _tip,
+                      compact: MediaQuery.sizeOf(context).height < 720,
+                    ),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -155,7 +208,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: 'Jogar · Fase ${store.level}',
                       onTap: () => _open(GameMode.levels),
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 22),
+                    _villageCard(store),
+                    const SizedBox(height: 26),
                     Row(
                       children: [
                         Expanded(

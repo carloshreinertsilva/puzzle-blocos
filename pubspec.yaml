@@ -57,6 +57,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/audio/
+    - assets/vila/
 
   fonts:
     - family: Lilita

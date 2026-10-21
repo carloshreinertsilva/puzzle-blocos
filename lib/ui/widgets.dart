@@ -211,11 +211,35 @@ class _GlyphPainter extends CustomPainter {
 /// Logo: Capi beside the row of tilted blocks he built, over the title.
 /// Tapping Capi gets a tip ([onCapiTap]).
 class Logo extends StatelessWidget {
-  const Logo({super.key, this.onCapiTap});
+  const Logo({super.key, this.onCapiTap, this.compact = false});
   final VoidCallback? onCapiTap;
+
+  /// Short screens: the title with Capi beside it, no row of blocks.
+  final bool compact;
+
+  Widget _capi(double size) => Semantics(
+    button: true,
+    label: 'Capi',
+    excludeSemantics: true,
+    onTap: onCapiTap,
+    child: GestureDetector(
+      onTap: onCapiTap,
+      child: Capi(size: size),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const OutlinedTitle(appTitle, size: 40),
+          const SizedBox(width: 6),
+          _capi(60),
+        ],
+      );
+    }
     return Column(
       children: [
         SizedBox(
@@ -236,16 +260,7 @@ class Logo extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: 4),
-              Semantics(
-                button: true,
-                label: 'Capi',
-                excludeSemantics: true,
-                onTap: onCapiTap,
-                child: GestureDetector(
-                  onTap: onCapiTap,
-                  child: const Capi(size: 72),
-                ),
-              ),
+              _capi(72),
             ],
           ),
         ),
