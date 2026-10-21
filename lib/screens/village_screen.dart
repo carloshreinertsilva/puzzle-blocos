@@ -1,18 +1,20 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../core/village.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
-import '../ui/capi.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
+import '../village/scene.dart';
 
-/// Capi's village: a lagoon that fills up with things built with the stars
-/// earned in the levels. Pops with `true` when the player wants to go play
-/// for more stars.
+/// Capi's village: a floating island that fills up with things built with
+/// the stars earned in the levels. Pops with `true` when the player wants to
+/// go play for more stars.
 class VillageScreen extends StatefulWidget {
   const VillageScreen({super.key, required this.services});
   final AppServices services;
@@ -21,20 +23,56 @@ class VillageScreen extends StatefulWidget {
   State<VillageScreen> createState() => _VillageScreenState();
 }
 
-class _VillageScreenState extends State<VillageScreen> {
+class _VillageScreenState extends State<VillageScreen>
+    with SingleTickerProviderStateMixin {
   final _rng = Random();
-  String? _justBuilt;
+  final _clock = ValueNotifier<double>(0);
+  final _model = VillageModel();
+  final _cache = VillageCache();
+  late final Ticker _ticker;
   late String _line = _idleLine();
+  Timer? _lineTimer;
+
+  /// What Capi says when an item is tapped.
+  static const _remarks = {
+    'flores': 'As borboletas não largam essas flores!',
+    'cerca': 'Cerquinha branquinha, pintada por mim!',
+    'banco': 'Melhor lugar pra ver o pôr do sol.',
+    'arvore': 'Acerola fresquinha! Quer uma?',
+    'barco': 'Bora dar uma volta na lagoa?',
+    'horta': 'Cenoura e repolho: almoço garantido!',
+    'poste': 'De noite os vaga-lumes vêm brincar aqui.',
+    'pier': 'Daqui eu pulo na água. Tchibum!',
+    'casinha': 'Lar, doce lar! Até a chaminé funciona.',
+    'balanco': 'Uiii! Mais alto, mais alto!',
+    'fonte': 'Dizem que quem joga uma moeda volta sempre.',
+    'roda': 'Lá de cima dá pra ver as nuvens!',
+  };
+
+  static const _capiLines = [
+    'Ei, isso faz cócegas!',
+    'Bora construir mais coisa?',
+    'Cada estrela vira um tijolinho!',
+    'Essa ilha tá ficando um charme.',
+  ];
 
   @override
   void initState() {
     super.initState();
+    _model.built = _built;
+    _ticker = createTicker((elapsed) {
+      _clock.value = elapsed.inMicroseconds / 1e6;
+    })..start();
     if (kTestBridge) TestBridge.instance.screen = 'village';
   }
 
   @override
   void dispose() {
     if (kTestBridge) TestBridge.instance.screen = 'home';
+    _lineTimer?.cancel();
+    _ticker.dispose();
+    _clock.dispose();
+    _cache.dispose();
     super.dispose();
   }
 
@@ -45,7 +83,7 @@ class _VillageScreenState extends State<VillageScreen> {
     final next = Village.next(_built);
     if (next == null) return 'A vila ficou linda! Obrigado, construtor!';
     if (_built == 0) {
-      return 'Bem-vindo à minha lagoa! Com as estrelas das fases a gente '
+      return 'Bem-vindo à minha ilha! Com as estrelas das fases a gente '
           'constrói tudo aqui.';
     }
     final missing = next.cost - _stars;
@@ -55,29 +93,56 @@ class _VillageScreenState extends State<VillageScreen> {
         : 'Já dá para construir ${next.name.toLowerCase()}!';
   }
 
+  /// Shows [line] for a while, then goes back to the idle line.
+  void _say(String line, {Duration hold = const Duration(seconds: 3)}) {
+    _lineTimer?.cancel();
+    setState(() => _line = line);
+    _lineTimer = Timer(hold, () {
+      if (mounted) setState(() => _line = _idleLine());
+    });
+  }
+
   Future<void> _build(VillageItem item) async {
     final store = widget.services.store;
+    if (_model.building != null) return;
     if (!await store.spendStars(item.cost)) return;
     await store.setVillageBuilt(_built + 1);
-    widget.services.feedback.win();
+    if (!mounted) return;
+    _model
+      ..built = _built
+      ..building = item.id
+      ..buildStart = _clock.value;
     const cheers = [
       'Ficou lindo!',
       'Uhul! A vila tá crescendo!',
       'Que obra caprichada!',
       'Valeu, parceiro de obra!',
     ];
-    setState(() {
-      _justBuilt = item.id;
-      _line =
-          '${cheers[_rng.nextInt(cheers.length)]} Agora a vila tem: '
-          '${item.name.toLowerCase()}.';
-    });
-    await Future<void>.delayed(const Duration(milliseconds: 2600));
-    if (!mounted || _justBuilt != item.id) return;
-    setState(() {
-      _justBuilt = null;
-      _line = _idleLine();
-    });
+    _say(
+      '${cheers[_rng.nextInt(cheers.length)]} Agora a vila tem: '
+      '${item.name.toLowerCase()}.',
+      hold: const Duration(milliseconds: 3200),
+    );
+    // It lands with a thud, then the fanfare.
+    await Future<void>.delayed(const Duration(milliseconds: 560));
+    widget.services.feedback.place();
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    widget.services.feedback.win();
+    await Future<void>.delayed(const Duration(milliseconds: 1600));
+    if (mounted) setState(() => _model.building = null);
+  }
+
+  void _tap(Offset at, Size size) {
+    final id = VillageLayout(size).hit(at, _model.built);
+    if (id == null) return;
+    _model.pokes[id] = _clock.value;
+    widget.services.feedback.pick();
+    if (_model.building != null) return;
+    _say(
+      id == 'capi'
+          ? _capiLines[_rng.nextInt(_capiLines.length)]
+          : _remarks[id] ?? '',
+    );
   }
 
   @override
@@ -110,22 +175,37 @@ class _VillageScreenState extends State<VillageScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(child: _scene()),
-                      Positioned(
-                        left: 10,
-                        right: 10,
-                        top: 10,
-                        child: _Bubble(text: _line),
-                      ),
-                    ],
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(child: _scene()),
+                        Positioned(
+                          left: 10,
+                          right: 10,
+                          top: 10,
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxWidth: menuMaxWidth,
+                              ),
+                              child: _Bubble(text: _line),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-                child: next == null ? _done() : _nextPanel(next),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: menuMaxWidth),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+                    child: next == null ? _done() : _nextPanel(next),
+                  ),
+                ),
               ),
             ],
           ),
@@ -134,82 +214,34 @@ class _VillageScreenState extends State<VillageScreen> {
     );
   }
 
-  Widget _scene() {
-    return LayoutBuilder(
-      builder: (context, box) {
-        final s = min(
-          box.maxWidth / Village.sceneSize.width,
-          box.maxHeight / Village.sceneSize.height,
-        );
-        final w = Village.sceneSize.width * s;
-        final h = Village.sceneSize.height * s;
-        final capi = 150 * s;
-        // The scene sits on the ground (bottom); any room left above or at
-        // the sides is sky and grass.
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF7EC8F2),
-                  Color(0xFFB9D8D6),
-                  Color(0xFF5BAE55),
-                ],
-                stops: [0, 0.45, 0.62],
-              ),
-            ),
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                width: w,
-                height: h,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Image.asset(Village.background, fit: BoxFit.fill),
-                    ),
-                    for (final item in Village.drawn(_built))
-                      Positioned(
-                        left: item.rect.left * s,
-                        top: item.rect.top * s,
-                        width: item.rect.width * s,
-                        height: item.rect.height * s,
-                        child: item.id == _justBuilt
-                            ? TweenAnimationBuilder<double>(
-                                tween: Tween(begin: 0, end: 1),
-                                duration: const Duration(milliseconds: 900),
-                                curve: Curves.elasticOut,
-                                builder: (context, v, child) => Transform.scale(
-                                  scale: v,
-                                  alignment: Alignment.bottomCenter,
-                                  child: child,
-                                ),
-                                child: Image.asset(item.asset),
-                              )
-                            : Image.asset(item.asset),
-                      ),
-                    Positioned(
-                      left: Village.capiFeet.dx * s - capi / 2,
-                      top: Village.capiFeet.dy * s - capi,
-                      child: Capi(
-                        size: capi,
-                        mood: _justBuilt != null
-                            ? CapiMood.cheer
-                            : CapiMood.happy,
-                      ),
-                    ),
-                  ],
+  Widget _scene() => LayoutBuilder(
+    builder: (context, box) {
+      final size = box.biggest;
+      return Semantics(
+        label:
+            'Ilha do Capi com $_built de ${Village.items.length} construções',
+        excludeSemantics: true,
+        // Pinch to zoom in on the island and look around.
+        child: InteractiveViewer(
+          maxScale: 2.5,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (d) => _tap(d.localPosition, size),
+            child: RepaintBoundary(
+              child: CustomPaint(
+                size: size,
+                painter: VillagePainter(
+                  clock: _clock,
+                  model: _model,
+                  cache: _cache,
                 ),
               ),
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
 
   Widget _nextPanel(VillageItem next) {
     final canBuild = _stars >= next.cost;
@@ -222,11 +254,7 @@ class _VillageScreenState extends State<VillageScreen> {
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: 62,
-            height: 62,
-            child: Image.asset(next.asset, fit: BoxFit.contain),
-          ),
+          VillageItemIcon(item: next),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -262,7 +290,7 @@ class _VillageScreenState extends State<VillageScreen> {
                     label: 'Construir',
                     color: Palette.good,
                     textColor: const Color(0xFF0B3B16),
-                    onTap: () => _build(next),
+                    onTap: _model.building == null ? () => _build(next) : null,
                   )
                 : ChunkyButton(
                     label: 'Jogar',
@@ -319,6 +347,13 @@ class _Bubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AnimatedSwitcher(
     duration: const Duration(milliseconds: 220),
+    transitionBuilder: (child, anim) => ScaleTransition(
+      scale: Tween(
+        begin: 0.85,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutBack)),
+      child: FadeTransition(opacity: anim, child: child),
+    ),
     child: Container(
       key: ValueKey(text),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

@@ -132,144 +132,153 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Positioned.fill(child: FloatingBlocks()),
             SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
-                    Row(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: menuMaxWidth),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
                       children: [
-                        Semantics(
-                          button: true,
-                          label: '${store.stars} estrelas, abrir a vila',
-                          excludeSemantics: true,
-                          onTap: _openVillage,
-                          child: GestureDetector(
-                            onTap: _openVillage,
-                            behavior: HitTestBehavior.opaque,
-                            child: SizedBox(
-                              height: 44,
-                              child: Center(
-                                child: StatChip(
-                                  icon: Icons.star_rounded,
-                                  color: Palette.accent,
-                                  value: formatInt(store.stars),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Semantics(
+                              button: true,
+                              label: '${store.stars} estrelas, abrir a vila',
+                              excludeSemantics: true,
+                              onTap: _openVillage,
+                              child: GestureDetector(
+                                onTap: _openVillage,
+                                behavior: HitTestBehavior.opaque,
+                                child: SizedBox(
+                                  height: 44,
+                                  child: Center(
+                                    child: StatChip(
+                                      icon: Icons.star_rounded,
+                                      color: Palette.accent,
+                                      value: formatInt(store.stars),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 8),
+                            StatChip(
+                              icon: Icons.emoji_events_rounded,
+                              color: Palette.accent,
+                              value: formatInt(store.bestScore),
+                            ),
+                            const SizedBox(width: 8),
+                            StatChip(
+                              icon: Icons.local_fire_department_rounded,
+                              color: Palette.accentDeep,
+                              value: '$streak',
+                            ),
+                            const Spacer(),
+                            RoundIconButton(
+                              icon: Icons.bar_chart_rounded,
+                              label: 'Estatísticas',
+                              onTap: () => showStats(context, widget.services),
+                            ),
+                            const SizedBox(width: 8),
+                            RoundIconButton(
+                              icon: Icons.settings_rounded,
+                              label: 'Configurações',
+                              onTap: () =>
+                                  showSettings(context, widget.services),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        Logo(
+                          onCapiTap: _tip,
+                          compact: MediaQuery.sizeOf(context).height < 720,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: LevelPath(
+                              current: store.level,
+                              onPlay: () => _open(GameMode.levels),
+                              starsFor: (n) =>
+                                  Missions.count(store.levelStars(n)),
+                              onReplay: (n) =>
+                                  _open(GameMode.levels, replayLevel: n),
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        StatChip(
-                          icon: Icons.emoji_events_rounded,
-                          color: Palette.accent,
-                          value: formatInt(store.bestScore),
+                        ChunkyButton(
+                          big: true,
+                          icon: Icons.play_arrow_rounded,
+                          label: 'Jogar · Fase ${store.level}',
+                          onTap: () => _open(GameMode.levels),
                         ),
-                        const SizedBox(width: 8),
-                        StatChip(
-                          icon: Icons.local_fire_department_rounded,
-                          color: Palette.accentDeep,
-                          value: '$streak',
+                        const SizedBox(height: 22),
+                        _villageCard(store),
+                        const SizedBox(height: 26),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: dailyOpen
+                                  ? MenuCard(
+                                      icon: dailyDone
+                                          ? Icons.check_circle_rounded
+                                          : Icons.calendar_today_rounded,
+                                      color: Palette.blocks[0],
+                                      title: 'Desafio diário',
+                                      subtitle: dailyDone
+                                          ? 'Feito! Volte amanhã'
+                                          : streak > 0
+                                          ? 'Sequência: $streak dias'
+                                          : 'Um novo a cada dia',
+                                      badge: dailyDone ? null : 'NOVO',
+                                      onTap: () => _open(GameMode.daily),
+                                    )
+                                  : MenuCard(
+                                      icon: Icons.lock_rounded,
+                                      color: Palette.panelEdge,
+                                      title: 'Desafio diário',
+                                      subtitle:
+                                          'Libera na fase ${Onboarding.dailyAt}',
+                                      onTap: () => _locked(
+                                        'Desafio diário',
+                                        Onboarding.dailyAt,
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: endlessOpen
+                                  ? MenuCard(
+                                      icon: Icons.all_inclusive_rounded,
+                                      color: Palette.blocks[5],
+                                      title: 'Infinito',
+                                      subtitle: store.bestScore > 0
+                                          ? 'Recorde ${formatInt(store.bestScore)}'
+                                          : 'Sem metas, sem fim',
+                                      badge: store.hasSeen('opened_endless')
+                                          ? null
+                                          : 'NOVO',
+                                      onTap: () => _open(GameMode.endless),
+                                    )
+                                  : MenuCard(
+                                      icon: Icons.lock_rounded,
+                                      color: Palette.panelEdge,
+                                      title: 'Infinito',
+                                      subtitle:
+                                          'Libera na fase ${Onboarding.endlessAt}',
+                                      onTap: () => _locked(
+                                        'Infinito',
+                                        Onboarding.endlessAt,
+                                      ),
+                                    ),
+                            ),
+                          ],
                         ),
-                        const Spacer(),
-                        RoundIconButton(
-                          icon: Icons.bar_chart_rounded,
-                          label: 'Estatísticas',
-                          onTap: () => showStats(context, widget.services),
-                        ),
-                        const SizedBox(width: 8),
-                        RoundIconButton(
-                          icon: Icons.settings_rounded,
-                          label: 'Configurações',
-                          onTap: () => showSettings(context, widget.services),
-                        ),
+                        const SizedBox(height: 16),
                       ],
                     ),
-                    const SizedBox(height: 18),
-                    Logo(
-                      onCapiTap: _tip,
-                      compact: MediaQuery.sizeOf(context).height < 720,
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: LevelPath(
-                          current: store.level,
-                          onPlay: () => _open(GameMode.levels),
-                          starsFor: (n) => Missions.count(store.levelStars(n)),
-                          onReplay: (n) =>
-                              _open(GameMode.levels, replayLevel: n),
-                        ),
-                      ),
-                    ),
-                    ChunkyButton(
-                      big: true,
-                      icon: Icons.play_arrow_rounded,
-                      label: 'Jogar · Fase ${store.level}',
-                      onTap: () => _open(GameMode.levels),
-                    ),
-                    const SizedBox(height: 22),
-                    _villageCard(store),
-                    const SizedBox(height: 26),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: dailyOpen
-                              ? MenuCard(
-                                  icon: dailyDone
-                                      ? Icons.check_circle_rounded
-                                      : Icons.calendar_today_rounded,
-                                  color: Palette.blocks[0],
-                                  title: 'Desafio diário',
-                                  subtitle: dailyDone
-                                      ? 'Feito! Volte amanhã'
-                                      : streak > 0
-                                      ? 'Sequência: $streak dias'
-                                      : 'Um novo a cada dia',
-                                  badge: dailyDone ? null : 'NOVO',
-                                  onTap: () => _open(GameMode.daily),
-                                )
-                              : MenuCard(
-                                  icon: Icons.lock_rounded,
-                                  color: Palette.panelEdge,
-                                  title: 'Desafio diário',
-                                  subtitle:
-                                      'Libera na fase ${Onboarding.dailyAt}',
-                                  onTap: () => _locked(
-                                    'Desafio diário',
-                                    Onboarding.dailyAt,
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: endlessOpen
-                              ? MenuCard(
-                                  icon: Icons.all_inclusive_rounded,
-                                  color: Palette.blocks[5],
-                                  title: 'Infinito',
-                                  subtitle: store.bestScore > 0
-                                      ? 'Recorde ${formatInt(store.bestScore)}'
-                                      : 'Sem metas, sem fim',
-                                  badge: store.hasSeen('opened_endless')
-                                      ? null
-                                      : 'NOVO',
-                                  onTap: () => _open(GameMode.endless),
-                                )
-                              : MenuCard(
-                                  icon: Icons.lock_rounded,
-                                  color: Palette.panelEdge,
-                                  title: 'Infinito',
-                                  subtitle:
-                                      'Libera na fase ${Onboarding.endlessAt}',
-                                  onTap: () =>
-                                      _locked('Infinito', Onboarding.endlessAt),
-                                ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -285,11 +294,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 left: 16,
                 right: 16,
                 bottom: 24 + MediaQuery.paddingOf(context).bottom,
-                child: CapiSays(
-                  text: capiLine,
-                  capiSize: 96,
-                  action: _news.isNotEmpty ? 'Bora!' : 'Beleza!',
-                  onAction: _dismissCapi,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: menuMaxWidth),
+                    child: CapiSays(
+                      text: capiLine,
+                      capiSize: 96,
+                      action: _news.isNotEmpty ? 'Bora!' : 'Beleza!',
+                      onAction: _dismissCapi,
+                    ),
+                  ),
                 ),
               ),
           ],

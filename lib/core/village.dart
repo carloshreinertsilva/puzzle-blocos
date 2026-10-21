@@ -1,67 +1,61 @@
 import 'dart:ui';
 
-/// One thing Capi can build in his village: the art (`assets/vila/<id>.png`),
-/// where it sits in the 1000x1300 scene, and its price in stars.
+/// One thing Capi can build in his village: its price in stars and its
+/// footprint on the island's ground, in tiles (x runs to the lower right of
+/// the screen, y to the lower left; see `lib/village/iso.dart`).
 class VillageItem {
-  const VillageItem(this.id, this.name, this.cost, this.rect);
+  const VillageItem(this.id, this.name, this.cost, this.spot);
   final String id;
   final String name;
   final int cost;
-  final Rect rect;
-
-  String get asset => 'assets/vila/$id.png';
+  final Rect spot;
 }
 
-/// The first village (Capi's lagoon), built in this order. Art drawn in
-/// VectorCraft (art/vila/vila.vectorcraft).
+/// The first village (Capi's lagoon, on a floating island), built in this
+/// order. Drawn in code by `lib/village/`.
 abstract final class Village {
-  static const sceneSize = Size(1000, 1300);
-  static const background = 'assets/vila/fundo.png';
+  /// The island is a square of this many tiles a side.
+  static const island = 10.0;
 
   static const items = [
     VillageItem(
       'flores',
       'Canteiro de flores',
       3,
-      Rect.fromLTWH(617, 1114, 326, 129),
+      Rect.fromLTWH(8.9, 6.4, 0.8, 2),
     ),
-    VillageItem('cerca', 'Cerquinha', 3, Rect.fromLTWH(37.5, 1095.5, 345, 127)),
+    VillageItem('cerca', 'Cerquinha', 3, Rect.fromLTWH(0.4, 9.5, 5.8, 0.2)),
     VillageItem(
       'banco',
       'Banco da lagoa',
       4,
-      Rect.fromLTWH(597.5, 677.5, 165, 104.5),
+      Rect.fromLTWH(8.4, 2.9, 0.6, 1.3),
     ),
     VillageItem(
       'arvore',
       'Pé de acerola',
       4,
-      Rect.fromLTWH(716.5, 356.5, 227, 347),
+      Rect.fromLTWH(6.2, 0.7, 1.3, 1.3),
     ),
-    VillageItem('barco', 'Barquinho', 5, Rect.fromLTWH(282, 816.5, 176, 136.5)),
-    VillageItem('horta', 'Horta', 5, Rect.fromLTWH(27, 692.5, 206, 100.5)),
-    VillageItem('poste', 'Poste de luz', 6, Rect.fromLTWH(532, 1000, 76, 238)),
-    VillageItem('pier', 'Píer', 6, Rect.fromLTWH(627.5, 907.5, 195, 69)),
+    VillageItem('barco', 'Barquinho', 5, Rect.fromLTWH(4, 4.3, 1.5, 0.7)),
+    VillageItem('horta', 'Horta', 5, Rect.fromLTWH(0.9, 6.9, 2.4, 2)),
+    VillageItem('poste', 'Poste de luz', 6, Rect.fromLTWH(8.2, 8.5, 0.2, 0.2)),
+    VillageItem('pier', 'Píer', 6, Rect.fromLTWH(5.4, 5.9, 0.8, 1.8)),
     VillageItem(
       'casinha',
       'Casinha do Capi',
       7,
-      Rect.fromLTWH(66, 406, 268, 263),
+      Rect.fromLTWH(0.7, 2.9, 2.6, 2.6),
     ),
-    VillageItem('balanco', 'Balanço', 8, Rect.fromLTWH(855, 780, 125, 185)),
-    VillageItem('fonte', 'Fonte', 10, Rect.fromLTWH(412, 578, 176, 171)),
-    VillageItem('roda', 'Roda-gigante', 12, Rect.fromLTWH(368, 280, 204, 226)),
+    VillageItem('balanco', 'Balanço', 8, Rect.fromLTWH(8.6, 0.8, 1, 1.6)),
+    VillageItem('fonte', 'Fonte', 10, Rect.fromLTWH(2.95, 0.65, 1.9, 1.9)),
+    VillageItem('roda', 'Roda-gigante', 12, Rect.fromLTWH(0.6, 0.3, 2, 2)),
   ];
 
-  /// Where Capi stands in the scene (his feet).
-  static const capiFeet = Offset(470, 1080);
+  /// Where Capi stands when he isn't busy: on the path by the pier.
+  static const capiSpot = Offset(6.6, 8.6);
 
   /// The next item to build after [built] items, or null when complete.
   static VillageItem? next(int built) =>
       built < items.length ? items[built] : null;
-
-  /// Built items in drawing order: further back (higher up) first.
-  static List<VillageItem> drawn(int built) =>
-      items.take(built).toList()
-        ..sort((a, b) => a.rect.bottom.compareTo(b.rect.bottom));
 }

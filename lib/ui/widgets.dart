@@ -6,6 +6,10 @@ import 'palette.dart';
 import 'typography.dart';
 
 /// Chunky rounded button with a 3D edge, used across menus and cards.
+/// On wide screens (desktop browser, tablet) menus stay a phone-sized
+/// column this wide instead of stretching edge to edge.
+const menuMaxWidth = 520.0;
+
 class ChunkyButton extends StatefulWidget {
   const ChunkyButton({
     super.key,
