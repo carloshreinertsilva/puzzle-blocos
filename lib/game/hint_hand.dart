@@ -18,6 +18,8 @@ class HintHand extends Component with HasGameReference<PuzzleGame> {
 
   @override
   void render(Canvas canvas) {
+    // Outside the tutorial Capi carries the hint (CapiCarrier).
+    if (!game.controller.tutorial) return;
     final hint = game.controller.hint;
     final sprites = game.sprites;
     final piece = hint == null ? null : game.controller.session.tray[hint.$1];
