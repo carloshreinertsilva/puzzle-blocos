@@ -80,6 +80,27 @@ class ProgressStore {
   bool hasSeen(String topic) => _prefs.getBool('seen_$topic') ?? false;
   Future<void> markSeen(String topic) => _prefs.setBool('seen_$topic', true);
 
+  // Stars: per level which missions were done (a bitmask, see Missions),
+  // and the wallet the village spends from.
+  int levelStars(int level) => _prefs.getInt('stars_$level') ?? 0;
+  Future<void> setLevelStars(int level, int bits) =>
+      _prefs.setInt('stars_$level', bits);
+
+  int get stars => _prefs.getInt('stars') ?? 0;
+  int get starsEarned => _prefs.getInt('starsEarned') ?? 0;
+  Future<void> addStars(int n) async {
+    if (n <= 0) return;
+    await _prefs.setInt('stars', stars + n);
+    await _prefs.setInt('starsEarned', starsEarned + n);
+  }
+
+  /// Returns false (and spends nothing) when there are not enough stars.
+  Future<bool> spendStars(int n) async {
+    if (n > stars) return false;
+    await _prefs.setInt('stars', stars - n);
+    return true;
+  }
+
   bool get adsRemoved => _prefs.getBool('adsRemoved') ?? false;
 
   DateTime? get lastFullscreenAt {

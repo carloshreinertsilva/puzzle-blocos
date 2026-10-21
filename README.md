@@ -26,6 +26,13 @@ jogador fica 10 s parado, o Capi leva a peça sugerida até o lugar
 sem menu; o menu aparece ao vencer a fase 3. Infinito libera na fase 5 e o
 Desafio diário na fase 7.
 
+Estrelas (`lib/core/missions.dart`): cada fase tem 3 desafios (vencer; limpar
+2 linhas de uma vez até a fase 10, depois um combo x3; vencer sem usar o
+"Continuar"), e cada desafio vale uma estrela. Fases já vencidas podem ser
+jogadas de novo pelo caminho do menu para pegar as que faltam. O Desafio
+diário vale 3 estrelas e o Infinito 1 a cada 2.500 pontos (até 4 por
+partida). As estrelas são a moeda da Vila do Capi.
+
 Jogadas que limpam linhas ganham elogios em níveis ("Boa!" → "Incrível!" →
 "Espetacular!" → "Lendário!"), com raios de luz, clarão, confete e som. Fontes:
 Lilita One e Fredoka (licença OFL, em `assets/fonts/`).

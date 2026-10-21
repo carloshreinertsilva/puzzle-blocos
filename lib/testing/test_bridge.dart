@@ -26,10 +26,13 @@ class TestBridge {
 
   String stateJson() => jsonEncode(state());
 
+  /// The star wallet, set by the app (so the home screen reports it too).
+  int Function()? wallet;
+
   Map<String, Object?> state() {
     final c = controller;
     final g = game;
-    if (c == null) return {'screen': screen};
+    if (c == null) return {'screen': screen, 'stars': wallet?.call()};
     final s = c.session;
     final level = s.level;
     return {
@@ -71,6 +74,10 @@ class TestBridge {
                 },
       ],
       'praises': praises,
+      'stars': wallet?.call(),
+      'starBits': c.starBits,
+      'starsGained': c.starsGained,
+      'replay': c.isReplay,
       if (c.tutorial) 'tutorialStep': c.tutorialStep,
       if (c.tutorial) 'capi': c.capiLine,
       if (c.hint case final h?) 'hint': [h.$1, h.$2, h.$3],

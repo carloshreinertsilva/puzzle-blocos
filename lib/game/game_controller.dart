@@ -7,6 +7,7 @@ import '../core/board.dart';
 import '../core/game_session.dart';
 import '../core/hint.dart';
 import '../core/level.dart';
+import '../core/missions.dart';
 import '../core/shapes.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
@@ -26,6 +27,7 @@ class GameController extends ChangeNotifier {
     required this.store,
     required this.feedback,
     required this.mode,
+    this.replayLevel,
     DateTime? today,
   }) : today = today ?? DateTime.now() {
     _start();
@@ -35,6 +37,17 @@ class GameController extends ChangeNotifier {
   final GameFeedback feedback;
   final GameMode mode;
   final DateTime today;
+
+  /// Levels mode: an earlier level played again for its missing stars (the
+  /// progress does not move on).
+  final int? replayLevel;
+
+  /// After a win: the missions this attempt completed, what the level had
+  /// before, and the stars added to the wallet (levels, daily and endless).
+  int starBits = 0;
+  int previousStarBits = 0;
+  int starsGained = 0;
+  int _endlessStarsGiven = 0;
 
   late GameSession session;
 
@@ -81,6 +94,10 @@ class GameController extends ChangeNotifier {
   final _rng = Random();
 
   bool get endless => mode == GameMode.endless;
+  bool get isReplay =>
+      mode == GameMode.levels &&
+      replayLevel != null &&
+      replayLevel! < store.level;
   bool get tutorial => mode == GameMode.tutorial;
   bool get tutorialFinished =>
       tutorial && tutorialStep >= Tutorial.steps.length;
@@ -146,7 +163,7 @@ class GameController extends ChangeNotifier {
     final config = switch (mode) {
       GameMode.endless || GameMode.tutorial => LevelConfig.endless(),
       GameMode.daily => LevelGenerator.daily(today),
-      GameMode.levels => LevelGenerator.build(store.level),
+      GameMode.levels => LevelGenerator.build(replayLevel ?? store.level),
     };
     session = GameSession(
       config,
@@ -159,6 +176,12 @@ class GameController extends ChangeNotifier {
     showOutcome = false;
     paused = false;
     _counted = false;
+    starBits = 0;
+    starsGained = 0;
+    _endlessStarsGiven = 0;
+    previousStarBits = mode == GameMode.levels
+        ? store.levelStars(config.number)
+        : 0;
     intros
       ..clear()
       ..addAll(_introsFor(config));
@@ -295,18 +318,28 @@ class GameController extends ChangeNotifier {
     }
     switch (mode) {
       case GameMode.levels when won:
-        store.setLevel(level.number + 1);
+        if (!isReplay) store.setLevel(level.number + 1);
         store.setFailStreak(level.number, 0);
+        _awardLevelStars();
       case GameMode.levels:
         store.setFailStreak(
           level.number,
           store.failStreakFor(level.number) + 1,
         );
       case GameMode.daily when won:
+        if (!store.dailyDone(today)) {
+          starsGained = Missions.daily;
+          store.addStars(starsGained);
+        }
         store.completeDaily(today);
       case GameMode.daily || GameMode.tutorial:
         break;
       case GameMode.endless:
+        // A revived run pays only the stars its extra points add.
+        final due = Missions.forEndless(session.score);
+        starsGained = due - _endlessStarsGiven;
+        _endlessStarsGiven = due;
+        store.addStars(starsGained);
         if (session.score > store.bestScore) {
           newBest = true;
           bestScore = session.score;
@@ -319,6 +352,19 @@ class GameController extends ChangeNotifier {
       showOutcome = true;
       notifyListeners();
     });
+  }
+
+  void _awardLevelStars() {
+    starBits = Missions.earned(
+      level: level.number,
+      bestLines: session.bestLines,
+      bestCombo: session.bestCombo,
+      revived: session.revived,
+    );
+    final all = previousStarBits | starBits;
+    starsGained = Missions.count(all) - Missions.count(previousStarBits);
+    store.setLevelStars(level.number, all);
+    store.addStars(starsGained);
   }
 
   bool get canRevive =>
