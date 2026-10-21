@@ -336,3 +336,84 @@ class OutlinedTitle extends StatelessWidget {
     );
   }
 }
+
+/// Three stars, filled for the ones earned. With [animate], each pops in
+/// after the previous one (the win card).
+class StarRow extends StatefulWidget {
+  const StarRow({
+    super.key,
+    required this.filled,
+    this.size = 44,
+    this.animate = false,
+  });
+  final List<bool> filled;
+  final double size;
+  final bool animate;
+
+  @override
+  State<StarRow> createState() => _StarRowState();
+}
+
+class _StarRowState extends State<StarRow> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+    value: widget.animate ? 0 : 1,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.animate) _c.forward();
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final n = widget.filled.length;
+    return Semantics(
+      label: '${widget.filled.where((f) => f).length} de $n estrelas',
+      excludeSemantics: true,
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (context, _) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < n; i++)
+              Transform.translate(
+                // The middle star sits a little higher.
+                offset: Offset(0, i == 1 && n == 3 ? -widget.size * 0.18 : 0),
+                child: Transform.scale(
+                  scale: widget.filled[i]
+                      ? Curves.elasticOut.transform(
+                          ((_c.value - i * 0.22) / 0.5).clamp(0.0, 1.0),
+                        )
+                      : 1,
+                  child: Icon(
+                    Icons.star_rounded,
+                    size: widget.size,
+                    color: widget.filled[i]
+                        ? Palette.accent
+                        : Palette.panelEdge,
+                    shadows: widget.filled[i]
+                        ? const [
+                            Shadow(
+                              color: Color(0xAA7A4A00),
+                              offset: Offset(0, 3),
+                            ),
+                          ]
+                        : null,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

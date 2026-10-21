@@ -126,9 +126,19 @@ class StatChip extends StatelessWidget {
 /// The road of levels: done ones below, the current one big in the middle,
 /// the next ones above with their goal icons. Hard levels have a red ring.
 class LevelPath extends StatefulWidget {
-  const LevelPath({super.key, required this.current, required this.onPlay});
+  const LevelPath({
+    super.key,
+    required this.current,
+    required this.onPlay,
+    this.starsFor,
+    this.onReplay,
+  });
   final int current;
   final VoidCallback onPlay;
+
+  /// Stars earned on a finished level (0-3), and playing it again.
+  final int Function(int level)? starsFor;
+  final void Function(int level)? onReplay;
 
   @override
   State<LevelPath> createState() => _LevelPathState();
@@ -160,7 +170,7 @@ class _LevelPathState extends State<LevelPath>
         final w = box.maxWidth;
         final step = h / (levels.length + 0.2);
         Offset at(int i) =>
-            Offset(w / 2 + sin(i * 1.3 + 0.4) * w * 0.26, h - step * (i + 0.6));
+            Offset(w / 2 + sin(i * 1.3 + 0.4) * w * 0.26, h - step * (i + 0.8));
         final points = [for (var i = 0; i < levels.length; i++) at(i)];
         return Stack(
           clipBehavior: Clip.none,
@@ -188,7 +198,7 @@ class _LevelPathState extends State<LevelPath>
       body = _Disc(
         size: size,
         color: Palette.good,
-        child: const Icon(Icons.check_rounded, color: Colors.white, size: 30),
+        child: Text('$n', style: displayText(20, color: Colors.white)),
       );
     } else if (current) {
       body = ScaleTransition(
@@ -216,22 +226,55 @@ class _LevelPathState extends State<LevelPath>
       );
     }
 
+    final replay = done && widget.onReplay != null;
     return Positioned(
       left: p.dx - size / 2,
       top: p.dy - size / 2,
       width: size,
       height: size,
-      child: GestureDetector(
-        onTap: current ? widget.onPlay : null,
-        // Only the current level is a button; the rest are labels.
-        behavior: HitTestBehavior.opaque,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(child: body),
-            if (config != null)
-              Positioned(right: -8, top: -6, child: _GoalBadge(config: config)),
-          ],
+      child: Semantics(
+        // A finished level is a button (play it again), read with its stars.
+        button: replay,
+        label: done && widget.starsFor != null
+            ? 'Fase $n, ${widget.starsFor!(n)} de 3 estrelas'
+            : null,
+        excludeSemantics: replay,
+        onTap: replay ? () => widget.onReplay!(n) : null,
+        child: GestureDetector(
+          // The current level plays; a finished one can be played again for
+          // its missing stars.
+          onTap: current
+              ? widget.onPlay
+              : done && widget.onReplay != null
+              ? () => widget.onReplay!(n)
+              : null,
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(child: body),
+              if (config != null)
+                Positioned(
+                  right: -8,
+                  top: -6,
+                  child: _GoalBadge(config: config),
+                ),
+              if (done && widget.starsFor != null)
+                Positioned(
+                  left: -6,
+                  right: -6,
+                  bottom: -14,
+                  child: Center(
+                    child: StarRow(
+                      filled: [
+                        for (var i = 0; i < 3; i++) i < widget.starsFor!(n),
+                      ],
+                      size: 18,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

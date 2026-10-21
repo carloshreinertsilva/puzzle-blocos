@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../game/game_controller.dart';
+import '../core/missions.dart';
 import '../game/onboarding.dart';
 import '../main.dart';
 import '../ui/capi.dart';
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _open(GameMode mode) async {
+  Future<void> _open(GameMode mode, {int? replayLevel}) async {
     widget.services.feedback.click();
     if (mode == GameMode.endless) {
       widget.services.store.markSeen('opened_endless');
@@ -66,8 +67,11 @@ class _HomeScreenState extends State<HomeScreen> {
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 280),
-        pageBuilder: (_, _, _) =>
-            GameScreen(services: widget.services, mode: mode),
+        pageBuilder: (_, _, _) => GameScreen(
+          services: widget.services,
+          mode: mode,
+          replayLevel: replayLevel,
+        ),
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
@@ -101,6 +105,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         StatChip(
+                          icon: Icons.star_rounded,
+                          color: Palette.accent,
+                          value: formatInt(store.stars),
+                        ),
+                        const SizedBox(width: 8),
+                        StatChip(
                           icon: Icons.emoji_events_rounded,
                           color: Palette.accent,
                           value: formatInt(store.bestScore),
@@ -133,6 +143,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: LevelPath(
                           current: store.level,
                           onPlay: () => _open(GameMode.levels),
+                          starsFor: (n) => Missions.count(store.levelStars(n)),
+                          onReplay: (n) =>
+                              _open(GameMode.levels, replayLevel: n),
                         ),
                       ),
                     ),

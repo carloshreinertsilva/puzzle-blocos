@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
+import '../core/missions.dart';
 import '../game/game_controller.dart';
 import '../game/onboarding.dart';
 import '../game/puzzle_game.dart';
@@ -23,9 +24,13 @@ class GameScreen extends StatefulWidget {
     required this.services,
     required this.mode,
     this.onDone,
+    this.replayLevel,
   });
   final AppServices services;
   final GameMode mode;
+
+  /// An earlier level, played again for its missing stars.
+  final int? replayLevel;
 
   /// Set while onboarding (the tutorial, then the first levels with no
   /// menu): called when this stage is over. There is no way back to a menu
@@ -41,6 +46,7 @@ class _GameScreenState extends State<GameScreen> {
     store: widget.services.store,
     feedback: widget.services.feedback,
     mode: widget.mode,
+    replayLevel: widget.replayLevel,
   );
   PuzzleGame? game;
   bool _busy = false;
@@ -195,6 +201,10 @@ class _GameScreenState extends State<GameScreen> {
       );
     } else if (controller.paused) {
       card = _PauseCard(
+        level: controller.mode == GameMode.levels
+            ? controller.level.number
+            : null,
+        starBits: controller.previousStarBits,
         onResume: () => controller.setPaused(false),
         onRestart: () {
           controller.setPaused(false);
@@ -206,17 +216,25 @@ class _GameScreenState extends State<GameScreen> {
       card = controller.level.isDaily
           ? _DailyWinCard(
               score: s.score,
+              starsGained: controller.starsGained,
               streak: widget.services.store.dailyStreak(controller.today),
               onExit: _exit,
             )
           : _WinCard(
               level: controller.level.number,
               score: s.score,
+              starBits: controller.starBits | controller.previousStarBits,
+              newBits: controller.starBits & ~controller.previousStarBits,
+              starsGained: controller.starsGained,
+              replay: controller.isReplay,
               onNext: _next,
+              onRetry: _retry,
+              onExit: _exit,
             );
     } else if (controller.showOutcome && s.status == SessionStatus.lost) {
       card = _LoseCard(
         endless: controller.endless,
+        starsGained: controller.endless ? controller.starsGained : 0,
         score: s.score,
         best: controller.bestScore,
         newBest: controller.newBest,
@@ -606,29 +624,112 @@ class _WinCard extends StatelessWidget {
   const _WinCard({
     required this.level,
     required this.score,
+    required this.starBits,
+    required this.newBits,
+    required this.starsGained,
+    required this.replay,
     required this.onNext,
+    required this.onRetry,
+    required this.onExit,
   });
   final int level;
   final int score;
+
+  /// Missions done on this level so far, and the ones this win added.
+  final int starBits;
+  final int newBits;
+  final int starsGained;
+
+  /// An earlier level played again: no "next level" from here.
+  final bool replay;
   final VoidCallback onNext;
+  final VoidCallback onRetry;
+  final VoidCallback onExit;
 
   @override
   Widget build(BuildContext context) => CardPanel(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Capi(size: 96, mood: CapiMood.cheer),
-        const SizedBox(height: 4),
-        OutlinedTitle('Fase $level\nconcluída!', size: 34),
-        const SizedBox(height: 8),
-        Text('${formatInt(score)} pontos', style: _bodyStyle),
-        const SizedBox(height: 24),
-        ChunkyButton(
-          label: 'Próxima fase',
-          icon: Icons.arrow_forward_rounded,
-          big: true,
-          onTap: onNext,
+        const Capi(size: 84, mood: CapiMood.cheer),
+        OutlinedTitle('Fase $level concluída!', size: 30),
+        const SizedBox(height: 10),
+        StarRow(
+          filled: [for (var i = 0; i < 3; i++) i < Missions.count(starBits)],
+          animate: true,
         ),
+        const SizedBox(height: 10),
+        for (final m in Mission.values)
+          _MissionLine(
+            text: Missions.text(m, level),
+            done: Missions.has(starBits, m),
+            isNew: Missions.has(newBits, m),
+          ),
+        const SizedBox(height: 6),
+        Text(
+          starsGained > 0
+              ? '+$starsGained ${starsGained == 1 ? 'estrela' : 'estrelas'} · '
+                    '${formatInt(score)} pontos'
+              : '${formatInt(score)} pontos',
+          style: _bodyStyle,
+        ),
+        const SizedBox(height: 18),
+        if (replay) ...[
+          ChunkyButton(
+            label: 'Jogar de novo',
+            icon: Icons.refresh_rounded,
+            big: true,
+            onTap: onRetry,
+          ),
+          TextButton(
+            onPressed: onExit,
+            child: Text('Menu', style: displayText(18, color: Palette.textDim)),
+          ),
+        ] else
+          ChunkyButton(
+            label: 'Próxima fase',
+            icon: Icons.arrow_forward_rounded,
+            big: true,
+            onTap: onNext,
+          ),
+      ],
+    ),
+  );
+}
+
+/// One of the level's three missions, ticked when done.
+class _MissionLine extends StatelessWidget {
+  const _MissionLine({
+    required this.text,
+    required this.done,
+    this.isNew = false,
+  });
+  final String text;
+  final bool done;
+  final bool isNew;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Row(
+      children: [
+        Icon(
+          done ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+          size: 20,
+          color: done ? Palette.good : Palette.textDim,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: bodyText(
+              15,
+              color: done ? Palette.text : Palette.textDim,
+              weight: 500,
+            ),
+          ),
+        ),
+        if (isNew) const _Tag('NOVA', Palette.accentDeep),
       ],
     ),
   );
@@ -637,10 +738,12 @@ class _WinCard extends StatelessWidget {
 class _DailyWinCard extends StatelessWidget {
   const _DailyWinCard({
     required this.score,
+    required this.starsGained,
     required this.streak,
     required this.onExit,
   });
   final int score;
+  final int starsGained;
   final int streak;
   final VoidCallback onExit;
 
@@ -661,7 +764,15 @@ class _DailyWinCard extends StatelessWidget {
           style: displayText(20, color: Palette.accent),
         ),
         const SizedBox(height: 4),
-        Text('${formatInt(score)} pontos', style: _bodyStyle),
+        if (starsGained > 0) ...[
+          StarRow(filled: const [true, true, true], size: 34, animate: true),
+          const SizedBox(height: 4),
+          Text(
+            '+$starsGained estrelas · ${formatInt(score)} pontos',
+            style: _bodyStyle,
+          ),
+        ] else
+          Text('${formatInt(score)} pontos', style: _bodyStyle),
         const SizedBox(height: 24),
         ChunkyButton(
           label: 'Voltar ao menu',
@@ -677,6 +788,7 @@ class _DailyWinCard extends StatelessWidget {
 class _LoseCard extends StatelessWidget {
   const _LoseCard({
     required this.endless,
+    required this.starsGained,
     required this.score,
     required this.best,
     required this.newBest,
@@ -687,6 +799,9 @@ class _LoseCard extends StatelessWidget {
   });
 
   final bool endless;
+
+  /// Endless only: stars this run earned (one per 2,500 points).
+  final int starsGained;
   final int score;
   final int best;
   final bool newBest;
@@ -709,6 +824,21 @@ class _LoseCard extends StatelessWidget {
               : const [Color(0xFFFFFFFF), Color(0xFFFFB3B3)],
         ),
         const SizedBox(height: 8),
+        if (starsGained > 0)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star_rounded, color: Palette.accent, size: 24),
+                const SizedBox(width: 4),
+                Text(
+                  '+$starsGained',
+                  style: displayText(20, color: Palette.accent),
+                ),
+              ],
+            ),
+          ),
         Text(
           endless
               ? '${formatInt(score)} pontos · recorde ${formatInt(best)}'
@@ -753,10 +883,16 @@ class _LoseCard extends StatelessWidget {
 
 class _PauseCard extends StatelessWidget {
   const _PauseCard({
+    required this.level,
+    required this.starBits,
     required this.onResume,
     required this.onRestart,
     required this.onExit,
   });
+
+  /// Levels mode: the level, whose missions are listed.
+  final int? level;
+  final int starBits;
   final VoidCallback onResume;
   final VoidCallback onRestart;
   final VoidCallback? onExit;
@@ -767,6 +903,19 @@ class _PauseCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const OutlinedTitle('Pausa', size: 38),
+        if (level case final n?) ...[
+          const SizedBox(height: 12),
+          Text(
+            'Desafios da fase',
+            style: displayText(17, color: Palette.accent),
+          ),
+          const SizedBox(height: 4),
+          for (final m in Mission.values)
+            _MissionLine(
+              text: Missions.text(m, n),
+              done: Missions.has(starBits, m),
+            ),
+        ],
         const SizedBox(height: 24),
         ChunkyButton(
           label: 'Continuar',

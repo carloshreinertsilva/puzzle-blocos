@@ -49,6 +49,10 @@ class GameSession {
   int gems = 0;
   int _movesSinceClear = 0;
   bool revived = false;
+
+  /// Best single move of this attempt (for the level's missions).
+  int bestLines = 0;
+  int bestCombo = 0;
   SessionStatus status = SessionStatus.playing;
 
   static const comboGrace = 3;
@@ -100,6 +104,9 @@ class GameSession {
     } else if (++_movesSinceClear >= comboGrace) {
       combo = 0;
     }
+
+    bestLines = max(bestLines, lines);
+    bestCombo = max(bestCombo, combo);
 
     var points = piece.shape.size * 5;
     if (lines > 0) points += 50 * lines * (lines + 1) * max(1, combo);
