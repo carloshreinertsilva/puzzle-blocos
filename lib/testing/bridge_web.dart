@@ -17,5 +17,22 @@ void installJsBridge(TestBridge bridge) {
   api['obraDrag'] = ((JSNumber piece) => jsonEncode(
     bridge.obraDrag?.call(piece.toDartInt),
   ).toJS).toJS;
+  api['useTool'] =
+      ((JSString toolName, JSNumber? r, JSNumber? c, JSNumber? slot) => bridge
+              .useTool(
+                toolName.toDart,
+                r?.toDartInt,
+                c?.toDartInt,
+                slot?.toDartInt,
+              )
+              .then((v) => v.toJS)
+              .toJS)
+          .toJS;
+  api['addTool'] =
+      ((JSString toolName, JSNumber count) => bridge
+              .addTool(toolName.toDart, count.toDartInt)
+              .then((_) => true.toJS)
+              .toJS)
+          .toJS;
   globalContext['__bb'] = api;
 }

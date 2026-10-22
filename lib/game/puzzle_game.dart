@@ -10,6 +10,7 @@ import '../ui/block_painter.dart';
 import '../ui/level_text.dart';
 import '../ui/palette.dart';
 import '../core/shapes.dart';
+import '../services/progress_store.dart';
 import '../testing/test_bridge.dart';
 import 'board_view.dart';
 import 'capi_carrier.dart';
@@ -64,6 +65,9 @@ class PuzzleGame extends FlameGame {
     controller.onRevived = _onRevived;
     controller.onRestarted = _onRestarted;
     controller.onReady = _announce;
+    controller.onToolUsed = _onToolUsed;
+    controller.onPieceRotated = _onPieceRotated;
+    controller.onTrayRerolled = _onTrayRerolled;
     if (kTestBridge) TestBridge.instance.game = this;
     for (final t in trays) {
       t.playAppear();
@@ -106,6 +110,9 @@ class PuzzleGame extends FlameGame {
     controller.onRevived = null;
     controller.onRestarted = null;
     controller.onReady = null;
+    controller.onToolUsed = null;
+    controller.onPieceRotated = null;
+    controller.onTrayRerolled = null;
     sprites?.dispose();
     super.onRemove();
   }
@@ -284,6 +291,23 @@ class PuzzleGame extends FlameGame {
     _shakePower = cellSize * 0.05 * praise.tier;
     controller.feedback.praise(praise.tier);
     if (kTestBridge) TestBridge.instance.praises.add(praise.text);
+  }
+
+  void _onToolUsed(CapiTool tool, List<ClearedCell> cleared) {
+    if (cleared.isEmpty) return;
+    _clearEffects(cleared, [for (final c in cleared) (c.row, c.col)]);
+    _shake = 0.2;
+    _shakePower = cellSize * 0.04;
+  }
+
+  void _onPieceRotated(int slot) {
+    trays[slot].playAppear();
+  }
+
+  void _onTrayRerolled() {
+    for (final t in trays) {
+      t.playAppear();
+    }
   }
 
   void _onRevived(List<ClearedCell> cleared) {

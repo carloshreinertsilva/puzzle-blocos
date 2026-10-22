@@ -13,6 +13,9 @@ import '../ui/level_text.dart';
 import '../ui/capi.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
+import '../core/board.dart';
+import '../services/progress_store.dart';
+import '../ui/tool_painter.dart';
 import '../ui/widgets.dart';
 
 /// A level, the daily challenge or an endless run. The play area stays
@@ -117,6 +120,132 @@ class _GameScreenState extends State<GameScreen> {
     if (ok) controller.revive();
   });
 
+  void _openToolsSheet() {
+    widget.services.feedback.click();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _ToolsSheet(
+        controller: controller,
+        store: widget.services.store,
+        onUseTool: (tool) {
+          Navigator.of(context).pop();
+          controller.selectTool(tool);
+        },
+        onRewardTool: (tool) async {
+          final ok = await widget.services.ads.rewarded(
+            context,
+            RewardPlacement.forTool(tool),
+          );
+          if (ok) {
+            await widget.services.store.addTool(tool, 1);
+            widget.services.feedback.cheer();
+            if (mounted) setState(() {});
+          }
+        },
+        onBuyTool: (tool) async {
+          final ok = await widget.services.store.buyToolWithStars(tool);
+          if (ok) {
+            widget.services.feedback.cheer();
+            if (mounted) setState(() {});
+          } else {
+            widget.services.feedback.lose();
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildToolModeOverlay() {
+    final mode = controller.activeToolMode;
+    final g = game;
+    if (mode == null || !controller.playing || g == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Stack(
+      children: [
+        Positioned(
+          top: MediaQuery.paddingOf(context).top + hudHeight + 4,
+          left: 14,
+          right: 14,
+          child: _ActiveToolBanner(
+            tool: mode,
+            onCancel: controller.cancelToolMode,
+          ),
+        ),
+        if ((mode == CapiTool.hammer || mode == CapiTool.shovel) &&
+            g.boardRect != Rect.zero)
+          Positioned.fromRect(
+            rect: g.boardRect,
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: Board.size,
+              ),
+              itemCount: Board.size * Board.size,
+              itemBuilder: (context, idx) {
+                final r = idx ~/ Board.size;
+                final c = idx % Board.size;
+                final cell = controller.session.board.at(r, c);
+                final canTarget = mode == CapiTool.hammer
+                    ? cell.isFilled
+                    : true;
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (mode == CapiTool.hammer) {
+                      controller.executeHammer(r, c);
+                    } else if (mode == CapiTool.shovel) {
+                      controller.executeShovel(r, c);
+                    }
+                  },
+                  child: Semantics(
+                    button: true,
+                    label: mode == CapiTool.hammer
+                        ? 'Quebrar célula $r $c'
+                        : 'Limpar área 3x3 $r $c',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: canTarget
+                              ? (mode == CapiTool.hammer
+                                    ? const Color(0x66FFD95A)
+                                    : const Color(0x66339AF0))
+                              : Colors.transparent,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        if (mode == CapiTool.rotate)
+          for (var i = 0; i < 3; i++)
+            if (i < g.trays.length)
+              Positioned(
+                left: g.trays[i].position.x,
+                top: g.trays[i].position.y,
+                width: g.trays[i].size.x,
+                height: g.trays[i].size.y,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => controller.executeRotate(i),
+                  child: Semantics(
+                    button: true,
+                    label: 'Girar peça $i',
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
   void _retry() {
     widget.services.feedback.click();
     controller.restart();
@@ -136,6 +265,10 @@ class _GameScreenState extends State<GameScreen> {
           fit: StackFit.expand,
           children: [
             GameWidget(game: game!),
+            ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => _buildToolModeOverlay(),
+            ),
             Positioned(
               top: 0,
               left: 0,
@@ -153,6 +286,7 @@ class _GameScreenState extends State<GameScreen> {
                         : _Hud(
                             controller: controller,
                             onPause: () => controller.setPaused(true),
+                            onTools: _openToolsSheet,
                           ),
                   ),
                 ),

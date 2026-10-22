@@ -41,8 +41,15 @@ export type GameState = {
   geometry?: {
     board: { left: number; top: number; size: number; cell: number };
     slots: Box[];
-    viewport: { w: number; h: number; top: number };
+        viewport: { w: number; h: number; top: number };
   };
+  tools?: {
+    hammer: number;
+    rotate: number;
+    reroll: number;
+    shovel: number;
+  };
+  activeTool?: string;
 };
 
 type Saved = Record<string, string | number | boolean>;

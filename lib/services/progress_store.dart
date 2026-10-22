@@ -1,5 +1,41 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// The 4 tools of Capi (Step 2).
+enum CapiTool {
+  hammer,
+  rotate,
+  reroll,
+  shovel;
+
+  String get label => switch (this) {
+    CapiTool.hammer => 'Martelo',
+    CapiTool.rotate => 'Girar',
+    CapiTool.reroll => 'Trocar',
+    CapiTool.shovel => 'Pá 3x3',
+  };
+
+  String get description => switch (this) {
+    CapiTool.hammer => 'Quebra 1 bloco ou pedra',
+    CapiTool.rotate => 'Gira uma peça da bandeja',
+    CapiTool.reroll => 'Troca as 3 peças da bandeja',
+    CapiTool.shovel => 'Limpa uma área 3x3',
+  };
+
+  int get starCost => switch (this) {
+    CapiTool.hammer => 5,
+    CapiTool.rotate => 4,
+    CapiTool.reroll => 6,
+    CapiTool.shovel => 8,
+  };
+
+  String get actionPrompt => switch (this) {
+    CapiTool.hammer => 'Toque em um bloco para quebrar',
+    CapiTool.rotate => 'Toque na peça para girar',
+    CapiTool.reroll => '',
+    CapiTool.shovel => 'Toque onde quer abrir espaço 3x3',
+  };
+}
+
 /// Player progress and settings, saved on the device.
 class ProgressStore {
   ProgressStore(this._prefs);
@@ -116,6 +152,48 @@ class ProgressStore {
   int obraStars(int n) => _prefs.getInt('obraStars_$n') ?? 0;
   Future<void> setObraStars(int n, int stars) =>
       _prefs.setInt('obraStars_$n', stars);
+
+  // --- Capi Tools (Step 2) ---
+
+  int toolCount(CapiTool tool) => switch (tool) {
+    CapiTool.hammer => _prefs.getInt('tool_hammer') ?? 2,
+    CapiTool.rotate => _prefs.getInt('tool_rotate') ?? 2,
+    CapiTool.reroll => _prefs.getInt('tool_reroll') ?? 2,
+    CapiTool.shovel => _prefs.getInt('tool_shovel') ?? 1,
+  };
+
+  Future<void> addTool(CapiTool tool, [int count = 1]) async {
+    final current = toolCount(tool);
+    final key = switch (tool) {
+      CapiTool.hammer => 'tool_hammer',
+      CapiTool.rotate => 'tool_rotate',
+      CapiTool.reroll => 'tool_reroll',
+      CapiTool.shovel => 'tool_shovel',
+    };
+    await _prefs.setInt(key, current + count);
+  }
+
+  Future<bool> useTool(CapiTool tool) async {
+    final current = toolCount(tool);
+    if (current <= 0) return false;
+    final key = switch (tool) {
+      CapiTool.hammer => 'tool_hammer',
+      CapiTool.rotate => 'tool_rotate',
+      CapiTool.reroll => 'tool_reroll',
+      CapiTool.shovel => 'tool_shovel',
+    };
+    await _prefs.setInt(key, current - 1);
+    return true;
+  }
+
+  Future<bool> buyToolWithStars(CapiTool tool) async {
+    final cost = tool.starCost;
+    if (stars < cost) return false;
+    final ok = await spendStars(cost);
+    if (!ok) return false;
+    await addTool(tool, 1);
+    return true;
+  }
 
   bool get adsRemoved => _prefs.getBool('adsRemoved') ?? false;
 

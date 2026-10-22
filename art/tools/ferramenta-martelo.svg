@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="headGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd95a"/>
+      <stop offset="50%" stop-color="#f5b21e"/>
+      <stop offset="100%" stop-color="#d48208"/>
+    </linearGradient>
+    <linearGradient id="faceGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e0e8f0"/>
+      <stop offset="50%" stop-color="#9eb2c0"/>
+      <stop offset="100%" stop-color="#627888"/>
+    </linearGradient>
+    <linearGradient id="handleGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8b886"/>
+      <stop offset="50%" stop-color="#c88e52"/>
+      <stop offset="100%" stop-color="#9a622a"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <!-- Motion lines -->
+    <path d="M 380 90 A 240 240 0 0 1 450 180" fill="none" stroke="#ffd95a" stroke-width="12" stroke-linecap="round" stroke-dasharray="16 12"/>
+    <path d="M 405 70 A 260 260 0 0 1 480 160" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+
+    <!-- Sparkles on impact -->
+    <path d="M 420 180 L 432 205 L 457 217 L 432 229 L 420 254 L 408 229 L 383 217 L 408 205 Z" fill="#ffd43b" stroke="#4a2a12" stroke-width="6"/>
+    <path d="M 450 130 L 456 145 L 471 151 L 456 157 L 450 172 L 444 157 L 429 151 L 444 145 Z" fill="#ffffff" stroke="#4a2a12" stroke-width="5"/>
+    <circle cx="360" cy="130" r="8" fill="#ffd95a"/>
+    <circle cx="475" cy="245" r="7" fill="#ff922b"/>
+
+    <!-- Hammer Handle -->
+    <!-- Shadow beneath handle -->
+    <line x1="230" y1="240" x2="90" y2="420" stroke="#000000" stroke-width="38" stroke-linecap="round" opacity="0.15"/>
+    <!-- Main wooden handle -->
+    <line x1="235" y1="235" x2="95" y2="415" stroke="#4a2a12" stroke-width="44" stroke-linecap="round"/>
+    <line x1="235" y1="235" x2="95" y2="415" stroke="url(#handleGrad)" stroke-width="32" stroke-linecap="round"/>
+    <!-- Grip wraps -->
+    <line x1="165" y1="325" x2="145" y2="351" stroke="#4a2a12" stroke-width="8" stroke-linecap="round"/>
+    <line x1="145" y1="351" x2="125" y2="377" stroke="#4a2a12" stroke-width="8" stroke-linecap="round"/>
+    <line x1="125" y1="377" x2="105" y2="403" stroke="#4a2a12" stroke-width="8" stroke-linecap="round"/>
+    <!-- Pommel cap -->
+    <circle cx="95" cy="415" r="22" fill="#ffd95a" stroke="#4a2a12" stroke-width="8"/>
+    <circle cx="95" cy="415" r="10" fill="#f5b21e"/>
+
+    <!-- Hammer Head (angled group) -->
+    <g transform="translate(260, 205) rotate(-38)">
+      <!-- Back claw / peen -->
+      <path d="M -90 -35 C -120 -20 -130 10 -115 35 L -80 25 Z" fill="url(#faceGrad)" stroke="#4a2a12" stroke-width="10" stroke-linejoin="round"/>
+      <!-- Main golden block -->
+      <rect x="-85" y="-45" width="170" height="90" rx="20" fill="url(#headGrad)" stroke="#4a2a12" stroke-width="10"/>
+      <!-- Center safety band -->
+      <rect x="-25" y="-45" width="50" height="90" fill="#f08c00" stroke="#4a2a12" stroke-width="10"/>
+      <line x1="-15" y1="-45" x2="15" y2="45" stroke="#ffd95a" stroke-width="12" opacity="0.8"/>
+      <!-- Metallic strike face -->
+      <path d="M 85 -40 L 120 -35 C 130 -15 130 15 120 35 L 85 40 Z" fill="url(#faceGrad)" stroke="#4a2a12" stroke-width="10" stroke-linejoin="round"/>
+      <!-- Shine highlight -->
+      <rect x="-70" y="-35" width="140" height="14" rx="7" fill="#ffffff" opacity="0.6"/>
+    </g>
+  </g>
+</svg>

@@ -199,4 +199,26 @@ class Board {
       pups: pups,
     );
   }
+
+  /// Breaks a single cell (used by the Hammer tool).
+  ClearedCell? breakCell(int r, int c) {
+    if (r < 0 || r >= size || c < 0 || c >= size) return null;
+    final before = at(r, c);
+    if (before.isEmpty) return null;
+    const after = Cell.empty();
+    set(r, c, after);
+    return ClearedCell(r, c, before, after);
+  }
+
+  /// Clears all filled cells in a 3x3 square centered at [centerR], [centerC].
+  List<ClearedCell> breakArea3x3(int centerR, int centerC) {
+    final cleared = <ClearedCell>[];
+    for (var dr = -1; dr <= 1; dr++) {
+      for (var dc = -1; dc <= 1; dc++) {
+        final cell = breakCell(centerR + dr, centerC + dc);
+        if (cell != null) cleared.add(cell);
+      }
+    }
+    return cleared;
+  }
 }

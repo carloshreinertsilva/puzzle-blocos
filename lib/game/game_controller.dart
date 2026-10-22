@@ -65,6 +65,14 @@ class GameController extends ChangeNotifier {
   void Function(List<ClearedCell> cleared)? onRevived;
   VoidCallback? onRestarted;
 
+  /// Active tool targeting mode (Hammer, Shovel, Rotate).
+  CapiTool? activeToolMode;
+
+  /// Scene hooks for tools.
+  void Function(CapiTool tool, List<ClearedCell> cleared)? onToolUsed;
+  void Function(int slot)? onPieceRotated;
+  VoidCallback? onTrayRerolled;
+
   /// Called when the attempt is ready to play (after any intro cards).
   VoidCallback? onReady;
 
@@ -388,6 +396,89 @@ class GameController extends ChangeNotifier {
     onRevived?.call(cleared);
     if (session.status != SessionStatus.playing) _finish();
     notifyListeners();
+  }
+
+  // --- Capi Tools (Step 2) ---
+
+  void cancelToolMode() {
+    notifyListeners();
+  }
+
+  Future<bool> selectTool(CapiTool tool) async {
+    if (!playing || store.toolCount(tool) <= 0) return false;
+    if (tool == CapiTool.reroll) {
+      final ok = await store.useTool(CapiTool.reroll);
+      if (!ok) return false;
+      session.useReroll();
+      feedback.pick();
+      _react(CapiReaction.cheer, 'Peças novinhas na mão!');
+      onTrayRerolled?.call();
+      noteActivity();
+      notifyListeners();
+      return true;
+    }
+    activeToolMode = tool;
+    _react(CapiReaction.hint, tool.actionPrompt);
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> executeHammer(int r, int c) async {
+    if (!playing ||
+        activeToolMode != CapiTool.hammer ||
+        !session.canBreakCell(r, c)) {
+      return false;
+    }
+    final ok = await store.useTool(CapiTool.hammer);
+    if (!ok) return false;
+    final cleared = session.useHammer(r, c);
+    if (cleared == null) return false;
+    feedback.clear(0, 1);
+    _react(CapiReaction.cheer, 'Quebrou!');
+    onToolUsed?.call(CapiTool.hammer, [cleared]);
+    if (session.status != SessionStatus.playing) {
+      _finish();
+    }
+    noteActivity();
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> executeShovel(int r, int c) async {
+    if (!playing || activeToolMode != CapiTool.shovel) return false;
+    final ok = await store.useTool(CapiTool.shovel);
+    if (!ok) return false;
+    final cleared = session.useShovel(r, c);
+    feedback.clear(1, 2);
+    _react(CapiReaction.cheer, 'Limpou geral!');
+    onToolUsed?.call(CapiTool.shovel, cleared);
+    if (session.status != SessionStatus.playing) {
+      _finish();
+    }
+    noteActivity();
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> executeRotate(int slot) async {
+    if (!playing ||
+        activeToolMode != CapiTool.rotate ||
+        !session.canRotatePiece(slot)) {
+      return false;
+    }
+    final ok = await store.useTool(CapiTool.rotate);
+    if (!ok) return false;
+    final piece = session.useRotate(slot);
+    if (piece == null) return false;
+    feedback.pick();
+    _react(CapiReaction.cheer, 'Girou!');
+    onPieceRotated?.call(slot);
+    if (session.status != SessionStatus.playing) {
+      _finish();
+    }
+    noteActivity();
+    notifyListeners();
+    return true;
   }
 
   /// Retry this level, or move on to the next one after a win.

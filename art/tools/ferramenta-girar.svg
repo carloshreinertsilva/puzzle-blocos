@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="arrowGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4facfe"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd95a"/>
+      <stop offset="100%" stop-color="#f5b21e"/>
+    </linearGradient>
+    <linearGradient id="blockGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9a44"/>
+      <stop offset="100%" stop-color="#e8590c"/>
+    </linearGradient>
+    <filter id="glow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#glow)">
+    <!-- Outer rotation track -->
+    <circle cx="256" cy="256" r="195" fill="none" stroke="#22b8cf" stroke-width="14" stroke-dasharray="24 16" opacity="0.4"/>
+
+    <!-- Arrow 1 (top-right arc, clockwise) -->
+    <path d="M 120 180 A 185 185 0 0 1 390 150" fill="none" stroke="url(#arrowGrad)" stroke-width="36" stroke-linecap="round"/>
+    <path d="M 120 180 A 185 185 0 0 1 390 150" fill="none" stroke="#4a2a12" stroke-width="48" stroke-linecap="round" style="mix-blend-mode: destination-over;"/>
+    <!-- Arrowhead 1 -->
+    <path d="M 370 110 L 440 160 L 370 210 Z" fill="url(#arrowGrad)" stroke="#4a2a12" stroke-width="10" stroke-linejoin="round"/>
+
+    <!-- Arrow 2 (bottom-left arc, clockwise) -->
+    <path d="M 392 332 A 185 185 0 0 1 122 362" fill="none" stroke="url(#arrowGrad2)" stroke-width="36" stroke-linecap="round"/>
+    <path d="M 392 332 A 185 185 0 0 1 122 362" fill="none" stroke="#4a2a12" stroke-width="48" stroke-linecap="round" style="mix-blend-mode: destination-over;"/>
+    <!-- Arrowhead 2 -->
+    <path d="M 142 402 L 72 352 L 142 302 Z" fill="url(#arrowGrad2)" stroke="#4a2a12" stroke-width="10" stroke-linejoin="round"/>
+
+    <!-- Center Rotating Puzzle Piece (T-piece or L-piece angled) -->
+    <g transform="translate(256, 256) rotate(25)">
+      <!-- Drop shadow -->
+      <rect x="-70" y="-70" width="140" height="140" rx="24" fill="#000000" opacity="0.18" transform="translate(0, 14)"/>
+      <!-- Main block 1 -->
+      <rect x="-65" y="-65" width="65" height="65" rx="14" fill="url(#blockGrad)" stroke="#4a2a12" stroke-width="8"/>
+      <rect x="-58" y="-58" width="51" height="14" rx="7" fill="#ffffff" opacity="0.6"/>
+      <!-- Main block 2 -->
+      <rect x="0" y="-65" width="65" height="65" rx="14" fill="url(#blockGrad)" stroke="#4a2a12" stroke-width="8"/>
+      <rect x="7" y="-58" width="51" height="14" rx="7" fill="#ffffff" opacity="0.6"/>
+      <!-- Main block 3 -->
+      <rect x="0" y="0" width="65" height="65" rx="14" fill="url(#blockGrad)" stroke="#4a2a12" stroke-width="8"/>
+      <rect x="7" y="7" width="51" height="14" rx="7" fill="#ffffff" opacity="0.6"/>
+      <!-- Main block 4 -->
+      <rect x="-65" y="0" width="65" height="65" rx="14" fill="url(#blockGrad)" stroke="#4a2a12" stroke-width="8"/>
+      <rect x="-58" y="7" width="51" height="14" rx="7" fill="#ffffff" opacity="0.6"/>
+
+      <!-- Center pivot screw / button -->
+      <circle cx="0" cy="0" r="22" fill="#ffd95a" stroke="#4a2a12" stroke-width="7"/>
+      <circle cx="0" cy="0" r="10" fill="#f5b21e"/>
+    </g>
+
+    <!-- Sparkles -->
+    <path d="M 440 290 L 448 305 L 463 313 L 448 321 L 440 336 L 432 321 L 417 313 L 432 305 Z" fill="#ffd43b" stroke="#4a2a12" stroke-width="5"/>
+    <circle cx="80" cy="210" r="8" fill="#ffd95a"/>
+  </g>
+</svg>

@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 
 import '../core/board.dart';
+import '../services/progress_store.dart';
 import 'board_view.dart';
 import 'effects.dart';
 import 'puzzle_game.dart';
@@ -99,11 +100,45 @@ class TrayPiece extends PositionComponent
         sprites.draw(canvas, sprites.gem, dst, opacity: opacity);
       }
     }
+    if (game.controller.activeToolMode == CapiTool.rotate && piece != null) {
+      final badgePaint = Paint()..color = const Color(0xEEFFD95A);
+      canvas.drawCircle(_center, 18, badgePaint);
+      canvas.drawCircle(
+        _center,
+        18,
+        Paint()
+          ..color = const Color(0xFF4A2A12)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+      final arrowPath = Path()
+        ..arcTo(
+          Rect.fromCircle(center: _center, radius: 10),
+          -pi * 0.8,
+          pi * 1.5,
+          false,
+        );
+      canvas.drawPath(
+        arrowPath,
+        Paint()
+          ..color = const Color(0xFF4A2A12)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round,
+      );
+    }
   }
 
   @override
   void onDragStart(DragStartEvent event) {
     if (piece == null || !game.controller.playing || game.activeDrag != null) {
+      return;
+    }
+    if (game.controller.activeToolMode == CapiTool.rotate) {
+      game.controller.executeRotate(slot);
+      return;
+    }
+    if (game.controller.activeToolMode != null) {
       return;
     }
     super.onDragStart(event);
