@@ -63,6 +63,18 @@ export type GameState = {
     playing: boolean;
     starsGained: number;
   };
+  equippedHat?: string;
+  unlockedHats?: string[];
+  dailyChestAvailable?: boolean;
+  dailyChestClaimed?: boolean;
+  missions?: {
+    index: number;
+    type: string;
+    target: number;
+    progress: number;
+    claimed: boolean;
+    completed: boolean;
+  }[];
 };
 
 type Saved = Record<string, string | number | boolean>;

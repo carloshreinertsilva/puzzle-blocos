@@ -1,3 +1,8 @@
+import '../core/daily_missions.dart';
+import '../core/hats.dart';
+import 'daily_missions_dialog.dart';
+import 'wardrobe_dialog.dart';
+
 import 'package:flutter/material.dart';
 
 import '../game/game_controller.dart';
@@ -56,6 +61,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void _tip() {
     widget.services.feedback.click();
     setState(() => _hint = _tips[_tipIndex++ % _tips.length]);
+  }
+
+  Future<void> _openWardrobe() async {
+    widget.services.feedback.click();
+    await WardrobeDialog.show(context, widget.services);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openDailyMissions() async {
+    widget.services.feedback.click();
+    await DailyMissionsDialog.show(context, widget.services);
+    if (mounted) setState(() {});
   }
 
   void _locked(String mode, int level) {
@@ -378,25 +395,47 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            StatChip(
-                              icon: Icons.emoji_events_rounded,
-                              color: Palette.accent,
-                              value: formatInt(store.bestScore),
-                            ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             StatChip(
                               icon: Icons.local_fire_department_rounded,
                               color: Palette.accentDeep,
                               value: '$streak',
                             ),
+                            if (MediaQuery.sizeOf(context).width >= 430) ...[
+                              const SizedBox(width: 6),
+                              StatChip(
+                                icon: Icons.emoji_events_rounded,
+                                color: Palette.accent,
+                                value: formatInt(store.bestScore),
+                              ),
+                            ],
                             const Spacer(),
+                            RoundIconButton(
+                              icon: Icons.assignment_turned_in_rounded,
+                              label: 'Missões Diárias',
+                              badge:
+                                  DailyMissionsManager.unclaimedCount(
+                                        store,
+                                        today,
+                                      ) >
+                                      0
+                                  ? '${DailyMissionsManager.unclaimedCount(store, today)}'
+                                  : null,
+                              onTap: _openDailyMissions,
+                            ),
+                            const SizedBox(width: 6),
+                            RoundIconButton(
+                              icon: Icons.checkroom_rounded,
+                              label: 'Guarda-Roupa',
+                              onTap: _openWardrobe,
+                            ),
+                            const SizedBox(width: 6),
                             RoundIconButton(
                               icon: Icons.bar_chart_rounded,
                               label: 'Estatísticas',
                               onTap: () => showStats(context, widget.services),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             RoundIconButton(
                               icon: Icons.settings_rounded,
                               label: 'Configurações',
@@ -406,7 +445,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         SizedBox(height: isSmall ? 8 : 18),
-                        Logo(onCapiTap: _tip, compact: isSmall),
+                        Logo(
+                          onCapiTap: _tip,
+                          compact: isSmall,
+                          hat: CapiHat.fromId(store.equippedHat),
+                        ),
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.symmetric(

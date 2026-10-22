@@ -1,3 +1,5 @@
+import '../core/hats.dart';
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -13,9 +15,10 @@ enum CapiMood { happy, cheer, worried, sad, point, carry }
 /// Capi, the builder capybara: the game's mascot, drawn in code to match the
 /// art in `art/capi.vectorcraft`, with a gentle idle bob.
 class Capi extends StatefulWidget {
-  const Capi({super.key, this.size = 80, this.mood = CapiMood.happy});
+  const Capi({super.key, this.size = 80, this.mood = CapiMood.happy, this.hat});
   final double size;
   final CapiMood mood;
+  final CapiHat? hat;
 
   @override
   State<Capi> createState() => _CapiState();
@@ -39,18 +42,21 @@ class _CapiState extends State<Capi> with SingleTickerProviderStateMixin {
       animation: _bob,
       builder: (context, _) => CustomPaint(
         size: Size.square(widget.size),
-        painter: CapiPainter(mood: widget.mood, t: _bob.value),
+        painter: CapiPainter(
+          mood: widget.mood,
+          t: _bob.value,
+          hat: widget.hat ?? CapiHat.helmet,
+        ),
       ),
     ),
   );
 }
 
 class CapiPainter extends CustomPainter {
-  CapiPainter({required this.mood, required this.t});
+  CapiPainter({required this.mood, required this.t, this.hat = CapiHat.helmet});
   final CapiMood mood;
-
-  /// Idle animation phase, 0..1.
   final double t;
+  final CapiHat hat;
 
   static const _line = Color(0xFF4A2A12);
   static const _furTop = Color(0xFFD69E66);
@@ -366,44 +372,237 @@ class CapiPainter extends CustomPainter {
     canvas.drawOval(const Rect.fromLTWH(24.4, 39, 7.8, 4.5), blush);
     canvas.drawOval(const Rect.fromLTWH(67.8, 39, 7.8, 4.5), blush);
 
-    // Builder's helmet.
-    _shape(
-      canvas,
-      Path()
-        ..moveTo(25.6, 25.6)
-        ..cubicTo(25.6, 3.9, 74.4, 3.9, 74.4, 25.6)
-        ..close(),
-      _helmetTop,
-      _helmetBottom,
-    );
-    final brim = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(19.1, 23.2, 61.7, 4.9),
-      const Radius.circular(2.4),
-    );
-    canvas.drawRRect(brim, Paint()..color = const Color(0xFFE09A12));
-    canvas.drawRRect(brim, _outline);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(46.7, 9, 6.6, 14.6),
-        const Radius.circular(2.5),
-      ),
-      Paint()..color = const Color(0xFFFFE58F),
-    );
-    canvas.drawPath(
-      Path()
-        ..moveTo(31.3, 19.5)
-        ..cubicTo(32.2, 12.7, 37.1, 9.8, 42, 9),
-      Paint()
-        ..color = const Color(0xCCFFF4C7)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..strokeCap = StrokeCap.round,
-    );
+    // Equipped Hat.
+    _drawHat(canvas, hat);
     canvas.restore();
   }
 
+  void _drawHat(Canvas canvas, CapiHat h) {
+    switch (h) {
+      case CapiHat.helmet:
+        _shape(
+          canvas,
+          Path()
+            ..moveTo(25.6, 25.6)
+            ..cubicTo(25.6, 3.9, 74.4, 3.9, 74.4, 25.6)
+            ..close(),
+          _helmetTop,
+          _helmetBottom,
+        );
+        final brim = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(19.1, 23.2, 61.7, 4.9),
+          const Radius.circular(2.4),
+        );
+        canvas.drawRRect(brim, Paint()..color = const Color(0xFFE09A12));
+        canvas.drawRRect(brim, _outline);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            const Rect.fromLTWH(46.7, 9, 6.6, 14.6),
+            const Radius.circular(2.5),
+          ),
+          Paint()..color = const Color(0xFFFFE58F),
+        );
+        canvas.drawPath(
+          Path()
+            ..moveTo(31.3, 19.5)
+            ..cubicTo(32.2, 12.7, 37.1, 9.8, 42, 9),
+          Paint()
+            ..color = const Color(0xCCFFF4C7)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.round,
+        );
+
+      case CapiHat.crown:
+        // Royal Crown
+        final crownPath = Path()
+          ..moveTo(24, 23)
+          ..lineTo(22, 11)
+          ..lineTo(36, 16)
+          ..lineTo(50, 5)
+          ..lineTo(64, 16)
+          ..lineTo(78, 11)
+          ..lineTo(76, 23)
+          ..close();
+        _shape(
+          canvas,
+          crownPath,
+          const Color(0xFFFDE047),
+          const Color(0xFFEAB308),
+        );
+        final crownBand = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(21, 21.5, 58, 5.5),
+          const Radius.circular(2),
+        );
+        canvas.drawRRect(crownBand, Paint()..color = const Color(0xFFCA8A04));
+        canvas.drawRRect(crownBand, _outline);
+        // Jewels on peaks
+        canvas.drawCircle(
+          const Offset(22, 11),
+          3.2,
+          Paint()..color = const Color(0xFFEF4444),
+        );
+        canvas.drawCircle(const Offset(22, 11), 3.2, _outline);
+        canvas.drawCircle(
+          const Offset(50, 5),
+          4.2,
+          Paint()..color = const Color(0xFF38BDF8),
+        );
+        canvas.drawCircle(const Offset(50, 5), 4.2, _outline);
+        canvas.drawCircle(
+          const Offset(78, 11),
+          3.2,
+          Paint()..color = const Color(0xFF10B981),
+        );
+        canvas.drawCircle(const Offset(78, 11), 3.2, _outline);
+        // Base band jewels
+        for (final (x, c) in [
+          (34.0, const Color(0xFFEF4444)),
+          (50.0, const Color(0xFFFDE047)),
+          (66.0, const Color(0xFF38BDF8)),
+        ]) {
+          canvas.drawCircle(Offset(x, 24.2), 2.0, Paint()..color = c);
+        }
+
+      case CapiHat.party:
+        // Party Cone Hat
+        final partyPath = Path()
+          ..moveTo(28, 24)
+          ..lineTo(50, 3)
+          ..lineTo(72, 24)
+          ..close();
+        _shape(
+          canvas,
+          partyPath,
+          const Color(0xFF38BDF8),
+          const Color(0xFFEC4899),
+        );
+        // Yellow stripes
+        final stripePaint = Paint()
+          ..color = const Color(0xFFFDE047)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+          const Offset(35, 17),
+          const Offset(65, 17),
+          stripePaint,
+        );
+        canvas.drawLine(
+          const Offset(42, 10),
+          const Offset(58, 10),
+          stripePaint,
+        );
+        // Pom pom on apex
+        canvas.drawCircle(
+          const Offset(50, 3),
+          4.5,
+          Paint()..color = const Color(0xFFFDE047),
+        );
+        canvas.drawCircle(const Offset(50, 3), 4.5, _outline);
+
+      case CapiHat.chef:
+        // Chef's Toque Blanche
+        final chefPath = Path()
+          ..moveTo(26, 21)
+          ..cubicTo(18, 10, 32, 2, 40, 5)
+          ..cubicTo(45, 0, 55, 0, 60, 5)
+          ..cubicTo(68, 2, 82, 10, 74, 21)
+          ..close();
+        _shape(
+          canvas,
+          chefPath,
+          const Color(0xFFFFFFFF),
+          const Color(0xFFE2E8F0),
+        );
+        final chefBand = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(26, 20.5, 48, 5.0),
+          const Radius.circular(1.5),
+        );
+        canvas.drawRRect(chefBand, Paint()..color = const Color(0xFFCBD5E1));
+        canvas.drawRRect(chefBand, _outline);
+
+      case CapiHat.pirate:
+        // Pirate Tricorn Hat
+        final tricorn = Path()
+          ..moveTo(14, 23)
+          ..cubicTo(20, 15, 36, 12, 50, 10)
+          ..cubicTo(64, 12, 80, 15, 86, 23)
+          ..lineTo(78, 27)
+          ..cubicTo(66, 22, 34, 22, 22, 27)
+          ..close();
+        _shape(
+          canvas,
+          tricorn,
+          const Color(0xFF1E293B),
+          const Color(0xFF0F172A),
+        );
+        // Gold edge line
+        final goldLine = Paint()
+          ..color = const Color(0xFFFDE047)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.8;
+        canvas.drawPath(tricorn, goldLine);
+        // White block icon in center
+        final skull = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(46, 15, 8, 8),
+          const Radius.circular(2),
+        );
+        canvas.drawRRect(skull, Paint()..color = Colors.white);
+
+      case CapiHat.straw:
+        // Straw Hat
+        final brim = Path()
+          ..moveTo(14, 24)
+          ..quadraticBezierTo(50, 19, 86, 24)
+          ..lineTo(84, 28)
+          ..quadraticBezierTo(50, 23, 16, 28)
+          ..close();
+        _shape(canvas, brim, const Color(0xFFFDE68A), const Color(0xFFD97706));
+        final crown = Path()
+          ..moveTo(28, 22)
+          ..cubicTo(28, 8, 72, 8, 72, 22)
+          ..close();
+        _shape(canvas, crown, const Color(0xFFFDE68A), const Color(0xFFD97706));
+        // Red Ribbon
+        final ribbon = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(27, 19, 46, 4),
+          const Radius.circular(1.5),
+        );
+        canvas.drawRRect(ribbon, Paint()..color = const Color(0xFFEF4444));
+
+      case CapiHat.wizard:
+        // Wizard Hat
+        final brim = Path()
+          ..moveTo(16, 24)
+          ..quadraticBezierTo(50, 18, 84, 24)
+          ..lineTo(82, 28)
+          ..quadraticBezierTo(50, 22, 18, 28)
+          ..close();
+        _shape(canvas, brim, const Color(0xFF6D28D9), const Color(0xFF4338CA));
+        final cone = Path()
+          ..moveTo(28, 22)
+          ..cubicTo(36, 12, 54, 4, 68, 2)
+          ..cubicTo(56, 10, 66, 16, 72, 22)
+          ..close();
+        _shape(canvas, cone, const Color(0xFF6D28D9), const Color(0xFF4338CA));
+        // Magic yellow star on cone
+        canvas.drawCircle(
+          const Offset(48, 12),
+          2.5,
+          Paint()..color = const Color(0xFFFDE047),
+        );
+        canvas.drawCircle(
+          const Offset(58, 7),
+          2.0,
+          Paint()..color = const Color(0xFFFDE047),
+        );
+    }
+  }
+
   @override
-  bool shouldRepaint(CapiPainter old) => old.t != t || old.mood != mood;
+  bool shouldRepaint(CapiPainter old) =>
+      old.t != t || old.mood != mood || old.hat != hat;
 }
 
 /// Capi with a speech bubble beside him.

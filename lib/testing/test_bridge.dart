@@ -1,3 +1,5 @@
+import '../core/daily_missions.dart';
+
 import 'dart:convert';
 
 import '../core/board.dart';
@@ -36,8 +38,22 @@ class TestBridge {
 
   /// The star wallet, set by the app (so the home screen reports it too).
   int Function()? wallet;
+  ProgressStore? store;
 
   Map<String, Object?> state() {
+    final sStore = store ?? controller?.store;
+    final today = DateTime.now();
+    final dMissions = sStore != null
+        ? DailyMissionsManager.missionsForDay(today)
+        : null;
+    final hats = sStore != null ? sStore.unlockedHats : null;
+    final equipped = sStore?.equippedHat;
+    final chestAvail = sStore != null
+        ? DailyMissionsManager.isChestAvailable(sStore, today)
+        : false;
+    final chestDone = sStore != null
+        ? DailyMissionsManager.isChestClaimed(sStore, today)
+        : false;
     final t = tower;
     if (t != null) {
       return {
@@ -79,7 +95,28 @@ class TestBridge {
     }
     final c = controller;
     final g = game;
-    if (c == null) return {'screen': screen, 'stars': wallet?.call()};
+    if (c == null) {
+      return {
+        'screen': screen,
+        'stars': wallet?.call(),
+        'equippedHat': equipped,
+        'unlockedHats': hats,
+        'dailyChestAvailable': chestAvail,
+        'dailyChestClaimed': chestDone,
+        if (dMissions != null && sStore != null)
+          'missions': [
+            for (final m in dMissions)
+              {
+                'index': m.index,
+                'type': m.type.name,
+                'target': m.target,
+                'progress': sStore.dailyMissionProgress(today, m.index),
+                'claimed': sStore.isDailyMissionClaimed(today, m.index),
+                'completed': DailyMissionsManager.isCompleted(sStore, m, today),
+              },
+          ],
+      };
+    }
     final s = c.session;
     final level = s.level;
     return {
@@ -200,6 +237,31 @@ class TestBridge {
     if (t == null) return false;
     t.debugPlace(perfect: false, offset: 9.0);
     return true;
+  }
+
+  Future<void> equipHat(String hatId) async {
+    final s = store ?? controller?.store;
+    if (s != null) await s.equipHat(hatId);
+  }
+
+  Future<void> unlockHat(String hatId) async {
+    final s = store ?? controller?.store;
+    if (s != null) await s.unlockHat(hatId);
+  }
+
+  Future<void> progressDailyMission(int index, int amount) async {
+    final s = store ?? controller?.store;
+    if (s == null) return;
+    final today = DateTime.now();
+    final cur = s.dailyMissionProgress(today, index);
+    await s.setDailyMissionProgress(today, index, cur + amount);
+  }
+
+  Future<String?> claimDailyChest() async {
+    final s = store ?? controller?.store;
+    if (s == null) return null;
+    final h = await DailyMissionsManager.claimChest(s, DateTime.now());
+    return h?.id;
   }
 
   bool win() {

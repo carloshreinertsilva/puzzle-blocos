@@ -1,3 +1,5 @@
+import '../core/daily_missions.dart';
+
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -458,6 +460,11 @@ class TowerController extends ChangeNotifier {
       store.recordTowerHeight(finalHeight);
     }
     store.recordTowerGame();
+    DailyMissionsManager.reportEvent(
+      store,
+      DailyMissionType.playTower,
+      finalHeight,
+    );
     feedback.lose();
     notifyListeners();
   }
