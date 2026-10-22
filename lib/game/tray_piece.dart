@@ -101,10 +101,11 @@ class TrayPiece extends PositionComponent
       }
     }
     if (game.controller.activeToolMode == CapiTool.rotate && piece != null) {
+      final centerOffset = Offset(_center.x, _center.y);
       final badgePaint = Paint()..color = const Color(0xEEFFD95A);
-      canvas.drawCircle(_center, 18, badgePaint);
+      canvas.drawCircle(centerOffset, 18, badgePaint);
       canvas.drawCircle(
-        _center,
+        centerOffset,
         18,
         Paint()
           ..color = const Color(0xFF4A2A12)
@@ -113,7 +114,7 @@ class TrayPiece extends PositionComponent
       );
       final arrowPath = Path()
         ..arcTo(
-          Rect.fromCircle(center: _center, radius: 10),
+          Rect.fromCircle(center: centerOffset, radius: 10),
           -pi * 0.8,
           pi * 1.5,
           false,

@@ -60,14 +60,7 @@ void main() {
 
   group('GameSession tools', () {
     test('useHammer breaks cell and collects gem / pup', () {
-      final level = LevelConfig(
-        number: 1,
-        kind: LevelKind.level,
-        targetScore: 500,
-        gemsTarget: 5,
-        startingBoard: const [],
-      );
-      final session = GameSession(level);
+      final session = GameSession(LevelConfig.endless());
       session.board.set(3, 4, const Cell.block(0, gem: true, pup: true));
 
       expect(session.canBreakCell(3, 4), isTrue);
@@ -81,14 +74,7 @@ void main() {
     });
 
     test('useShovel clears 3x3 area and collects multiple items', () {
-      final level = LevelConfig(
-        number: 1,
-        kind: LevelKind.level,
-        targetScore: 500,
-        gemsTarget: 5,
-        startingBoard: const [],
-      );
-      final session = GameSession(level);
+      final session = GameSession(LevelConfig.endless());
       session.board.set(2, 2, const Cell.block(1, gem: true));
       session.board.set(2, 3, const Cell.block(2, gem: true));
       session.board.set(3, 2, const Cell.block(3, pup: true));
@@ -100,13 +86,7 @@ void main() {
     });
 
     test('useRotate rotates tray piece and preserves properties', () {
-      final level = LevelConfig(
-        number: 1,
-        kind: LevelKind.level,
-        targetScore: 500,
-        startingBoard: const [],
-      );
-      final session = GameSession(level);
+      final session = GameSession(LevelConfig.endless());
       final i20 = allShapes.firstWhere((s) => s.id == 'i20');
       session.tray[0] = Piece(i20, color: 4, gemCell: 1);
 
@@ -121,13 +101,7 @@ void main() {
     });
 
     test('useReroll refreshes tray pieces', () {
-      final level = LevelConfig(
-        number: 1,
-        kind: LevelKind.level,
-        targetScore: 500,
-        startingBoard: const [],
-      );
-      final session = GameSession(level);
+      final session = GameSession(LevelConfig.endless());
       session.useReroll();
       expect(session.tray.length, 3);
       expect(session.tray.any((p) => p != null), isTrue);
@@ -171,7 +145,7 @@ void main() {
     test('selectTool and execution flow', () async {
       SharedPreferences.setMockInitialValues({});
       final store = await ProgressStore.load();
-      final feedback = GameFeedback();
+      final feedback = GameFeedback(store);
       final controller = GameController(
         store: store,
         feedback: feedback,

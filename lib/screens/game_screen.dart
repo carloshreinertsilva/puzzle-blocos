@@ -140,14 +140,14 @@ class _GameScreenState extends State<GameScreen> {
           );
           if (ok) {
             await widget.services.store.addTool(tool, 1);
-            widget.services.feedback.cheer();
+            widget.services.feedback.click();
             if (mounted) setState(() {});
           }
         },
         onBuyTool: (tool) async {
           final ok = await widget.services.store.buyToolWithStars(tool);
           if (ok) {
-            widget.services.feedback.cheer();
+            widget.services.feedback.click();
             if (mounted) setState(() {});
           } else {
             widget.services.feedback.lose();
@@ -507,9 +507,14 @@ class _TutorialBar extends StatelessWidget {
 }
 
 class _Hud extends StatelessWidget {
-  const _Hud({required this.controller, required this.onPause});
+  const _Hud({
+    required this.controller,
+    required this.onPause,
+    required this.onTools,
+  });
   final GameController controller;
   final VoidCallback onPause;
+  final VoidCallback onTools;
 
   @override
   Widget build(BuildContext context) {
@@ -542,34 +547,368 @@ class _Hud extends StatelessWidget {
                         ],
                       ],
                     ),
-                    _AnimatedScore(score: s.score),
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 44,
-                child: level.isEndless
-                    ? Column(
-                        children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _AnimatedScore(score: s.score),
+                        if (level.isEndless) ...[
+                          const SizedBox(width: 10),
                           const Icon(
                             Icons.emoji_events_rounded,
                             color: Palette.accent,
-                            size: 20,
+                            size: 18,
                           ),
-                          FittedBox(
-                            child: Text(
-                              formatInt(controller.bestScore),
-                              style: displayText(14, color: Palette.textDim),
-                            ),
+                          const SizedBox(width: 3),
+                          Text(
+                            formatInt(controller.bestScore),
+                            style: displayText(15, color: Palette.textDim),
                           ),
                         ],
-                      )
-                    : null,
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              RoundIconButton(
+                icon: Icons.construction_rounded,
+                label: 'Ferramentas',
+                onTap: onTools,
               ),
             ],
           ),
           const SizedBox(height: 6),
           if (!level.isEndless) _Goals(session: s),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActiveToolBanner extends StatelessWidget {
+  const _ActiveToolBanner({required this.tool, required this.onCancel});
+  final CapiTool tool;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xF0181F42),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Palette.accent, width: 1.5),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ToolIcon(tool: tool, size: 28),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '${tool.label}: ${tool.actionPrompt}',
+              style: displayText(14, color: Palette.accent),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Semantics(
+            button: true,
+            label: 'Cancelar',
+            child: GestureDetector(
+              onTap: onCancel,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0x33FFFFFF),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Cancelar',
+                  style: displayText(13, color: Colors.white70),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToolsSheet extends StatefulWidget {
+  const _ToolsSheet({
+    required this.controller,
+    required this.store,
+    required this.onUseTool,
+    required this.onRewardTool,
+    required this.onBuyTool,
+  });
+  final GameController controller;
+  final ProgressStore store;
+  final void Function(CapiTool tool) onUseTool;
+  final void Function(CapiTool tool) onRewardTool;
+  final void Function(CapiTool tool) onBuyTool;
+
+  @override
+  State<_ToolsSheet> createState() => _ToolsSheetState();
+}
+
+class _ToolsSheetState extends State<_ToolsSheet> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF141938),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(top: BorderSide(color: Color(0x44FFFFFF), width: 1.5)),
+      ),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const ToolboxIcon(size: 32),
+                const SizedBox(width: 10),
+                Text(
+                  'Ferramentas do Capi',
+                  style: displayText(20, color: Palette.text),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0x33FFD95A),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0x66FFD95A)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Palette.accent,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${widget.store.stars}',
+                        style: displayText(16, color: Palette.accent),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Semantics(
+                  button: true,
+                  label: 'Fechar',
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Palette.textDim,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            for (final tool in CapiTool.values) ...[
+              _buildToolCard(tool),
+              const SizedBox(height: 10),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolCard(CapiTool tool) {
+    final count = widget.store.toolCount(tool);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E2548),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0x33FFFFFF)),
+      ),
+      child: Row(
+        children: [
+          ToolIcon(tool: tool, size: 48),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      tool.label,
+                      style: displayText(16, color: Palette.text),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: count > 0
+                            ? const Color(0x33FFD95A)
+                            : const Color(0x22FFFFFF),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'x$count',
+                        style: displayText(
+                          13,
+                          color: count > 0 ? Palette.accent : Palette.textDim,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  tool.description,
+                  style: bodyText(12, color: Palette.textDim),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          if (count > 0)
+            Semantics(
+              button: true,
+              label: 'Usar ${tool.label}',
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Palette.accent,
+                  foregroundColor: const Color(0xFF3A2414),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () => widget.onUseTool(tool),
+                child: Text('USAR', style: displayText(14)),
+              ),
+            )
+          else
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Semantics(
+                  button: true,
+                  label: 'Ganhar ${tool.label} com anúncio',
+                  child: InkWell(
+                    onTap: () async {
+                      widget.onRewardTool(tool);
+                      setState(() {});
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0x3322B8CF),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0x6622B8CF)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.play_arrow_rounded,
+                            color: Color(0xFF22B8CF),
+                            size: 16,
+                          ),
+                          SizedBox(width: 2),
+                          Text(
+                            'Grátis',
+                            style: TextStyle(
+                              color: Color(0xFF22B8CF),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Semantics(
+                  button: true,
+                  label: 'Comprar ${tool.label}',
+                  child: InkWell(
+                    onTap: () async {
+                      widget.onBuyTool(tool);
+                      setState(() {});
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0x33FFD95A),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0x66FFD95A)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.star_rounded,
+                            color: Palette.accent,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${tool.starCost}',
+                            style: const TextStyle(
+                              color: Palette.accent,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
