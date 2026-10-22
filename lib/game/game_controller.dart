@@ -401,6 +401,7 @@ class GameController extends ChangeNotifier {
   // --- Capi Tools (Step 2) ---
 
   void cancelToolMode() {
+    activeToolMode = null;
     notifyListeners();
   }
 
