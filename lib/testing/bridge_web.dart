@@ -34,10 +34,9 @@ void installJsBridge(TestBridge bridge) {
               .then((_) => true.toJS)
               .toJS)
           .toJS;
-  api['placeTower'] =
-      ((JSBoolean? perfect, JSNumber? offset) => bridge
-              .placeTower(perfect?.toDart ?? true, offset?.toDartDouble ?? 0.0)
-              .toJS)
-          .toJS;
+  api['placeTower'] = ((
+    JSBoolean? perfect,
+  ) => bridge.placeTower(perfect?.toDart ?? true).toJS).toJS;
+  api['missTower'] = (() => bridge.missTower().toJS).toJS;
   globalContext['__bb'] = api;
 }

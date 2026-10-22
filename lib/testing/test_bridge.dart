@@ -188,10 +188,17 @@ class TestBridge {
     await ctrl.store.addTool(tool, count);
   }
 
-  bool placeTower([bool perfect = true, double offset = 0.0]) {
+  bool placeTower([bool perfect = true]) {
     final t = tower;
     if (t == null) return false;
-    t.debugPlace(perfect: perfect, offset: offset);
+    t.debugPlace(perfect: perfect);
+    return true;
+  }
+
+  bool missTower() {
+    final t = tower;
+    if (t == null) return false;
+    t.debugPlace(perfect: false, offset: 9.0);
     return true;
   }
 

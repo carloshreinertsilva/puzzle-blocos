@@ -37,7 +37,7 @@ test.describe('Torre do Capi em 2.5D', () => {
 
     // Provoca um erro para testar a finalização da subida
     // Erra completamente o bloco com offset grande
-    await page.evaluate(() => (window as any).__bb.placeTower(false, 9.0));
+    await page.evaluate(() => (window as any).__bb.missTower());
 
     // Aguarda o estado e o diálogo ou resultado de Game Over
     await waitForState(page, (s) => s.tower?.gameOver === true, 'fim de jogo na torre');
