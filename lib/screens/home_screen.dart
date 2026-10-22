@@ -355,7 +355,10 @@ class _HomeScreenState extends State<HomeScreen> {
         Onboarding.blitzUnlocked(store) ||
         Onboarding.duelUnlocked(store) ||
         Onboarding.towerUnlocked(store);
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isSmall = MediaQuery.sizeOf(context).height < 720;
+    final horizontalPadding = screenWidth < 360 ? 12.0 : 20.0;
+    final buttonGap = screenWidth < 360 ? 4.0 : 6.0;
     final capiLine = _capiLine;
 
     return Scaffold(
@@ -369,7 +372,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: menuMaxWidth),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
                     child: Column(
                       children: [
                         const SizedBox(height: 8),
@@ -395,20 +400,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: buttonGap),
                             StatChip(
                               icon: Icons.local_fire_department_rounded,
                               color: Palette.accentDeep,
                               value: '$streak',
                             ),
-                            if (MediaQuery.sizeOf(context).width >= 430) ...[
-                              const SizedBox(width: 6),
-                              StatChip(
-                                icon: Icons.emoji_events_rounded,
-                                color: Palette.accent,
-                                value: formatInt(store.bestScore),
-                              ),
-                            ],
                             const Spacer(),
                             RoundIconButton(
                               icon: Icons.assignment_turned_in_rounded,
@@ -423,19 +420,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : null,
                               onTap: _openDailyMissions,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.checkroom_rounded,
                               label: 'Guarda-Roupa',
                               onTap: _openWardrobe,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.bar_chart_rounded,
                               label: 'Estatísticas',
                               onTap: () => showStats(context, widget.services),
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.settings_rounded,
                               label: 'Configurações',
