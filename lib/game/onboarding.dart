@@ -6,11 +6,11 @@ import '../services/progress_store.dart';
 abstract final class Onboarding {
   /// Levels played one after the other before the menu shows up.
   static const railLevels = 3;
-  static const blitzAt = 4;
-  static const duelAt = 4;
   static const endlessAt = 5;
   static const obrasAt = 6;
   static const dailyAt = 7;
+  static const blitzAt = 8;
+  static const duelAt = 8;
 
   static bool tutorialDone(ProgressStore s) =>
       s.hasSeen('tutorial') || s.level > 1 || s.gamesPlayed > 0;
@@ -18,22 +18,22 @@ abstract final class Onboarding {
   static bool menuUnlocked(ProgressStore s) =>
       s.hasSeen('menu') || s.level > railLevels;
 
-  static bool blitzUnlocked(ProgressStore s) => s.level >= blitzAt;
-  static bool duelUnlocked(ProgressStore s) => s.level >= duelAt;
   static bool endlessUnlocked(ProgressStore s) => s.level >= endlessAt;
   static bool obrasUnlocked(ProgressStore s) => s.level >= obrasAt;
   static bool dailyUnlocked(ProgressStore s) => s.level >= dailyAt;
+  static bool blitzUnlocked(ProgressStore s) => s.level >= blitzAt;
+  static bool duelUnlocked(ProgressStore s) => s.level >= duelAt;
 
   /// Capi's lines on the menu that the player has not seen yet, in order.
   static List<MenuNews> pendingNews(ProgressStore s) => [
     if (!s.hasSeen(MenuNews.welcome.key)) MenuNews.welcome,
     if (!s.hasSeen(MenuNews.village.key)) MenuNews.village,
-    if (blitzUnlocked(s) && !s.hasSeen(MenuNews.blitz.key)) MenuNews.blitz,
-    if (duelUnlocked(s) && !s.hasSeen(MenuNews.duel.key)) MenuNews.duel,
     if (endlessUnlocked(s) && !s.hasSeen(MenuNews.endless.key))
       MenuNews.endless,
     if (obrasUnlocked(s) && !s.hasSeen(MenuNews.obras.key)) MenuNews.obras,
     if (dailyUnlocked(s) && !s.hasSeen(MenuNews.daily.key)) MenuNews.daily,
+    if (blitzUnlocked(s) && !s.hasSeen(MenuNews.blitz.key)) MenuNews.blitz,
+    if (duelUnlocked(s) && !s.hasSeen(MenuNews.duel.key)) MenuNews.duel,
   ];
 }
 
