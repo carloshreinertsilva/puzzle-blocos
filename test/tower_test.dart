@@ -6,6 +6,8 @@ import 'package:puzzle_blocos/tower/tower_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late ProgressStore store;
   late GameFeedback feedback;
 
