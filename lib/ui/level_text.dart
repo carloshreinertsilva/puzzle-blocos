@@ -8,6 +8,7 @@ String goalSummary(LevelConfig level) {
   final parts = [
     if (level.hasRockGoal) 'quebre todas as pedras',
     if (level.gemsTarget > 0) 'colete ${level.gemsTarget} gemas',
+    if (level.hasPupGoal) 'resgate os ${level.pupCount} filhotes',
     if (level.targetScore > 0) 'faça ${formatInt(level.targetScore)} pontos',
   ];
   final text = parts.length > 1

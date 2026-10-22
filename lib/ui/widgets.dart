@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'block_painter.dart';
 import 'capi.dart';
 import 'palette.dart';
+import 'pup.dart';
 import 'typography.dart';
 
 /// Chunky rounded button with a 3D edge, used across menus and cards.
@@ -176,7 +177,7 @@ class CardPanel extends StatelessWidget {
   );
 }
 
-enum MiniIcon { rock, toughRock, gem, star }
+enum MiniIcon { rock, toughRock, gem, star, pup }
 
 /// Tiny painted icons that match the board art.
 class MiniGlyph extends StatelessWidget {
@@ -205,6 +206,8 @@ class _GlyphPainter extends CustomPainter {
         BlockPainter.gem(canvas, rect.inflate(size.width * 0.35));
       case MiniIcon.star:
         BlockPainter.block(canvas, rect, Palette.accent);
+      case MiniIcon.pup:
+        PupPainter.face(canvas, rect.inflate(size.width * 0.1));
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../core/village.dart';
 import '../ui/capi.dart';
+import '../ui/pup.dart';
 import 'iso.dart';
 import 'items.dart';
 
@@ -18,7 +19,10 @@ class VillageModel {
   String? building;
   double buildStart = -10;
 
-  /// Items (or 'capi') tapped recently, and when.
+  /// Pups saved in the levels; up to [Pups.max] wander on the island.
+  int pups = 0;
+
+  /// Items (or 'capi', or 'pup3') tapped recently, and when.
   final Map<String, double> pokes = {};
 
   bool get cheering => building != null;
@@ -105,8 +109,22 @@ class VillageLayout {
   }
 
   /// The item id (or 'capi') at [point], front-most first.
-  String? hit(Offset point, int built) {
+  String? hit(Offset point, VillageModel model, double t) {
     final iso = this.iso;
+    for (var i = min(model.pups, Pups.max) - 1; i >= 0; i--) {
+      final at = Pups.at(i, t);
+      final feet = iso.p(at.dx, at.dy);
+      final size = tile * 0.8;
+      if (Rect.fromLTWH(
+        feet.dx - size / 2,
+        feet.dy - size,
+        size,
+        size,
+      ).inflate(tile * 0.15).contains(point)) {
+        return 'pup$i';
+      }
+    }
+    final built = model.built;
     final capi = iso.p(Village.capiSpot.dx, Village.capiSpot.dy);
     final capiSize = tile * 1.35;
     if (Rect.fromLTWH(
@@ -134,6 +152,37 @@ class VillageLayout {
 }
 
 double _depth(Rect spot) => spot.right + spot.bottom;
+
+/// The pups living on the island: each strolls around its own spot.
+abstract final class Pups {
+  static const max = 12;
+  static const _homes = [
+    (4.4, 8.3),
+    (3.7, 7.0),
+    (8.0, 6.3),
+    (5.2, 2.6),
+    (0.9, 6.1),
+    (9.2, 5.9),
+    (6.3, 9.3),
+    (2.4, 6.2),
+    (7.4, 2.6),
+    (4.9, 9.4),
+    (3.4, 2.7),
+    (9.4, 4.3),
+  ];
+
+  /// Where pup [i] is at time [t] (world x, y).
+  static Offset at(int i, double t) {
+    final (hx, hy) = _homes[i % _homes.length];
+    return Offset(
+      hx + 0.35 * sin(t * 0.32 + i * 1.7),
+      hy + 0.25 * sin(t * 0.21 + i * 2.3),
+    );
+  }
+
+  /// True while the pup walks toward +x on screen (for facing).
+  static double speed(int i, double t) => cos(t * 0.32 + i * 1.7);
+}
 
 /// Recorded pictures of the parts that don't move, redrawn only when the
 /// size or the village changes.
@@ -233,6 +282,8 @@ class VillagePainter extends CustomPainter {
         (_depth(item.spot), () => _paintItem(c, item, t)),
       for (final d in _decor) (d.$1 + d.$2 + 0.4, () => _paintDecor(c, d)),
       (Village.capiSpot.dx + Village.capiSpot.dy + 0.3, () => _paintCapi(c, t)),
+      for (var i = 0; i < min(model.pups, Pups.max); i++)
+        (Pups.at(i, t).dx + Pups.at(i, t).dy + 0.2, () => _paintPup(c, i, t)),
     ]..sort((a, b) => a.$1.compareTo(b.$1));
     for (final (_, draw) in things) {
       draw();
@@ -559,6 +610,39 @@ class VillagePainter extends CustomPainter {
       c.ball(x, y, 0.12, 0.26, const Color(0xFFA9A4BC));
       c.ball(x + 0.25, y + 0.15, 0.07, 0.16, const Color(0xFF9792AD));
     }
+  }
+
+  void _paintPup(IsoCanvas c, int i, double t) {
+    final at = Pups.at(i, t);
+    final feet = c.p(at.dx, at.dy);
+    final size = c.tile * 0.62;
+    final poked = model.pokes['pup$i'];
+    var hop = 0.0;
+    if (poked != null && t - poked < 0.6) {
+      hop = sin((t - poked) / 0.6 * pi) * c.tile * 0.4;
+    } else {
+      hop = sin(t * 6 + i).abs() * c.tile * 0.03;
+    }
+    c.canvas.drawOval(
+      Rect.fromCenter(center: feet, width: size * 0.6, height: size * 0.2),
+      Paint()
+        ..color = const Color(0x40231546)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, c.tile * 0.04),
+    );
+    // Screen-right when x grows faster than y; mirror to face the way it
+    // walks.
+    final facing = Pups.speed(i, t) >= 0 ? 1.0 : -1.0;
+    c.canvas.save();
+    c.canvas.translate(feet.dx, feet.dy - hop);
+    c.canvas.scale(facing, 1);
+    c.canvas.translate(-size / 2, -size);
+    PupPainter.body(
+      c.canvas,
+      Size.square(size),
+      t: (t * 0.8 + i * 0.13) % 1,
+      bow: PupPainter.bows[i % PupPainter.bows.length],
+    );
+    c.canvas.restore();
   }
 
   void _paintCapi(IsoCanvas c, double t) {

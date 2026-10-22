@@ -11,6 +11,7 @@ import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
 import '../ui/widgets.dart';
 import 'game_screen.dart';
+import 'obra_screen.dart';
 import 'settings_sheet.dart';
 import 'stats_sheet.dart';
 import 'village_screen.dart';
@@ -109,10 +110,44 @@ class _HomeScreenState extends State<HomeScreen> {
       title: 'Vila do Capi',
       subtitle: next == null
           ? 'Vila completa!'
-          : '$built de ${Village.items.length} · próximo: ${next.name}',
+          : '$built de ${Village.items.length} prontos',
       badge: canBuild ? 'CONSTRUIR!' : null,
       onTap: _openVillage,
     );
+  }
+
+  Widget _obrasCard(ProgressStore store) {
+    if (!Onboarding.obrasUnlocked(store)) {
+      return MenuCard(
+        icon: Icons.lock_rounded,
+        color: Palette.panelEdge,
+        title: 'Obras',
+        subtitle: 'Libera na fase ${Onboarding.obrasAt}',
+        onTap: () => _locked('Obras', Onboarding.obrasAt),
+      );
+    }
+    return MenuCard(
+      icon: Icons.architecture_rounded,
+      color: Palette.blocks[6],
+      title: 'Obras',
+      subtitle: 'Obra ${store.obraLevel}',
+      badge: store.hasSeen('opened_obras') ? null : 'NOVO',
+      onTap: _openObras,
+    );
+  }
+
+  Future<void> _openObras() async {
+    widget.services.feedback.click();
+    widget.services.store.markSeen('opened_obras');
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 280),
+        pageBuilder: (_, _, _) => ObraScreen(services: widget.services),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
+      ),
+    );
+    if (mounted) setState(() {});
   }
 
   @override
@@ -214,7 +249,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () => _open(GameMode.levels),
                         ),
                         const SizedBox(height: 22),
-                        _villageCard(store),
+                        Row(
+                          children: [
+                            Expanded(child: _villageCard(store)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _obrasCard(store)),
+                          ],
+                        ),
                         const SizedBox(height: 26),
                         Row(
                           children: [

@@ -11,6 +11,7 @@ import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import '../village/scene.dart';
+import 'obra_screen.dart';
 
 /// Capi's village: a floating island that fills up with things built with
 /// the stars earned in the levels. Pops with `true` when the player wants to
@@ -49,6 +50,12 @@ class _VillageScreenState extends State<VillageScreen>
     'roda': 'Lá de cima dá pra ver as nuvens!',
   };
 
+  static const _pupLines = [
+    'Esse filhote você salvou de um bloco! Olha a alegria dele.',
+    'Os filhotes adoram brincar perto da lagoa.',
+    'Cada filhote salvo nas fases vem morar aqui!',
+  ];
+
   static const _capiLines = [
     'Ei, isso faz cócegas!',
     'Bora construir mais coisa?',
@@ -59,7 +66,9 @@ class _VillageScreenState extends State<VillageScreen>
   @override
   void initState() {
     super.initState();
-    _model.built = _built;
+    _model
+      ..built = _built
+      ..pups = widget.services.store.pupsSaved;
     _ticker = createTicker((elapsed) {
       _clock.value = elapsed.inMicroseconds / 1e6;
     })..start();
@@ -68,7 +77,10 @@ class _VillageScreenState extends State<VillageScreen>
 
   @override
   void dispose() {
-    if (kTestBridge) TestBridge.instance.screen = 'home';
+    // The next screen may already have opened (the game, on "Jogar").
+    if (kTestBridge && TestBridge.instance.screen == 'village') {
+      TestBridge.instance.screen = 'home';
+    }
     _lineTimer?.cancel();
     _ticker.dispose();
     _clock.dispose();
@@ -90,7 +102,8 @@ class _VillageScreenState extends State<VillageScreen>
     return missing > 0
         ? 'Faltam $missing ${missing == 1 ? 'estrela' : 'estrelas'} para '
               '${next.name.toLowerCase()}. Bora jogar?'
-        : 'Já dá para construir ${next.name.toLowerCase()}!';
+        : 'Já dá para construir ${next.name.toLowerCase()}! Toque em '
+              'Construir e monte a obra.';
   }
 
   /// Shows [line] for a while, then goes back to the idle line.
@@ -104,7 +117,23 @@ class _VillageScreenState extends State<VillageScreen>
 
   Future<void> _build(VillageItem item) async {
     final store = widget.services.store;
-    if (_model.building != null) return;
+    if (_model.building != null || store.stars < item.cost) return;
+    // First the obra: the item's drawing, filled with pieces. The stars
+    // are only spent once it is done.
+    widget.services.feedback.click();
+    final done = await Navigator.of(context).push<bool>(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 280),
+        pageBuilder: (_, _, _) =>
+            ObraScreen(services: widget.services, item: item),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
+      ),
+    );
+    if (done != true || !mounted) {
+      if (mounted) setState(() => _line = _idleLine());
+      return;
+    }
     if (!await store.spendStars(item.cost)) return;
     await store.setVillageBuilt(_built + 1);
     if (!mounted) return;
@@ -121,7 +150,7 @@ class _VillageScreenState extends State<VillageScreen>
     _say(
       '${cheers[_rng.nextInt(cheers.length)]} Agora a vila tem: '
       '${item.name.toLowerCase()}.',
-      hold: const Duration(milliseconds: 3200),
+      hold: const Duration(milliseconds: 5000),
     );
     // It lands with a thud, then the fanfare.
     await Future<void>.delayed(const Duration(milliseconds: 560));
@@ -133,7 +162,7 @@ class _VillageScreenState extends State<VillageScreen>
   }
 
   void _tap(Offset at, Size size) {
-    final id = VillageLayout(size).hit(at, _model.built);
+    final id = VillageLayout(size).hit(at, _model, _clock.value);
     if (id == null) return;
     _model.pokes[id] = _clock.value;
     widget.services.feedback.pick();
@@ -141,6 +170,8 @@ class _VillageScreenState extends State<VillageScreen>
     _say(
       id == 'capi'
           ? _capiLines[_rng.nextInt(_capiLines.length)]
+          : id.startsWith('pup')
+          ? _pupLines[_rng.nextInt(_pupLines.length)]
           : _remarks[id] ?? '',
     );
   }

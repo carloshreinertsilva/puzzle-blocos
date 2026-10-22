@@ -35,6 +35,7 @@ void main(List<String> args) {
       if (level.targetScore > 0) 'score${level.targetScore}',
       if (level.hasRockGoal) 'rocks${level.rockCount}',
       if (level.gemsTarget > 0) 'gems${level.gemsTarget}',
+      if (level.hasPupGoal) 'pups${level.pupCount}',
     ].join('+');
     final mark = level.isHard ? ' HARD' : (level.isRelief ? ' relief' : '');
     final tag = ' $kind$mark';
@@ -61,7 +62,8 @@ void main(List<String> args) {
         final score =
             out.lines * 40 +
             out.rocksBroken * 15 +
-            out.gems * 15 -
+            out.gems * 15 +
+            out.pups * 25 -
             _holes(b) * 3 -
             b.filledCount * 0.5 +
             p.shape.size +
@@ -94,16 +96,16 @@ int _holes(Board b) {
   return n;
 }
 
-/// Rewards filling rows and columns that still hold rocks, the way a
-/// person aims for them.
+/// Rewards filling rows and columns that still hold rocks or pups, the way
+/// a person aims for them.
 double _rockAim(Board b) {
   var v = 0.0;
   for (var i = 0; i < Board.size; i++) {
     var rowRock = false, colRock = false, rowFill = 0, colFill = 0;
     for (var j = 0; j < Board.size; j++) {
       final rc = b.at(i, j), cr = b.at(j, i);
-      if (rc.type == CellType.rock) rowRock = true;
-      if (cr.type == CellType.rock) colRock = true;
+      if (rc.type == CellType.rock || rc.pup) rowRock = true;
+      if (cr.type == CellType.rock || cr.pup) colRock = true;
       if (rc.isFilled) rowFill++;
       if (cr.isFilled) colFill++;
     }

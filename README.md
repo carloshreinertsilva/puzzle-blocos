@@ -33,6 +33,22 @@ jogadas de novo pelo caminho do menu para pegar as que faltam. O Desafio
 diário vale 3 estrelas e o Infinito 1 a cada 2.500 pontos (até 4 por
 partida). As estrelas são a moeda da Vila do Capi.
 
+Filhotes (a partir da fase 8): filhotes de capivara presos em bolhas nos
+blocos; limpar a linha ou a coluna de cada um solta o filhote (meta da fase).
+Cada filhote fica num lugar próprio (linha e coluna só dele). Os filhotes
+salvos (`pupsSaved`) passeiam pela ilha da vila. Desenho em `lib/ui/pup.dart`.
+
+Modo Obra (`lib/core/blueprint.dart`, `lib/screens/obra_screen.dart`): um
+quebra-cabeça de encaixe. Uma planta com um desenho (coração, peixe,
+castelo...) e um punhado de peças: é preciso encaixar todas e preencher o
+desenho exatamente, sem limpar linhas. Cada obra é gerada cortando o desenho
+em peças, então sempre tem solução; a dica do Capi resolve o resto a partir
+do que já está montado. Estrelas: 3 sem desfazer nem dica, 2 com pouca ajuda,
+1 ao terminar. O modo Obras libera na fase 6 (obras numeradas, cada uma vale
+até 3 estrelas). Na vila, cada item agora é construído montando a obra dele
+(o desenho do próprio item); as estrelas só são gastas quando a obra fica
+pronta.
+
 Vila do Capi (`lib/core/village.dart`, `lib/village/`,
 `lib/screens/village_screen.dart`): uma ilha flutuante em perspectiva
 isométrica, desenhada em código (sem imagens), que ganha 12 coisas sempre na

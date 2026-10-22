@@ -4,11 +4,20 @@ enum CellType { empty, block, rock }
 
 /// One square of the board. Values are immutable; the board swaps them.
 class Cell {
-  const Cell.empty() : type = CellType.empty, color = 0, hp = 0, gem = false;
-  const Cell.block(this.color, {this.gem = false})
+  const Cell.empty()
+    : type = CellType.empty,
+      color = 0,
+      hp = 0,
+      gem = false,
+      pup = false;
+  const Cell.block(this.color, {this.gem = false, this.pup = false})
     : type = CellType.block,
       hp = 0;
-  const Cell.rock(this.hp) : type = CellType.rock, color = 0, gem = false;
+  const Cell.rock(this.hp)
+    : type = CellType.rock,
+      color = 0,
+      gem = false,
+      pup = false;
 
   final CellType type;
   final int color;
@@ -16,6 +25,9 @@ class Cell {
   /// Line clears a rock still needs before it breaks.
   final int hp;
   final bool gem;
+
+  /// A capybara pup trapped in the block, freed when its line clears.
+  final bool pup;
 
   bool get isEmpty => type == CellType.empty;
   bool get isFilled => type != CellType.empty;
@@ -49,6 +61,7 @@ class PlaceOutcome {
     required this.cleared,
     required this.gems,
     required this.rocksBroken,
+    this.pups = 0,
   });
 
   final List<(int, int)> placed;
@@ -57,6 +70,7 @@ class PlaceOutcome {
   final List<ClearedCell> cleared;
   final int gems;
   final int rocksBroken;
+  final int pups;
 
   int get lines => rows.length + cols.length;
 }
@@ -77,6 +91,7 @@ class Board {
   int get filledCount => _cells.where((c) => c.isFilled).length;
   bool get isEmpty => _cells.every((c) => c.isEmpty);
   int get rockCount => _cells.where((c) => c.type == CellType.rock).length;
+  int get pupCount => _cells.where((c) => c.pup).length;
 
   /// Occupancy bitmask per row.
   List<int> get rowMasks => List.generate(size, (r) {
@@ -158,6 +173,7 @@ class Board {
     final cleared = <ClearedCell>[];
     var gems = 0;
     var rocksBroken = 0;
+    var pups = 0;
     for (final index in hit) {
       final before = _cells[index];
       Cell after;
@@ -166,6 +182,7 @@ class Board {
       } else {
         after = const Cell.empty();
         if (before.gem) gems++;
+        if (before.pup) pups++;
         if (before.type == CellType.rock) rocksBroken++;
       }
       _cells[index] = after;
@@ -179,6 +196,7 @@ class Board {
       cleared: cleared,
       gems: gems,
       rocksBroken: rocksBroken,
+      pups: pups,
     );
   }
 }

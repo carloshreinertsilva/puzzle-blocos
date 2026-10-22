@@ -16,7 +16,7 @@ import 'tutorial.dart';
 enum GameMode { levels, endless, daily, tutorial }
 
 /// Mechanics explained with a short card the first time they show up.
-enum Intro { rocks, toughRocks, gems, doubleGoal }
+enum Intro { rocks, toughRocks, gems, pups, doubleGoal }
 
 /// How Capi reacts during a game (a short pop-up beside the tray).
 enum CapiReaction { cheer, worried, hint }
@@ -267,6 +267,7 @@ class GameController extends ChangeNotifier {
     if (c.hasToughRocks && !store.hasSeen(Intro.toughRocks.name))
       Intro.toughRocks,
     if (c.gemsTarget > 0 && !store.hasSeen(Intro.gems.name)) Intro.gems,
+    if (c.hasPupGoal && !store.hasSeen(Intro.pups.name)) Intro.pups,
     if (c.goalCount > 1 && !store.hasSeen(Intro.doubleGoal.name))
       Intro.doubleGoal,
   ];
@@ -296,6 +297,7 @@ class GameController extends ChangeNotifier {
       combo: result.combo,
       gems: out.gems,
       rocks: out.rocksBroken,
+      pups: out.pups,
     );
     onPlaced?.call(result, piece);
 
@@ -414,6 +416,7 @@ class GameController extends ChangeNotifier {
           session.board.set(r, c, switch (board[r][c]) {
             'b' => const Cell.block(0),
             'g' => const Cell.block(0, gem: true),
+            'p' => const Cell.block(0, pup: true),
             'r' => const Cell.rock(1),
             'R' => const Cell.rock(2),
             _ => const Cell.empty(),

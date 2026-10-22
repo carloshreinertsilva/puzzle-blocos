@@ -7,6 +7,7 @@ abstract final class Onboarding {
   /// Levels played one after the other before the menu shows up.
   static const railLevels = 3;
   static const endlessAt = 5;
+  static const obrasAt = 6;
   static const dailyAt = 7;
 
   static bool tutorialDone(ProgressStore s) =>
@@ -16,6 +17,7 @@ abstract final class Onboarding {
       s.hasSeen('menu') || s.level > railLevels;
 
   static bool endlessUnlocked(ProgressStore s) => s.level >= endlessAt;
+  static bool obrasUnlocked(ProgressStore s) => s.level >= obrasAt;
   static bool dailyUnlocked(ProgressStore s) => s.level >= dailyAt;
 
   /// Capi's lines on the menu that the player has not seen yet, in order.
@@ -24,6 +26,7 @@ abstract final class Onboarding {
     if (!s.hasSeen(MenuNews.village.key)) MenuNews.village,
     if (endlessUnlocked(s) && !s.hasSeen(MenuNews.endless.key))
       MenuNews.endless,
+    if (obrasUnlocked(s) && !s.hasSeen(MenuNews.obras.key)) MenuNews.obras,
     if (dailyUnlocked(s) && !s.hasSeen(MenuNews.daily.key)) MenuNews.daily,
   ];
 }
@@ -42,6 +45,11 @@ enum MenuNews {
   endless(
     'news_endless',
     'Novidade! Liberei o modo Infinito: sem metas, só você e o seu recorde.',
+  ),
+  obras(
+    'news_obras',
+    'Abri o modo Obras! É um quebra-cabeça: encaixe todas as peças no '
+        'desenho, sem sobrar buraco. Cada obra vale até 3 estrelas.',
   ),
   daily(
     'news_daily',
