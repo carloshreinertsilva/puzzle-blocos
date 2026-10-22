@@ -9,6 +9,8 @@ import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('rotateShape', () {
     test('cycles variants for shapes with multiple rotations', () {
       final dot = allShapes.firstWhere((s) => s.id == 'dot0');
