@@ -22,8 +22,20 @@ class _RootState extends State<Root> {
   @override
   Widget build(BuildContext context) {
     final store = widget.services.store;
+    final duelParam = Uri.base.queryParameters['duelo'];
+    final pointsParam = Uri.base.queryParameters['p'];
     final Widget child;
-    if (!Onboarding.tutorialDone(store)) {
+    if (duelParam != null) {
+      final seed = int.tryParse(duelParam) ?? 12345;
+      final target = int.tryParse(pointsParam ?? '1000') ?? 1000;
+      child = GameScreen(
+        key: ValueKey('duel-$seed'),
+        services: widget.services,
+        mode: GameMode.duel,
+        duelSeed: seed,
+        duelTargetScore: target,
+      );
+    } else if (!Onboarding.tutorialDone(store)) {
       child = GameScreen(
         key: const ValueKey('tutorial'),
         services: widget.services,

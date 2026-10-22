@@ -197,6 +197,24 @@ class ProgressStore {
 
   bool get adsRemoved => _prefs.getBool('adsRemoved') ?? false;
 
+  // --- Blitz & Duelo (Step 3) ---
+
+  int get blitzBestScore => _prefs.getInt('blitzBestScore') ?? 0;
+
+  Future<bool> recordBlitzScore(int score) async {
+    if (score > blitzBestScore) {
+      await _prefs.setInt('blitzBestScore', score);
+      return true;
+    }
+    return false;
+  }
+
+  int get duelsWon => _prefs.getInt('duelsWon') ?? 0;
+
+  Future<void> recordDuelWin() async {
+    await _prefs.setInt('duelsWon', duelsWon + 1);
+  }
+
   DateTime? get lastFullscreenAt {
     final ms = _prefs.getInt('lastFullscreenAt');
     return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);

@@ -13,7 +13,7 @@ import '../services/feedback.dart';
 import '../services/progress_store.dart';
 import 'tutorial.dart';
 
-enum GameMode { levels, endless, daily, tutorial }
+enum GameMode { levels, endless, daily, tutorial, blitz, duel }
 
 /// Mechanics explained with a short card the first time they show up.
 enum Intro { rocks, toughRocks, gems, pups, doubleGoal }
@@ -28,6 +28,9 @@ class GameController extends ChangeNotifier {
     required this.feedback,
     required this.mode,
     this.replayLevel,
+    this.duelSeed,
+    this.duelTargetScore,
+    this.duelRivalName,
     DateTime? today,
   }) : today = today ?? DateTime.now() {
     _start();
@@ -41,6 +44,14 @@ class GameController extends ChangeNotifier {
   /// Levels mode: an earlier level played again for its missing stars (the
   /// progress does not move on).
   final int? replayLevel;
+  final int? duelSeed;
+  final int? duelTargetScore;
+  final String? duelRivalName;
+  bool duelWon = false;
+
+  /// Blitz mode: remaining time in seconds.
+  int blitzSecondsLeft = 60;
+  Timer? _blitzTimer;
 
   /// After a win: the missions this attempt completed, what the level had
   /// before, and the stars added to the wallet (levels, daily and endless).
@@ -102,6 +113,8 @@ class GameController extends ChangeNotifier {
   final _rng = Random();
 
   bool get endless => mode == GameMode.endless;
+  bool get isBlitz => mode == GameMode.blitz;
+  bool get isDuel => mode == GameMode.duel;
   bool get isReplay =>
       mode == GameMode.levels &&
       replayLevel != null &&
@@ -112,6 +125,7 @@ class GameController extends ChangeNotifier {
   LevelConfig get level => session.level;
   bool get playing =>
       session.status == SessionStatus.playing &&
+      (!isBlitz || blitzSecondsLeft > 0) &&
       !paused &&
       intros.isEmpty &&
       !_tutorialWaiting &&
@@ -143,6 +157,7 @@ class GameController extends ChangeNotifier {
   /// the idle clock again.
   void noteActivity() {
     _idleTimer?.cancel();
+    _blitzTimer?.cancel();
     if (_idleHint != null) {
       _idleHint = null;
       if (capiReaction == CapiReaction.hint) capiReaction = null;
@@ -170,16 +185,29 @@ class GameController extends ChangeNotifier {
   void _start() {
     final config = switch (mode) {
       GameMode.endless || GameMode.tutorial => LevelConfig.endless(),
+      GameMode.blitz => LevelConfig.blitz(seed: duelSeed),
+      GameMode.duel => LevelConfig.duel(
+        seed: duelSeed ?? 12345,
+        targetScore: duelTargetScore ?? 1000,
+        rivalName: duelRivalName ?? 'Rival',
+      ),
       GameMode.daily => LevelGenerator.daily(today),
       GameMode.levels => LevelGenerator.build(replayLevel ?? store.level),
     };
     session = GameSession(
       config,
+      rng: config.seed != null ? Random(config.seed!) : null,
       failStreak: mode == GameMode.levels
           ? store.failStreakFor(config.number)
           : 0,
     );
-    bestScore = store.bestScore;
+    bestScore = mode == GameMode.blitz ? store.blitzBestScore : store.bestScore;
+    blitzSecondsLeft = 60;
+    _blitzTimer?.cancel();
+    if (mode == GameMode.blitz) {
+      _startBlitzTimer();
+    }
+    duelWon = false;
     newBest = false;
     showOutcome = false;
     paused = false;
@@ -309,6 +337,15 @@ class GameController extends ChangeNotifier {
     );
     onPlaced?.call(result, piece);
 
+    if (isBlitz && out.lines > 0) {
+      final bonus = out.lines >= 2 ? 3 : (result.combo >= 2 ? 2 : 1);
+      blitzSecondsLeft = min(75, blitzSecondsLeft + bonus);
+    }
+    if (isDuel && !duelWon && session.score >= (duelTargetScore ?? 1000)) {
+      duelWon = true;
+      _react(CapiReaction.cheer, 'Passou o rival!');
+    }
+
     if (tutorial) {
       _afterTutorialMove(result);
     } else if (session.status != SessionStatus.playing) {
@@ -342,6 +379,24 @@ class GameController extends ChangeNotifier {
           store.addStars(starsGained);
         }
         store.completeDaily(today);
+      case GameMode.blitz:
+        _blitzTimer?.cancel();
+        final dueBlitz = (session.score / 1500).floor();
+        starsGained = dueBlitz;
+        if (starsGained > 0) store.addStars(starsGained);
+        if (session.score > store.blitzBestScore) {
+          newBest = true;
+          bestScore = session.score;
+          store.recordBlitzScore(session.score);
+        }
+      case GameMode.duel:
+        final target = duelTargetScore ?? 1000;
+        if (session.score >= target) {
+          duelWon = true;
+          store.recordDuelWin();
+          starsGained = 3;
+          store.addStars(3);
+        }
       case GameMode.daily || GameMode.tutorial:
         break;
       case GameMode.endless:
@@ -497,6 +552,13 @@ class GameController extends ChangeNotifier {
   /// Test scenarios only: wins the attempt as if the goals were met.
   void debugWin() {
     if (tutorial || session.status != SessionStatus.playing) return;
+    if (isDuel) {
+      final target = duelTargetScore ?? 1000;
+      if (session.score < target) {
+        session.score = target + 50;
+      }
+      duelWon = true;
+    }
     session.status = SessionStatus.won;
     _finish();
     notifyListeners();
@@ -527,6 +589,33 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _startBlitzTimer() {
+    _blitzTimer?.cancel();
+    _blitzTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (paused || !playing) return;
+      if (blitzSecondsLeft > 0) {
+        blitzSecondsLeft--;
+        if (blitzSecondsLeft == 10) {
+          feedback.click();
+          _react(CapiReaction.worried, '10 segundos!');
+        } else if (blitzSecondsLeft <= 3 && blitzSecondsLeft > 0) {
+          feedback.click();
+        } else if (blitzSecondsLeft == 0) {
+          timer.cancel();
+          _finishBlitz();
+        }
+        notifyListeners();
+      }
+    });
+  }
+
+  void _finishBlitz() {
+    _blitzTimer?.cancel();
+    session.status = SessionStatus.won;
+    _finish();
+    notifyListeners();
+  }
+
   void setPaused(bool v) {
     paused = v;
     notifyListeners();
@@ -538,6 +627,7 @@ class GameController extends ChangeNotifier {
     _tutorialTimer?.cancel();
     _capiTimer?.cancel();
     _idleTimer?.cancel();
+    _blitzTimer?.cancel();
     super.dispose();
   }
 }

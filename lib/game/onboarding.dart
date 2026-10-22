@@ -9,6 +9,8 @@ abstract final class Onboarding {
   static const endlessAt = 5;
   static const obrasAt = 6;
   static const dailyAt = 7;
+  static const blitzAt = 8;
+  static const duelAt = 8;
 
   static bool tutorialDone(ProgressStore s) =>
       s.hasSeen('tutorial') || s.level > 1 || s.gamesPlayed > 0;
@@ -19,6 +21,8 @@ abstract final class Onboarding {
   static bool endlessUnlocked(ProgressStore s) => s.level >= endlessAt;
   static bool obrasUnlocked(ProgressStore s) => s.level >= obrasAt;
   static bool dailyUnlocked(ProgressStore s) => s.level >= dailyAt;
+  static bool blitzUnlocked(ProgressStore s) => s.level >= blitzAt;
+  static bool duelUnlocked(ProgressStore s) => s.level >= duelAt;
 
   /// Capi's lines on the menu that the player has not seen yet, in order.
   static List<MenuNews> pendingNews(ProgressStore s) => [
@@ -28,6 +32,8 @@ abstract final class Onboarding {
       MenuNews.endless,
     if (obrasUnlocked(s) && !s.hasSeen(MenuNews.obras.key)) MenuNews.obras,
     if (dailyUnlocked(s) && !s.hasSeen(MenuNews.daily.key)) MenuNews.daily,
+    if (blitzUnlocked(s) && !s.hasSeen(MenuNews.blitz.key)) MenuNews.blitz,
+    if (duelUnlocked(s) && !s.hasSeen(MenuNews.duel.key)) MenuNews.duel,
   ];
 }
 
@@ -36,6 +42,14 @@ enum MenuNews {
     'news_welcome',
     'Essa é a nossa estrada! Cada fase que você vence abre a próxima. '
         'Toque em Jogar para seguir.',
+  ),
+  blitz(
+    'news_blitz',
+    'Novo modo Blitz! Você tem 60 segundos para fazer o máximo de pontos e combos.',
+  ),
+  duel(
+    'news_duel',
+    'Novo modo Duelo! Desafie seus amigos com links e comparem quem pontua mais.',
   ),
   village(
     'news_village',
