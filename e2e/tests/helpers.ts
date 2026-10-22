@@ -69,6 +69,7 @@ const VETERAN: Saved = {
   seen_news_daily: true,
   seen_news_blitz: true,
   seen_news_duel: true,
+  seen_news_tower: true,
 };
 
 /** Opens the game on the menu, with optional saved progress
