@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bladeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd95a"/>
+      <stop offset="60%" stop-color="#f5b21e"/>
+      <stop offset="100%" stop-color="#d48208"/>
+    </linearGradient>
+    <linearGradient id="steelGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f1f3f5"/>
+      <stop offset="50%" stop-color="#ced4da"/>
+      <stop offset="100%" stop-color="#868e96"/>
+    </linearGradient>
+    <linearGradient id="handleShovel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8b886"/>
+      <stop offset="100%" stop-color="#a87446"/>
+    </linearGradient>
+    <filter id="shovelGlow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shovelGlow)">
+    <!-- 3x3 Blueprint Target Grid behind shovel tip -->
+    <g transform="translate(80, 240) scale(0.72)">
+      <!-- Background glow -->
+      <rect x="0" y="0" width="300" height="300" rx="28" fill="#1864ab" fill-opacity="0.35" stroke="#339af0" stroke-width="8" stroke-dasharray="16 10"/>
+      <!-- Grid 3x3 cells -->
+      <rect x="15" y="15" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+      <rect x="110" y="15" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+      <rect x="205" y="15" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+
+      <rect x="15" y="110" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+      <!-- Center target cell -->
+      <rect x="110" y="110" width="80" height="80" rx="14" fill="#ffd43b" fill-opacity="0.75" stroke="#ffffff" stroke-width="6"/>
+      <circle cx="150" cy="150" r="14" fill="#f59f00"/>
+      <rect x="205" y="110" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+
+      <rect x="15" y="205" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+      <rect x="110" y="205" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+      <rect x="205" y="205" width="80" height="80" rx="14" fill="#4dabf7" fill-opacity="0.4" stroke="#ffffff" stroke-width="5"/>
+
+      <!-- "3x3" Badge on corner -->
+      <g transform="translate(230, 230)">
+        <circle cx="28" cy="28" r="32" fill="#ffd43b" stroke="#4a2a12" stroke-width="7"/>
+        <text x="28" y="37" font-family="Lilita, sans-serif" font-size="24" font-weight="bold" fill="#4a2a12" text-anchor="middle">3x3</text>
+      </g>
+    </g>
+
+    <!-- Shovel angled across (from top-right down to center-left) -->
+    <!-- D-Grip at Top Right -->
+    <g transform="translate(390, 80) rotate(-35)">
+      <path d="M -30 -30 C -30 -60 30 -60 30 -30 L 30 10 L -30 10 Z" fill="url(#bladeGrad)" stroke="#4a2a12" stroke-width="10"/>
+      <ellipse cx="0" cy="-32" rx="16" ry="12" fill="#ffffff" opacity="0.7"/>
+      <rect x="-16" y="8" width="32" height="30" rx="6" fill="#868e96" stroke="#4a2a12" stroke-width="8"/>
+    </g>
+
+    <!-- Handle Shaft -->
+    <line x1="370" y1="105" x2="225" y2="295" stroke="#4a2a12" stroke-width="36" stroke-linecap="round"/>
+    <line x1="370" y1="105" x2="225" y2="295" stroke="url(#handleShovel)" stroke-width="24" stroke-linecap="round"/>
+    <line x1="365" y1="105" x2="230" y2="285" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Shovel Collar / Socket -->
+    <polygon points="210,270 245,295 220,325 185,300" fill="url(#steelGrad)" stroke="#4a2a12" stroke-width="10"/>
+
+    <!-- Heavy-Duty Blade Spade Head -->
+    <g transform="translate(190, 340) rotate(-35)">
+      <!-- Blade scoop -->
+      <path d="M -60 -40 C -70 20 -40 70 0 95 C 40 70 70 20 60 -40 Z" fill="url(#bladeGrad)" stroke="#4a2a12" stroke-width="10" stroke-linejoin="round"/>
+      <!-- Steel wear edge -->
+      <path d="M -45 50 C -25 75 0 90 0 90 C 0 90 25 75 45 50 L 50 65 C 25 90 0 102 0 102 C 0 102 -25 90 -50 65 Z" fill="url(#steelGrad)" stroke="#4a2a12" stroke-width="8"/>
+      <!-- Center spine ridge -->
+      <line x1="0" y1="-30" x2="0" y2="70" stroke="#4a2a12" stroke-width="8" stroke-linecap="round"/>
+      <!-- Highlight -->
+      <path d="M -42 -25 C -45 10 -25 45 -5 60" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+    </g>
+
+    <!-- Dirt / Rocks debris particles -->
+    <circle cx="100" cy="380" r="10" fill="#a87446" stroke="#4a2a12" stroke-width="5"/>
+    <circle cx="135" cy="450" r="14" fill="#7a4c26" stroke="#4a2a12" stroke-width="6"/>
+    <circle cx="220" cy="450" r="9" fill="#c88e52" stroke="#4a2a12" stroke-width="5"/>
+    <path d="M 70 410 L 80 425 L 95 430 L 80 435 L 70 450 L 60 435 L 45 430 L 60 425 Z" fill="#ffd43b" stroke="#4a2a12" stroke-width="5"/>
+  </g>
+</svg>

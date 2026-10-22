@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../core/board.dart';
 import '../core/shapes.dart';
+import '../services/progress_store.dart';
 import '../game/game_controller.dart';
 import '../game/obra_controller.dart';
 import '../game/puzzle_game.dart';
@@ -103,6 +104,13 @@ class TestBridge {
                   ],
                 },
       ],
+      'tools': {
+        'hammer': c.store.toolCount(CapiTool.hammer),
+        'rotate': c.store.toolCount(CapiTool.rotate),
+        'reroll': c.store.toolCount(CapiTool.reroll),
+        'shovel': c.store.toolCount(CapiTool.shovel),
+      },
+      if (c.activeToolMode != null) 'activeTool': c.activeToolMode!.name,
       'praises': praises,
       'stars': wallet?.call(),
       'starBits': c.starBits,
@@ -130,6 +138,31 @@ class TestBridge {
   }
 
   /// Wins the current attempt (to reach later screens quickly).
+  Future<bool> useTool(String toolName, [int? r, int? c, int? slot]) async {
+    final ctrl = controller;
+    if (ctrl == null) return false;
+    final tool = CapiTool.values.firstWhere((t) => t.name == toolName);
+    await ctrl.selectTool(tool);
+    if (tool == CapiTool.reroll) return true;
+    if (tool == CapiTool.rotate && slot != null) {
+      return await ctrl.executeRotate(slot);
+    }
+    if (tool == CapiTool.hammer && r != null && c != null) {
+      return await ctrl.executeHammer(r, c);
+    }
+    if (tool == CapiTool.shovel && r != null && c != null) {
+      return await ctrl.executeShovel(r, c);
+    }
+    return true;
+  }
+
+  Future<void> addTool(String toolName, int count) async {
+    final ctrl = controller;
+    if (ctrl == null) return;
+    final tool = CapiTool.values.firstWhere((t) => t.name == toolName);
+    await ctrl.store.addTool(tool, count);
+  }
+
   bool win() {
     if (obra case final o?) {
       o.debugSolve();

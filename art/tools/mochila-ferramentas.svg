@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="boxGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd95a"/>
+      <stop offset="60%" stop-color="#f5b21e"/>
+      <stop offset="100%" stop-color="#e09a12"/>
+    </linearGradient>
+    <linearGradient id="lidGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff922b"/>
+      <stop offset="100%" stop-color="#d9480f"/>
+    </linearGradient>
+    <linearGradient id="leatherGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8e5a30"/>
+      <stop offset="100%" stop-color="#4a2a12"/>
+    </linearGradient>
+    <filter id="boxShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#boxShadow)">
+    <!-- Tools sticking out behind box -->
+    <!-- Hammer sticking out top-left -->
+    <g transform="translate(170, 150) rotate(-28)">
+      <rect x="-12" y="-120" width="24" height="120" rx="8" fill="#c88e52" stroke="#4a2a12" stroke-width="8"/>
+      <rect x="-35" y="-155" width="70" height="38" rx="10" fill="#ffd95a" stroke="#4a2a12" stroke-width="8"/>
+    </g>
+    <!-- Ruler sticking out top-right -->
+    <g transform="translate(340, 150) rotate(22)">
+      <rect x="-14" y="-130" width="28" height="130" rx="6" fill="#ffd43b" stroke="#4a2a12" stroke-width="8"/>
+      <line x1="-14" y1="-110" x2="-2" y2="-110" stroke="#4a2a12" stroke-width="4"/>
+      <line x1="-14" y1="-90" x2="4" y2="-90" stroke="#4a2a12" stroke-width="4"/>
+      <line x1="-14" y1="-70" x2="-2" y2="-70" stroke="#4a2a12" stroke-width="4"/>
+      <line x1="-14" y1="-50" x2="4" y2="-50" stroke="#4a2a12" stroke-width="4"/>
+    </g>
+
+    <!-- Handle on Top -->
+    <path d="M 200 170 C 200 115 312 115 312 170" fill="none" stroke="#4a2a12" stroke-width="32" stroke-linecap="round"/>
+    <path d="M 200 170 C 200 115 312 115 312 170" fill="none" stroke="url(#leatherGrad)" stroke-width="20" stroke-linecap="round"/>
+
+    <!-- Main Toolbox Body -->
+    <rect x="90" y="210" width="332" height="210" rx="36" fill="url(#boxGrad)" stroke="#4a2a12" stroke-width="12"/>
+    <!-- Lid / Rim -->
+    <rect x="76" y="180" width="360" height="60" rx="20" fill="url(#lidGrad)" stroke="#4a2a12" stroke-width="12"/>
+    <rect x="95" y="190" width="322" height="14" rx="7" fill="#ffffff" opacity="0.6"/>
+
+    <!-- Metal Reinforced Corner Brackets -->
+    <path d="M 90 270 L 130 270 L 130 310" fill="none" stroke="#4a2a12" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 422 270 L 382 270 L 382 310" fill="none" stroke="#4a2a12" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="115" cy="290" r="6" fill="#e0e8f0"/>
+    <circle cx="397" cy="290" r="6" fill="#e0e8f0"/>
+
+    <!-- Center Leather Strap & Buckle -->
+    <rect x="226" y="176" width="60" height="248" rx="14" fill="url(#leatherGrad)" stroke="#4a2a12" stroke-width="10"/>
+    <!-- Metal Buckle / Clasp -->
+    <rect x="216" y="240" width="80" height="56" rx="12" fill="#ffd95a" stroke="#4a2a12" stroke-width="10"/>
+    <rect x="234" y="254" width="44" height="28" rx="6" fill="#4a2a12"/>
+    <circle cx="256" cy="268" r="6" fill="#ffd95a"/>
+
+    <!-- Capi Builder Paw / Cap Badge on Box -->
+    <g transform="translate(160, 335)">
+      <!-- Builder Cap icon -->
+      <path d="M -25 10 C -25 -20 25 -20 25 10 Z" fill="#ffd95a" stroke="#4a2a12" stroke-width="6"/>
+      <line x1="-32" y1="10" x2="32" y2="10" stroke="#4a2a12" stroke-width="7" stroke-linecap="round"/>
+    </g>
+
+    <!-- Stars & sparkles -->
+    <path d="M 435 155 L 443 170 L 458 178 L 443 186 L 435 201 L 427 186 L 412 178 L 427 170 Z" fill="#ffd43b" stroke="#4a2a12" stroke-width="5"/>
+    <circle cx="85" cy="150" r="8" fill="#ffd95a"/>
+  </g>
+</svg>

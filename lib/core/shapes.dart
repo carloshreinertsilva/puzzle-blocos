@@ -125,3 +125,15 @@ final List<ShapeFamily> shapeFamilies = [
 ];
 
 final List<Shape> allShapes = [for (final f in shapeFamilies) ...f.variants];
+
+/// Finds the shape family that contains [shape], and returns the next rotation.
+/// If the shape has only one variant or is not in a family, returns [shape].
+Shape rotateShape(Shape shape) {
+  for (final family in shapeFamilies) {
+    final idx = family.variants.indexWhere((s) => s.id == shape.id);
+    if (idx != -1) {
+      return family.variants[(idx + 1) % family.variants.length];
+    }
+  }
+  return shape;
+}

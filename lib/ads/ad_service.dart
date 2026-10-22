@@ -3,7 +3,20 @@ import 'package:flutter/material.dart';
 import '../services/progress_store.dart';
 import 'ad_policy.dart';
 
-enum RewardPlacement { revive }
+enum RewardPlacement {
+  revive,
+  toolHammer,
+  toolRotate,
+  toolReroll,
+  toolShovel;
+
+  static RewardPlacement forTool(CapiTool tool) => switch (tool) {
+    CapiTool.hammer => RewardPlacement.toolHammer,
+    CapiTool.rotate => RewardPlacement.toolRotate,
+    CapiTool.reroll => RewardPlacement.toolReroll,
+    CapiTool.shovel => RewardPlacement.toolShovel,
+  };
+}
 
 /// Shows ads. The AdMob implementation plugs in here (stage 3); until then
 /// [DebugAdService] stands in with a placeholder screen.

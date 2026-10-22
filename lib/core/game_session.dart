@@ -3,6 +3,7 @@ import 'dart:math';
 import 'board.dart';
 import 'level.dart';
 import 'piece_generator.dart';
+import 'shapes.dart';
 
 enum SessionStatus { playing, won, lost }
 
@@ -162,6 +163,56 @@ class GameSession {
     _deal(extraMercy: 0.8);
     _updateStatus();
     return cleared;
+  }
+
+  // --- Capi Tools (Step 2) ---
+
+  bool canBreakCell(int r, int c) =>
+      r >= 0 &&
+      r < Board.size &&
+      c >= 0 &&
+      c < Board.size &&
+      board.at(r, c).isFilled;
+
+  ClearedCell? useHammer(int r, int c) {
+    if (!canBreakCell(r, c)) return null;
+    final cleared = board.breakCell(r, c);
+    if (cleared == null) return null;
+    if (cleared.before.gem) gems++;
+    if (cleared.before.pup) pupsSaved++;
+    _updateStatus();
+    return cleared;
+  }
+
+  List<ClearedCell> useShovel(int centerR, int centerC) {
+    final cleared = board.breakArea3x3(centerR, centerC);
+    for (final c in cleared) {
+      if (c.before.gem) gems++;
+      if (c.before.pup) pupsSaved++;
+    }
+    _updateStatus();
+    return cleared;
+  }
+
+  bool canRotatePiece(int slot) =>
+      slot >= 0 && slot < tray.length && tray[slot] != null;
+
+  Piece? useRotate(int slot) {
+    if (!canRotatePiece(slot)) return null;
+    final p = tray[slot]!;
+    final rotated = rotateShape(p.shape);
+    final gemIdx = p.gemCell >= 0
+        ? p.gemCell.clamp(0, rotated.cells.length - 1)
+        : -1;
+    final newPiece = Piece(rotated, color: p.color, gemCell: gemIdx);
+    tray[slot] = newPiece;
+    _updateStatus();
+    return newPiece;
+  }
+
+  void useReroll() {
+    _deal(extraMercy: 0.25);
+    _updateStatus();
   }
 
   void _deal({double extraMercy = 0}) {
