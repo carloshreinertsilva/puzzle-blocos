@@ -11,6 +11,7 @@ abstract final class Onboarding {
   static const dailyAt = 7;
   static const blitzAt = 8;
   static const duelAt = 8;
+  static const towerAt = 9;
 
   static bool tutorialDone(ProgressStore s) =>
       s.hasSeen('tutorial') || s.level > 1 || s.gamesPlayed > 0;
@@ -23,6 +24,7 @@ abstract final class Onboarding {
   static bool dailyUnlocked(ProgressStore s) => s.level >= dailyAt;
   static bool blitzUnlocked(ProgressStore s) => s.level >= blitzAt;
   static bool duelUnlocked(ProgressStore s) => s.level >= duelAt;
+  static bool towerUnlocked(ProgressStore s) => s.level >= towerAt;
 
   /// Capi's lines on the menu that the player has not seen yet, in order.
   static List<MenuNews> pendingNews(ProgressStore s) => [
@@ -34,6 +36,7 @@ abstract final class Onboarding {
     if (dailyUnlocked(s) && !s.hasSeen(MenuNews.daily.key)) MenuNews.daily,
     if (blitzUnlocked(s) && !s.hasSeen(MenuNews.blitz.key)) MenuNews.blitz,
     if (duelUnlocked(s) && !s.hasSeen(MenuNews.duel.key)) MenuNews.duel,
+    if (towerUnlocked(s) && !s.hasSeen(MenuNews.tower.key)) MenuNews.tower,
   ];
 }
 
@@ -69,6 +72,10 @@ enum MenuNews {
     'news_daily',
     'Mais uma: o Desafio diário! Um novo todo dia. '
         'Volte sempre para manter a sequência.',
+  ),
+  tower(
+    'news_tower',
+    'Novo jogo: Torre do Capi! Toque para empilhar blocos em 2.5D e subir o mais alto que puder.',
   );
 
   const MenuNews(this.key, this.text);

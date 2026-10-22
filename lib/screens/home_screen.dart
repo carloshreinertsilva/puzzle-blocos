@@ -16,6 +16,7 @@ import 'obra_screen.dart';
 import 'settings_sheet.dart';
 import 'stats_sheet.dart';
 import 'village_screen.dart';
+import 'tower_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.services});
@@ -108,6 +109,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Level, record and streak may have changed, and modes may unlock.
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
+  }
+
+  Future<void> _openTower() async {
+    widget.services.feedback.click();
+    widget.services.store.markSeen('opened_tower');
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 280),
+        pageBuilder: (_, _, _) => TowerScreen(services: widget.services),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _news = Onboarding.pendingNews(widget.services.store));
+  }
+
+  Widget _towerCard(ProgressStore store) {
+    if (!Onboarding.towerUnlocked(store)) {
+      return MenuCard(
+        icon: Icons.lock_rounded,
+        color: Palette.panelEdge,
+        title: 'Torre do Capi',
+        subtitle: 'Libera na fase ${Onboarding.towerAt}',
+        onTap: () => _locked('Torre do Capi', Onboarding.towerAt),
+      );
+    }
+    return MenuCard(
+      icon: Icons.layers_rounded,
+      color: const Color(0xFF0284C7),
+      title: 'Torre do Capi',
+      subtitle: store.towerBestHeight > 0
+          ? 'Recorde ${store.towerBestHeight} andares'
+          : 'Suba em 2.5D',
+      badge: store.hasSeen('opened_tower') ? null : 'NOVO',
+      onTap: _openTower,
+    );
   }
 
   Widget _blitzCard(ProgressStore store) {
@@ -297,7 +335,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final dailyOpen = Onboarding.dailyUnlocked(store);
     final endlessOpen = Onboarding.endlessUnlocked(store);
     final hasExtraModes =
-        Onboarding.blitzUnlocked(store) || Onboarding.duelUnlocked(store);
+        Onboarding.blitzUnlocked(store) ||
+        Onboarding.duelUnlocked(store) ||
+        Onboarding.towerUnlocked(store);
     final isSmall = MediaQuery.sizeOf(context).height < 720;
     final capiLine = _capiLine;
 
@@ -465,6 +505,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(child: _duelCard(store)),
                             ],
                           ),
+                          if (Onboarding.towerUnlocked(store)) ...[
+                            SizedBox(height: isSmall ? 8 : 12),
+                            _towerCard(store),
+                          ],
                         ],
                         SizedBox(height: isSmall ? 10 : 16),
                       ],
