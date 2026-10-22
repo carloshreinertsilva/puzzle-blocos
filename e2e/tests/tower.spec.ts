@@ -39,7 +39,8 @@ test.describe('Torre do Capi em 2.5D', () => {
     // Erra completamente o bloco com offset grande
     await page.evaluate(() => (window as any).__bb.placeTower(false, 9.0));
 
-    // Aguarda o diálogo ou resultado de Game Over
+    // Aguarda o estado e o diálogo ou resultado de Game Over
+    await waitForState(page, (s) => s.tower?.gameOver === true, 'fim de jogo na torre');
     await expect(page.getByText(/Fim da Subida!/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Subir de Novo' })).toBeVisible();
     

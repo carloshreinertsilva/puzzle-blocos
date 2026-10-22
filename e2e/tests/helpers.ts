@@ -4,7 +4,7 @@ import { expect, type Page, type TestInfo } from '@playwright/test';
 export type Piece = { id: string; rows: number; cols: number; cells: [number, number][] };
 export type Box = { x: number; y: number; w: number; h: number };
 export type GameState = {
-  screen: 'home' | 'game' | 'village' | 'obra';
+  screen: 'home' | 'game' | 'village' | 'obra' | 'tower';
   stars?: number;
   obra?: {
     id: string;
@@ -54,6 +54,15 @@ export type GameState = {
     shovel: number;
   };
   activeTool?: string;
+  tower?: {
+    height: number;
+    placedFloors: number;
+    bestHeight: number;
+    combo: number;
+    gameOver: boolean;
+    playing: boolean;
+    starsGained: number;
+  };
 };
 
 type Saved = Record<string, string | number | boolean>;
