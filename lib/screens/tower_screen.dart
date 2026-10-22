@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
 import '../tower/tower_controller.dart';
+import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
 import '../ui/tower_painter.dart';
 import '../ui/typography.dart';
@@ -184,10 +185,7 @@ class _TowerScreenState extends State<TowerScreen>
                               children: [
                                 const TowerIcon(size: 72),
                                 const SizedBox(height: 12),
-                                OutlinedTitle(
-                                  'Fim da Subida!',
-                                  color: Palette.accent,
-                                ),
+                                OutlinedTitle('Fim da Subida!'),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Você construiu $currentFloors ${currentFloors == 1 ? 'andar' : 'andares'}!',

@@ -209,7 +209,7 @@ class TowerController extends ChangeNotifier {
         currentX = prev.x;
         combo++;
         if (combo > maxCombo) maxCombo = combo;
-        feedback.combo(combo);
+        feedback.praise(combo);
 
         // Combo reward: recover some width if shaved
         if (combo >= 3 && currentDx < baseSize) {
@@ -320,7 +320,7 @@ class TowerController extends ChangeNotifier {
         currentY = prev.y;
         combo++;
         if (combo > maxCombo) maxCombo = combo;
-        feedback.combo(combo);
+        feedback.praise(combo);
 
         if (combo >= 3 && currentDy < baseSize) {
           currentDy = min(baseSize, currentDy + 0.3);
