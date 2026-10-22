@@ -163,7 +163,7 @@ class _LevelPathState extends State<LevelPath>
       builder: (context, box) {
         final h = box.maxHeight;
         // As many levels as fit without the circles touching (3 to 6).
-        final count = (h / 82).floor().clamp(3, 6);
+        final count = (h / 82).floor().clamp(2, 6);
         final before = count >= 5 ? 2 : 1;
         final after = count - before - 1;
         final first = max(1, widget.current - before);

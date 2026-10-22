@@ -552,6 +552,13 @@ class GameController extends ChangeNotifier {
   /// Test scenarios only: wins the attempt as if the goals were met.
   void debugWin() {
     if (tutorial || session.status != SessionStatus.playing) return;
+    if (isDuel) {
+      final target = duelTargetScore ?? 1000;
+      if (session.score < target) {
+        session.score = target + 50;
+      }
+      duelWon = true;
+    }
     session.status = SessionStatus.won;
     _finish();
     notifyListeners();

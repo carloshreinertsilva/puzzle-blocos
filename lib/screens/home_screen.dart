@@ -296,6 +296,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final streak = store.dailyStreak(today);
     final dailyOpen = Onboarding.dailyUnlocked(store);
     final endlessOpen = Onboarding.endlessUnlocked(store);
+    final hasExtraModes =
+        Onboarding.blitzUnlocked(store) || Onboarding.duelUnlocked(store);
+    final isSmall = MediaQuery.sizeOf(context).height < 720;
     final capiLine = _capiLine;
 
     return Scaffold(
@@ -362,14 +365,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        Logo(
-                          onCapiTap: _tip,
-                          compact: MediaQuery.sizeOf(context).height < 720,
-                        ),
+                        SizedBox(height: isSmall ? 8 : 18),
+                        Logo(onCapiTap: _tip, compact: isSmall),
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: EdgeInsets.symmetric(
+                              vertical: isSmall ? 4 : 10,
+                            ),
                             child: LevelPath(
                               current: store.level,
                               onPlay: () => _open(GameMode.levels),
@@ -386,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           label: 'Jogar · Fase ${store.level}',
                           onTap: () => _open(GameMode.levels),
                         ),
-                        const SizedBox(height: 22),
+                        SizedBox(height: isSmall ? 10 : 22),
                         Row(
                           children: [
                             Expanded(child: _villageCard(store)),
@@ -394,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Expanded(child: _obrasCard(store)),
                           ],
                         ),
-                        const SizedBox(height: 26),
+                        SizedBox(height: isSmall ? 10 : 26),
                         Row(
                           children: [
                             Expanded(
@@ -454,15 +456,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(child: _blitzCard(store)),
-                            const SizedBox(width: 12),
-                            Expanded(child: _duelCard(store)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
+                        if (hasExtraModes) ...[
+                          SizedBox(height: isSmall ? 10 : 12),
+                          Row(
+                            children: [
+                              Expanded(child: _blitzCard(store)),
+                              const SizedBox(width: 12),
+                              Expanded(child: _duelCard(store)),
+                            ],
+                          ),
+                        ],
+                        SizedBox(height: isSmall ? 10 : 16),
                       ],
                     ),
                   ),

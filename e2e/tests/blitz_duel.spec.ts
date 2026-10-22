@@ -19,8 +19,8 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     expect(sInitial.blitzSecondsLeft).toBeLessThanOrEqual(60);
     expect(sInitial.blitzSecondsLeft).toBeGreaterThan(0);
 
-    // O cronômetro deve estar visível no HUD
-    await expect(page.getByText(/\d+s/)).toBeVisible();
+    // O cronômetro deve estar visível no HUD (exato: 60s, 59s, etc)
+    await expect(page.getByText(/^\d+s$/)).toBeVisible();
 
     // Joga uma peça no tabuleiro
     await dragPiece(page, 0, 0, 0);
