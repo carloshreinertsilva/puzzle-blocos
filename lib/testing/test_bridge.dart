@@ -46,7 +46,7 @@ class TestBridge {
     final dMissions = sStore != null
         ? DailyMissionsManager.missionsForDay(today)
         : null;
-    final hats = sStore != null ? sStore.unlockedHats : null;
+    final hats = sStore?.unlockedHats;
     final equipped = sStore?.equippedHat;
     final chestAvail = sStore != null
         ? DailyMissionsManager.isChestAvailable(sStore, today)

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../core/daily_missions.dart';
 import '../core/hats.dart';
-import '../services/app_services.dart';
+import '../main.dart';
+import '../services/progress_store.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
