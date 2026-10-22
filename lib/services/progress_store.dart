@@ -215,6 +215,24 @@ class ProgressStore {
     await _prefs.setInt('duelsWon', duelsWon + 1);
   }
 
+  // --- Torre do Capi (Step 4) ---
+
+  int get towerBestHeight => _prefs.getInt('towerBestHeight') ?? 0;
+
+  Future<bool> recordTowerHeight(int height) async {
+    if (height > towerBestHeight) {
+      await _prefs.setInt('towerBestHeight', height);
+      return true;
+    }
+    return false;
+  }
+
+  int get towerGamesPlayed => _prefs.getInt('towerGamesPlayed') ?? 0;
+
+  Future<void> recordTowerGame() async {
+    await _prefs.setInt('towerGamesPlayed', towerGamesPlayed + 1);
+  }
+
   DateTime? get lastFullscreenAt {
     final ms = _prefs.getInt('lastFullscreenAt');
     return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);

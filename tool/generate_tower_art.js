@@ -1,0 +1,194 @@
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const artDir = path.join(__dirname, '..', 'art');
+const towerDir = path.join(artDir, 'tower');
+
+if (!fs.existsSync(towerDir)) {
+  fs.mkdirSync(towerDir, { recursive: true });
+}
+
+// 1. Ícone da Torre do Capi (2.5D Isométrico com blocos empilhados + Capacete do Capi + Estrelas)
+const towerSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <!-- Background Circle Gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4facfe"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+
+    <!-- Block 1 (Bottom Teal/Emerald) -->
+    <linearGradient id="b1Top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="b1Left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="b1Right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <!-- Block 2 (Middle Coral/Orange) -->
+    <linearGradient id="b2Top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="b2Left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="b2Right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+
+    <!-- Block 3 (Top Golden/Yellow) -->
+    <linearGradient id="b3Top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#facc15"/>
+    </linearGradient>
+    <linearGradient id="b3Left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+    <linearGradient id="b3Right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+
+    <!-- Helmet Yellow -->
+    <linearGradient id="helmetGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="50%" stop-color="#fcc419"/>
+      <stop offset="100%" stop-color="#e67700"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <!-- Big Backing Badge / Shield -->
+  <circle cx="256" cy="256" r="236" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="16"/>
+  <circle cx="256" cy="256" r="216" fill="#1e1b4b" opacity="0.35"/>
+
+  <!-- Clouds in Background -->
+  <g opacity="0.85">
+    <path d="M 60 210 C 60 190 80 180 100 185 C 110 165 140 165 155 180 C 175 175 195 190 190 210 Z" fill="#ffffff"/>
+    <path d="M 330 140 C 330 120 350 110 370 115 C 380 95 410 95 425 110 C 445 105 465 120 460 140 Z" fill="#ffffff"/>
+    <path d="M 360 380 C 360 365 375 355 390 360 C 400 345 420 345 435 355 C 450 350 465 365 460 380 Z" fill="#ffffff" opacity="0.6"/>
+  </g>
+
+  <!-- Ground Shadow under Tower -->
+  <ellipse cx="256" cy="430" rx="150" ry="42" fill="#0f172a" opacity="0.4" filter="blur(6px)"/>
+
+  <!-- TOWER STACK (2.5D Isometric 2:1 Projection) -->
+  <g filter="url(#softShadow)">
+
+    <!-- ANDAR 1 (BASE) - Emerald/Teal -->
+    <!-- Center bottom around (256, 390) -->
+    <!-- Top Face -->
+    <polygon points="256,310 380,350 256,390 132,350" fill="url(#b1Top)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Left Face -->
+    <polygon points="132,350 256,390 256,435 132,395" fill="url(#b1Left)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Right Face -->
+    <polygon points="256,390 380,350 380,395 256,435" fill="url(#b1Right)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Edge Highlight line -->
+    <polyline points="132,350 256,390 380,350" fill="none" stroke="#6ee7b7" stroke-width="3" opacity="0.7"/>
+
+    <!-- ANDAR 2 (MEIO) - Coral/Orange -->
+    <!-- Center bottom around (256, 305) -->
+    <!-- Top Face -->
+    <polygon points="256,225 360,260 256,295 152,260" fill="url(#b2Top)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Left Face -->
+    <polygon points="152,260 256,295 256,340 152,305" fill="url(#b2Left)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Right Face -->
+    <polygon points="256,295 360,260 360,305 256,340" fill="url(#b2Right)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Edge Highlight line -->
+    <polyline points="152,260 256,295 360,260" fill="none" stroke="#fdba74" stroke-width="3" opacity="0.7"/>
+
+    <!-- ANDAR 3 (TOPO) - Golden/Yellow -->
+    <!-- Center bottom around (256, 220) -->
+    <!-- Top Face -->
+    <polygon points="256,145 340,175 256,205 172,175" fill="url(#b3Top)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Left Face -->
+    <polygon points="172,175 256,205 256,245 172,215" fill="url(#b3Left)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Right Face -->
+    <polygon points="256,205 340,175 340,215 256,245" fill="url(#b3Right)" stroke="#1e293b" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Edge Highlight line -->
+    <polyline points="172,175 256,205 340,175" fill="none" stroke="#fef08a" stroke-width="3" opacity="0.7"/>
+
+    <!-- CAPITÃO CAPI NO TOPO DA TORRE (Capacete de Mestre de Obras e Rostinho) -->
+    <g transform="translate(256, 135)">
+      <!-- Capi Head (Chubby Cute Capybara) -->
+      <!-- Head base oval -->
+      <ellipse cx="0" cy="0" rx="46" ry="34" fill="#a06030" stroke="#1e293b" stroke-width="7"/>
+      <!-- Snout -->
+      <ellipse cx="0" cy="12" rx="32" ry="20" fill="#c4824d" stroke="#1e293b" stroke-width="6"/>
+      <!-- Nostrils -->
+      <circle cx="-9" cy="8" r="3.5" fill="#3a1d0d"/>
+      <circle cx="9" cy="8" r="3.5" fill="#3a1d0d"/>
+      <path d="M -8 18 Q 0 22 8 18" fill="none" stroke="#3a1d0d" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- Eyes (Happy closed arcs) -->
+      <path d="M -26 -2 Q -20 -9 -14 -2" fill="none" stroke="#1e293b" stroke-width="5" stroke-linecap="round"/>
+      <path d="M 14 -2 Q 20 -9 26 -2" fill="none" stroke="#1e293b" stroke-width="5" stroke-linecap="round"/>
+      <!-- Rosy Cheeks -->
+      <circle cx="-32" cy="10" r="7" fill="#ff6b6b" opacity="0.6"/>
+      <circle cx="32" cy="10" r="7" fill="#ff6b6b" opacity="0.6"/>
+      <!-- Little Ears -->
+      <ellipse cx="-44" cy="-14" rx="8" ry="12" transform="rotate(-20 -44 -14)" fill="#84481d" stroke="#1e293b" stroke-width="5"/>
+      <ellipse cx="44" cy="-14" rx="8" ry="12" transform="rotate(20 44 -14)" fill="#84481d" stroke="#1e293b" stroke-width="5"/>
+
+      <!-- Helmet (Yellow Builder's Hard Hat) -->
+      <!-- Helmet dome -->
+      <path d="M -48 -14 C -48 -44 48 -44 48 -14 Z" fill="url(#helmetGrad)" stroke="#1e293b" stroke-width="7"/>
+      <!-- Helmet middle ridge -->
+      <path d="M -7 -44 C -7 -44 0 -46 7 -44 L 9 -14 L -9 -14 Z" fill="#fff3bf" opacity="0.5"/>
+      <!-- Helmet visor/rim -->
+      <path d="M -54 -14 C -54 -14 0 -8 54 -14 C 54 -6 0 -1 -54 -6 Z" fill="#ffd43b" stroke="#1e293b" stroke-width="6"/>
+      <!-- Lamp on helmet -->
+      <rect x="-10" y="-36" width="20" height="14" rx="4" fill="#67e8f9" stroke="#1e293b" stroke-width="4"/>
+      <circle cx="0" cy="-29" r="4" fill="#ffffff"/>
+    </g>
+
+    <!-- PERFECT STARS / SPARKLES (Efeito de Combo) -->
+    <!-- Left Star -->
+    <path d="M 110 160 L 116 178 L 134 180 L 120 192 L 124 210 L 110 200 L 96 210 L 100 192 L 86 180 L 104 178 Z" 
+          fill="#fde047" stroke="#1e293b" stroke-width="4"/>
+    <!-- Right Big Star -->
+    <path d="M 390 190 L 398 212 L 420 214 L 403 229 L 408 251 L 390 239 L 372 251 L 377 229 L 360 214 L 382 212 Z" 
+          fill="#fde047" stroke="#1e293b" stroke-width="5"/>
+    <!-- Little Sparkle Diamonds -->
+    <polygon points="170,100 176,112 188,118 176,124 170,136 164,124 152,118 164,112" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+    <polygon points="330,70 335,80 345,85 335,90 330,100 325,90 315,85 325,80" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+  </g>
+</svg>`;
+
+const jobs = [
+  { dir: towerDir, name: 'icone-torre', svg: towerSvg },
+];
+
+for (const job of jobs) {
+  const svgPath = path.join(job.dir, `${job.name}.svg`);
+  const vcPath = path.join(job.dir, `${job.name}.vectorcraft`);
+  const pngPath = path.join(job.dir, `${job.name}.png`);
+  const png128Path = path.join(job.dir, `${job.name}-128.png`);
+
+  fs.writeFileSync(svgPath, job.svg, 'utf8');
+  console.log(`Saved ${svgPath}`);
+
+  try {
+    execSync(`vectorcraft-cli convert "${svgPath}" "${vcPath}"`, { stdio: 'inherit' });
+    execSync(`vectorcraft-cli convert "${svgPath}" "${pngPath}" --scale 1`, { stdio: 'inherit' });
+    execSync(`vectorcraft-cli convert "${svgPath}" "${png128Path}" --scale 0.25`, { stdio: 'inherit' });
+    console.log(`Converted ${job.name} -> vectorcraft and pngs`);
+  } catch (e) {
+    console.error(`Error converting ${job.name}:`, e.message);
+  }
+}

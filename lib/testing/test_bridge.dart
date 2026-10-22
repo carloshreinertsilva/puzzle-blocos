@@ -5,6 +5,7 @@ import '../core/shapes.dart';
 import '../services/progress_store.dart';
 import '../game/game_controller.dart';
 import '../game/obra_controller.dart';
+import '../tower/tower_controller.dart';
 import '../game/puzzle_game.dart';
 import 'bridge_stub.dart' if (dart.library.js_interop) 'bridge_web.dart';
 
@@ -25,6 +26,7 @@ class TestBridge {
 
   /// The construction puzzle on screen, and how to drag its pieces.
   ObraController? obra;
+  TowerController? tower;
   Map<String, Object?>? Function(int piece)? obraDrag;
   final praises = <String>[];
 
@@ -36,6 +38,22 @@ class TestBridge {
   int Function()? wallet;
 
   Map<String, Object?> state() {
+    final t = tower;
+    if (t != null) {
+      return {
+        'screen': screen,
+        'stars': wallet?.call(),
+        'tower': {
+          'height': t.height,
+          'placedFloors': t.blocks.length - 1,
+          'bestHeight': t.bestHeight,
+          'combo': t.combo,
+          'gameOver': t.gameOver,
+          'playing': t.playing,
+          'starsGained': t.starsGained,
+        },
+      };
+    }
     final o = obra;
     if (o != null) {
       return {
@@ -168,6 +186,20 @@ class TestBridge {
     if (ctrl == null) return;
     final tool = CapiTool.values.firstWhere((t) => t.name == toolName);
     await ctrl.store.addTool(tool, count);
+  }
+
+  bool placeTower([bool perfect = true]) {
+    final t = tower;
+    if (t == null) return false;
+    t.debugPlace(perfect: perfect);
+    return true;
+  }
+
+  bool missTower() {
+    final t = tower;
+    if (t == null) return false;
+    t.debugPlace(perfect: false, offset: 9.0);
+    return true;
   }
 
   bool win() {
