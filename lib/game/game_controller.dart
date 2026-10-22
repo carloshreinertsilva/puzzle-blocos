@@ -431,6 +431,7 @@ class GameController extends ChangeNotifier {
     }
     final ok = await store.useTool(CapiTool.hammer);
     if (!ok) return false;
+    activeToolMode = null;
     final cleared = session.useHammer(r, c);
     if (cleared == null) return false;
     feedback.clear(0, 1);
@@ -448,6 +449,7 @@ class GameController extends ChangeNotifier {
     if (!playing || activeToolMode != CapiTool.shovel) return false;
     final ok = await store.useTool(CapiTool.shovel);
     if (!ok) return false;
+    activeToolMode = null;
     final cleared = session.useShovel(r, c);
     feedback.clear(1, 2);
     _react(CapiReaction.cheer, 'Limpou geral!');
@@ -468,6 +470,7 @@ class GameController extends ChangeNotifier {
     }
     final ok = await store.useTool(CapiTool.rotate);
     if (!ok) return false;
+    activeToolMode = null;
     final piece = session.useRotate(slot);
     if (piece == null) return false;
     feedback.pick();
