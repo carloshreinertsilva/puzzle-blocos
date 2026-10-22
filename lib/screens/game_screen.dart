@@ -494,6 +494,12 @@ class _Goals extends StatelessWidget {
           progress: session.rocksBroken / session.rocksAtStart,
           label: '${session.rocksLeft}',
         ),
+      if (level.hasPupGoal)
+        _GoalChip(
+          icon: const MiniGlyph(MiniIcon.pup, size: 20),
+          progress: 1 - session.pupsLeft / level.pupCount,
+          label: '${level.pupCount - session.pupsLeft}/${level.pupCount}',
+        ),
       if (level.gemsTarget > 0)
         _GoalChip(
           icon: const MiniGlyph(MiniIcon.gem, size: 18),
@@ -593,6 +599,12 @@ class _IntroCard extends StatelessWidget {
         'Gemas',
         'Algumas peças trazem gemas. Limpe a linha onde elas estão '
             'para coletar.',
+      ),
+      Intro.pups => (
+        const MiniGlyph(MiniIcon.pup, size: 60),
+        'Filhotes!',
+        'Uns filhotes de capivara ficaram presos nos blocos! Limpe a linha '
+            'ou a coluna de cada um para soltar. Eles vão morar na vila.',
       ),
       Intro.doubleGoal => (
         const Icon(Icons.flag_rounded, color: Palette.accent, size: 56),

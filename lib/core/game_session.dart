@@ -47,6 +47,7 @@ class GameSession {
   int score = 0;
   int combo = 0;
   int gems = 0;
+  int pupsSaved = 0;
   int _movesSinceClear = 0;
   bool revived = false;
 
@@ -60,12 +61,14 @@ class GameSession {
 
   int get rocksLeft => board.rockCount;
   int get rocksBroken => rocksAtStart - rocksLeft;
+  int get pupsLeft => board.pupCount;
 
   bool get goalsMet {
     if (level.isEndless) return false;
     if (level.targetScore > 0 && score < level.targetScore) return false;
     if (level.gemsTarget > 0 && gems < level.gemsTarget) return false;
     if (level.hasRockGoal && rocksLeft > 0) return false;
+    if (level.hasPupGoal && pupsLeft > 0) return false;
     return true;
   }
 
@@ -114,6 +117,7 @@ class GameSession {
     if (boardCleared) points += boardClearBonus;
     score += points;
     gems += outcome.gems;
+    pupsSaved += outcome.pups;
 
     var newTray = false;
     if (tray.every((p) => p == null)) {
@@ -148,6 +152,7 @@ class GameSession {
             ? Cell.rock(before.hp - 1)
             : const Cell.empty();
         board.set(r, c, after);
+        if (before.pup) pupsSaved++;
         cleared.add(ClearedCell(r, c, before, after));
       }
     }

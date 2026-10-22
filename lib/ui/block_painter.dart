@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../core/board.dart';
 import 'palette.dart';
+import 'pup.dart';
 
 /// Paints blocks, rocks and gems. Used directly by Flutter widgets and, via
 /// [BlockSprites], pre-rendered for the game scene.
@@ -136,6 +137,7 @@ abstract final class BlockPainter {
       case CellType.block:
         block(canvas, rect, Palette.blocks[cell.color]);
         if (cell.gem) gem(canvas, rect);
+        if (cell.pup) PupPainter.trapped(canvas, rect);
     }
   }
 }
@@ -216,6 +218,7 @@ class BlockSprites {
     rock1 = _render((cv, r) => BlockPainter.rock(cv, r, 1));
     rock2 = _render((cv, r) => BlockPainter.rock(cv, r, 2));
     gem = _render(BlockPainter.gem);
+    pup = _render(PupPainter.trapped);
     empty = _render(BlockPainter.emptyCell);
   }
 
@@ -225,6 +228,7 @@ class BlockSprites {
   late final BlockArt rock1;
   late final BlockArt rock2;
   late final BlockArt gem;
+  late final BlockArt pup;
   late final BlockArt empty;
 
   BlockArt _render(void Function(Canvas, Rect) paint) =>
@@ -242,10 +246,11 @@ class BlockSprites {
     if (cell.isEmpty) return;
     forCell(cell).draw(canvas, dst, opacity: opacity);
     if (cell.gem) gem.draw(canvas, dst, opacity: opacity);
+    if (cell.pup) pup.draw(canvas, dst, opacity: opacity);
   }
 
   void dispose() {
-    for (final a in [...blocks, rock1, rock2, gem, empty]) {
+    for (final a in [...blocks, rock1, rock2, gem, pup, empty]) {
       a.dispose();
     }
   }

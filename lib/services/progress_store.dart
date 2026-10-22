@@ -37,11 +37,15 @@ class ProgressStore {
   int get gemsCollected => _prefs.getInt('gemsCollected') ?? 0;
   int get rocksBroken => _prefs.getInt('rocksBroken') ?? 0;
 
+  /// Capybara pups freed from the board; they go live in the village.
+  int get pupsSaved => _prefs.getInt('pupsSaved') ?? 0;
+
   Future<void> recordMove({
     required int lines,
     required int combo,
     required int gems,
     required int rocks,
+    int pups = 0,
   }) async {
     if (lines > 0) {
       await _prefs.setInt('linesCleared', linesCleared + lines);
@@ -49,6 +53,7 @@ class ProgressStore {
     if (combo > bestCombo) await _prefs.setInt('bestCombo', combo);
     if (gems > 0) await _prefs.setInt('gemsCollected', gemsCollected + gems);
     if (rocks > 0) await _prefs.setInt('rocksBroken', rocksBroken + rocks);
+    if (pups > 0) await _prefs.setInt('pupsSaved', pupsSaved + pups);
   }
 
   Future<void> recordGame({required bool levelWon}) async {
@@ -104,6 +109,13 @@ class ProgressStore {
   /// Village items built so far (they are built in a fixed order).
   int get villageBuilt => _prefs.getInt('villageBuilt') ?? 0;
   Future<void> setVillageBuilt(int n) => _prefs.setInt('villageBuilt', n);
+
+  /// Obras mode: the next obra to build and the best stars of each one.
+  int get obraLevel => _prefs.getInt('obraLevel') ?? 1;
+  Future<void> setObraLevel(int v) => _prefs.setInt('obraLevel', v);
+  int obraStars(int n) => _prefs.getInt('obraStars_$n') ?? 0;
+  Future<void> setObraStars(int n, int stars) =>
+      _prefs.setInt('obraStars_$n', stars);
 
   bool get adsRemoved => _prefs.getBool('adsRemoved') ?? false;
 

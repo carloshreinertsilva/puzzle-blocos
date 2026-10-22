@@ -62,8 +62,14 @@ class LevelConfig {
   bool get hasRockGoal => rockCount > 0;
   bool get hasToughRocks =>
       initialCells.values.any((c) => c.type == CellType.rock && c.hp > 1);
-  int get goalCount =>
-      [targetScore > 0, gemsTarget > 0, hasRockGoal].where((g) => g).length;
+  int get pupCount => initialCells.values.where((c) => c.pup).length;
+  bool get hasPupGoal => pupCount > 0;
+  int get goalCount => [
+    targetScore > 0,
+    gemsTarget > 0,
+    hasRockGoal,
+    hasPupGoal,
+  ].where((g) => g).length;
 
   Board buildBoard() {
     final board = Board();
@@ -74,7 +80,7 @@ class LevelConfig {
   }
 }
 
-typedef _Goal = ({bool score, bool rocks, bool gems});
+typedef _Goal = ({bool score, bool rocks, bool gems, bool pups});
 
 class LevelGenerator {
   /// Difficulty climbs for four levels, peaks on a hard level, then eases
@@ -106,9 +112,10 @@ class LevelGenerator {
     final key = day.year * 10000 + day.month * 100 + day.day;
     final rng = Random(key);
     const goals = <_Goal>[
-      (score: true, rocks: true, gems: false),
-      (score: true, rocks: false, gems: true),
-      (score: false, rocks: true, gems: true),
+      (score: true, rocks: true, gems: false, pups: false),
+      (score: true, rocks: false, gems: true, pups: false),
+      (score: false, rocks: true, gems: true, pups: false),
+      (score: true, rocks: false, gems: false, pups: true),
     ];
     return _compose(
       rng: rng,
@@ -132,7 +139,12 @@ class LevelGenerator {
   }) {
     final d = difficulty;
     final n = level;
-    final goals = [goal.score, goal.rocks, goal.gems].where((g) => g).length;
+    final goals = [
+      goal.score,
+      goal.rocks,
+      goal.gems,
+      goal.pups,
+    ].where((g) => g).length;
     // Two goals at once: each one is smaller. Hard levels ask a bit more,
     // relief levels a bit less.
     final share =
@@ -147,7 +159,7 @@ class LevelGenerator {
     // Most boards start with a drawing (not rock boards, which bring their
     // own layout), so the very first moves already clear lines.
     String? pattern;
-    if (!goal.rocks && (goal.score || rng.nextDouble() < 0.6)) {
+    if (!goal.rocks && !goal.pups && (goal.score || rng.nextDouble() < 0.6)) {
       // Lighter drawings first; heavier ones join as difficulty rises.
       final names = boardPatterns.keys.toList()
         ..sort(
@@ -193,6 +205,19 @@ class LevelGenerator {
         });
       }
     }
+    if (goal.pups) {
+      // Each pup sits alone on its own row and column, so every one needs
+      // a line of its own (or a row and a column crossing it).
+      final count = (4 + 4 * d * share).round().clamp(3, 7);
+      final rows = List.generate(Board.size, (i) => i)..shuffle(rng);
+      final cols = List.generate(Board.size, (i) => i)..shuffle(rng);
+      for (var k = 0; k < count; k++) {
+        cells[rows[k] * Board.size + cols[k]] = Cell.block(
+          rng.nextInt(blockColorCount),
+          pup: true,
+        );
+      }
+    }
     // Leftover blocks make later boards without a drawing start crowded.
     if (pattern == null && n > 6) {
       _scatter(
@@ -219,16 +244,21 @@ class LevelGenerator {
 
   static _Goal _goalFor(int n) {
     // The first levels introduce one goal at a time.
-    if (n <= 2 || n == 4) return (score: true, rocks: false, gems: false);
-    if (n == 3) return (score: false, rocks: true, gems: false);
-    if (n == 5) return (score: false, rocks: false, gems: true);
-    // Rotate the goal kind so hard and relief levels vary too.
+    if (n <= 2 || n == 4) {
+      return (score: true, rocks: false, gems: false, pups: false);
+    }
+    if (n == 3) return (score: false, rocks: true, gems: false, pups: false);
+    if (n == 5) return (score: false, rocks: false, gems: true, pups: false);
+    if (n == 8) return (score: false, rocks: false, gems: false, pups: true);
+    // Rotate the goal kind so hard and relief levels vary too. Gems and
+    // pups take turns on the third kind.
     final kind = (n + (n - 1) ~/ 6) % 3;
     final both = n >= 10 && n % 5 == 0;
+    final pups = n > 8 && n.isEven;
     return switch (kind) {
-      0 => (score: true, rocks: both, gems: false),
-      1 => (score: both, rocks: true, gems: false),
-      _ => (score: false, rocks: both, gems: true),
+      0 => (score: true, rocks: both, gems: false, pups: false),
+      1 => (score: both, rocks: true, gems: false, pups: false),
+      _ => (score: false, rocks: both, gems: !pups, pups: pups),
     };
   }
 

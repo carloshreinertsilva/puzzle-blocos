@@ -91,6 +91,7 @@ class BoardView extends Component with HasGameReference<PuzzleGame> {
           // Blocks about to clear take the dragged piece's color.
           sprites.draw(canvas, sprites.blocks[p.piece.color], drawRect);
           if (value.gem) sprites.draw(canvas, sprites.gem, drawRect);
+          if (value.pup) sprites.draw(canvas, sprites.pup, drawRect);
         } else {
           sprites.drawCell(canvas, value, drawRect);
         }

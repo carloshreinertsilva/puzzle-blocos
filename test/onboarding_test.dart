@@ -28,6 +28,7 @@ void main() {
       MenuNews.welcome,
       MenuNews.village,
       MenuNews.endless,
+      MenuNews.obras,
       MenuNews.daily,
     ]);
     await s.markSeen(MenuNews.welcome.key);

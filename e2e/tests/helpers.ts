@@ -4,7 +4,17 @@ import { expect, type Page, type TestInfo } from '@playwright/test';
 export type Piece = { id: string; rows: number; cols: number; cells: [number, number][] };
 export type Box = { x: number; y: number; w: number; h: number };
 export type GameState = {
-  screen: 'home' | 'game';
+  screen: 'home' | 'game' | 'village' | 'obra';
+  stars?: number;
+  obra?: {
+    id: string;
+    pieces: number;
+    placed: number;
+    solved: boolean;
+    stars: number;
+    undos: number;
+    hints: number;
+  };
   mode?: 'levels' | 'endless' | 'daily';
   level?: number;
   kind?: 'level' | 'endless' | 'daily';
@@ -14,7 +24,14 @@ export type GameState = {
   intros?: string[];
   score?: number;
   revived?: boolean;
-  goals?: { targetScore: number; gemsTarget: number; gems: number; rocksLeft: number };
+  goals?: {
+    targetScore: number;
+    gemsTarget: number;
+    gems: number;
+    rocksLeft: number;
+    pupsLeft: number;
+    pupsSaved: number;
+  };
   board?: string[];
   tray?: (Piece | null)[];
   praises?: string[];
@@ -37,6 +54,7 @@ const VETERAN: Saved = {
   seen_news_welcome: true,
   seen_news_village: true,
   seen_news_endless: true,
+  seen_news_obras: true,
   seen_news_daily: true,
 };
 

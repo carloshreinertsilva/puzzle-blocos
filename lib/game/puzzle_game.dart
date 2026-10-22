@@ -16,6 +16,7 @@ import 'capi_carrier.dart';
 import 'effects.dart';
 import 'game_controller.dart';
 import 'hint_hand.dart';
+import 'pup_rescue.dart';
 import 'tray_piece.dart';
 
 /// The play area: board, tray and effects. Menus and the HUD are Flutter
@@ -330,6 +331,25 @@ class PuzzleGame extends FlameGame {
         count: before.gem ? 9 : 4,
         delay: delay,
       );
+      if (before.pup && cell.after.isEmpty) {
+        stage.add(
+          PupRescue(
+            from: dst.center,
+            to: Offset(size.x / 2, topInset - cellSize * 0.4),
+            cell: cellSize,
+            delay: delay,
+          )..priority = 35,
+        );
+        stage.add(
+          PopText(
+            'Salvo!',
+            position: Vector2(dst.center.dx, dst.center.dy - cellSize),
+            fontSize: cellSize * 0.5,
+            color: const Color(0xFFFF9EC7),
+            delay: delay + 0.2,
+          )..priority = 30,
+        );
+      }
       if (before.gem) {
         stage.add(
           PopText(

@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/board.dart';
 import '../core/shapes.dart';
 import '../game/game_controller.dart';
+import '../game/obra_controller.dart';
 import '../game/puzzle_game.dart';
 import 'bridge_stub.dart' if (dart.library.js_interop) 'bridge_web.dart';
 
@@ -20,6 +21,10 @@ class TestBridge {
   String screen = 'home';
   GameController? controller;
   PuzzleGame? game;
+
+  /// The construction puzzle on screen, and how to drag its pieces.
+  ObraController? obra;
+  Map<String, Object?>? Function(int piece)? obraDrag;
   final praises = <String>[];
 
   void install() => installJsBridge(this);
@@ -30,6 +35,29 @@ class TestBridge {
   int Function()? wallet;
 
   Map<String, Object?> state() {
+    final o = obra;
+    if (o != null) {
+      return {
+        'screen': screen,
+        'stars': wallet?.call(),
+        'obra': {
+          'id': o.blueprint.id,
+          'pieces': o.blueprint.pieces.length,
+          'placed': o.placed.where((p) => p != null).length,
+          'at': [
+            for (final p in o.placed)
+              if (p case (final r, final c)) [r, c] else null,
+          ],
+          'solution': [
+            for (final (r, c) in o.blueprint.solution) [r, c],
+          ],
+          'solved': o.solved,
+          'stars': o.stars,
+          'undos': o.undos,
+          'hints': o.hints,
+        },
+      };
+    }
     final c = controller;
     final g = game;
     if (c == null) return {'screen': screen, 'stars': wallet?.call()};
@@ -54,6 +82,8 @@ class TestBridge {
         'gemsTarget': level.gemsTarget,
         'gems': s.gems,
         'rocksLeft': s.rocksLeft,
+        'pupsLeft': s.pupsLeft,
+        'pupsSaved': s.pupsSaved,
       },
       'board': [
         for (var r = 0; r < Board.size; r++)
@@ -88,7 +118,7 @@ class TestBridge {
   static String _cell(Cell c) => switch (c.type) {
     CellType.empty => '.',
     CellType.rock => c.hp > 1 ? 'R' : 'r',
-    CellType.block => c.gem ? 'g' : 'b',
+    CellType.block => c.pup ? 'p' : (c.gem ? 'g' : 'b'),
   };
 
   /// Pointer path (in page pixels) that drags tray [slot] onto (row, col).
@@ -101,14 +131,18 @@ class TestBridge {
 
   /// Wins the current attempt (to reach later screens quickly).
   bool win() {
+    if (obra case final o?) {
+      o.debugSolve();
+      return true;
+    }
     final c = controller;
     if (c == null) return false;
     c.debugWin();
     return true;
   }
 
-  /// Sets up a scenario: [board] as 8 strings ('.', 'b', 'g', 'r', 'R') and
-  /// the tray as shape ids (null for an empty slot).
+  /// Sets up a scenario: [board] as 8 strings ('.', 'b', 'g', 'p', 'r',
+  /// 'R') and the tray as shape ids (null for an empty slot).
   bool load(String json) {
     final c = controller;
     if (c == null) return false;

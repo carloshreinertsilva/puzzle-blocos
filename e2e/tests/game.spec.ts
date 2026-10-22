@@ -108,7 +108,7 @@ test('desafio diário abre com duas metas', async ({ page }) => {
   await page.getByRole('button', { name: 'Desafio diário' }).click();
   const s = await waitForState(page, (x) => x.screen === 'game' && x.kind === 'daily', 'desafio aberto');
   const g = s.goals!;
-  const goals = [g.targetScore > 0, g.gemsTarget > 0, g.rocksLeft > 0].filter(Boolean).length;
+  const goals = [g.targetScore > 0, g.gemsTarget > 0, g.rocksLeft > 0, g.pupsLeft > 0].filter(Boolean).length;
   expect(goals).toBe(2);
 });
 

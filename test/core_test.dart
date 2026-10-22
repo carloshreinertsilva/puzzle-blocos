@@ -149,11 +149,7 @@ void main() {
     test('every level has a goal and never starts with a full line', () {
       for (var n = 1; n <= 200; n++) {
         final level = LevelGenerator.build(n);
-        expect(
-          level.targetScore > 0 || level.gemsTarget > 0 || level.hasRockGoal,
-          isTrue,
-          reason: 'level $n',
-        );
+        expect(level.goalCount, greaterThan(0), reason: 'level $n');
         final masks = level.buildBoard().rowMasks;
         expect(masks.contains(Board.fullRow), isFalse);
       }
@@ -185,6 +181,18 @@ void main() {
           expect(board.rowMasks.fold(Board.fullRow, (a, b) => a & b), 0);
         }
       }
+    });
+
+    test('pup levels: each pup on its own row and column', () {
+      final level = LevelGenerator.build(8);
+      expect(level.hasPupGoal, isTrue);
+      final pups = [
+        for (final e in level.initialCells.entries)
+          if (e.value.pup) e.key,
+      ];
+      expect(pups.length, greaterThanOrEqualTo(3));
+      expect(pups.map((i) => i ~/ Board.size).toSet().length, pups.length);
+      expect(pups.map((i) => i % Board.size).toSet().length, pups.length);
     });
 
     test('early levels start with a drawing', () {
@@ -232,6 +240,28 @@ void main() {
       expect(first.points, 5 + 100);
       s.place(1, 5, 5); // no clear
       expect(s.combo, 1);
+    });
+
+    test('clearing a pup\'s line frees it; all pups free wins', () {
+      final level = LevelConfig(
+        number: 8,
+        difficulty: 0.1,
+        targetScore: 0,
+        gemsTarget: 0,
+        gemChance: 0,
+        initialCells: {
+          for (var c = 0; c < 7; c++) c: Cell.block(0, pup: c == 2),
+          63: const Cell.block(0),
+        },
+      );
+      expect(level.hasPupGoal, isTrue);
+      final s = GameSession(level, rng: Random(3));
+      expect(s.pupsLeft, 1);
+      s.tray = [for (var i = 0; i < 3; i++) Piece(shape('dot0'))];
+      final result = s.place(0, 0, 7);
+      expect(result.outcome.pups, 1);
+      expect(s.pupsSaved, 1);
+      expect(s.status, SessionStatus.won);
     });
 
     test('revive clears crowded rows and resumes play', () {
