@@ -5,6 +5,9 @@ import 'palette.dart';
 /// pontos").
 String goalSummary(LevelConfig level) {
   if (level.isEndless) return 'Até onde você consegue ir?';
+  if (level.isBlitz) return 'Pontue o máximo em 60 segundos!';
+  if (level.isDuel)
+    return 'Supere a meta de ${formatInt(level.targetScore)} pontos!';
   final parts = [
     if (level.hasRockGoal) 'quebre todas as pedras',
     if (level.gemsTarget > 0) 'colete ${level.gemsTarget} gemas',
@@ -20,5 +23,7 @@ String goalSummary(LevelConfig level) {
 String levelTitle(LevelConfig level) => switch (level.kind) {
   LevelKind.endless => 'Modo infinito',
   LevelKind.daily => 'Desafio diário',
+  LevelKind.blitz => 'Blitz 60s',
+  LevelKind.duel => 'Duelo',
   LevelKind.level => 'Fase ${level.number}',
 };

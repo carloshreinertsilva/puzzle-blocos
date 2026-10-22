@@ -15,9 +15,13 @@ export type GameState = {
     undos: number;
     hints: number;
   };
-  mode?: 'levels' | 'endless' | 'daily';
+  mode?: 'levels' | 'endless' | 'daily' | 'blitz' | 'duel';
   level?: number;
-  kind?: 'level' | 'endless' | 'daily';
+  kind?: 'level' | 'endless' | 'daily' | 'blitz' | 'duel';
+  blitzSecondsLeft?: number;
+  duelSeed?: number;
+  duelTargetScore?: number;
+  duelWon?: boolean;
   status?: 'playing' | 'won' | 'lost';
   showOutcome?: boolean;
   paused?: boolean;
@@ -63,6 +67,8 @@ const VETERAN: Saved = {
   seen_news_endless: true,
   seen_news_obras: true,
   seen_news_daily: true,
+  seen_news_blitz: true,
+  seen_news_duel: true,
 };
 
 /** Opens the game on the menu, with optional saved progress

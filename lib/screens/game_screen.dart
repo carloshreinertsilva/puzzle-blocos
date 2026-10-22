@@ -1,5 +1,8 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
@@ -28,9 +31,15 @@ class GameScreen extends StatefulWidget {
     required this.mode,
     this.onDone,
     this.replayLevel,
+    this.duelSeed,
+    this.duelTargetScore,
+    this.duelRivalName,
   });
   final AppServices services;
   final GameMode mode;
+  final int? duelSeed;
+  final int? duelTargetScore;
+  final String? duelRivalName;
 
   /// An earlier level, played again for its missing stars.
   final int? replayLevel;
@@ -50,6 +59,9 @@ class _GameScreenState extends State<GameScreen> {
     feedback: widget.services.feedback,
     mode: widget.mode,
     replayLevel: widget.replayLevel,
+    duelSeed: widget.duelSeed,
+    duelTargetScore: widget.duelTargetScore,
+    duelRivalName: widget.duelRivalName,
   );
   PuzzleGame? game;
   bool _busy = false;
@@ -256,6 +268,21 @@ class _GameScreenState extends State<GameScreen> {
     Navigator.of(context).pop();
   }
 
+  void _shareDuelLink(int score) {
+    widget.services.feedback.click();
+    final seed =
+        controller.level.seed ??
+        (DateTime.now().millisecondsSinceEpoch % 1000000);
+    final url = 'https://capiblocks.vercel.app/?duelo=${seed}&p=${score}';
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Link de duelo copiado para a área de transferência!'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -347,36 +374,82 @@ class _GameScreenState extends State<GameScreen> {
         onExit: _onboarding ? null : _exit,
       );
     } else if (controller.showOutcome && s.status == SessionStatus.won) {
-      card = controller.level.isDaily
-          ? _DailyWinCard(
-              score: s.score,
-              starsGained: controller.starsGained,
-              streak: widget.services.store.dailyStreak(controller.today),
-              onExit: _exit,
-            )
-          : _WinCard(
-              level: controller.level.number,
-              score: s.score,
-              starBits: controller.starBits | controller.previousStarBits,
-              newBits: controller.starBits & ~controller.previousStarBits,
-              starsGained: controller.starsGained,
-              replay: controller.isReplay,
-              onNext: _next,
-              onRetry: _retry,
-              onExit: _exit,
-            );
+      if (controller.isBlitz) {
+        card = _BlitzWinCard(
+          score: s.score,
+          best: controller.bestScore,
+          newBest: controller.newBest,
+          starsGained: controller.starsGained,
+          onRetry: _retry,
+          onExit: _exit,
+          onShareDuel: () => _shareDuelLink(s.score),
+        );
+      } else if (controller.isDuel) {
+        card = _DuelOutcomeCard(
+          won: controller.duelWon,
+          score: s.score,
+          rivalScore: controller.duelTargetScore ?? 1000,
+          rivalName: controller.duelRivalName ?? 'Rival',
+          starsGained: controller.starsGained,
+          onRetry: _retry,
+          onExit: _exit,
+          onShareDuel: () => _shareDuelLink(s.score),
+        );
+      } else {
+        card = controller.level.isDaily
+            ? _DailyWinCard(
+                score: s.score,
+                starsGained: controller.starsGained,
+                streak: widget.services.store.dailyStreak(controller.today),
+                onExit: _exit,
+              )
+            : _WinCard(
+                level: controller.level.number,
+                score: s.score,
+                starBits: controller.starBits | controller.previousStarBits,
+                newBits: controller.starBits & ~controller.previousStarBits,
+                starsGained: controller.starsGained,
+                replay: controller.isReplay,
+                onNext: _next,
+                onRetry: _retry,
+                onExit: _exit,
+              );
+      }
     } else if (controller.showOutcome && s.status == SessionStatus.lost) {
-      card = _LoseCard(
-        endless: controller.endless,
-        starsGained: controller.endless ? controller.starsGained : 0,
-        score: s.score,
-        best: controller.bestScore,
-        newBest: controller.newBest,
-        canRevive: controller.canRevive,
-        onRevive: _revive,
-        onRetry: _retry,
-        onExit: _onboarding ? null : _exit,
-      );
+      if (controller.isDuel) {
+        card = _DuelOutcomeCard(
+          won: false,
+          score: s.score,
+          rivalScore: controller.duelTargetScore ?? 1000,
+          rivalName: controller.duelRivalName ?? 'Rival',
+          starsGained: 0,
+          onRetry: _retry,
+          onExit: _exit,
+          onShareDuel: () => _shareDuelLink(s.score),
+        );
+      } else if (controller.isBlitz) {
+        card = _BlitzWinCard(
+          score: s.score,
+          best: controller.bestScore,
+          newBest: controller.newBest,
+          starsGained: controller.starsGained,
+          onRetry: _retry,
+          onExit: _exit,
+          onShareDuel: () => _shareDuelLink(s.score),
+        );
+      } else {
+        card = _LoseCard(
+          endless: controller.endless,
+          starsGained: controller.endless ? controller.starsGained : 0,
+          score: s.score,
+          best: controller.bestScore,
+          newBest: controller.newBest,
+          canRevive: controller.canRevive,
+          onRevive: _revive,
+          onRetry: _retry,
+          onExit: _onboarding ? null : _exit,
+        );
+      }
     }
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 260),
@@ -551,7 +624,7 @@ class _Hud extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _AnimatedScore(score: s.score),
-                        if (level.isEndless) ...[
+                        if (level.isEndless || controller.isBlitz) ...[
                           const SizedBox(width: 10),
                           const Icon(
                             Icons.emoji_events_rounded,
@@ -576,8 +649,21 @@ class _Hud extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          if (!level.isEndless) _Goals(session: s),
+          if (controller.isBlitz) ...[
+            const SizedBox(height: 4),
+            _BlitzTimerChip(secondsLeft: controller.blitzSecondsLeft),
+          ] else if (controller.isDuel) ...[
+            const SizedBox(height: 4),
+            _DuelTargetChip(
+              score: s.score,
+              target: controller.duelTargetScore ?? 1000,
+              rivalName: controller.duelRivalName ?? 'Rival',
+              won: controller.duelWon,
+            ),
+          ] else if (!level.isEndless) ...[
+            const SizedBox(height: 6),
+            _Goals(session: s),
+          ],
         ],
       ),
     );
@@ -1425,4 +1511,269 @@ class _PauseCard extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _BlitzTimerChip extends StatelessWidget {
+  const _BlitzTimerChip({required this.secondsLeft});
+  final int secondsLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    final urgent = secondsLeft <= 10;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: urgent ? const Color(0x55FA5252) : const Color(0x442A3356),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: urgent ? const Color(0xFFFA5252) : const Color(0x66FFD43B),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const BlitzIcon(size: 20),
+          const SizedBox(width: 8),
+          Text(
+            '${secondsLeft}s',
+            style: displayText(
+              16,
+              color: urgent ? const Color(0xFFFF8787) : Palette.accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DuelTargetChip extends StatelessWidget {
+  const _DuelTargetChip({
+    required this.score,
+    required this.target,
+    required this.rivalName,
+    required this.won,
+  });
+  final int score;
+  final int target;
+  final String rivalName;
+  final bool won;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: won ? const Color(0x4451CF66) : const Color(0x442A3356),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: won ? const Color(0xFF51CF66) : const Color(0x66339AF0),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const DuelIcon(size: 20),
+          const SizedBox(width: 8),
+          Text(
+            won
+                ? 'SUPEROU ${rivalName.toUpperCase()}!'
+                : 'Meta do ${rivalName}: ${formatInt(target)}',
+            style: displayText(
+              14,
+              color: won ? const Color(0xFF8CE99A) : Colors.white,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '(${formatInt(score)}/${formatInt(target)})',
+            style: displayText(12, color: Palette.textDim),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BlitzWinCard extends StatelessWidget {
+  const _BlitzWinCard({
+    required this.score,
+    required this.best,
+    required this.newBest,
+    required this.starsGained,
+    required this.onRetry,
+    required this.onExit,
+    required this.onShareDuel,
+  });
+
+  final int score;
+  final int best;
+  final bool newBest;
+  final int starsGained;
+  final VoidCallback onRetry;
+  final VoidCallback onExit;
+  final VoidCallback onShareDuel;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardPanel(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const BlitzIcon(size: 72),
+          const SizedBox(height: 8),
+          OutlinedTitle(
+            newBest ? 'Novo Recorde Blitz!' : 'Fim do Blitz!',
+            size: 30,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${formatInt(score)} pontos',
+            style: displayText(26, color: Palette.accent),
+          ),
+          if (newBest) ...[
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0x33FFD95A),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Palette.accent),
+              ),
+              child: Text(
+                'MELHOR PLACAR BLITZ!',
+                style: displayText(12, color: Palette.accent),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 4),
+            Text(
+              'Recorde: ${formatInt(best)} pontos',
+              style: bodyText(14, color: Palette.textDim),
+            ),
+          ],
+          if (starsGained > 0) ...[
+            const SizedBox(height: 10),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star_rounded, color: Palette.accent, size: 22),
+                const SizedBox(width: 4),
+                Text(
+                  '+$starsGained estrelas',
+                  style: displayText(16, color: Palette.accent),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 20),
+          ChunkyButton(
+            label: 'Jogar de novo',
+            icon: Icons.refresh_rounded,
+            big: true,
+            onTap: onRetry,
+          ),
+          const SizedBox(height: 10),
+          ChunkyButton(
+            label: 'Desafiar Amigo',
+            icon: Icons.share_rounded,
+            color: const Color(0xFF339AF0),
+            textColor: Colors.white,
+            onTap: onShareDuel,
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: onExit,
+            child: Text('Menu', style: displayText(16, color: Palette.textDim)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DuelOutcomeCard extends StatelessWidget {
+  const _DuelOutcomeCard({
+    required this.won,
+    required this.score,
+    required this.rivalScore,
+    required this.rivalName,
+    required this.starsGained,
+    required this.onRetry,
+    required this.onExit,
+    required this.onShareDuel,
+  });
+
+  final bool won;
+  final int score;
+  final int rivalScore;
+  final String rivalName;
+  final int starsGained;
+  final VoidCallback onRetry;
+  final VoidCallback onExit;
+  final VoidCallback onShareDuel;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardPanel(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const DuelIcon(size: 72),
+          const SizedBox(height: 8),
+          OutlinedTitle(
+            won ? 'Você Venceu o Duelo!' : 'Quase lá!',
+            size: 28,
+            colors: won
+                ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
+                : const [Color(0xFFFFFFFF), Color(0xFFFFB3B3)],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            won
+                ? 'Você fez ${formatInt(score)} pts e bateu os ${formatInt(rivalScore)} de ${rivalName}!'
+                : 'Você fez ${formatInt(score)} pts. A meta de ${rivalName} era ${formatInt(rivalScore)}.',
+            style: bodyText(15, color: Palette.textDim),
+            textAlign: TextAlign.center,
+          ),
+          if (won && starsGained > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star_rounded, color: Palette.accent, size: 24),
+                const SizedBox(width: 4),
+                Text(
+                  '+$starsGained estrelas',
+                  style: displayText(18, color: Palette.accent),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 20),
+          ChunkyButton(
+            label: won ? 'Jogar Novamente' : 'Tentar de novo',
+            icon: Icons.refresh_rounded,
+            big: true,
+            onTap: onRetry,
+          ),
+          const SizedBox(height: 10),
+          ChunkyButton(
+            label: 'Compartilhar Duelo',
+            icon: Icons.share_rounded,
+            color: const Color(0xFF339AF0),
+            textColor: Colors.white,
+            onTap: onShareDuel,
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: onExit,
+            child: Text('Menu', style: displayText(16, color: Palette.textDim)),
+          ),
+        ],
+      ),
+    );
+  }
 }

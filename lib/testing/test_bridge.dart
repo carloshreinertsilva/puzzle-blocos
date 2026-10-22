@@ -111,6 +111,13 @@ class TestBridge {
         'shovel': c.store.toolCount(CapiTool.shovel),
       },
       if (c.activeToolMode != null) 'activeTool': c.activeToolMode!.name,
+      if (c.isBlitz) 'blitzSecondsLeft': c.blitzSecondsLeft,
+      if (c.isDuel) ...{
+        'duelSeed': c.duelSeed,
+        'duelTargetScore': c.duelTargetScore,
+        'duelRivalName': c.duelRivalName,
+        'duelWon': c.duelWon,
+      },
       'praises': praises,
       'stars': wallet?.call(),
       'starBits': c.starBits,

@@ -79,7 +79,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (play == true) await _open(GameMode.levels);
   }
 
-  Future<void> _open(GameMode mode, {int? replayLevel}) async {
+  Future<void> _open(
+    GameMode mode, {
+    int? replayLevel,
+    int? duelSeed,
+    int? duelTargetScore,
+    String? duelRivalName,
+  }) async {
     widget.services.feedback.click();
     if (mode == GameMode.endless) {
       widget.services.store.markSeen('opened_endless');
@@ -91,6 +97,9 @@ class _HomeScreenState extends State<HomeScreen> {
           services: widget.services,
           mode: mode,
           replayLevel: replayLevel,
+          duelSeed: duelSeed,
+          duelTargetScore: duelTargetScore,
+          duelRivalName: duelRivalName,
         ),
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
@@ -98,6 +107,134 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Level, record and streak may have changed, and modes may unlock.
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
+  }
+
+  Widget _blitzCard(ProgressStore store) {
+    if (!Onboarding.blitzUnlocked(store)) {
+      return MenuCard(
+        icon: Icons.lock_rounded,
+        color: Palette.panelEdge,
+        title: 'Blitz 60s',
+        subtitle: 'Libera na fase ${Onboarding.blitzAt}',
+        onTap: () => _locked('Blitz 60s', Onboarding.blitzAt),
+      );
+    }
+    return MenuCard(
+      icon: Icons.bolt_rounded,
+      color: const Color(0xFFFA5252),
+      title: 'Blitz 60s',
+      subtitle: store.blitzBestScore > 0
+          ? 'Recorde ${formatInt(store.blitzBestScore)}'
+          : 'Corrida de 60s',
+      badge: store.hasSeen('opened_blitz') ? null : 'NOVO',
+      onTap: () {
+        store.markSeen('opened_blitz');
+        _open(GameMode.blitz);
+      },
+    );
+  }
+
+  Widget _duelCard(ProgressStore store) {
+    if (!Onboarding.duelUnlocked(store)) {
+      return MenuCard(
+        icon: Icons.lock_rounded,
+        color: Palette.panelEdge,
+        title: 'Duelo',
+        subtitle: 'Libera na fase ${Onboarding.duelAt}',
+        onTap: () => _locked('Duelo', Onboarding.duelAt),
+      );
+    }
+    return MenuCard(
+      icon: Icons.sports_kabaddi_rounded,
+      color: const Color(0xFF228BE6),
+      title: 'Duelo',
+      subtitle: store.duelsWon > 0
+          ? '${store.duelsWon} vitórias'
+          : 'Desafie amigos',
+      badge: store.hasSeen('opened_duel') ? null : 'NOVO',
+      onTap: () {
+        store.markSeen('opened_duel');
+        _openDuelDialog();
+      },
+    );
+  }
+
+  void _openDuelDialog() {
+    widget.services.feedback.click();
+    final seed = DateTime.now().millisecondsSinceEpoch % 1000000;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF141938),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0x33FFFFFF)),
+        ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.sports_kabaddi_rounded,
+              color: Color(0xFF339AF0),
+              size: 28,
+            ),
+            const SizedBox(width: 10),
+            Text('Modo Duelo', style: displayText(22, color: Palette.text)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!',
+              style: bodyText(15, color: Palette.textDim),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0x33228BE6),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0x66228BE6)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.vpn_key_rounded,
+                    color: Color(0xFF339AF0),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Semente da partida: #$seed',
+                    style: displayText(14, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'Fechar',
+              style: displayText(16, color: Palette.textDim),
+            ),
+          ),
+          ChunkyButton(
+            label: 'Começar Duelo',
+            icon: Icons.play_arrow_rounded,
+            color: const Color(0xFF228BE6),
+            textColor: Colors.white,
+            onTap: () {
+              Navigator.of(ctx).pop();
+              _open(GameMode.duel, duelSeed: seed, duelTargetScore: 1000);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _villageCard(ProgressStore store) {
@@ -314,6 +451,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(child: _blitzCard(store)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _duelCard(store)),
                           ],
                         ),
                         const SizedBox(height: 16),

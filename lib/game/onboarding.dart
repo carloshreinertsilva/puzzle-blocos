@@ -6,6 +6,8 @@ import '../services/progress_store.dart';
 abstract final class Onboarding {
   /// Levels played one after the other before the menu shows up.
   static const railLevels = 3;
+  static const blitzAt = 4;
+  static const duelAt = 4;
   static const endlessAt = 5;
   static const obrasAt = 6;
   static const dailyAt = 7;
@@ -16,6 +18,8 @@ abstract final class Onboarding {
   static bool menuUnlocked(ProgressStore s) =>
       s.hasSeen('menu') || s.level > railLevels;
 
+  static bool blitzUnlocked(ProgressStore s) => s.level >= blitzAt;
+  static bool duelUnlocked(ProgressStore s) => s.level >= duelAt;
   static bool endlessUnlocked(ProgressStore s) => s.level >= endlessAt;
   static bool obrasUnlocked(ProgressStore s) => s.level >= obrasAt;
   static bool dailyUnlocked(ProgressStore s) => s.level >= dailyAt;
@@ -24,6 +28,8 @@ abstract final class Onboarding {
   static List<MenuNews> pendingNews(ProgressStore s) => [
     if (!s.hasSeen(MenuNews.welcome.key)) MenuNews.welcome,
     if (!s.hasSeen(MenuNews.village.key)) MenuNews.village,
+    if (blitzUnlocked(s) && !s.hasSeen(MenuNews.blitz.key)) MenuNews.blitz,
+    if (duelUnlocked(s) && !s.hasSeen(MenuNews.duel.key)) MenuNews.duel,
     if (endlessUnlocked(s) && !s.hasSeen(MenuNews.endless.key))
       MenuNews.endless,
     if (obrasUnlocked(s) && !s.hasSeen(MenuNews.obras.key)) MenuNews.obras,
@@ -36,6 +42,14 @@ enum MenuNews {
     'news_welcome',
     'Essa é a nossa estrada! Cada fase que você vence abre a próxima. '
         'Toque em Jogar para seguir.',
+  ),
+  blitz(
+    'news_blitz',
+    'Novo modo Blitz! Você tem 60 segundos para fazer o máximo de pontos e combos.',
+  ),
+  duel(
+    'news_duel',
+    'Novo modo Duelo! Desafie seus amigos com links e comparem quem pontua mais.',
   ),
   village(
     'news_village',

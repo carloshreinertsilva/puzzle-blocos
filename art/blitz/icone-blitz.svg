@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="clockGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a3356"/>
+      <stop offset="100%" stop-color="#141938"/>
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff922b"/>
+      <stop offset="50%" stop-color="#ffd43b"/>
+      <stop offset="100%" stop-color="#ff6b6b"/>
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff3bf"/>
+      <stop offset="30%" stop-color="#ffd43b"/>
+      <stop offset="100%" stop-color="#f59f00"/>
+    </linearGradient>
+    <linearGradient id="fireGrad" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#ff6b6b"/>
+      <stop offset="60%" stop-color="#ffa94d"/>
+      <stop offset="100%" stop-color="#ffd43b"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="14" stdDeviation="10" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <!-- Motion trails / Speed lines -->
+    <path d="M 90 200 C 60 210 50 250 80 270" fill="none" stroke="#ffd43b" stroke-width="10" stroke-linecap="round" opacity="0.6"/>
+    <path d="M 70 290 C 45 310 40 340 75 360" fill="none" stroke="#ffa94d" stroke-width="12" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 110 390 C 80 410 75 440 115 450" fill="none" stroke="#ff6b6b" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Outer Speed Flames Behind Clock -->
+    <path d="M 230 70 C 210 20 270 10 280 50 C 310 10 360 40 340 85 Z" fill="url(#fireGrad)" stroke="#4a2a12" stroke-width="8"/>
+
+    <!-- Clock Top Button / Crown -->
+    <rect x="232" y="44" width="48" height="32" rx="10" fill="#ffd43b" stroke="#4a2a12" stroke-width="10"/>
+    <rect x="242" y="24" width="28" height="24" rx="8" fill="#ff922b" stroke="#4a2a12" stroke-width="8"/>
+
+    <!-- Main Stopwatch Body -->
+    <circle cx="256" cy="270" r="180" fill="url(#ringGrad)" stroke="#4a2a12" stroke-width="16"/>
+    <circle cx="256" cy="270" r="150" fill="url(#clockGrad)" stroke="#4a2a12" stroke-width="10"/>
+
+    <!-- Inner Radial Dial Ticks -->
+    <circle cx="256" cy="270" r="136" fill="none" stroke="#ffffff" stroke-width="4" stroke-dasharray="6 22" opacity="0.4"/>
+    <circle cx="256" cy="144" r="6" fill="#ffd43b"/>
+    <circle cx="382" cy="270" r="6" fill="#ffd43b"/>
+    <circle cx="256" cy="396" r="6" fill="#ffd43b"/>
+    <circle cx="130" cy="270" r="6" fill="#ffd43b"/>
+
+    <!-- Big Digital "60s" or Energy Lightning Bolt Across Center -->
+    <!-- Stylized Mighty Lightning Bolt -->
+    <path d="M 285 130 L 195 270 L 255 270 L 210 405 L 340 245 L 275 245 Z" 
+          fill="url(#boltGrad)" stroke="#4a2a12" stroke-width="12" stroke-linejoin="round"/>
+    <!-- Bolt Inner Highlight -->
+    <path d="M 275 150 L 215 255 L 265 255 L 235 365 L 315 255 L 265 255 Z" 
+          fill="#ffffff" opacity="0.6"/>
+
+    <!-- Speed Sparkles -->
+    <path d="M 390 140 L 400 160 L 420 170 L 400 180 L 390 200 L 380 180 L 360 170 L 380 160 Z" fill="#ffffff" stroke="#4a2a12" stroke-width="5"/>
+    <path d="M 120 150 L 128 165 L 145 172 L 128 180 L 120 195 L 112 180 L 95 172 L 112 165 Z" fill="#ffd43b" stroke="#4a2a12" stroke-width="5"/>
+    <circle cx="410" cy="350" r="10" fill="#ffd43b" stroke="#4a2a12" stroke-width="4"/>
+
+    <!-- Badge Text "60s" Ribbon at Bottom -->
+    <g transform="translate(256, 435)">
+      <rect x="-80" y="-24" width="160" height="48" rx="20" fill="#ff6b6b" stroke="#4a2a12" stroke-width="8"/>
+      <text x="0" y="10" font-family="Arial, sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle" stroke="#4a2a12" stroke-width="2">60s BLITZ</text>
+    </g>
+  </g>
+</svg>

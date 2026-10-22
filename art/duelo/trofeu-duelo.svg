@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="goldCup" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff3bf"/>
+      <stop offset="30%" stop-color="#ffd43b"/>
+      <stop offset="70%" stop-color="#f59f00"/>
+      <stop offset="100%" stop-color="#d9480f"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="14" stdDeviation="10" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <!-- Confetti in air -->
+    <rect x="90" y="90" width="16" height="16" rx="4" fill="#ff6b6b" transform="rotate(25 90 90)"/>
+    <rect x="400" y="80" width="14" height="14" rx="3" fill="#339af0" transform="rotate(-35 400 80)"/>
+    <circle cx="140" cy="60" r="8" fill="#ffd43b"/>
+    <circle cx="370" cy="50" r="7" fill="#51cf66"/>
+    <rect x="80" y="240" width="12" height="18" rx="3" fill="#cc5de8" transform="rotate(45 80 240)"/>
+    <rect x="420" y="230" width="14" height="14" rx="3" fill="#ffd43b" transform="rotate(15 420 230)"/>
+
+    <!-- Handles -->
+    <path d="M 160 160 C 80 160 80 280 160 280" fill="none" stroke="url(#goldCup)" stroke-width="26" stroke-linecap="round"/>
+    <path d="M 160 160 C 80 160 80 280 160 280" fill="none" stroke="#4a2a12" stroke-width="12" stroke-linecap="round"/>
+
+    <path d="M 352 160 C 432 160 432 280 352 280" fill="none" stroke="url(#goldCup)" stroke-width="26" stroke-linecap="round"/>
+    <path d="M 352 160 C 432 160 432 280 352 280" fill="none" stroke="#4a2a12" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- Cup Body -->
+    <path d="M 150 110 L 362 110 C 362 250 310 310 256 320 C 202 310 150 250 150 110 Z" 
+          fill="url(#goldCup)" stroke="#4a2a12" stroke-width="14"/>
+    <ellipse cx="256" cy="110" rx="106" ry="24" fill="#ffe066" stroke="#4a2a12" stroke-width="12"/>
+
+    <!-- Star Emblem on Cup -->
+    <path d="M 256 160 L 267 190 L 298 193 L 274 213 L 281 243 L 256 227 L 231 243 L 238 213 L 214 193 L 245 190 Z" 
+          fill="#ffffff" stroke="#4a2a12" stroke-width="6"/>
+
+    <!-- Stem & Base -->
+    <rect x="236" y="320" width="40" height="55" rx="6" fill="url(#goldCup)" stroke="#4a2a12" stroke-width="12"/>
+    <!-- Pedestal Base -->
+    <path d="M 180 430 L 200 375 L 312 375 L 332 430 Z" fill="#2b334a" stroke="#4a2a12" stroke-width="14"/>
+    <rect x="160" y="424" width="192" height="40" rx="12" fill="#1b2133" stroke="#4a2a12" stroke-width="14"/>
+    <!-- Gold Nameplate on Pedestal -->
+    <rect x="190" y="434" width="132" height="20" rx="6" fill="#ffd43b" stroke="#4a2a12" stroke-width="5"/>
+    <text x="256" y="449" font-family="Arial, sans-serif" font-weight="900" font-size="12" fill="#4a2a12" text-anchor="middle">VENCEDOR</text>
+  </g>
+</svg>

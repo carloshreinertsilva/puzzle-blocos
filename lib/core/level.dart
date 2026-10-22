@@ -3,7 +3,7 @@ import 'dart:math';
 import 'board.dart';
 import 'patterns.dart';
 
-enum LevelKind { level, endless, daily }
+enum LevelKind { level, endless, daily, blitz, duel }
 
 /// Number of block colors (matches the palette in the UI layer).
 const blockColorCount = 7;
@@ -23,6 +23,8 @@ class LevelConfig {
     this.isHard = false,
     this.isRelief = false,
     this.pattern,
+    this.seed,
+    this.rivalName,
   });
 
   /// Endless mode: no goals; difficulty grows with the score.
@@ -36,7 +38,38 @@ class LevelConfig {
       initialCells = const {},
       isHard = false,
       isRelief = false,
-      pattern = null;
+      pattern = null,
+      seed = null,
+      rivalName = null;
+
+  /// 60-second Blitz mode: fast-paced timed run.
+  LevelConfig.blitz({this.seed})
+    : number = seed ?? 0,
+      kind = LevelKind.blitz,
+      difficulty = 0.20,
+      targetScore = 0,
+      gemsTarget = 0,
+      gemChance = 0,
+      initialCells = const {},
+      isHard = false,
+      isRelief = false,
+      pattern = null,
+      rivalName = null;
+
+  /// Duel mode: deterministic challenge comparing scores on the exact same piece seed.
+  LevelConfig.duel({
+    required this.seed,
+    required this.targetScore,
+    this.rivalName = 'Rival',
+  }) : number = seed ?? 0,
+       kind = LevelKind.duel,
+       difficulty = 0.20,
+       gemsTarget = 0,
+       gemChance = 0,
+       initialCells = const {},
+       isHard = false,
+       isRelief = false,
+       pattern = null;
 
   /// Level number; for the daily challenge, the date as yyyymmdd.
   final int number;
@@ -54,9 +87,13 @@ class LevelConfig {
 
   /// Name of the drawing the board starts with, if any.
   final String? pattern;
+  final int? seed;
+  final String? rivalName;
 
   bool get isEndless => kind == LevelKind.endless;
   bool get isDaily => kind == LevelKind.daily;
+  bool get isBlitz => kind == LevelKind.blitz;
+  bool get isDuel => kind == LevelKind.duel;
   int get rockCount =>
       initialCells.values.where((c) => c.type == CellType.rock).length;
   bool get hasRockGoal => rockCount > 0;
