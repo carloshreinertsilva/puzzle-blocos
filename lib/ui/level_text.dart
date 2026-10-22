@@ -6,8 +6,9 @@ import 'palette.dart';
 String goalSummary(LevelConfig level) {
   if (level.isEndless) return 'Até onde você consegue ir?';
   if (level.isBlitz) return 'Pontue o máximo em 60 segundos!';
-  if (level.isDuel)
+  if (level.isDuel) {
     return 'Supere a meta de ${formatInt(level.targetScore)} pontos!';
+  }
   final parts = [
     if (level.hasRockGoal) 'quebre todas as pedras',
     if (level.gemsTarget > 0) 'colete ${level.gemsTarget} gemas',

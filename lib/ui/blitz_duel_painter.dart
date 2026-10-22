@@ -2,8 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'theme.dart';
-
 /// Vector painter for the 60s Blitz mode icon.
 class BlitzIconPainter extends CustomPainter {
   const BlitzIconPainter();

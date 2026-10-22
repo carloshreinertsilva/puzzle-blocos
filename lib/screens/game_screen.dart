@@ -273,7 +273,7 @@ class _GameScreenState extends State<GameScreen> {
     final seed =
         controller.level.seed ??
         (DateTime.now().millisecondsSinceEpoch % 1000000);
-    final url = 'https://capiblocks.vercel.app/?duelo=${seed}&p=${score}';
+    final url = 'https://capiblocks.vercel.app/?duelo=$seed&p=$score';
     Clipboard.setData(ClipboardData(text: url));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -1580,7 +1580,7 @@ class _DuelTargetChip extends StatelessWidget {
           Text(
             won
                 ? 'SUPEROU ${rivalName.toUpperCase()}!'
-                : 'Meta do ${rivalName}: ${formatInt(target)}',
+                : 'Meta do $rivalName: ${formatInt(target)}',
             style: displayText(
               14,
               color: won ? const Color(0xFF8CE99A) : Colors.white,
@@ -1733,8 +1733,8 @@ class _DuelOutcomeCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             won
-                ? 'Você fez ${formatInt(score)} pts e bateu os ${formatInt(rivalScore)} de ${rivalName}!'
-                : 'Você fez ${formatInt(score)} pts. A meta de ${rivalName} era ${formatInt(rivalScore)}.',
+                ? 'Você fez ${formatInt(score)} pts e bateu os ${formatInt(rivalScore)} de $rivalName!'
+                : 'Você fez ${formatInt(score)} pts. A meta de $rivalName era ${formatInt(rivalScore)}.',
             style: bodyText(15, color: Palette.textDim),
             textAlign: TextAlign.center,
           ),

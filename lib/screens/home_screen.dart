@@ -9,6 +9,7 @@ import '../services/progress_store.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
+import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import 'game_screen.dart';
 import 'obra_screen.dart';

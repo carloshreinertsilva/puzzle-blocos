@@ -589,10 +589,10 @@ class GameController extends ChangeNotifier {
       if (blitzSecondsLeft > 0) {
         blitzSecondsLeft--;
         if (blitzSecondsLeft == 10) {
-          feedback.tick();
+          feedback.click();
           _react(CapiReaction.worried, '10 segundos!');
         } else if (blitzSecondsLeft <= 3 && blitzSecondsLeft > 0) {
-          feedback.tick();
+          feedback.click();
         } else if (blitzSecondsLeft == 0) {
           timer.cancel();
           _finishBlitz();

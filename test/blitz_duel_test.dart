@@ -5,6 +5,7 @@ import 'package:puzzle_blocos/core/board.dart';
 import 'package:puzzle_blocos/core/game_session.dart';
 import 'package:puzzle_blocos/core/level.dart';
 import 'package:puzzle_blocos/game/game_controller.dart';
+import 'package:puzzle_blocos/core/shapes.dart';
 import 'package:puzzle_blocos/services/feedback.dart';
 import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
