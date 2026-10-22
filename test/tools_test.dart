@@ -149,8 +149,13 @@ void main() {
       final controller = GameController(
         store: store,
         feedback: feedback,
-        mode: GameMode.levels,
+        mode: GameMode.endless,
       );
+      while (controller.intros.isNotEmpty) {
+        controller.dismissIntro();
+      }
+
+      expect(controller.playing, isTrue);
 
       // Test Reroll: executes immediately
       final okReroll = await controller.selectTool(CapiTool.reroll);
@@ -170,7 +175,28 @@ void main() {
       expect(controller.activeToolMode, isNull);
       expect(controller.session.board.at(4, 4).isEmpty, isTrue);
 
+      // Test Rotate
+      final i20 = allShapes.firstWhere((s) => s.id == 'i20');
+      controller.session.tray[0] = Piece(i20);
+      await controller.selectTool(CapiTool.rotate);
+      expect(controller.activeToolMode, CapiTool.rotate);
+      final okRotate = await controller.executeRotate(0);
+      expect(okRotate, isTrue);
+      expect(controller.session.tray[0]?.shape.id, 'i21');
+      expect(controller.activeToolMode, isNull);
+      expect(store.toolCount(CapiTool.rotate), 1);
+
+      // Test Shovel
+      controller.session.board.set(2, 2, const Cell.block(1));
+      await controller.selectTool(CapiTool.shovel);
+      expect(controller.activeToolMode, CapiTool.shovel);
+      final okShovel = await controller.executeShovel(2, 2);
+      expect(okShovel, isTrue);
+      expect(controller.activeToolMode, isNull);
+      expect(store.toolCount(CapiTool.shovel), 0);
+
       // Test Cancel tool mode
+      await store.addTool(CapiTool.shovel, 1);
       await controller.selectTool(CapiTool.shovel);
       expect(controller.activeToolMode, CapiTool.shovel);
       controller.cancelToolMode();
