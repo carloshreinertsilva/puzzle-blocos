@@ -176,7 +176,7 @@ test.describe('Ferramentas do Capi', () => {
     await page.getByRole('button', { name: 'Usar Martelo' }).click();
 
     // Clica em Cancelar
-    await page.getByRole('button', { name: 'Cancelar' }).click();
+    await page.getByRole('button', { name: 'Cancelar' }).click({ force: true });
 
     // Confere que nenhum martelo foi gasto
     const sAfter = await state(page);

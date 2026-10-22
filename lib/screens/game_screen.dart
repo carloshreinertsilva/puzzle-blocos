@@ -166,15 +166,6 @@ class _GameScreenState extends State<GameScreen> {
 
     return Stack(
       children: [
-        Positioned(
-          top: MediaQuery.paddingOf(context).top + hudHeight + 4,
-          left: 14,
-          right: 14,
-          child: _ActiveToolBanner(
-            tool: mode,
-            onCancel: controller.cancelToolMode,
-          ),
-        ),
         if ((mode == CapiTool.hammer || mode == CapiTool.shovel) &&
             g.boardRect != Rect.zero)
           Positioned.fromRect(
@@ -242,6 +233,15 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 ),
               ),
+        Positioned(
+          top: MediaQuery.paddingOf(context).top + hudHeight + 4,
+          left: 14,
+          right: 14,
+          child: _ActiveToolBanner(
+            tool: mode,
+            onCancel: controller.cancelToolMode,
+          ),
+        ),
       ],
     );
   }
@@ -620,6 +620,7 @@ class _ActiveToolBanner extends StatelessWidget {
             button: true,
             label: 'Cancelar',
             child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: onCancel,
               child: Container(
                 padding: const EdgeInsets.symmetric(
