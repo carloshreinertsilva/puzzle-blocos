@@ -61,24 +61,20 @@ class _SettingsState extends State<_Settings> {
               },
             ),
             const Divider(color: Color(0x22FFFFFF), height: 16),
-            Semantics(
-              button: true,
-              label: 'Política de Privacidade',
-              child: ListTile(
-                leading: const Icon(
-                  Icons.privacy_tip_rounded,
-                  color: Palette.accent,
-                ),
-                title: Text('Política de Privacidade', style: bodyText(16)),
-                trailing: const Icon(
-                  Icons.open_in_new_rounded,
-                  size: 18,
-                  color: Palette.textDim,
-                ),
-                onTap: _openPrivacy,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            ListTile(
+              leading: const Icon(
+                Icons.privacy_tip_rounded,
+                color: Palette.accent,
+              ),
+              title: Text('Política de Privacidade', style: bodyText(16)),
+              trailing: const Icon(
+                Icons.open_in_new_rounded,
+                size: 18,
+                color: Palette.textDim,
+              ),
+              onTap: _openPrivacy,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
             const SizedBox(height: 8),

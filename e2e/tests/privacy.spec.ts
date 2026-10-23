@@ -29,7 +29,7 @@ test.describe('Política de Privacidade', () => {
     await settingsBtn.click();
 
     // Diálogo de configurações deve conter o botão da Política de Privacidade
-    const privacyBtn = page.getByRole('button', { name: 'Política de Privacidade' });
+    const privacyBtn = page.getByRole('button', { name: 'Política de Privacidade' }).first();
     await expect(privacyBtn).toBeVisible();
   });
 });
