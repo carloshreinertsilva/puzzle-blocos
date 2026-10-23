@@ -1,3 +1,8 @@
+import '../core/daily_missions.dart';
+import '../core/hats.dart';
+import 'daily_missions_dialog.dart';
+import 'wardrobe_dialog.dart';
+
 import 'package:flutter/material.dart';
 
 import '../game/game_controller.dart';
@@ -56,6 +61,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void _tip() {
     widget.services.feedback.click();
     setState(() => _hint = _tips[_tipIndex++ % _tips.length]);
+  }
+
+  Future<void> _openWardrobe() async {
+    widget.services.feedback.click();
+    await WardrobeDialog.show(context, widget.services);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openDailyMissions() async {
+    widget.services.feedback.click();
+    await DailyMissionsDialog.show(context, widget.services);
+    if (mounted) setState(() {});
   }
 
   void _locked(String mode, int level) {
@@ -338,7 +355,10 @@ class _HomeScreenState extends State<HomeScreen> {
         Onboarding.blitzUnlocked(store) ||
         Onboarding.duelUnlocked(store) ||
         Onboarding.towerUnlocked(store);
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isSmall = MediaQuery.sizeOf(context).height < 720;
+    final horizontalPadding = screenWidth < 360 ? 12.0 : 20.0;
+    final buttonGap = screenWidth < 360 ? 4.0 : 6.0;
     final capiLine = _capiLine;
 
     return Scaffold(
@@ -352,7 +372,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: menuMaxWidth),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
                     child: Column(
                       children: [
                         const SizedBox(height: 8),
@@ -378,13 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            StatChip(
-                              icon: Icons.emoji_events_rounded,
-                              color: Palette.accent,
-                              value: formatInt(store.bestScore),
-                            ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: buttonGap),
                             StatChip(
                               icon: Icons.local_fire_department_rounded,
                               color: Palette.accentDeep,
@@ -392,11 +408,31 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const Spacer(),
                             RoundIconButton(
+                              icon: Icons.assignment_turned_in_rounded,
+                              label: 'Missões Diárias',
+                              badge:
+                                  DailyMissionsManager.unclaimedCount(
+                                        store,
+                                        today,
+                                      ) >
+                                      0
+                                  ? '${DailyMissionsManager.unclaimedCount(store, today)}'
+                                  : null,
+                              onTap: _openDailyMissions,
+                            ),
+                            SizedBox(width: buttonGap),
+                            RoundIconButton(
+                              icon: Icons.checkroom_rounded,
+                              label: 'Guarda-Roupa',
+                              onTap: _openWardrobe,
+                            ),
+                            SizedBox(width: buttonGap),
+                            RoundIconButton(
                               icon: Icons.bar_chart_rounded,
                               label: 'Estatísticas',
                               onTap: () => showStats(context, widget.services),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.settings_rounded,
                               label: 'Configurações',
@@ -406,7 +442,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         SizedBox(height: isSmall ? 8 : 18),
-                        Logo(onCapiTap: _tip, compact: isSmall),
+                        Logo(
+                          onCapiTap: _tip,
+                          compact: isSmall,
+                          hat: CapiHat.fromId(store.equippedHat),
+                        ),
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.symmetric(

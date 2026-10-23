@@ -38,5 +38,19 @@ void installJsBridge(TestBridge bridge) {
     JSBoolean? perfect,
   ) => bridge.placeTower(perfect?.toDart ?? true).toJS).toJS;
   api['missTower'] = (() => bridge.missTower().toJS).toJS;
+  api['equipHat'] = ((
+    JSString hatId,
+  ) => bridge.equipHat(hatId.toDart).then((_) => true.toJS).toJS).toJS;
+  api['unlockHat'] = ((
+    JSString hatId,
+  ) => bridge.unlockHat(hatId.toDart).then((_) => true.toJS).toJS).toJS;
+  api['progressDailyMission'] =
+      ((JSNumber index, JSNumber amount) => bridge
+              .progressDailyMission(index.toDartInt, amount.toDartInt)
+              .then((_) => true.toJS)
+              .toJS)
+          .toJS;
+  api['claimDailyChest'] =
+      (() => bridge.claimDailyChest().then((v) => v?.toJS).toJS).toJS;
   globalContext['__bb'] = api;
 }

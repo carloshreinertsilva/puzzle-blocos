@@ -1,3 +1,5 @@
+import '../core/daily_missions.dart';
+
 import 'dart:async';
 import 'dart:math';
 
@@ -335,6 +337,16 @@ class GameController extends ChangeNotifier {
       rocks: out.rocksBroken,
       pups: out.pups,
     );
+    if (out.lines > 0) {
+      DailyMissionsManager.reportEvent(
+        store,
+        DailyMissionType.clearLines,
+        out.lines,
+      );
+    }
+    if (result.combo >= 2) {
+      DailyMissionsManager.reportEvent(store, DailyMissionType.makeCombos, 1);
+    }
     onPlaced?.call(result, piece);
 
     if (isBlitz && out.lines > 0) {
@@ -368,6 +380,7 @@ class GameController extends ChangeNotifier {
         if (!isReplay) store.setLevel(level.number + 1);
         store.setFailStreak(level.number, 0);
         _awardLevelStars();
+        DailyMissionsManager.reportEvent(store, DailyMissionType.playLevels, 1);
       case GameMode.levels:
         store.setFailStreak(
           level.number,
@@ -381,6 +394,7 @@ class GameController extends ChangeNotifier {
         store.completeDaily(today);
       case GameMode.blitz:
         _blitzTimer?.cancel();
+        DailyMissionsManager.reportEvent(store, DailyMissionType.playBlitz, 1);
         final dueBlitz = (session.score / 1500).floor();
         starsGained = dueBlitz;
         if (starsGained > 0) store.addStars(starsGained);
@@ -400,6 +414,11 @@ class GameController extends ChangeNotifier {
       case GameMode.daily || GameMode.tutorial:
         break;
       case GameMode.endless:
+        DailyMissionsManager.reportEvent(
+          store,
+          DailyMissionType.playEndless,
+          session.score,
+        );
         // A revived run pays only the stars its extra points add.
         final due = Missions.forEndless(session.score);
         starsGained = due - _endlessStarsGiven;

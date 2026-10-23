@@ -1,3 +1,5 @@
+import '../core/hats.dart';
+
 import 'package:flutter/material.dart';
 
 import 'block_painter.dart';
@@ -122,12 +124,14 @@ class RoundIconButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.badge,
   });
   final IconData icon;
 
   /// Read by screen readers (and by the browser tests).
   final String label;
   final VoidCallback onTap;
+  final String? badge;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -144,7 +148,33 @@ class RoundIconButton extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Icon(icon, color: Palette.text, size: 24),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(icon, color: Palette.text, size: 24),
+              if (badge != null)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      badge!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     ),
@@ -218,11 +248,12 @@ class _GlyphPainter extends CustomPainter {
 /// Logo: Capi beside the row of tilted blocks he built, over the title.
 /// Tapping Capi gets a tip ([onCapiTap]).
 class Logo extends StatelessWidget {
-  const Logo({super.key, this.onCapiTap, this.compact = false});
+  const Logo({super.key, this.onCapiTap, this.compact = false, this.hat});
   final VoidCallback? onCapiTap;
 
   /// Short screens: the title with Capi beside it, no row of blocks.
   final bool compact;
+  final CapiHat? hat;
 
   Widget _capi(double size) => Semantics(
     button: true,
@@ -231,7 +262,7 @@ class Logo extends StatelessWidget {
     onTap: onCapiTap,
     child: GestureDetector(
       onTap: onCapiTap,
-      child: Capi(size: size),
+      child: Capi(size: size, hat: hat),
     ),
   );
 

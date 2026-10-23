@@ -240,4 +240,63 @@ class ProgressStore {
 
   Future<void> setLastFullscreenAt(DateTime t) =>
       _prefs.setInt('lastFullscreenAt', t.millisecondsSinceEpoch);
+  // --- Hats & Wardrobe (Step 5) ---
+
+  String get equippedHat => _prefs.getString('equippedHat') ?? 'helmet';
+
+  Future<void> equipHat(String hatId) async {
+    await _prefs.setString('equippedHat', hatId);
+  }
+
+  List<String> get unlockedHats {
+    final list = _prefs.getStringList('unlockedHats');
+    if (list == null || list.isEmpty) {
+      return ['helmet'];
+    }
+    if (!list.contains('helmet')) {
+      return ['helmet', ...list];
+    }
+    return list;
+  }
+
+  Future<void> unlockHat(String hatId) async {
+    final cur = unlockedHats;
+    if (!cur.contains(hatId)) {
+      await _prefs.setStringList('unlockedHats', [...cur, hatId]);
+    }
+  }
+
+  // --- Daily Missions & Chest (Step 5) ---
+
+  int dailyMissionProgress(DateTime day, int index) {
+    return _prefs.getInt('mission_prog_${dayKey(day)}_$index') ?? 0;
+  }
+
+  Future<void> setDailyMissionProgress(
+    DateTime day,
+    int index,
+    int value,
+  ) async {
+    await _prefs.setInt('mission_prog_${dayKey(day)}_$index', value);
+  }
+
+  bool isDailyMissionClaimed(DateTime day, int index) {
+    return _prefs.getBool('mission_claimed_${dayKey(day)}_$index') ?? false;
+  }
+
+  Future<void> setDailyMissionClaimed(
+    DateTime day,
+    int index,
+    bool claimed,
+  ) async {
+    await _prefs.setBool('mission_claimed_${dayKey(day)}_$index', claimed);
+  }
+
+  bool isDailyChestClaimed(DateTime day) {
+    return _prefs.getBool('chest_claimed_${dayKey(day)}') ?? false;
+  }
+
+  Future<void> setDailyChestClaimed(DateTime day, bool claimed) async {
+    await _prefs.setBool('chest_claimed_${dayKey(day)}', claimed);
+  }
 }

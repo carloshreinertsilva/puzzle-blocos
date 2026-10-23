@@ -19,7 +19,10 @@ Future<void> main() async {
   }
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final store = await ProgressStore.load();
-  if (kTestBridge) TestBridge.instance.wallet = () => store.stars;
+  if (kTestBridge) {
+    TestBridge.instance.wallet = () => store.stars;
+    TestBridge.instance.store = store;
+  }
   final feedback = GameFeedback(store);
   feedback.preload();
   final ads = AdCoordinator(DebugAdService(), store);
