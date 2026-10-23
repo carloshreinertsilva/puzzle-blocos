@@ -146,6 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _towerCard(ProgressStore store) {
     if (!Onboarding.towerUnlocked(store)) {
       return MenuCard(
+        compact: true,
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
         title: 'Torre do Capi',
@@ -154,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     return MenuCard(
+      compact: true,
       icon: Icons.layers_rounded,
       color: const Color(0xFF0284C7),
       title: 'Torre do Capi',
@@ -168,6 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _blitzCard(ProgressStore store) {
     if (!Onboarding.blitzUnlocked(store)) {
       return MenuCard(
+        compact: true,
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
         title: 'Blitz 60s',
@@ -176,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     return MenuCard(
+      compact: true,
       icon: Icons.bolt_rounded,
       color: const Color(0xFFFA5252),
       title: 'Blitz 60s',
@@ -193,6 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _duelCard(ProgressStore store) {
     if (!Onboarding.duelUnlocked(store)) {
       return MenuCard(
+        compact: true,
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
         title: 'Duelo',
@@ -201,6 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     return MenuCard(
+      compact: true,
       icon: Icons.sports_kabaddi_rounded,
       color: const Color(0xFF228BE6),
       title: 'Duelo',
@@ -541,14 +547,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(
                             children: [
                               Expanded(child: _blitzCard(store)),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               Expanded(child: _duelCard(store)),
+                              const SizedBox(width: 10),
+                              Expanded(child: _towerCard(store)),
                             ],
                           ),
-                          if (Onboarding.towerUnlocked(store)) ...[
-                            SizedBox(height: isSmall ? 8 : 12),
-                            _towerCard(store),
-                          ],
                         ],
                         SizedBox(height: isSmall ? 10 : 16),
                       ],

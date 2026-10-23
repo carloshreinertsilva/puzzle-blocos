@@ -22,6 +22,14 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     // O cronômetro deve estar visível no HUD (exato: 60s, 59s, etc)
     await expect(page.getByText(/^\d+s$/)).toBeVisible();
 
+    // E o tempo corre de verdade, mesmo depois de jogar.
+    await waitForState(
+      page,
+      (s) => s.blitzSecondsLeft! < sInitial.blitzSecondsLeft!,
+      'cronômetro andando',
+      6_000,
+    );
+
     // Joga uma peça no tabuleiro
     await dragPiece(page, 0, 0, 0);
 
@@ -47,7 +55,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     expect(s.duelTargetScore).toBe(300);
 
     // O HUD deve mostrar a meta do rival
-    await expect(page.getByText(/Meta do Rival: 300/i)).toBeVisible();
+    await expect(page.getByText(/Meta do Amigo: 300/i)).toBeVisible();
 
     // Vence a partida via debug da ponte
     await page.evaluate(() => (window as any).__bb.win());
@@ -55,5 +63,23 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     // Confere cartão final de desfecho do Duelo
     await expect(page.getByText(/Você Venceu o Duelo!/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Compartilhar Duelo' })).toBeVisible();
+    expect((await state(page)).stars, 'desafio vencido vale 3 estrelas').toBe(3);
+  });
+
+  test('duelo por link: sair volta ao menu e o link não reabre o duelo', async ({ page }) => {
+    await openApp(page, { level: 10 });
+    await page.goto('/?duelo=4242&p=200');
+    await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
+    await waitForState(page, (s) => s.mode === 'duel', 'entrou no duelo via URL');
+    expect(page.url()).not.toContain('duelo=');
+
+    await page.getByRole('button', { name: 'Pausar' }).click();
+    await page.getByRole('button', { name: 'Menu' }).click();
+    await expect(page.getByRole('button', { name: /^Jogar · Fase 10/ })).toBeVisible();
+
+    await page.reload();
+    await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
+    await expect(page.getByRole('button', { name: /^Jogar · Fase 10/ })).toBeVisible();
+    expect((await state(page)).screen).toBe('home');
   });
 });

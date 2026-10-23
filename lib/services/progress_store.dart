@@ -211,6 +211,29 @@ class ProgressStore {
 
   int get duelsWon => _prefs.getInt('duelsWon') ?? 0;
 
+  /// Challenges (by seed) already beaten: each pays its stars only once.
+  bool duelSeedWon(int seed) => _prefs.getBool('duelSeed_$seed') ?? false;
+  Future<void> markDuelSeedWon(int seed) =>
+      _prefs.setBool('duelSeed_$seed', true);
+
+  /// Adds up to [amount] stars from [source] (blitz, tower...), at most
+  /// [cap] per day from that source, so a quick minigame can't be farmed
+  /// for endless stars. Returns the stars actually added.
+  Future<int> addStarsCapped(
+    String source,
+    int amount,
+    int cap,
+    DateTime day,
+  ) async {
+    final key = 'starsFrom_${source}_${dayKey(day)}';
+    final given = _prefs.getInt(key) ?? 0;
+    final grant = amount.clamp(0, cap - given).toInt();
+    if (grant <= 0) return 0;
+    await _prefs.setInt(key, given + grant);
+    await addStars(grant);
+    return grant;
+  }
+
   Future<void> recordDuelWin() async {
     await _prefs.setInt('duelsWon', duelsWon + 1);
   }
@@ -290,6 +313,32 @@ class ProgressStore {
     bool claimed,
   ) async {
     await _prefs.setBool('mission_claimed_${dayKey(day)}_$index', claimed);
+  }
+
+  /// The level the day's missions were picked for (so unlocking a mode
+  /// mid-day doesn't reshuffle them).
+  int missionsLevel(DateTime day) =>
+      _prefs.getInt('missionsLevel_${dayKey(day)}') ?? level;
+  Future<void> fixMissionsLevel(DateTime day) async {
+    final key = 'missionsLevel_${dayKey(day)}';
+    if (!_prefs.containsKey(key)) await _prefs.setInt(key, level);
+  }
+
+  /// Days in a row the missions chest was opened (separate from the daily
+  /// challenge's streak).
+  int missionsStreak(DateTime today) {
+    final last = _prefs.getInt('missionsDone');
+    if (last == null) return 0;
+    final yesterday = dayKey(today.subtract(const Duration(days: 1)));
+    if (last != dayKey(today) && last != yesterday) return 0;
+    return _prefs.getInt('missionsStreak') ?? 0;
+  }
+
+  Future<void> completeMissionsDay(DateTime day) async {
+    if (_prefs.getInt('missionsDone') == dayKey(day)) return;
+    final streak = missionsStreak(day) + 1;
+    await _prefs.setInt('missionsDone', dayKey(day));
+    await _prefs.setInt('missionsStreak', streak);
   }
 
   bool isDailyChestClaimed(DateTime day) {

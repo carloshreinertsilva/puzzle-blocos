@@ -59,7 +59,7 @@ void main() {
     expect(c.fallingSlices.first.dx, closeTo(0.6, 0.01));
   });
 
-  test('Erro total provoca Game Over e grava novo recorde', () {
+  test('Erro total provoca Game Over e grava novo recorde', () async {
     final c = TowerController(store: store, feedback: feedback);
 
     // Faz 5 andares perfeitos
@@ -75,6 +75,7 @@ void main() {
     expect(c.isNewBest, isTrue);
     expect(store.towerBestHeight, 5);
     expect(store.towerGamesPlayed, 1);
+    await pumpEventQueue();
     expect(c.starsGained, greaterThan(0));
     expect(store.stars, greaterThan(0));
   });

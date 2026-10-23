@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../game/onboarding.dart';
 import '../services/progress_store.dart';
 import 'hats.dart';
 
@@ -41,13 +42,26 @@ class DailyMission {
 abstract final class DailyMissionsManager {
   static const int chestStarsReward = 5;
 
-  /// Returns the 3 deterministic daily missions for [day].
-  static List<DailyMission> missionsForDay(DateTime day) {
+  /// The day's missions for this player: only modes they have unlocked.
+  static List<DailyMission> missionsFor(ProgressStore store, DateTime day) =>
+      missionsForDay(day, level: store.missionsLevel(day));
+
+  /// Returns the 3 deterministic daily missions for [day], for a player at
+  /// [level] (modes not yet unlocked are left out).
+  static List<DailyMission> missionsForDay(DateTime day, {int level = 999}) {
     final key = ProgressStore.dayKey(day);
     final rng = Random(key * 1337 + 42);
 
-    final types = List<DailyMissionType>.from(DailyMissionType.values)
-      ..shuffle(rng);
+    final types = [
+      for (final t in DailyMissionType.values)
+        if (switch (t) {
+          DailyMissionType.playEndless => level >= Onboarding.endlessAt,
+          DailyMissionType.playBlitz => level >= Onboarding.blitzAt,
+          DailyMissionType.playTower => level >= Onboarding.towerAt,
+          _ => true,
+        })
+          t,
+    ]..shuffle(rng);
     final selectedTypes = types.take(3).toList();
 
     return [
@@ -110,7 +124,8 @@ abstract final class DailyMissionsManager {
     DateTime? day,
   ]) async {
     final currentDay = day ?? DateTime.now();
-    final missions = missionsForDay(currentDay);
+    await store.fixMissionsLevel(currentDay);
+    final missions = missionsFor(store, currentDay);
     for (final m in missions) {
       if (m.type == type) {
         final cur = store.dailyMissionProgress(currentDay, m.index);
@@ -157,7 +172,7 @@ abstract final class DailyMissionsManager {
 
   /// Checks if the daily chest is ready to be opened (all 3 missions completed).
   static bool isChestAvailable(ProgressStore store, DateTime day) {
-    final missions = missionsForDay(day);
+    final missions = missionsFor(store, day);
     for (final m in missions) {
       if (!isCompleted(store, m, day)) return false;
     }
@@ -175,7 +190,7 @@ abstract final class DailyMissionsManager {
 
     await store.setDailyChestClaimed(day, true);
     await store.addStars(chestStarsReward);
-    await store.completeDaily(day);
+    await store.completeMissionsDay(day);
 
     // Find locked hats
     final unlocked = store.unlockedHats;
@@ -197,7 +212,7 @@ abstract final class DailyMissionsManager {
 
   /// Count of unclaimed rewards available (missions ready to claim + chest ready).
   static int unclaimedCount(ProgressStore store, DateTime day) {
-    final missions = missionsForDay(day);
+    final missions = missionsFor(store, day);
     var count = 0;
     for (final m in missions) {
       if (isCompleted(store, m, day) && !isClaimed(store, m, day)) {

@@ -155,6 +155,15 @@ invisível) vence cerca de 90% das fases 1–15 e 40% das fases 76–90; fases
 normais ~60%, difíceis ~40% e de alívio ~75%. Uma fase vencida leva em média
 ~18 jogadas no começo e ~29 no geral.
 
+## Economia de estrelas
+
+Fontes com limite, para os minijogos rápidos não virarem fábrica de
+estrelas: Blitz e Torre pagam no máximo 6 estrelas por dia cada
+(`ProgressStore.addStarsCapped`); um desafio de amigo (link) paga 3 estrelas
+uma única vez por semente, e duelos começados no menu são treino (sem
+estrelas). As missões diárias e o baú têm sequência de dias própria,
+separada da do Desafio diário.
+
 ## Anúncios
 
 Sem banner; a tela de jogo fica limpa. Só dois tipos (`lib/ads/ad_policy.dart`):

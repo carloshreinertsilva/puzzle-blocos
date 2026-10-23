@@ -44,7 +44,7 @@ class TestBridge {
     final sStore = store ?? controller?.store;
     final today = DateTime.now();
     final dMissions = sStore != null
-        ? DailyMissionsManager.missionsForDay(today)
+        ? DailyMissionsManager.missionsFor(sStore, today)
         : null;
     final hats = sStore?.unlockedHats;
     final equipped = sStore?.equippedHat;
