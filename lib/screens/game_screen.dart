@@ -273,7 +273,8 @@ class _GameScreenState extends State<GameScreen> {
     final seed =
         controller.level.seed ??
         (DateTime.now().millisecondsSinceEpoch % 1000000);
-    final url = 'https://capiblocks.vercel.app/?duelo=$seed&p=$score';
+    final blitz = controller.isBlitz ? '&m=blitz' : '';
+    final url = 'https://capiblocks.vercel.app/?duelo=$seed&p=$score$blitz';
     Clipboard.setData(ClipboardData(text: url));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -418,11 +419,11 @@ class _GameScreenState extends State<GameScreen> {
     } else if (controller.showOutcome && s.status == SessionStatus.lost) {
       if (controller.isDuel) {
         card = _DuelOutcomeCard(
-          won: false,
+          won: controller.duelWon,
           score: s.score,
           rivalScore: controller.duelTargetScore ?? 1000,
           rivalName: controller.duelRivalName ?? 'Rival',
-          starsGained: 0,
+          starsGained: controller.starsGained,
           onRetry: _retry,
           onExit: _exit,
           onShareDuel: () => _shareDuelLink(s.score),

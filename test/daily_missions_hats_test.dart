@@ -114,7 +114,7 @@ void main() {
     test(
       'daily chest unlocks after all 3 missions and rewards 5 stars + new hat',
       () async {
-        final missions = DailyMissionsManager.missionsForDay(testDay);
+        final missions = DailyMissionsManager.missionsFor(store, testDay);
 
         // Complete all 3 missions
         for (final m in missions) {
@@ -150,7 +150,25 @@ void main() {
           testDay,
         );
         expect(claimAgain, isNull);
+
+        // The chest has its own streak: the daily challenge is still open.
+        expect(store.dailyDone(testDay), isFalse);
+        expect(store.missionsStreak(testDay), 1);
       },
     );
+
+    test('new players only get missions for modes they have', () {
+      for (var d = 0; d < 30; d++) {
+        final day = DateTime(2026, 1, 1).add(Duration(days: d));
+        final types = DailyMissionsManager.missionsForDay(
+          day,
+          level: 3,
+        ).map((m) => m.type);
+        expect(types, isNot(contains(DailyMissionType.playBlitz)));
+        expect(types, isNot(contains(DailyMissionType.playTower)));
+        expect(types, isNot(contains(DailyMissionType.playEndless)));
+        expect(types.length, 3);
+      }
+    });
   });
 }

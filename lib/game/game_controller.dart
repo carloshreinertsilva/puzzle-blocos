@@ -117,6 +117,13 @@ class GameController extends ChangeNotifier {
   bool get endless => mode == GameMode.endless;
   bool get isBlitz => mode == GameMode.blitz;
   bool get isDuel => mode == GameMode.duel;
+
+  /// Opened from a friend's challenge link (it has someone to beat).
+  bool get isChallenge => duelRivalName != null;
+
+  /// Stars a quick minigame can pay per day (see addStarsCapped).
+  static const minigameStarsPerDay = 6;
+  static const challengeStars = 3;
   bool get isReplay =>
       mode == GameMode.levels &&
       replayLevel != null &&
@@ -159,7 +166,6 @@ class GameController extends ChangeNotifier {
   /// the idle clock again.
   void noteActivity() {
     _idleTimer?.cancel();
-    _blitzTimer?.cancel();
     if (_idleHint != null) {
       _idleHint = null;
       if (capiReaction == CapiReaction.hint) capiReaction = null;
@@ -187,7 +193,11 @@ class GameController extends ChangeNotifier {
   void _start() {
     final config = switch (mode) {
       GameMode.endless || GameMode.tutorial => LevelConfig.endless(),
-      GameMode.blitz => LevelConfig.blitz(seed: duelSeed),
+      // Every Blitz has a seed, so its "challenge a friend" link replays
+      // the same start.
+      GameMode.blitz => LevelConfig.blitz(
+        seed: duelSeed ?? _rng.nextInt(1000000),
+      ),
       GameMode.duel => LevelConfig.duel(
         seed: duelSeed ?? 12345,
         targetScore: duelTargetScore ?? 1000,
@@ -353,7 +363,9 @@ class GameController extends ChangeNotifier {
       final bonus = out.lines >= 2 ? 3 : (result.combo >= 2 ? 2 : 1);
       blitzSecondsLeft = min(75, blitzSecondsLeft + bonus);
     }
-    if (isDuel && !duelWon && session.score >= (duelTargetScore ?? 1000)) {
+    if ((isDuel || isChallenge) &&
+        !duelWon &&
+        session.score >= (duelTargetScore ?? 1000)) {
       duelWon = true;
       _react(CapiReaction.cheer, 'Passou o rival!');
     }
@@ -395,22 +407,22 @@ class GameController extends ChangeNotifier {
       case GameMode.blitz:
         _blitzTimer?.cancel();
         DailyMissionsManager.reportEvent(store, DailyMissionType.playBlitz, 1);
-        final dueBlitz = (session.score / 1500).floor();
-        starsGained = dueBlitz;
-        if (starsGained > 0) store.addStars(starsGained);
+        _payChallenge();
+        // One star per 1,500 points, up to 3 a run and a few a day.
+        final dueBlitz = min(3, session.score ~/ 1500);
+        store
+            .addStarsCapped('blitz', dueBlitz, minigameStarsPerDay, today)
+            .then((n) {
+              starsGained += n;
+              if (!_disposed) notifyListeners();
+            });
         if (session.score > store.blitzBestScore) {
           newBest = true;
           bestScore = session.score;
           store.recordBlitzScore(session.score);
         }
       case GameMode.duel:
-        final target = duelTargetScore ?? 1000;
-        if (session.score >= target) {
-          duelWon = true;
-          store.recordDuelWin();
-          starsGained = 3;
-          store.addStars(3);
-        }
+        _payChallenge();
       case GameMode.daily || GameMode.tutorial:
         break;
       case GameMode.endless:
@@ -608,6 +620,21 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// A friend's challenge beaten for the first time pays its stars. Duels
+  /// started from the menu are practice for setting a score to send.
+  void _payChallenge() {
+    final target = duelTargetScore ?? 1000;
+    if (session.score < target) return;
+    duelWon = true;
+    final seed = level.seed;
+    if (!isChallenge || seed == null || store.duelSeedWon(seed)) return;
+    store
+      ..recordDuelWin()
+      ..markDuelSeedWon(seed);
+    starsGained += challengeStars;
+    store.addStars(challengeStars);
+  }
+
   void _startBlitzTimer() {
     _blitzTimer?.cancel();
     _blitzTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -640,8 +667,11 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _disposed = false;
+
   @override
   void dispose() {
+    _disposed = true;
     _outcomeTimer?.cancel();
     _tutorialTimer?.cancel();
     _capiTimer?.cancel();

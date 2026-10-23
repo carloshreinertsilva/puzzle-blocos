@@ -123,8 +123,8 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
   @override
   Widget build(BuildContext context) {
     final store = widget.services.store;
-    final missions = DailyMissionsManager.missionsForDay(_today);
-    final streak = store.dailyStreak(_today);
+    final missions = DailyMissionsManager.missionsFor(store, _today);
+    final streak = store.missionsStreak(_today);
     final chestAvailable = DailyMissionsManager.isChestAvailable(store, _today);
     final chestClaimed = DailyMissionsManager.isChestClaimed(store, _today);
 

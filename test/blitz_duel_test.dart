@@ -73,6 +73,29 @@ void main() {
   });
 
   group('GameController Blitz mode', () {
+    testWidgets('the clock really runs down and ends the run', (tester) async {
+      SharedPreferences.setMockInitialValues({'level': 10});
+      final store = await ProgressStore.load();
+      final controller = GameController(
+        store: store,
+        feedback: GameFeedback(store),
+        mode: GameMode.blitz,
+      );
+      await tester.pump(const Duration(seconds: 5));
+      expect(controller.blitzSecondsLeft, 55);
+
+      // A move (which resets the idle hint clock) must not stop it.
+      controller.noteActivity();
+      await tester.pump(const Duration(seconds: 5));
+      expect(controller.blitzSecondsLeft, 50);
+
+      await tester.pump(const Duration(seconds: 51));
+      expect(controller.blitzSecondsLeft, 0);
+      expect(controller.session.status, SessionStatus.won);
+      controller.dispose();
+      await tester.pump(const Duration(seconds: 5));
+    });
+
     test('initializes with 60 seconds and finishes on timeout', () async {
       SharedPreferences.setMockInitialValues({'level': 10});
       final store = await ProgressStore.load();
@@ -129,6 +152,49 @@ void main() {
       expect(controller.blitzSecondsLeft, greaterThan(40));
 
       controller.dispose();
+    });
+  });
+
+  group('Stars from quick modes', () {
+    test('a challenge pays once per seed; menu duels pay nothing', () async {
+      SharedPreferences.setMockInitialValues({'level': 10, 'stars': 0});
+      final store = await ProgressStore.load();
+      GameController duel({String? rival}) => GameController(
+        store: store,
+        feedback: GameFeedback(store),
+        mode: GameMode.duel,
+        duelSeed: 777,
+        duelTargetScore: 100,
+        duelRivalName: rival,
+      );
+
+      final practice = duel()..session.score = 500;
+      practice.debugWin();
+      expect(store.stars, 0, reason: 'duelo do menu é treino');
+      practice.dispose();
+
+      final first = duel(rival: 'Amigo')..session.score = 500;
+      first.debugWin();
+      expect(store.stars, GameController.challengeStars);
+      first.dispose();
+
+      final again = duel(rival: 'Amigo')..session.score = 500;
+      again.debugWin();
+      expect(store.stars, GameController.challengeStars, reason: 'só 1 vez');
+      again.dispose();
+    });
+
+    test('minigame stars stop at the daily cap', () async {
+      SharedPreferences.setMockInitialValues({});
+      final store = await ProgressStore.load();
+      final day = DateTime(2026, 10, 23);
+      expect(await store.addStarsCapped('blitz', 3, 6, day), 3);
+      expect(await store.addStarsCapped('blitz', 3, 6, day), 3);
+      expect(await store.addStarsCapped('blitz', 3, 6, day), 0);
+      expect(await store.addStarsCapped('tower', 2, 6, day), 2);
+      final tomorrow = day.add(const Duration(days: 1));
+      expect(await store.addStarsCapped('blitz', 3, 6, tomorrow), 3);
+      expect(store.stars, 11);
     });
   });
 

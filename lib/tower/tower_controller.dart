@@ -66,6 +66,14 @@ class FallingSlice {
 
 /// Game controller for Capi's 2.5D Tower stacking mini-game.
 class TowerController extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
   TowerController({required this.store, required this.feedback}) {
     reset();
   }
@@ -450,10 +458,13 @@ class TowerController extends ChangeNotifier {
     final finalHeight = blocks.length - 1;
 
     // Stars earned: +1 at 5, +1 at 10, +1 at 15, etc., plus bonus for every 10
-    starsGained = (finalHeight ~/ 5) + (finalHeight ~/ 10);
-    if (starsGained > 0) {
-      store.addStars(starsGained);
-    }
+    // A few stars a day at most: the tower is quick to replay.
+    final due = (finalHeight ~/ 5) + (finalHeight ~/ 10);
+    starsGained = 0;
+    store.addStarsCapped('tower', due, 6, DateTime.now()).then((n) {
+      starsGained = n;
+      if (!_disposed) notifyListeners();
+    });
 
     if (finalHeight > bestHeight) {
       isNewBest = true;

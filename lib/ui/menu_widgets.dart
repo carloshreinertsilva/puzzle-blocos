@@ -415,6 +415,7 @@ class MenuCard extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.badge,
+    this.compact = false,
   });
   final IconData icon;
   final Color color;
@@ -422,6 +423,9 @@ class MenuCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
   final String? badge;
+
+  /// Small tile (icon over the title, no subtitle), three to a row.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -435,7 +439,58 @@ class MenuCard extends StatelessWidget {
     );
   }
 
+  Widget _tile() => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      height: 76,
+      padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Palette.lighten(color, 0.1), Palette.darken(color, 0.25)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border(
+          bottom: BorderSide(color: Palette.darken(color, 0.45), width: 5),
+        ),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: Colors.white, size: 26),
+                const SizedBox(height: 4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(title, style: displayText(16, shadows: textDrop)),
+                ),
+              ],
+            ),
+          ),
+          if (badge != null)
+            Positioned(
+              right: -4,
+              top: -20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Palette.danger,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(badge!, style: displayText(11)),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+
   Widget _card() {
+    if (compact) return _tile();
     return GestureDetector(
       onTap: onTap,
       child: Container(
