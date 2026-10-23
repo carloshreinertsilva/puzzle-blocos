@@ -5,3 +5,6 @@ import 'web_url_stub.dart'
 /// Drops the query (?duelo=...) from the address bar, so reloading the page
 /// opens the game normally instead of the same challenge again.
 void clearUrlQuery() => impl.clearUrlQuery();
+
+/// Opens an external URL in a new browser tab or system browser.
+void openExternalUrl(String url) => impl.openExternalUrl(url);
