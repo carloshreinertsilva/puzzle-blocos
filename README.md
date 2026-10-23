@@ -155,6 +155,13 @@ invisível) vence cerca de 90% das fases 1–15 e 40% das fases 76–90; fases
 normais ~60%, difíceis ~40% e de alívio ~75%. Uma fase vencida leva em média
 ~18 jogadas no começo e ~29 no geral.
 
+## Publicação Android
+
+Identificador `com.capiblocks.app` (não muda depois do primeiro envio). O CI
+gera o pacote da Play Store (`.aab`) a cada push, assinado com a chave de
+envio guardada nos segredos do GitHub. Como criar a chave e cadastrar os
+segredos: `docs/publicacao-android.md`.
+
 ## Anúncios
 
 Sem banner; a tela de jogo fica limpa. Só dois tipos (`lib/ads/ad_policy.dart`):
