@@ -1,256 +1,401 @@
+const { chromium } = require('../e2e/node_modules/playwright');
 const fs = require('fs');
+const path = require('path');
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">
-  <defs>
-    <!-- Background Gradient -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#141842" />
-      <stop offset="50%" stop-color="#1F1654" />
-      <stop offset="100%" stop-color="#31124D" />
-    </linearGradient>
+async function main() {
+  const capiBase64 = fs.readFileSync('art/capi.png').toString('base64');
 
-    <!-- Radial Glow behind Logo -->
-    <radialGradient id="glowLogo" cx="35%" cy="50%" r="45%">
-      <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.35" />
-      <stop offset="100%" stop-color="#141842" stop-opacity="0" />
-    </radialGradient>
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      width: 1024px;
+      height: 500px;
+      overflow: hidden;
+      font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #14173e;
+    }
+    .banner {
+      position: relative;
+      width: 1024px;
+      height: 500px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #121538 0%, #1a1544 50%, #28113f 100%);
+    }
 
-    <!-- Radial Glow behind Capi -->
-    <radialGradient id="glowCapi" cx="72%" cy="50%" r="45%">
-      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.30" />
-      <stop offset="100%" stop-color="#31124D" stop-opacity="0" />
-    </radialGradient>
+    /* Ambient Lighting */
+    .glow-left {
+      position: absolute;
+      left: 5%;
+      top: 15%;
+      width: 500px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(76, 110, 245, 0.25) 0%, rgba(76, 110, 245, 0.04) 55%, transparent 75%);
+      pointer-events: none;
+    }
+    .glow-right {
+      position: absolute;
+      right: 0%;
+      top: 5%;
+      width: 550px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(255, 180, 40, 0.28) 0%, rgba(255, 130, 20, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+    }
 
-    <!-- Gold Text Gradient -->
-    <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FFFBEB" />
-      <stop offset="35%" stop-color="#FDE047" />
-      <stop offset="100%" stop-color="#D97706" />
-    </linearGradient>
+    /* Subtle background grid (puzzle feel) */
+    .bg-grid {
+      position: absolute;
+      left: 30px;
+      top: 30px;
+      display: grid;
+      grid-template-columns: repeat(7, 42px);
+      grid-template-rows: repeat(7, 42px);
+      gap: 6px;
+      opacity: 0.08;
+      transform: rotate(-3deg);
+      pointer-events: none;
+    }
+    .grid-cell {
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .grid-cell.on {
+      background: rgba(255, 212, 59, 0.8);
+      border-color: #ffd43b;
+    }
 
-    <!-- Capivara fur gradient -->
-    <linearGradient id="capiFur" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#B45309" />
-      <stop offset="100%" stop-color="#78350F" />
-    </linearGradient>
+    /* Sparkles */
+    .sparkle {
+      position: absolute;
+      color: #fde047;
+      filter: drop-shadow(0 0 6px #fde047);
+      pointer-events: none;
+    }
 
-    <!-- Snout gradient -->
-    <linearGradient id="capiSnout" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#78350F" />
-      <stop offset="100%" stop-color="#451A03" />
-    </linearGradient>
+    /* Content Layout */
+    .content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 50px 0 70px;
+      z-index: 2;
+    }
 
-    <!-- Helmet gradient -->
-    <linearGradient id="helmetGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FEF08A" />
-      <stop offset="40%" stop-color="#FACC15" />
-      <stop offset="100%" stop-color="#CA8A04" />
-    </linearGradient>
+    /* Left Side: Brand and Clean Message */
+    .left-side {
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
 
-    <!-- Isometric Grass Block Gradients -->
-    <linearGradient id="grassTop" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4ADE80" />
-      <stop offset="100%" stop-color="#22C55E" />
-    </linearGradient>
-    <linearGradient id="dirtLeft" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#854D0E" />
-      <stop offset="100%" stop-color="#543007" />
-    </linearGradient>
-    <linearGradient id="dirtRight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#A16207" />
-      <stop offset="100%" stop-color="#713F12" />
-    </linearGradient>
+    /* Top Badge with 3 Stars */
+    .top-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 18px;
+      border-radius: 24px;
+      background: rgba(255, 201, 77, 0.12);
+      border: 1.5px solid rgba(255, 201, 77, 0.38);
+      color: #fde047;
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+    }
+    .star-group {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-right: 4px;
+    }
+    .star {
+      width: 16px;
+      height: 16px;
+      fill: #ffd43b;
+    }
+    .star.big {
+      width: 20px;
+      height: 20px;
+      fill: #ffe066;
+    }
 
-    <!-- Drop Shadows -->
-    <filter id="shadow3D" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#090514" flood-opacity="0.65" />
-    </filter>
-    <filter id="glowStar" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#FDE047" flood-opacity="0.9" />
-    </filter>
-  </defs>
+    /* Main Logo */
+    .logo-container {
+      margin-bottom: 18px;
+    }
+    .main-logo {
+      font-family: 'Lilita One', 'Fredoka', cursive;
+      font-size: 96px;
+      line-height: 0.95;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .logo-capi {
+      color: #ffd43b;
+      background: linear-gradient(180deg, #fffbeb 0%, #fde047 30%, #f59f00 85%, #d97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 3px 0 #854d0e) drop-shadow(0 6px 0 #451a03) drop-shadow(0 14px 18px rgba(0,0,0,0.7));
+    }
+    .logo-blocks {
+      color: #ffffff;
+      background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 35%, #cbd5e1 85%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 3px 0 #334155) drop-shadow(0 6px 0 #0f172a) drop-shadow(0 14px 18px rgba(0,0,0,0.7));
+    }
 
-  <!-- Background Base -->
-  <rect width="1024" height="500" fill="url(#bgGrad)" />
-  <rect width="1024" height="500" fill="url(#glowLogo)" />
-  <rect width="1024" height="500" fill="url(#glowCapi)" />
+    /* Single, Punchy Subtitle */
+    .subtitle {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f8fafc;
+      line-height: 1.4;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+      margin-bottom: 22px;
+      max-width: 480px;
+    }
+    .subtitle strong {
+      color: #38bdf8;
+      font-weight: 800;
+    }
 
-  <!-- Background Floating Puzzle Blocks (Subtle & Thematic) -->
-  <g opacity="0.25">
-    <!-- Blue Block -->
-    <polygon points="120,70 160,50 200,70 160,90" fill="#60A5FA" />
-    <polygon points="120,70 160,90 160,130 120,110" fill="#2563EB" />
-    <polygon points="160,90 200,70 200,110 160,130" fill="#1D4ED8" />
+    /* 3 Floating Puzzle Blocks under Subtitle (Game Aesthetic) */
+    .blocks-tray {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .puzzle-piece {
+      display: flex;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.45);
+      border-radius: 10px;
+    }
+    .block {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      position: relative;
+      box-shadow: inset 0 2.5px 3px rgba(255,255,255,0.6), inset 0 -2.5px 3px rgba(0,0,0,0.35);
+    }
+    .b-coral  { background: linear-gradient(180deg, #ff8787 0%, #fa5252 100%); border: 2px solid #c92a2a; }
+    .b-yellow { background: linear-gradient(180deg, #ffe066 0%, #fcc419 100%); border: 2px solid #e67700; }
+    .b-green  { background: linear-gradient(180deg, #69db7c 0%, #40c057 100%); border: 2px solid #2f9e44; }
+    .b-teal   { background: linear-gradient(180deg, #3bc9db 0%, #15aabf 100%); border: 2px solid #0c8599; }
+    .b-purple { background: linear-gradient(180deg, #da77f2 0%, #be4bdb 100%); border: 2px solid #862e9c; }
 
-    <!-- Yellow Block -->
-    <polygon points="860,80 900,60 940,80 900,100" fill="#FDE047" />
-    <polygon points="860,80 900,100 900,140 860,120" fill="#EAB308" />
-    <polygon points="900,100 940,80 940,120 900,140" fill="#CA8A04" />
+    .tray-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+      margin-left: 6px;
+    }
 
-    <!-- Purple Block -->
-    <polygon points="90,380 130,360 170,380 130,400" fill="#C084FC" />
-    <polygon points="90,380 130,400 130,440 90,420" fill="#9333EA" />
-    <polygon points="130,400 170,380 170,420 130,440" fill="#7E22CE" />
+    /* Right Side: The Official Capi Mascot on a Grounded Pedestal */
+    .right-side {
+      position: relative;
+      width: 440px;
+      height: 500px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
 
-    <!-- Red Block -->
-    <polygon points="920,390 955,370 990,390 955,410" fill="#F87171" />
-    <polygon points="920,390 955,410 955,445 920,425" fill="#DC2626" />
-    <polygon points="955,410 990,390 990,425 955,445" fill="#B91C1C" />
+    /* Pedestal Base of Puzzle Blocks where Capi rests */
+    .pedestal-base {
+      position: absolute;
+      bottom: 0px;
+      right: 20px;
+      display: flex;
+      gap: 6px;
+      z-index: 1;
+      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.8));
+    }
+    .p-cube {
+      width: 72px;
+      height: 54px;
+      border-radius: 12px 12px 4px 4px;
+      box-shadow: inset 0 3px 5px rgba(255,255,255,0.5), inset 0 -4px 6px rgba(0,0,0,0.4);
+    }
 
-    <!-- Cyan Block Top Center -->
-    <polygon points="490,45 520,30 550,45 520,60" fill="#38BDF8" />
-    <polygon points="490,45 520,60 520,90 490,75" fill="#0284C7" />
-    <polygon points="520,60 550,45 550,75 520,90" fill="#0369A1" />
-  </g>
+    /* Official Capi Mascot Image */
+    .capi-img {
+      position: relative;
+      width: 420px;
+      height: 420px;
+      object-fit: contain;
+      z-index: 2;
+      margin-bottom: 25px;
+      filter: drop-shadow(0 16px 24px rgba(10, 5, 25, 0.75)) drop-shadow(0 0 30px rgba(255, 180, 40, 0.25));
+    }
 
-  <!-- Stars & Sparkles -->
-  <g fill="#FDE047" filter="url(#glowStar)">
-    <polygon points="260,80 264,88 272,90 265,96 267,104 260,99 253,104 255,96 248,90 256,88" transform="scale(0.8) translate(70, 20)" />
-    <polygon points="440,110 443,116 450,117 444,122 446,128 440,124 434,128 436,122 430,117 437,116" transform="scale(0.6) translate(290, 40)" />
-    <polygon points="800,90 803,96 810,97 804,102 806,108 800,104 794,108 796,102 790,97 797,96" />
-    <polygon points="630,70 633,76 640,77 634,82 636,88 630,84 624,88 626,82 620,77 627,76" transform="scale(0.7) translate(270, 20)" />
-    <circle cx="210" cy="180" r="2.5" />
-    <circle cx="480" cy="150" r="3" />
-    <circle cx="750" cy="120" r="2.5" />
-    <circle cx="910" cy="220" r="3" />
-  </g>
+    /* Floating Bonus Gem */
+    .bonus-gem {
+      position: absolute;
+      top: 50px;
+      right: 25px;
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #67e8f9 0%, #06b6d4 50%, #0891b2 100%);
+      border: 3px solid #e0f2fe;
+      box-shadow: inset 0 3px 6px rgba(255,255,255,0.8), 0 10px 24px rgba(0,0,0,0.5), 0 0 28px rgba(6, 182, 212, 0.7);
+      transform: rotate(15deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+    .bonus-gem::after {
+      content: '★';
+      font-size: 28px;
+      color: #ffffff;
+      text-shadow: 0 0 10px #ffffff;
+    }
 
-  <!-- ================= RIGHT SIDE: CAPI & ISOMETRIC ISLAND ================= -->
-  <g transform="translate(680, 200)" filter="url(#shadow3D)">
-    <!-- Isometric Floating Island Base -->
-    <g transform="translate(0, 110)">
-      <!-- Top Grass Diamond -->
-      <polygon points="0,-35 150,45 0,125 -150,45" fill="url(#grassTop)" stroke="#86EFAC" stroke-width="2" />
-      <!-- Left Dirt Wall -->
-      <polygon points="-150,45 0,125 0,200 -150,120" fill="url(#dirtLeft)" />
-      <!-- Right Dirt Wall -->
-      <polygon points="0,125 150,45 150,120 0,200" fill="url(#dirtRight)" />
-      <!-- Stone layer accents in dirt -->
-      <polygon points="-100,85 -60,105 -60,125 -100,105" fill="#4B5563" opacity="0.6" />
-      <polygon points="60,105 100,85 100,105 60,125" fill="#374151" opacity="0.6" />
-      
-      <!-- Flower & Plant decorations on island -->
-      <circle cx="-60" cy="40" r="6" fill="#F43F5E" />
-      <circle cx="-60" cy="40" r="2.5" fill="#FEF08A" />
-      <circle cx="70" cy="50" r="6" fill="#38BDF8" />
-      <circle cx="70" cy="50" r="2.5" fill="#FEF08A" />
-      <circle cx="-10" cy="20" r="7" fill="#FB923C" />
-      <circle cx="-10" cy="20" r="3" fill="#FEF08A" />
-    </g>
+    /* Floating Heart near Capi */
+    .bonus-heart {
+      position: absolute;
+      top: 130px;
+      left: 10px;
+      font-size: 32px;
+      filter: drop-shadow(0 0 12px #f43f5e);
+      transform: rotate(-12deg);
+      z-index: 3;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <!-- Glows -->
+    <div class="glow-left"></div>
+    <div class="glow-right"></div>
 
-    <!-- Isometric Tower Stack on island (behind Capi) -->
-    <g transform="translate(90, 30)">
-      <!-- Block 1 (Cyan) -->
-      <polygon points="0,-16 28,-1 0,14 -28,-1" fill="#38BDF8" />
-      <polygon points="-28,-1 0,14 0,34 -28,19" fill="#0284C7" />
-      <polygon points="0,14 28,-1 28,19 0,34" fill="#0369A1" />
-      <!-- Block 2 (Purple) -->
-      <g transform="translate(0, -22)">
-        <polygon points="0,-14 24,-1 0,12 -24,-1" fill="#C084FC" />
-        <polygon points="-24,-1 0,12 0,30 -24,17" fill="#9333EA" />
-        <polygon points="0,12 24,-1 24,17 0,30" fill="#7E22CE" />
-      </g>
-      <!-- Block 3 (Yellow Top) -->
-      <g transform="translate(0, -42)">
-        <polygon points="0,-12 20,-1 0,10 -20,-1" fill="#FDE047" />
-        <polygon points="-20,-1 0,10 0,26 -20,15" fill="#EAB308" />
-        <polygon points="0,10 20,-1 20,15 0,26" fill="#CA8A04" />
-      </g>
-    </g>
+    <!-- Background Board Grid -->
+    <div class="bg-grid">
+      <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell on"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      <div class="grid-cell"></div><div class="grid-cell on"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell on"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      <div class="grid-cell on"></div><div class="grid-cell on"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell on"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+    </div>
 
-    <!-- CAPI THE CAPYBARA (Hero Character) -->
-    <g transform="translate(-25, -20)">
-      <!-- Body -->
-      <ellipse cx="0" cy="70" rx="65" ry="55" fill="url(#capiFur)" stroke="#451A03" stroke-width="4" />
+    <!-- Sparkles -->
+    <div class="sparkle" style="top: 55px; left: 450px; font-size: 22px;">✦</div>
+    <div class="sparkle" style="top: 140px; left: 480px; font-size: 14px;">✦</div>
+    <div class="sparkle" style="top: 60px; right: 430px; font-size: 18px;">✦</div>
+    <div class="sparkle" style="bottom: 70px; left: 60px; font-size: 16px;">✦</div>
 
-      <!-- Little Front Paws resting -->
-      <ellipse cx="-35" cy="115" rx="14" ry="9" fill="#78350F" stroke="#451A03" stroke-width="3" />
-      <ellipse cx="35" cy="115" rx="14" ry="9" fill="#78350F" stroke="#451A03" stroke-width="3" />
+    <div class="content">
+      <!-- Left Side: Brand and Clean Message -->
+      <div class="left-side">
+        <!-- Badge -->
+        <div class="top-badge">
+          <div class="star-group">
+            <svg class="star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star big" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          O Jogo da Capivara
+        </div>
 
-      <!-- Head Base -->
-      <path d="M -50,20 C -55,-25 55,-25 50,20 C 50,60 -50,60 -50,20 Z" fill="url(#capiFur)" stroke="#451A03" stroke-width="4" />
+        <!-- Logo -->
+        <div class="logo-container">
+          <h1 class="main-logo">
+            <span class="logo-capi">Capi</span><span class="logo-blocks">Blocks</span>
+          </h1>
+        </div>
 
-      <!-- Big Friendly Snout -->
-      <rect x="-38" y="5" width="76" height="42" rx="16" fill="url(#capiSnout)" stroke="#270F04" stroke-width="3.5" />
-      <!-- Nostrils -->
-      <ellipse cx="-16" cy="22" rx="5" ry="3.5" fill="#1C0A02" />
-      <ellipse cx="16" cy="22" rx="5" ry="3.5" fill="#1C0A02" />
-      <!-- Big Cute Smile -->
-      <path d="M -14,35 Q 0,44 14,35" fill="none" stroke="#270F04" stroke-width="3.5" stroke-linecap="round" />
+        <!-- Single clear subtitle -->
+        <p class="subtitle">
+          Encaixe blocos coloridos, salve filhotes e construa a <strong>Ilha do Capi</strong>!
+        </p>
 
-      <!-- Rosy Cheeks -->
-      <circle cx="-42" cy="28" r="9" fill="#F43F5E" opacity="0.45" />
-      <circle cx="42" cy="28" r="9" fill="#F43F5E" opacity="0.45" />
+        <!-- Tray of Puzzle Blocks (Visual gameplay connection) -->
+        <div class="blocks-tray">
+          <div class="puzzle-piece">
+            <div class="block b-coral"></div>
+            <div class="block b-yellow"></div>
+            <div class="block b-green"></div>
+            <div class="block b-teal"></div>
+            <div class="block b-purple"></div>
+          </div>
+          <span class="tray-label">Quebra-cabeça casual relaxante</span>
+        </div>
+      </div>
 
-      <!-- Happy Eyes (Arched Cheerful) -->
-      <path d="M -30,-5 Q -22,-16 -14,-5" fill="none" stroke="#270F04" stroke-width="4.5" stroke-linecap="round" />
-      <path d="M 14,-5 Q 22,-16 30,-5" fill="none" stroke="#270F04" stroke-width="4.5" stroke-linecap="round" />
+      <!-- Right Side: Official Mascot Integrated with Game Blocks -->
+      <div class="right-side">
+        <!-- Pedestal base of blocks -->
+        <div class="pedestal-base">
+          <div class="p-cube b-green"></div>
+          <div class="p-cube b-yellow"></div>
+          <div class="p-cube b-teal"></div>
+          <div class="p-cube b-purple"></div>
+          <div class="p-cube b-coral"></div>
+        </div>
 
-      <!-- Ears -->
-      <ellipse cx="-48" cy="-22" rx="9" ry="14" fill="#78350F" stroke="#451A03" stroke-width="3" transform="rotate(-15 -48 -22)" />
-      <ellipse cx="48" cy="-22" rx="9" ry="14" fill="#78350F" stroke="#451A03" stroke-width="3" transform="rotate(15 48 -22)" />
+        <!-- Official Capi Image -->
+        <img class="capi-img" src="data:image/png;base64,${capiBase64}" alt="Capi a Capivara" />
 
-      <!-- ICONIC YELLOW BUILDER HELMET -->
-      <!-- Helmet Dome -->
-      <path d="M -54,-15 C -56,-70 56,-70 54,-15 Z" fill="url(#helmetGrad)" stroke="#854D0E" stroke-width="4" />
-      <!-- Helmet Ridge (Center line) -->
-      <path d="M -8,-64 C -9,-67 9,-67 8,-64 L 11,-15 L -11,-15 Z" fill="#FEF08A" opacity="0.6" />
-      <!-- Helmet Brim -->
-      <ellipse cx="0" cy="-14" rx="60" ry="11" fill="url(#helmetGrad)" stroke="#854D0E" stroke-width="4" />
-      <!-- Helmet Light Badge (Lamp/Reflective plate) -->
-      <rect x="-14" y="-36" width="28" height="15" rx="5" fill="#FFFFFF" stroke="#CA8A04" stroke-width="2" />
-      <polygon points="0,-33 5,-27 -5,-27" fill="#FBBF24" />
-    </g>
-  </g>
+        <!-- Floating Elements (Gem & Heart) -->
+        <div class="bonus-gem"></div>
+        <div class="bonus-heart">💖</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
 
-  <!-- ================= LEFT SIDE: LOGO & VALUE PROPOSITION ================= -->
-  <g transform="translate(85, 120)" filter="url(#shadow3D)">
-    <!-- Category Badge -->
-    <g transform="translate(0, 0)">
-      <rect width="260" height="34" rx="17" fill="rgba(255, 201, 77, 0.15)" stroke="#FBBF24" stroke-width="1.5" />
-      <circle cx="20" cy="17" r="6" fill="#FBBF24" />
-      <text x="35" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#FDE047" letter-spacing="1.2">O JOGO DA CAPIVARA</text>
-    </g>
+  fs.writeFileSync('tool/temp_banner.html', html, 'utf8');
 
-    <!-- Main Title: CAPIBLOCKS -->
-    <g transform="translate(0, 85)">
-      <!-- 3D Shadow layer for text -->
-      <text x="0" y="8" font-family="'Lilita One', 'Fredoka', 'Arial Black', Impact, sans-serif" font-size="82" font-weight="900" fill="#090514" letter-spacing="1">CapiBlocks</text>
-      <!-- Gradient Golden Outline -->
-      <text x="0" y="0" font-family="'Lilita One', 'Fredoka', 'Arial Black', Impact, sans-serif" font-size="82" font-weight="900" fill="none" stroke="#854D0E" stroke-width="14" stroke-linejoin="round" letter-spacing="1">CapiBlocks</text>
-      <!-- Main Text Fill: CAPI (Gold) + BLOCKS (White) -->
-      <text x="0" y="0" font-family="'Lilita One', 'Fredoka', 'Arial Black', Impact, sans-serif" font-size="82" font-weight="900" fill="url(#goldText)" letter-spacing="1">Capi<tspan fill="#FFFFFF">Blocks</tspan></text>
-    </g>
+  console.log('Rendering banner with Playwright...');
+  const browser = await chromium.launch({
+    args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader']
+  });
+  const page = await browser.newPage({
+    viewport: { width: 1024, height: 500 },
+    deviceScaleFactor: 1
+  });
 
-    <!-- Catchphrase -->
-    <g transform="translate(4, 135)">
-      <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="700" fill="#F4F1FF">
-        Encaixe blocos, faça combos e construa a vila!
-      </text>
-    </g>
+  await page.setContent(html, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(600);
 
-    <!-- Feature Pills (Pill Highlights) -->
-    <g transform="translate(0, 175)">
-      <!-- Pill 1: 100% Offline -->
-      <g transform="translate(0, 0)">
-        <rect width="130" height="38" rx="12" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.18)" stroke-width="1.5" />
-        <text x="65" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#38BDF8" text-anchor="middle">📴 100% Offline</text>
-      </g>
+  const out1 = 'art/loja/banner-1024x500.png';
+  const out2 = 'docs/loja/banner-1024x500.png';
 
-      <!-- Pill 2: Sem Cadastro -->
-      <g transform="translate(142, 0)">
-        <rect width="140" height="38" rx="12" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.18)" stroke-width="1.5" />
-        <text x="70" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#34D399" text-anchor="middle">✨ Sem Cadastro</text>
-      </g>
+  await page.screenshot({ path: out1 });
+  fs.copyFileSync(out1, out2);
+  await browser.close();
 
-      <!-- Pill 3: Modo Obra & Torre -->
-      <g transform="translate(294, 0)">
-        <rect width="170" height="38" rx="12" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.18)" stroke-width="1.5" />
-        <text x="85" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#FBBF24" text-anchor="middle">🏝️ Ilha & Minijogos</text>
-      </g>
-    </g>
-  </g>
-</svg>`;
+  console.log('SUCCESS: Banner 1024x500 re-generated successfully!');
+}
 
-fs.writeFileSync('art/loja/banner-1024x500.svg', svg, 'utf8');
-console.log('SAVED SVG');
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
