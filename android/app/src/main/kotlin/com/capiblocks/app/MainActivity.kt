@@ -1,4 +1,4 @@
-package com.puzzleblocos.puzzle_blocos
+package com.capiblocks.app
 
 import io.flutter.embedding.android.FlutterActivity
 

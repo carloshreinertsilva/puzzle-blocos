@@ -164,6 +164,13 @@ uma única vez por semente, e duelos começados no menu são treino (sem
 estrelas). As missões diárias e o baú têm sequência de dias própria,
 separada da do Desafio diário.
 
+## Publicação Android
+
+Identificador `com.capiblocks.app` (não muda depois do primeiro envio). O CI
+gera o pacote da Play Store (`.aab`) a cada push, assinado com a chave de
+envio guardada nos segredos do GitHub. Como criar a chave e cadastrar os
+segredos: `docs/publicacao-android.md`.
+
 ## Anúncios
 
 Sem banner; a tela de jogo fica limpa. Só dois tipos (`lib/ads/ad_policy.dart`):

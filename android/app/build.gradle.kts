@@ -1,11 +1,25 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// The upload key for Google Play lives outside the repository: either
+// android/key.properties (on your computer) or environment variables (in
+// CI, from GitHub secrets). Without it, release builds fall back to the
+// debug key, which is fine for testing but rejected by the Play Store.
+val keyProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun signingValue(name: String, env: String): String? =
+    keyProperties.getProperty(name) ?: System.getenv(env)
+val uploadStoreFile = signingValue("storeFile", "CAPI_KEYSTORE_PATH")
+
 android {
-    namespace = "com.puzzleblocos.puzzle_blocos"
+    namespace = "com.capiblocks.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,8 +29,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.puzzleblocos.puzzle_blocos"
+        // Never change this after the first upload to Google Play.
+        applicationId = "com.capiblocks.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -29,11 +43,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (uploadStoreFile != null) {
+            create("upload") {
+                storeFile = file(uploadStoreFile)
+                storePassword = signingValue("storePassword", "CAPI_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "CAPI_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "CAPI_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (uploadStoreFile != null) {
+                signingConfigs.getByName("upload")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
