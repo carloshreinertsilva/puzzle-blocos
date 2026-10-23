@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../services/web_url.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -25,12 +26,17 @@ class _Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<_Settings> {
+  void _openPrivacy() {
+    widget.services.feedback.click();
+    openExternalUrl('/privacidade/');
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = widget.services.store;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -53,6 +59,28 @@ class _SettingsState extends State<_Settings> {
                 await store.setHapticsOn(v);
                 setState(() {});
               },
+            ),
+            const Divider(color: Color(0x22FFFFFF), height: 16),
+            ListTile(
+              leading: const Icon(
+                Icons.privacy_tip_rounded,
+                color: Palette.accent,
+              ),
+              title: Text('Política de Privacidade', style: bodyText(16)),
+              trailing: const Icon(
+                Icons.open_in_new_rounded,
+                size: 18,
+                color: Palette.textDim,
+              ),
+              onTap: _openPrivacy,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'CapiBlocks v1.0.0 · CHS CONSULTORIA LTDA',
+              style: bodyText(12, color: Palette.textDim),
             ),
           ],
         ),

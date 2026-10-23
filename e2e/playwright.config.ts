@@ -31,7 +31,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: `python3 serve.py ${PORT} ../build/web_test`,
+    command: `${process.platform === 'win32' ? 'python' : 'python3'} serve.py ${PORT} ../build/web_test`,
     port: PORT,
     reuseExistingServer: true,
   },
