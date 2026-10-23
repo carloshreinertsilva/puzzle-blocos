@@ -158,15 +158,20 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Missões Diárias',
-                    style: displayText(20, color: Palette.text),
+                  Semantics(
+                    header: true,
+                    label: 'Missões Diárias',
+                    child: Text(
+                      'Missões Diárias',
+                      style: displayText(20, color: Palette.text),
+                    ),
                   ),
                   const Spacer(),
                   Semantics(
                     button: true,
                     label: 'Fechar',
                     child: IconButton(
+                      tooltip: 'Fechar',
                       icon: const Icon(
                         Icons.close_rounded,
                         color: Palette.textDim,
@@ -281,9 +286,12 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Baú do Capi',
-                            style: displayText(16, color: Colors.white),
+                          Semantics(
+                            label: 'Baú do Capi',
+                            child: Text(
+                              'Baú do Capi',
+                              style: displayText(16, color: Colors.white),
+                            ),
                           ),
                           const SizedBox(height: 2),
                           if (chestClaimed)
@@ -380,29 +388,35 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
               ),
               const SizedBox(width: 8),
               if (isClaimed)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0x2234D399),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.check_rounded,
-                        color: Color(0xFF34D399),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Concluída',
-                        style: displayText(11, color: const Color(0xFF34D399)),
-                      ),
-                    ],
+                Semantics(
+                  label: 'Concluída',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0x2234D399),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.check_rounded,
+                          color: Color(0xFF34D399),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Concluída',
+                          style: displayText(
+                            11,
+                            color: const Color(0xFF34D399),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               else if (isDone)

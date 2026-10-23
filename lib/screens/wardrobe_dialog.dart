@@ -77,15 +77,20 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
                     size: 26,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Guarda-Roupa do Capi',
-                    style: displayText(20, color: Palette.text),
+                  Semantics(
+                    header: true,
+                    label: 'Guarda-Roupa do Capi',
+                    child: Text(
+                      'Guarda-Roupa do Capi',
+                      style: displayText(20, color: Palette.text),
+                    ),
                   ),
                   const Spacer(),
                   Semantics(
                     button: true,
                     label: 'Fechar',
                     child: IconButton(
+                      tooltip: 'Fechar',
                       icon: const Icon(
                         Icons.close_rounded,
                         color: Palette.textDim,
@@ -265,30 +270,33 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
                   onTap: () => _equip(_selectedHat),
                 )
               else if (_selectedHat.id == equippedId)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0x220284C7),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0x550284C7)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.check_rounded,
-                        color: Color(0xFF38BDF8),
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Chapéu Atualmente Equipado',
-                        style: displayText(14, color: Colors.white),
-                      ),
-                    ],
+                Semantics(
+                  label: 'Chapéu Atualmente Equipado',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0x220284C7),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0x550284C7)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.check_rounded,
+                          color: Color(0xFF38BDF8),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Chapéu Atualmente Equipado',
+                          style: displayText(14, color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               else
