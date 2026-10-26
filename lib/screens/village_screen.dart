@@ -297,19 +297,23 @@ class _VillageScreenState extends State<VillageScreen>
                   child: Text(next.name, style: displayText(19)),
                 ),
                 const SizedBox(height: 2),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      color: Palette.accent,
-                      size: 18,
-                    ),
-                    Text(
-                      ' ${next.cost} · ${_built + 1}º de ${Village.items.length}',
-                      style: bodyText(14, color: Palette.textDim),
-                    ),
-                  ],
-                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Palette.accent,
+                        size: 18,
+                      ),
+                      Text(
+                        ' ${next.cost} · ${_built + 1}º de ${Village.items.length}',
+                        style: bodyText(14, color: Palette.textDim),
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),

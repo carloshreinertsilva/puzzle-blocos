@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'ads/ad_service.dart';
 import 'screens/root.dart';
 import 'services/feedback.dart';
+import 'services/game_auth_service.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
 import 'ui/palette.dart';
@@ -26,14 +27,22 @@ Future<void> main() async {
   final feedback = GameFeedback(store);
   feedback.preload();
   final ads = AdCoordinator(DebugAdService(), store);
-  runApp(App(services: AppServices(store, feedback, ads)));
+  final auth = GameAuthService(store);
+  runApp(App(services: AppServices(store, feedback, ads, auth: auth)));
 }
 
 class AppServices {
-  AppServices(this.store, this.feedback, this.ads);
+  AppServices(
+    this.store,
+    this.feedback,
+    this.ads, {
+    GameAuthService? auth,
+  }) : auth = auth ?? GameAuthService(store);
+
   final ProgressStore store;
   final GameFeedback feedback;
   final AdCoordinator ads;
+  final GameAuthService auth;
 }
 
 class App extends StatelessWidget {

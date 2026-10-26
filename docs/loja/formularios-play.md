@@ -54,7 +54,7 @@ Quando o SDK `google_mobile_ads` for adicionado ao projeto para veicular anúnci
 
 Ao preencher o questionário IARC (International Age Rating Coalition) na Play Console:
 
-1. **E-mail do desenvolvedor:** `chs.consultoria@outlook.com`
+1. **E-mail do desenvolvedor:** `contato@chstech.dev.br`
 2. **Categoria do app:** **Jogos (Games)**
 3. **Violência:**
    - O jogo contém representações de violência? **Não**.
