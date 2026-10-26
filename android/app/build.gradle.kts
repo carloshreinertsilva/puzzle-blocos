@@ -46,7 +46,7 @@ android {
     signingConfigs {
         if (uploadStoreFile != null) {
             create("upload") {
-                storeFile = file(uploadStoreFile)
+                storeFile = rootProject.file(uploadStoreFile)
                 storePassword = signingValue("storePassword", "CAPI_KEYSTORE_PASSWORD")
                 keyAlias = signingValue("keyAlias", "CAPI_KEY_ALIAS")
                 keyPassword = signingValue("keyPassword", "CAPI_KEY_PASSWORD")

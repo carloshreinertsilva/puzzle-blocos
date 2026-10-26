@@ -40,7 +40,7 @@ Encaixe blocos, salve filhotes de capivara e construa a ilha do Capi!
 
 ### Contato de Suporte na Loja
 - **Nome da Empresa:** CHS CONSULTORIA LTDA
-- **E-mail de suporte:** `chs.consultoria@outlook.com`
+- **E-mail de suporte:** `contato@chstech.dev.br`
 - **Página de Privacidade:** `https://capiblocks.vercel.app/privacidade/`
 
 ---
