@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'ads/ad_service.dart';
 import 'screens/root.dart';
 import 'services/feedback.dart';
-import 'services/game_auth_service.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
 import 'ui/palette.dart';
@@ -26,19 +26,21 @@ Future<void> main() async {
   }
   final feedback = GameFeedback(store);
   feedback.preload();
-  final ads = AdCoordinator(DebugAdService(), store);
-  final auth = GameAuthService(store);
-  runApp(App(services: AppServices(store, feedback, ads, auth: auth)));
+  // No real ad network yet: release builds show no ads (never the test
+  // placeholder).
+  final ads = AdCoordinator(
+    kDebugMode || kTestBridge ? DebugAdService() : NoAdService(),
+    store,
+  );
+  runApp(App(services: AppServices(store, feedback, ads)));
 }
 
 class AppServices {
-  AppServices(this.store, this.feedback, this.ads, {GameAuthService? auth})
-    : auth = auth ?? GameAuthService(store);
+  AppServices(this.store, this.feedback, this.ads);
 
   final ProgressStore store;
   final GameFeedback feedback;
   final AdCoordinator ads;
-  final GameAuthService auth;
 }
 
 class App extends StatelessWidget {

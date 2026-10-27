@@ -76,7 +76,7 @@ class _PrivacySheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CapiBlocks: Blocos e Capivara',
+                          'CapiBlocks: Blocos e Capivaras',
                           style: displayText(18, color: Palette.accent),
                         ),
                         const SizedBox(height: 4),
@@ -99,7 +99,7 @@ class _PrivacySheet extends StatelessWidget {
                         ),
                         _section(
                           '4. Serviços Opcionais',
-                          '• Google Play Games / Apple Game Center: Se você optar por conectar sua conta do Google Play Games ou Apple Game Center nas configurações, a sincronização de conquistas e progresso em nuvem segue os termos e políticas da Google e da Apple.\n• Anúncios: Se anúncios estiverem ativados, os identificadores anônimos de publicidade e diagnóstico são tratados em estrita conformidade com as políticas do Google AdMob.',
+                          '• Anúncios: Se anúncios estiverem ativados, os identificadores anônimos de publicidade e diagnóstico são tratados em estrita conformidade com as políticas do Google AdMob.',
                         ),
                         _section(
                           '5. Seus Direitos e Exclusão (LGPD)',
