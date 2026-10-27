@@ -45,7 +45,7 @@ class _PrivacySheet extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: Palette.textDim.withOpacity(0.4),
+                  color: Palette.textDim.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -67,7 +67,7 @@ class _PrivacySheet extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Palette.bgTop.withOpacity(0.5),
+                    color: Palette.bgTop.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Palette.panelEdge),
                   ),

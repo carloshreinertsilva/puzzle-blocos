@@ -79,7 +79,7 @@ class _SettingsState extends State<_Settings> {
                 margin: const EdgeInsets.symmetric(vertical: 4),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Palette.bgTop.withOpacity(0.4),
+                  color: Palette.bgTop.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Palette.panelEdge),
                 ),
@@ -115,18 +115,18 @@ class _SettingsState extends State<_Settings> {
                               textColor: const Color(0xFF231800),
                               onTap: () async {
                                 widget.services.feedback.click();
+                                final messenger = ScaffoldMessenger.of(context);
                                 final ok = await auth.signIn();
-                                if (mounted) {
-                                  setState(() {});
-                                  if (ok) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Conta conectada com sucesso!',
-                                        ),
+                                if (!mounted) return;
+                                setState(() {});
+                                if (ok) {
+                                  messenger.showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Conta conectada com sucesso!',
                                       ),
-                                    );
-                                  }
+                                    ),
+                                  );
                                 }
                               },
                             ),
@@ -139,16 +139,14 @@ class _SettingsState extends State<_Settings> {
                               textColor: const Color(0xFF0B3B16),
                               onTap: () async {
                                 widget.services.feedback.click();
+                                final messenger = ScaffoldMessenger.of(context);
                                 await auth.syncNow();
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Progresso salvo na nuvem!',
-                                      ),
-                                    ),
-                                  );
-                                }
+                                if (!mounted) return;
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Progresso salvo na nuvem!'),
+                                  ),
+                                );
                               },
                             ),
                           ),
