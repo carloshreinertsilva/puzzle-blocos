@@ -18,16 +18,28 @@ enum RewardPlacement {
   };
 }
 
-/// Shows ads. The AdMob implementation plugs in here; until then release
-/// builds use [NoAdService] and test builds [DebugAdService].
+/// Shows ads: AdMob on Android (`admob_service.dart`), [NoAdService] in
+/// release builds without ad units, [DebugAdService] on the web in debug and
+/// in browser tests.
 abstract class AdService {
   /// Whether rewarded videos really exist. Without them the game doesn't
   /// promise "watch a video" anywhere.
   bool get hasVideoAds;
 
+  /// Whether the settings must offer a way to change the ad consent choice
+  /// (AdMob, in regions whose law requires it).
+  bool get privacyOptionsRequired;
+
+  /// Gets ready after launch (consent, ad network, first ads).
+  Future<void> start();
+
+  Future<void> showPrivacyOptions();
+
   /// Returns true when the player watched to the end and earned the reward.
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement);
-  Future<void> showInterstitial(BuildContext context);
+
+  /// Returns true when an ad was actually shown.
+  Future<bool> showInterstitial(BuildContext context);
 }
 
 /// Release builds before AdMob: no ads at all. Interstitials are skipped and
@@ -38,11 +50,20 @@ class NoAdService implements AdService {
   bool get hasVideoAds => false;
 
   @override
+  bool get privacyOptionsRequired => false;
+
+  @override
+  Future<void> start() async {}
+
+  @override
+  Future<void> showPrivacyOptions() async {}
+
+  @override
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement) =>
       Future.value(true);
 
   @override
-  Future<void> showInterstitial(BuildContext context) async {}
+  Future<bool> showInterstitial(BuildContext context) => Future.value(false);
 }
 
 /// Debug and browser-test builds: a black placeholder screen stands in for
@@ -52,11 +73,20 @@ class DebugAdService implements AdService {
   bool get hasVideoAds => true;
 
   @override
+  bool get privacyOptionsRequired => false;
+
+  @override
+  Future<void> start() async {}
+
+  @override
+  Future<void> showPrivacyOptions() async {}
+
+  @override
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement) =>
       _show(context, 'Anúncio com recompensa (teste)');
 
   @override
-  Future<void> showInterstitial(BuildContext context) =>
+  Future<bool> showInterstitial(BuildContext context) =>
       _show(context, 'Anúncio entre fases (teste)');
 
   Future<bool> _show(BuildContext context, String label) async {
@@ -109,6 +139,10 @@ class AdCoordinator {
   final DateTime sessionStart = DateTime.now();
 
   bool get hasVideoAds => service.hasVideoAds;
+  bool get privacyOptionsRequired => service.privacyOptionsRequired;
+
+  Future<void> start() => service.start();
+  Future<void> showPrivacyOptions() => service.showPrivacyOptions();
 
   Future<bool> rewarded(BuildContext context, RewardPlacement placement) async {
     final ok = await service.showRewarded(context, placement);
@@ -125,7 +159,8 @@ class AdCoordinator {
       adsRemoved: store.adsRemoved,
     );
     if (!allowed) return;
-    await service.showInterstitial(context);
-    await store.setLastFullscreenAt(DateTime.now());
+    if (await service.showInterstitial(context)) {
+      await store.setLastFullscreenAt(DateTime.now());
+    }
   }
 }

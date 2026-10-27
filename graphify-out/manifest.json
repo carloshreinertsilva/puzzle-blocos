@@ -90,9 +90,9 @@
     "semantic_hash": "45e76f133766029100fe937f035d33fe"
   },
   "lib/ads/ad_service.dart": {
-    "mtime": 1793113650.4137945,
-    "seen": 1793114113.1522732,
-    "ast_hash": "1669b39827d7ddac1bdce5aa423e1ca1",
+    "mtime": 1793120382.2348197,
+    "seen": 1793120913.2211218,
+    "ast_hash": "2dcd395738b8b9a576be24134e9667be",
     "semantic_hash": ""
   },
   "lib/core/board.dart": {
@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "lib/main.dart": {
-    "mtime": 1793113689.8874242,
-    "seen": 1793114113.1523118,
-    "ast_hash": "b63cfd704929a38807cf366d5e23f0c8",
+    "mtime": 1793120389.4013584,
+    "seen": 1793120913.221176,
+    "ast_hash": "5dc35298709f7454966facc39fa25f8f",
     "semantic_hash": ""
   },
   "lib/screens/game_screen.dart": {
@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "lib/screens/settings_sheet.dart": {
-    "mtime": 1793113689.8870876,
-    "seen": 1793114113.1523206,
-    "ast_hash": "9fd1f23e6e33c1933fa1eec21c7967fd",
+    "mtime": 1793120856.0881052,
+    "seen": 1793120913.2211902,
+    "ast_hash": "4172148049d7ea68eecacc5ba5bd881f",
     "semantic_hash": ""
   },
   "lib/screens/stats_sheet.dart": {
@@ -312,15 +312,15 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1793113160.1580892,
-    "seen": 1793114113.1524484,
-    "ast_hash": "c02c96467783e3760c7fe18ad5df57a0",
+    "mtime": 1793120856.0883355,
+    "seen": 1793120913.2216938,
+    "ast_hash": "0f0d0f838036e1ef17fb582be6ec0792",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793113160.162089,
-    "seen": 1793114113.152454,
-    "ast_hash": "a1525fc24fb7743171c9fc6f9ffc6005",
+    "mtime": 1793120856.0859103,
+    "seen": 1793120913.2217011,
+    "ast_hash": "0f57ba9ff5b5c8f93b3c7a1909e91b91",
     "semantic_hash": ""
   },
   "analysis_options.yaml": {
@@ -336,9 +336,9 @@
     "semantic_hash": "e175e436acacf76c814d83532d0b662c"
   },
   "pubspec.yaml": {
-    "mtime": 1793113689.8994672,
-    "seen": 1793114113.1524632,
-    "ast_hash": "5bcb1a1df5ff5253f9dbbaf474daadc7",
+    "mtime": 1793120856.0878403,
+    "seen": 1793120913.2217193,
+    "ast_hash": "9c2e2a3ffb4ffcf51150877c4e011149",
     "semantic_hash": ""
   },
   "web/index.html": {
@@ -780,9 +780,9 @@
     "semantic_hash": ""
   },
   "lib/ads/ad_config.dart": {
-    "mtime": 1793113160.366089,
-    "seen": 1793114113.1522696,
-    "ast_hash": "a5043418f529129596ebecc7904bb6fb",
+    "mtime": 1793120315.410729,
+    "seen": 1793120913.2211177,
+    "ast_hash": "09c6cde603363238ae27e5be09beeadb",
     "semantic_hash": ""
   },
   "lib/ui/privacy_dialog.dart": {
@@ -792,9 +792,9 @@
     "semantic_hash": ""
   },
   "test/ads_test.dart": {
-    "mtime": 1793113759.4621246,
-    "seen": 1793114113.152367,
-    "ast_hash": "e8aec18d3b30b10abb1a3097e6729e33",
+    "mtime": 1793120448.5401254,
+    "seen": 1793120913.2216275,
+    "ast_hash": "70ca0ee14e48524cc7ed6176fedf5359",
     "semantic_hash": ""
   },
   "tool/generate_banner.js": {
@@ -822,9 +822,9 @@
     "semantic_hash": ""
   },
   "HISTORICO_DESENVOLVIMENTO.md": {
-    "mtime": 1793113759.4609663,
-    "seen": 1793114113.1524515,
-    "ast_hash": "b566ea13ff1986383e86f69aba0d09c4",
+    "mtime": 1793120856.0873563,
+    "seen": 1793120913.2216988,
+    "ast_hash": "6a4d0158014f9530e4292285a7defe84",
     "semantic_hash": ""
   },
   "docs/loja/formularios-play.md": {
@@ -849,6 +849,30 @@
     "mtime": 1793113160.374089,
     "seen": 1793114113.1524658,
     "ast_hash": "f2246b604bc82e54822412735b3ce799",
+    "semantic_hash": ""
+  },
+  "lib/ads/admob.dart": {
+    "mtime": 1793120315.4132965,
+    "seen": 1793120913.2211244,
+    "ast_hash": "f0e22e0a0a48c395ae5c63ce0f3cdb90",
+    "semantic_hash": ""
+  },
+  "lib/ads/admob_service.dart": {
+    "mtime": 1793120410.762709,
+    "seen": 1793120913.2211258,
+    "ast_hash": "8102d5ff7f86e00eefca122905af8f67",
+    "semantic_hash": ""
+  },
+  "lib/ads/admob_stub.dart": {
+    "mtime": 1793120315.4148643,
+    "seen": 1793120913.2211273,
+    "ast_hash": "1bb85fc855eaa9afa3640670c5eaed15",
+    "semantic_hash": ""
+  },
+  "docs/admob.md": {
+    "mtime": 1793120874.0507622,
+    "seen": 1793120913.2217064,
+    "ast_hash": "2917b6205985debdbcf1295c4008cb82",
     "semantic_hash": ""
   }
 }

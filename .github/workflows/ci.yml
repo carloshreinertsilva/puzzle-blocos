@@ -123,3 +123,16 @@ jobs:
           name: capiblocks-aab
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
+      # An APK with Google's test ads, to install on a phone and check the
+      # ads without touching real ad units.
+      - name: APK com anúncios de teste
+        env:
+          CAPI_KEYSTORE_PASSWORD: ${{ secrets.CAPI_KEYSTORE_PASSWORD }}
+          CAPI_KEY_ALIAS: ${{ secrets.CAPI_KEY_ALIAS }}
+          CAPI_KEY_PASSWORD: ${{ secrets.CAPI_KEY_PASSWORD }}
+        run: flutter build apk --release --dart-define=ADMOB_TEST=true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capiblocks-apk-teste
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30

@@ -102,7 +102,15 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 - Para voltar, é preciso integrar de verdade o Play Games Services (Saved Games), com login real e testes.
 
 ### C. Estrutura de Anúncios Google AdMob
-- **Ainda não há SDK de anúncios no app** (sem `google_mobile_ads` no `pubspec.yaml`).
+- **v1.1.0: AdMob integrado** (`google_mobile_ads`, só Android), em `lib/ads/admob_service.dart`:
+  - mensagem de consentimento do Google (UMP) antes de pedir anúncios, e o botão "Privacidade dos anúncios" nas configurações quando a lei exige;
+  - um vídeo com recompensa e um intersticial ficam carregados; se o vídeo não carregar em 8 s, o jogador vê "Nenhum vídeo disponível agora";
+  - intersticial que não carregou é pulado, sem esperar, e não conta no intervalo da política;
+  - só anúncios com classificação até PG;
+  - versões de depuração usam os IDs de teste do Google; a versão da loja usa os IDs reais de `lib/ads/ad_config.dart` e, enquanto eles estiverem vazios, não mostra anúncios;
+  - o CI gera também um APK com anúncios de teste (`capiblocks-apk-teste`) para conferir no celular;
+  - passo a passo para os IDs reais, o `app-ads.txt` e os formulários da Play Console: `docs/admob.md`.
+- Antes disso:
   - Na v1.0.0, a versão publicada usava o simulador `DebugAdService`: aparecia uma tela preta escrita "Anúncio (teste)" entre fases e ao pedir ferramentas.
   - Na v1.0.1 a versão publicada usa o `NoAdService`:
     - sem anúncios entre fases;
@@ -154,6 +162,6 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 ## 6. Próximos Passos (Pós-Aprovação na Loja)
 
 1. **Acompanhar a Aprovação:** Prazo médio da Google de 2 a 5 dias úteis.
-2. **Vincular o Google AdMob:** Com o app ativo na Play Store, criar os blocos comerciais reais no painel do AdMob e atualizar `lib/ads/ad_config.dart`.
+2. **Ativar o Google AdMob:** Com o app ativo na Play Store, seguir `docs/admob.md` (IDs reais, `app-ads.txt`, formulários da Play Console) e publicar a v1.1.0.
 3. **Internacionalização da Ficha:** Adicionar traduções da página da loja para **Inglês** e **Espanhol** para impulsionar downloads globais.
 4. **Preparação para a Apple App Store:** Replicar a publicação para o ecossistema iOS (App Store Connect / TestFlight).

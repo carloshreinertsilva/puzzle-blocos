@@ -1,47 +1,27 @@
 import 'package:flutter/foundation.dart';
 
-/// Configuration and Ad Unit IDs for Google AdMob.
-/// Uses official Google test IDs by default to prevent invalid traffic policy violations.
-/// Replace production fields when real ad units are created in the AdMob console.
-class AdConfig {
-  static const bool useTestAds = true;
+/// Google AdMob IDs (Android only for now).
+///
+/// Debug builds, and builds made with `--dart-define=ADMOB_TEST=true`, use
+/// Google's official test IDs: those ads say "Test Ad" and never count as
+/// invalid traffic. Release builds use the real IDs below; while they are
+/// empty, release builds show no ads at all.
+abstract final class AdConfig {
+  static const forceTestAds = bool.fromEnvironment('ADMOB_TEST');
+  static bool get useTestAds => kDebugMode || forceTestAds;
 
-  // Google AdMob Official Test Unit IDs
-  static const String testAndroidInterstitial =
-      'ca-app-pub-3940256099942544/1033173712';
-  static const String testAndroidRewarded =
-      'ca-app-pub-3940256099942544/5224354917';
+  // Google's test ad units for Android.
+  static const testRewarded = 'ca-app-pub-3940256099942544/5224354917';
+  static const testInterstitial = 'ca-app-pub-3940256099942544/1033173712';
 
-  static const String testIosInterstitial =
-      'ca-app-pub-3940256099942544/4411468910';
-  static const String testIosRewarded =
-      'ca-app-pub-3940256099942544/1712485313';
+  // Real ad units from the AdMob console (the app ID goes in
+  // android/app/src/main/AndroidManifest.xml).
+  static const prodRewarded = '';
+  static const prodInterstitial = '';
 
-  // Production Ad Unit IDs (replace when ready)
-  static const String prodAndroidInterstitial = '';
-  static const String prodAndroidRewarded = '';
-  static const String prodIosInterstitial = '';
-  static const String prodIosRewarded = '';
-
-  static String get interstitialAdUnitId {
-    if (useTestAds || kDebugMode) {
-      return defaultTargetPlatform == TargetPlatform.iOS
-          ? testIosInterstitial
-          : testAndroidInterstitial;
-    }
-    return defaultTargetPlatform == TargetPlatform.iOS
-        ? prodIosInterstitial
-        : prodAndroidInterstitial;
-  }
-
-  static String get rewardedAdUnitId {
-    if (useTestAds || kDebugMode) {
-      return defaultTargetPlatform == TargetPlatform.iOS
-          ? testIosRewarded
-          : testAndroidRewarded;
-    }
-    return defaultTargetPlatform == TargetPlatform.iOS
-        ? prodIosRewarded
-        : prodAndroidRewarded;
-  }
+  static bool get enabled =>
+      useTestAds || (prodRewarded.isNotEmpty && prodInterstitial.isNotEmpty);
+  static String get rewarded => useTestAds ? testRewarded : prodRewarded;
+  static String get interstitial =>
+      useTestAds ? testInterstitial : prodInterstitial;
 }

@@ -121,7 +121,7 @@ geradas.
 | `lib/core/` | Regras puras, sem interface: tabuleiro, peças, gerador de peças, gerador de fases, sessão de jogo |
 | `lib/game/` | Cena Flame: tabuleiro, arrastar e soltar, encaixe, animações, partículas |
 | `lib/screens/` | Telas Flutter: menu, partida (HUD e cartões de vitória/derrota/pausa), configurações |
-| `lib/ads/` | Política de anúncios e o serviço de anúncios (hoje um simulador de teste) |
+| `lib/ads/` | Política de anúncios, serviço do AdMob (Android) e simulador para testes |
 | `lib/services/` | Progresso salvo no aparelho, sons e vibração |
 | `tool/` | `gen_sounds.py` gera os efeitos sonoros; `simulate.dart` joga as fases com um robô |
 
@@ -175,21 +175,33 @@ segredos: `docs/publicacao-android.md`.
 
 Sem banner; a tela de jogo fica limpa. Só dois tipos (`lib/ads/ad_policy.dart`):
 
-- **Com recompensa**, sempre escolha do jogador: hoje, "Continuar" depois de
-  perder (uma vez por tentativa).
+- **Com recompensa**, sempre escolha do jogador: "Continuar" depois de
+  perder (uma vez por tentativa) e ganhar uma ferramenta.
 - **Entre fases**, só ao avançar de uma fase vencida para a próxima, e apenas
   se: já passou da fase 6, o app está aberto há mais de 5 minutos e o último
   anúncio de tela cheia (de qualquer tipo) foi há mais de 6 minutos. O horário
   fica salvo, então fechar e abrir o app não zera o intervalo.
 
 Os números ficam em `AdPolicy` e podem ir para o Firebase Remote Config depois.
-Por enquanto `DebugAdService` mostra uma tela preta de teste no lugar do
-anúncio; a próxima etapa é trocá-lo pelo AdMob.
+
+Qual serviço o app usa (`lib/main.dart`):
+
+| Versão | Anúncios |
+|---|---|
+| Android, depuração ou `--dart-define=ADMOB_TEST=true` | AdMob com os anúncios de teste do Google |
+| Android, versão da loja | AdMob com os IDs reais de `lib/ads/ad_config.dart`; enquanto estiverem vazios, nenhum anúncio |
+| Web (Vercel) | nenhum anúncio |
+| Testes do navegador e web em depuração | tela preta de teste (`DebugAdService`) |
+
+Antes de pedir anúncios, o app mostra a mensagem de consentimento do Google
+(UMP) onde a lei exige; nesses lugares as configurações ganham o botão
+"Privacidade dos anúncios". Só anúncios com classificação até PG. Passo a
+passo para ativar os anúncios reais: `docs/admob.md`.
 
 ## Próximas etapas
 
-1. AdMob (anúncio com recompensa + entre fases) com consentimento de
-   privacidade (LGPD/GDPR) e, no iOS, a permissão de rastreamento.
+1. Ativar os IDs reais do AdMob (`docs/admob.md`); no iOS, falta a
+   configuração do AdMob e a permissão de rastreamento.
 2. Firebase Analytics e Remote Config (intervalos de anúncio e dificuldade
    ajustáveis sem atualizar o app).
 3. Compra "Remover anúncios".

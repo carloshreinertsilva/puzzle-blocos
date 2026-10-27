@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'ads/ad_service.dart';
+import 'ads/admob.dart';
 import 'screens/root.dart';
 import 'services/feedback.dart';
 import 'testing/test_bridge.dart';
@@ -26,13 +29,17 @@ Future<void> main() async {
   }
   final feedback = GameFeedback(store);
   feedback.preload();
-  // No real ad network yet: release builds show no ads (never the test
-  // placeholder).
+  // AdMob on Android (test ads in debug); browser tests and web debug get
+  // the placeholder; anything else shows no ads at all.
   final ads = AdCoordinator(
-    kDebugMode || kTestBridge ? DebugAdService() : NoAdService(),
+    kTestBridge
+        ? DebugAdService()
+        : createAdMobService() ??
+              (kDebugMode ? DebugAdService() : NoAdService()),
     store,
   );
   runApp(App(services: AppServices(store, feedback, ads)));
+  unawaited(ads.start());
 }
 
 class AppServices {
