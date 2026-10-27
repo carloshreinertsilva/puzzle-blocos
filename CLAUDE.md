@@ -25,3 +25,11 @@ o `README.md`.
   `dart run tool/simulate.dart 1 90 40` e compare com os números do README.
 - Anúncios seguem `lib/ads/ad_policy.dart`: sem banner, nada durante a
   partida, interstitial só entre fases com intervalo longo.
+
+## Publicação e Lojas (Google Play Store)
+
+- **Status da Loja:** App `com.capiblocks.app` submetido na faixa de Produção no Google Play Console (em análise).
+- **Titular Oficial:** CHS CONSULTORIA LTDA (marca CHS TECH, contato@chstech.dev.br, https://www.chstech.dev.br).
+- **Assinatura do Android (.aab):** Upload Keystore RSA 4096-bit configurada no GitHub Actions Secrets (`CAPI_KEYSTORE_BASE64`, `CAPI_KEYSTORE_PASSWORD`, `CAPI_KEY_ALIAS`, `CAPI_KEY_PASSWORD`). Localmente os arquivos ficam em `android/upload-keystore.jks` e `android/key.properties` (ambos no `.gitignore`).
+- **Materiais da Loja:** Ícone 512, banner 1024x500 e os 6 screenshots 1080x1920 ficam em `docs/loja/` e `art/loja/`.
+- **Histórico detalhado do projeto:** Consulte `HISTORICO_DESENVOLVIMENTO.md` para a cronologia completa de todas as funcionalidades implementadas.
