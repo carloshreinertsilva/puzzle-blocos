@@ -96,12 +96,19 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 - Criado o componente [lib/ui/privacy_dialog.dart](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/lib/ui/privacy_dialog.dart).
 - Permite que jogadores e revisores da Google leiam a íntegra dos termos legais dentro do aplicativo mesmo sem internet, com botão para abrir a versão online.
 
-### B. Nuvem & Conquistas Opcional (Google Play Games & Apple Game Center)
-- Criado o serviço [lib/services/game_auth_service.dart](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/lib/services/game_auth_service.dart).
-- Métodos de exportação e importação de progresso (`exportProgress` / `importCloudProgress`) em [lib/services/progress_store.dart](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/lib/services/progress_store.dart).
-- Cartão integrado na tela de Configurações ([lib/screens/settings_sheet.dart](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/lib/screens/settings_sheet.dart)) permitindo conectar conta, sincronizar manualmente e desconectar. O jogo mantém início imediato sem login forçado.
+### B. Nuvem & Conquistas (removido na v1.0.1)
+- A versão 1.0.0 tinha um cartão "Nuvem & Conquistas" nas configurações que **simulava** a conexão com o Google Play Games e a sincronização: nada era salvo fora do aparelho.
+- Na v1.0.1 o cartão e o serviço simulado foram removidos, para não prometer um backup que não existe.
+- Para voltar, é preciso integrar de verdade o Play Games Services (Saved Games), com login real e testes.
 
 ### C. Estrutura de Anúncios Google AdMob
+- **Ainda não há SDK de anúncios no app** (sem `google_mobile_ads` no `pubspec.yaml`).
+  - Na v1.0.0, a versão publicada usava o simulador `DebugAdService`: aparecia uma tela preta escrita "Anúncio (teste)" entre fases e ao pedir ferramentas.
+  - Na v1.0.1 a versão publicada usa o `NoAdService`:
+    - sem anúncios entre fases;
+    - o "Continuar" vira uma chance extra grátis por partida;
+    - a oferta "ferramenta grátis com vídeo" fica escondida.
+  - O simulador continua só nas versões de teste e depuração.
 - Criado [lib/ads/ad_config.dart](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/lib/ads/ad_config.dart) com os IDs de teste oficiais da Google para Intersticiais e Recompensados (evitando qualquer penalização por tráfego inválido na fase de testes).
 - Inserido o metadado `APPLICATION_ID` em [android/app/src/main/AndroidManifest.xml](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/android/app/src/main/AndroidManifest.xml).
 

@@ -18,15 +18,39 @@ enum RewardPlacement {
   };
 }
 
-/// Shows ads. The AdMob implementation plugs in here (stage 3); until then
-/// [DebugAdService] stands in with a placeholder screen.
+/// Shows ads. The AdMob implementation plugs in here; until then release
+/// builds use [NoAdService] and test builds [DebugAdService].
 abstract class AdService {
+  /// Whether rewarded videos really exist. Without them the game doesn't
+  /// promise "watch a video" anywhere.
+  bool get hasVideoAds;
+
   /// Returns true when the player watched to the end and earned the reward.
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement);
   Future<void> showInterstitial(BuildContext context);
 }
 
+/// Release builds before AdMob: no ads at all. Interstitials are skipped and
+/// the one rewarded perk players still see (the second chance) is simply
+/// given; the free-tool-for-a-video offer is hidden.
+class NoAdService implements AdService {
+  @override
+  bool get hasVideoAds => false;
+
+  @override
+  Future<bool> showRewarded(BuildContext context, RewardPlacement placement) =>
+      Future.value(true);
+
+  @override
+  Future<void> showInterstitial(BuildContext context) async {}
+}
+
+/// Debug and browser-test builds: a black placeholder screen stands in for
+/// each ad, so the ad flows can be exercised.
 class DebugAdService implements AdService {
+  @override
+  bool get hasVideoAds => true;
+
   @override
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement) =>
       _show(context, 'Anúncio com recompensa (teste)');
@@ -83,6 +107,8 @@ class AdCoordinator {
   final ProgressStore store;
   final AdPolicy policy;
   final DateTime sessionStart = DateTime.now();
+
+  bool get hasVideoAds => service.hasVideoAds;
 
   Future<bool> rewarded(BuildContext context, RewardPlacement placement) async {
     final ok = await service.showRewarded(context, placement);

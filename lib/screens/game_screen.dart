@@ -145,6 +145,7 @@ class _GameScreenState extends State<GameScreen> {
           Navigator.of(context).pop();
           controller.selectTool(tool);
         },
+        videoRewards: widget.services.ads.hasVideoAds,
         onRewardTool: (tool) async {
           final ok = await widget.services.ads.rewarded(
             context,
@@ -446,6 +447,7 @@ class _GameScreenState extends State<GameScreen> {
           best: controller.bestScore,
           newBest: controller.newBest,
           canRevive: controller.canRevive,
+          videoRevive: widget.services.ads.hasVideoAds,
           onRevive: _revive,
           onRetry: _retry,
           onExit: _onboarding ? null : _exit,
@@ -738,8 +740,12 @@ class _ToolsSheet extends StatefulWidget {
     required this.onUseTool,
     required this.onRewardTool,
     required this.onBuyTool,
+    this.videoRewards = true,
   });
   final GameController controller;
+
+  /// Offer a free tool for a video (only when real video ads exist).
+  final bool videoRewards;
   final ProgressStore store;
   final void Function(CapiTool tool) onUseTool;
   final void Function(CapiTool tool) onRewardTool;
@@ -914,47 +920,49 @@ class _ToolsSheetState extends State<_ToolsSheet> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Semantics(
-                  button: true,
-                  label: 'Ganhar ${tool.label} com anúncio',
-                  child: InkWell(
-                    onTap: () async {
-                      widget.onRewardTool(tool);
-                      setState(() {});
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0x3322B8CF),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0x6622B8CF)),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            color: Color(0xFF22B8CF),
-                            size: 16,
-                          ),
-                          SizedBox(width: 2),
-                          Text(
-                            'Grátis',
-                            style: TextStyle(
+                if (widget.videoRewards) ...[
+                  Semantics(
+                    button: true,
+                    label: 'Ganhar ${tool.label} com anúncio',
+                    child: InkWell(
+                      onTap: () async {
+                        widget.onRewardTool(tool);
+                        setState(() {});
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0x3322B8CF),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0x6622B8CF)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.play_arrow_rounded,
                               color: Color(0xFF22B8CF),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              size: 16,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 2),
+                            Text(
+                              'Grátis',
+                              style: TextStyle(
+                                color: Color(0xFF22B8CF),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 6),
+                  const SizedBox(width: 6),
+                ],
                 Semantics(
                   button: true,
                   label: 'Comprar ${tool.label}',
@@ -1369,9 +1377,13 @@ class _LoseCard extends StatelessWidget {
     required this.onRevive,
     required this.onRetry,
     required this.onExit,
+    this.videoRevive = true,
   });
 
   final bool endless;
+
+  /// The second chance costs a short video (false: it is simply offered).
+  final bool videoRevive;
 
   /// Endless only: stars this run earned (one per 2,500 points).
   final int starsGained;
@@ -1423,7 +1435,9 @@ class _LoseCard extends StatelessWidget {
         if (canRevive) ...[
           ChunkyButton(
             label: 'Continuar',
-            icon: Icons.smart_display_rounded,
+            icon: videoRevive
+                ? Icons.smart_display_rounded
+                : Icons.play_arrow_rounded,
             color: Palette.good,
             textColor: const Color(0xFF0B3B16),
             big: true,
@@ -1432,7 +1446,9 @@ class _LoseCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 6, bottom: 14),
             child: Text(
-              'Assista a um vídeo curto',
+              videoRevive
+                  ? 'Assista a um vídeo curto'
+                  : 'Uma chance extra por partida',
               style: bodyText(13, color: Palette.textDim, weight: 500),
             ),
           ),

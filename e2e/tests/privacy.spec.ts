@@ -12,7 +12,7 @@ test.describe('Política de Privacidade', () => {
 
     // Confere dados da empresa responsável e e-mails
     await expect(page.getByText(/CHS CONSULTORIA LTDA/i).first()).toBeVisible();
-    await expect(page.getByText(/chs.consultoria@outlook.com/i).first()).toBeVisible();
+    await expect(page.getByText(/contato@chstech.dev.br/i).first()).toBeVisible();
 
     // Confere link de retorno ao jogo
     const backLink = page.getByRole('link', { name: /Voltar ao jogo/i });
