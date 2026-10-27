@@ -32,12 +32,8 @@ Future<void> main() async {
 }
 
 class AppServices {
-  AppServices(
-    this.store,
-    this.feedback,
-    this.ads, {
-    GameAuthService? auth,
-  }) : auth = auth ?? GameAuthService(store);
+  AppServices(this.store, this.feedback, this.ads, {GameAuthService? auth})
+    : auth = auth ?? GameAuthService(store);
 
   final ProgressStore store;
   final GameFeedback feedback;

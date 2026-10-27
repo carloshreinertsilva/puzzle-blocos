@@ -54,7 +54,10 @@ class _PrivacySheet extends StatelessWidget {
                 children: [
                   const OutlinedTitle('Privacidade', size: 26),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Palette.textDim),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Palette.textDim,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],

@@ -313,7 +313,7 @@ class _VillageScreenState extends State<VillageScreen>
                       ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),

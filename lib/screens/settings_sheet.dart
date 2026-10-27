@@ -32,7 +32,8 @@ class _SettingsState extends State<_Settings> {
     widget.services.feedback.click();
     showPrivacyDialog(
       context,
-      onOpenWeb: () => openExternalUrl('https://capiblocks.vercel.app/privacidade/'),
+      onOpenWeb: () =>
+          openExternalUrl('https://capiblocks.vercel.app/privacidade/'),
     );
   }
 
@@ -120,7 +121,9 @@ class _SettingsState extends State<_Settings> {
                                   if (ok) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Conta conectada com sucesso!'),
+                                        content: Text(
+                                          'Conta conectada com sucesso!',
+                                        ),
                                       ),
                                     );
                                   }
@@ -140,7 +143,9 @@ class _SettingsState extends State<_Settings> {
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Progresso salvo na nuvem!'),
+                                      content: Text(
+                                        'Progresso salvo na nuvem!',
+                                      ),
                                     ),
                                   );
                                 }

@@ -351,16 +351,19 @@ class ProgressStore {
 
   // Cloud sync (Google Play Games / Apple Game Center)
   bool get cloudSyncEnabled => _prefs.getBool('cloudSyncEnabled') ?? false;
-  Future<void> setCloudSyncEnabled(bool v) => _prefs.setBool('cloudSyncEnabled', v);
+  Future<void> setCloudSyncEnabled(bool v) =>
+      _prefs.setBool('cloudSyncEnabled', v);
 
   String? get cloudGamerTag => _prefs.getString('cloudGamerTag');
-  Future<void> setCloudGamerTag(String? v) =>
-      v != null ? _prefs.setString('cloudGamerTag', v) : _prefs.remove('cloudGamerTag');
+  Future<void> setCloudGamerTag(String? v) => v != null
+      ? _prefs.setString('cloudGamerTag', v)
+      : _prefs.remove('cloudGamerTag');
 
   DateTime? get lastCloudSyncAt {
     final ms = _prefs.getInt('lastCloudSyncAt');
     return ms != null ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
   }
+
   Future<void> setLastCloudSyncAt(DateTime dt) =>
       _prefs.setInt('lastCloudSyncAt', dt.millisecondsSinceEpoch);
 
