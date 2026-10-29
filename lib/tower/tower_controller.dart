@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
+import '../services/analytics.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
 
@@ -438,6 +439,7 @@ class TowerController extends ChangeNotifier {
   void _triggerGameOver(double currentZ, int colorIdx) {
     gameOver = true;
     playing = false;
+    Analytics.event('tower_end', {'height': height, 'best_combo': maxCombo});
 
     // The whole block falls down
     fallingSlices.add(

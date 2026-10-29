@@ -8,6 +8,7 @@ import '../core/shapes.dart';
 import '../core/village.dart';
 import '../game/obra_controller.dart';
 import '../main.dart';
+import '../services/analytics.dart';
 import '../testing/test_bridge.dart';
 import '../ui/block_painter.dart';
 import '../ui/capi.dart';
@@ -99,6 +100,11 @@ class _ObraScreenState extends State<ObraScreen>
 
   Future<void> _finish() async {
     final store = widget.services.store;
+    Analytics.event('obra_end', {
+      'obra': _number,
+      'stars': _obra.stars,
+      'village': _village ? 1 : 0,
+    });
     if (!_village) {
       final before = store.obraStars(_number);
       final now = _obra.stars;

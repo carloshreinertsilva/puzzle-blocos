@@ -110,6 +110,12 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
   - versões de depuração usam os IDs de teste do Google; a versão da loja usa os IDs reais de `lib/ads/ad_config.dart` e, enquanto eles estiverem vazios, não mostra anúncios;
   - o CI gera também um APK com anúncios de teste (`capiblocks-apk-teste`) para conferir no celular;
   - passo a passo para os IDs reais, o `app-ads.txt` e os formulários da Play Console: `docs/admob.md`.
+- **v1.1.0: estatísticas de uso** (Firebase Analytics, só Android), em `lib/services/analytics.dart`:
+  - eventos anônimos de partidas, modos, ferramentas, anúncios, obras e torre;
+  - desligados enquanto `lib/services/firebase_config.dart` estiver vazio;
+  - o jogador pode desligar em Configurações → Estatísticas de uso;
+  - política de privacidade (página e app) atualizada;
+  - passo a passo e respostas da Play Console: `docs/estatisticas.md`.
 - Antes disso:
   - Na v1.0.0, a versão publicada usava o simulador `DebugAdService`: aparecia uma tela preta escrita "Anúncio (teste)" entre fases e ao pedir ferramentas.
   - Na v1.0.1 a versão publicada usa o `NoAdService`:

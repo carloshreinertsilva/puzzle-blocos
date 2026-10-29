@@ -202,8 +202,9 @@ passo para ativar os anúncios reais: `docs/admob.md`.
 
 1. Ativar os IDs reais do AdMob (`docs/admob.md`); no iOS, falta a
    configuração do AdMob e a permissão de rastreamento.
-2. Firebase Analytics e Remote Config (intervalos de anúncio e dificuldade
-   ajustáveis sem atualizar o app).
+2. Ligar o Firebase Analytics, já no código (`docs/estatisticas.md`), e
+   depois o Remote Config (intervalos de anúncio e dificuldade ajustáveis sem
+   atualizar o app).
 3. Compra "Remover anúncios".
 4. Ícone, tela de abertura, identificador final do app
    (`com.puzzleblocos.puzzle_blocos` é provisório) e páginas nas lojas.

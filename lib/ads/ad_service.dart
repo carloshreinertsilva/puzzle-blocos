@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/analytics.dart';
 import '../services/progress_store.dart';
 import 'ad_policy.dart';
 
@@ -146,6 +147,10 @@ class AdCoordinator {
 
   Future<bool> rewarded(BuildContext context, RewardPlacement placement) async {
     final ok = await service.showRewarded(context, placement);
+    Analytics.event('reward_ad', {
+      'placement': placement.name,
+      'rewarded': ok ? 1 : 0,
+    });
     await store.setLastFullscreenAt(DateTime.now());
     return ok;
   }
@@ -160,6 +165,7 @@ class AdCoordinator {
     );
     if (!allowed) return;
     if (await service.showInterstitial(context)) {
+      Analytics.event('interstitial_ad', {'level': completedLevel});
       await store.setLastFullscreenAt(DateTime.now());
     }
   }

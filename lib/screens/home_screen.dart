@@ -10,6 +10,7 @@ import '../core/missions.dart';
 import '../core/village.dart';
 import '../game/onboarding.dart';
 import '../main.dart';
+import '../services/analytics.dart';
 import '../services/progress_store.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
@@ -64,12 +65,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openWardrobe() async {
+    Analytics.event('screen_open', {'screen': 'wardrobe'});
     widget.services.feedback.click();
     await WardrobeDialog.show(context, widget.services);
     if (mounted) setState(() {});
   }
 
   Future<void> _openDailyMissions() async {
+    Analytics.event('screen_open', {'screen': 'missions'});
     widget.services.feedback.click();
     await DailyMissionsDialog.show(context, widget.services);
     if (mounted) setState(() {});
@@ -83,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openVillage() async {
+    Analytics.event('screen_open', {'screen': 'village'});
     widget.services.feedback.click();
     final play = await Navigator.of(context).push<bool>(
       PageRouteBuilder(
@@ -129,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openTower() async {
+    Analytics.event('screen_open', {'screen': 'tower'});
     widget.services.feedback.click();
     widget.services.store.markSeen('opened_tower');
     await Navigator.of(context).push(
@@ -336,6 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openObras() async {
+    Analytics.event('screen_open', {'screen': 'obras'});
     widget.services.feedback.click();
     widget.services.store.markSeen('opened_obras');
     await Navigator.of(context).push(

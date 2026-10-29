@@ -6,6 +6,7 @@ import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
+import '../services/analytics.dart';
 import '../core/missions.dart';
 import '../game/game_controller.dart';
 import '../game/onboarding.dart';
@@ -118,6 +119,7 @@ class _GameScreenState extends State<GameScreen> {
     if (_onboarding && controller.level.number >= Onboarding.railLevels) {
       // The first levels are done: on to the menu.
       await widget.services.store.markSeen('menu');
+      Analytics.event('tutorial_complete');
       widget.onDone!();
       return;
     }

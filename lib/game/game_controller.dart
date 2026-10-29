@@ -11,6 +11,7 @@ import '../core/hint.dart';
 import '../core/level.dart';
 import '../core/missions.dart';
 import '../core/shapes.dart';
+import '../services/analytics.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
 import 'tutorial.dart';
@@ -214,6 +215,7 @@ class GameController extends ChangeNotifier {
           : 0,
     );
     bestScore = mode == GameMode.blitz ? store.blitzBestScore : store.bestScore;
+    Analytics.event('level_start', {'mode': mode.name, 'level': config.number});
     blitzSecondsLeft = 60;
     _blitzTimer?.cancel();
     if (mode == GameMode.blitz) {
@@ -383,6 +385,13 @@ class GameController extends ChangeNotifier {
 
   void _finish() {
     final won = session.status == SessionStatus.won;
+    Analytics.event('level_end', {
+      'mode': mode.name,
+      'level': level.number,
+      'success': won ? 1 : 0,
+      'score': session.score,
+      'revived': session.revived ? 1 : 0,
+    });
     if (!_counted) {
       _counted = true;
       store.recordGame(levelWon: won);
@@ -477,6 +486,7 @@ class GameController extends ChangeNotifier {
       );
     }
     feedback.revive();
+    Analytics.event('revive', {'mode': mode.name, 'level': level.number});
     showOutcome = false;
     noteActivity();
     onRevived?.call(cleared);
@@ -493,6 +503,7 @@ class GameController extends ChangeNotifier {
 
   Future<bool> selectTool(CapiTool tool) async {
     if (!playing || store.toolCount(tool) <= 0) return false;
+    Analytics.event('tool_use', {'tool': tool.name});
     if (tool == CapiTool.reroll) {
       final ok = await store.useTool(CapiTool.reroll);
       if (!ok) return false;

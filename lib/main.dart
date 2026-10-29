@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'ads/ad_service.dart';
 import 'ads/admob.dart';
 import 'screens/root.dart';
+import 'services/analytics.dart';
 import 'services/feedback.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
@@ -40,6 +41,7 @@ Future<void> main() async {
   );
   runApp(App(services: AppServices(store, feedback, ads)));
   unawaited(ads.start());
+  unawaited(Analytics.start(enabled: store.analyticsOn));
 }
 
 class AppServices {

@@ -1,17 +1,17 @@
-# Graph Report - puzzle-blocos  (2026-10-27)
+# Graph Report - puzzle-blocos  (2026-10-29)
 
 ## Corpus Check
-- 128 files · ~96,035 words
+- 134 files · ~97,339 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 44 file(s) not represented in the graph (top: .vectorcraft 14, .xml 7, (none) 6)
 
 ## Summary
-- 1985 nodes · 2603 edges · 104 communities (86 shown, 18 thin omitted)
+- 2035 nodes · 2667 edges · 111 communities (95 shown, 16 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fba42f5b`
+- Built from commit: `971cd0aa`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -69,7 +69,7 @@
 - static const
 - village.dart
 - feedback.dart
-- PuzzleGame
+- wardrobe_dialog.dart
 - simulate.dart
 - tower_test.dart
 - package:flutter/material.dart
@@ -98,7 +98,7 @@
 - loja_capturas.js
 - web_url.dart
 - AdMob: como ativar os anúncios reais
-- GameController
+- analytics_firebase.dart
 - Respostas Sugeridas para os Formulários da Google Play Console — CapiBlocks
 - 1. Dados Básicos da Ficha
 - web_url_stub.dart
@@ -110,9 +110,16 @@
 - ref_path
 - generate_tower_art.js
 - Publicação Android (Google Play)
-- TowerController
-- GameScreen
-- _ToolsSheet
+- analytics.dart
+- firebase_config.dart
+- bridge_web.dart
+- sound_player.dart
+- onboarding_test.dart
+- analytics_test.dart
+- Estatísticas de uso (Firebase Analytics)
+- sound_native.dart
+- web_url_web.dart
+- AnalyticsBackend
 
 ## God Nodes (most connected - your core abstractions)
 1. `state()` - 15 edges
@@ -145,7 +152,7 @@
 - **CI pipeline: Flutter build with test bridge feeding Playwright e2e** — _github_workflows_ci_flutter_job, _github_workflows_ci_web_test_artifact, _github_workflows_ci_e2e_job, readme_test_bridge [EXTRACTED 1.00]
 - **Difficulty design principles** — readme_solver_always_playable, readme_sawtooth_difficulty, readme_invisible_adjustment, readme_deterministic_levels, readme_level_simulator [EXTRACTED 1.00]
 
-## Communities (104 total, 18 thin omitted)
+## Communities (111 total, 16 thin omitted)
 
 ### Community 0 - "Efeitos visuais e partículas"
 Cohesion: 0.04
@@ -156,8 +163,8 @@ Cohesion: 0.04
 Nodes (39): activeDrag, _announce, _announcePending, _avgCell, backgroundColor, boardRect, boardView, _celebrate (+31 more)
 
 ### Community 2 - "package:flutter/material.dart"
-Cohesion: 0.08
-Nodes (20): build, createState, _openPrivacy, services, showModalBottomSheet, showSettings, showModalBottomSheet, showStats (+12 more)
+Cohesion: 0.12
+Nodes (10): build, createState, _openPrivacy, services, showModalBottomSheet, showSettings, showModalBottomSheet, showStats (+2 more)
 
 ### Community 3 - "Tela de partida e cartões"
 Cohesion: 0.03
@@ -165,7 +172,7 @@ Nodes (69): best, _bodyStyle, build, _buildToolCard, _buildToolModeOverlay, _bus
 
 ### Community 4 - "Progresso salvo e estatísticas"
 Cohesion: 0.03
-Nodes (74): actionPrompt, addStars, addStarsCapped, addTool, adsRemoved, bestCombo, bestScore, blitzBestScore (+66 more)
+Nodes (76): actionPrompt, addStars, addStarsCapped, addTool, adsRemoved, analyticsOn, bestCombo, bestScore (+68 more)
 
 ### Community 5 - "Tabuleiro e células"
 Cohesion: 0.04
@@ -189,15 +196,15 @@ Nodes (24): accent, accentDeep, appTitle, backgroundGradient, bgBottom, bgTop, b
 
 ### Community 10 - "Menu: caminho de fases"
 Cohesion: 0.06
-Nodes (29): badge, _blocks, build, _card, child, _clock, color, compact (+21 more)
+Nodes (30): badge, _blocks, build, _card, child, _clock, color, compact (+22 more)
 
 ### Community 11 - "package:flutter_test/flutter_test.dart"
-Cohesion: 0.15
-Nodes (6): ProgressStore, main, main, store, main, main
+Cohesion: 0.16
+Nodes (5): ProgressStore, main, main, store, main
 
 ### Community 12 - "Política de anúncios"
 Cohesion: 0.06
-Nodes (32): AdPolicy, canShowInterstitial, firstLevel, minInterval, sessionGrace, AdService, betweenLevels, build (+24 more)
+Nodes (30): AdPolicy, canShowInterstitial, firstLevel, minInterval, sessionGrace, AdService, betweenLevels, build (+22 more)
 
 ### Community 13 - "Arrastar peças da bandeja"
 Cohesion: 0.08
@@ -205,7 +212,7 @@ Nodes (19): _appear, _appearDelay, _center, _dragging, _finger, _grow, layout, _
 
 ### Community 14 - "Botões e widgets"
 Cohesion: 0.06
-Nodes (34): animate, badge, big, _body, build, _c, _capi, CardPanel (+26 more)
+Nodes (33): animate, badge, big, _body, build, _c, _capi, child (+25 more)
 
 ### Community 15 - "Arte dos blocos"
 Cohesion: 0.08
@@ -225,7 +232,7 @@ Nodes (6): Flutter, AppDelegate, SceneDelegate, RunnerTests, UIKit, XCTest
 
 ### Community 19 - "Ponte de testes"
 Cohesion: 0.06
-Nodes (25): addTool, _cell, claimDailyChest, controller, dragPath, equipHat, game, install (+17 more)
+Nodes (28): GameController, ObraController, PuzzleGame, addTool, _cell, claimDailyChest, controller, dragPath (+20 more)
 
 ### Community 20 - "Prévia de encaixe no tabuleiro"
 Cohesion: 0.11
@@ -240,7 +247,7 @@ Cohesion: 0.12
 Nodes (15): allShapes, color, cols, id, name, rotateShape, rowMasks, rows (+7 more)
 
 ### Community 23 - "capi_carrier.dart"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (12): _bubble, _bubbleText, _drawBubble, _drawPiece, _loop, render, _t, update (+4 more)
 
 ### Community 24 - "1. Visão Geral do Projeto e Mecânicas Desenvolvidas"
@@ -264,8 +271,8 @@ Cohesion: 0.18
 Nodes (10): background_color, description, display, icons, name, orientation, prefer_related_applications, short_name (+2 more)
 
 ### Community 29 - "sound_web.dart"
-Cohesion: 0.06
-Nodes (19): loadAll, PlatformSoundPlayer, play, loadAll, play, SoundPlayer, _buffers, _context (+11 more)
+Cohesion: 0.20
+Nodes (6): _buffers, _context, _ctx, _decode, loadAll, play
 
 ### Community 30 - "Gerador de sons"
 Cohesion: 0.33
@@ -312,11 +319,11 @@ Cohesion: 0.17
 Nodes (10): board, done, needLines, piece, retry, say, steps, target (+2 more)
 
 ### Community 51 - "root.dart"
-Cohesion: 0.14
-Nodes (9): AppServices, _advance, build, _challengeOpen, createState, initState, Root, _RootState (+1 more)
+Cohesion: 0.15
+Nodes (7): AppServices, _advance, build, _challengeOpen, createState, initState, services
 
 ### Community 52 - "ad_config.dart"
-Cohesion: 0.14
+Cohesion: 0.15
 Nodes (10): AdConfig, enabled, forceTestAds, interstitial, prodInterstitial, prodRewarded, rewarded, testInterstitial (+2 more)
 
 ### Community 53 - "scene.dart"
@@ -324,7 +331,7 @@ Cohesion: 0.02
 Nodes (91): alt, at, bank, _base, bounds, build, _buildBurst, building (+83 more)
 
 ### Community 54 - "core_test.dart"
-Cohesion: 0.18
+Cohesion: 0.19
 Nodes (4): main, main, shape, main
 
 ### Community 55 - "static const"
@@ -339,13 +346,17 @@ Nodes (10): capiSpot, cost, id, island, items, name, next, spot (+2 more)
 Cohesion: 0.12
 Nodes (13): clear, click, _files, lose, pick, place, _play, praise (+5 more)
 
+### Community 58 - "wardrobe_dialog.dart"
+Cohesion: 0.15
+Nodes (10): build, createState, _cycleMood, _equip, initState, _previewMood, _selectedHat, services (+2 more)
+
 ### Community 59 - "simulate.dart"
 Cohesion: 0.17
 Nodes (11): attempts, best, bestScore, first, _holes, last, main, n (+3 more)
 
 ### Community 60 - "tower_test.dart"
-Cohesion: 0.20
-Nodes (5): GameFeedback, main, feedback, main, store
+Cohesion: 0.29
+Nodes (4): GameFeedback, feedback, main, store
 
 ### Community 61 - "package:flutter/material.dart"
 Cohesion: 0.29
@@ -393,7 +404,7 @@ Nodes (10): cell, delay, from, _heart, _life, render, _t, to (+2 more)
 
 ### Community 72 - "tower_controller.dart"
 Cohesion: 0.04
-Nodes (43): baseSize, bestHeight, blockDz, blocks, cameraZ, colorIndex, combo, currentDx (+35 more)
+Nodes (47): baseSize, bestHeight, blockDz, blocks, cameraZ, colorIndex, combo, currentDx (+39 more)
 
 ### Community 73 - "generate_blitz_duel_art.js"
 Cohesion: 0.25
@@ -420,12 +431,12 @@ Cohesion: 0.13
 Nodes (12): build, controller, _drawFloorLabel, _drawIsoBox, _drawMiniCapi, paint, shouldRepaint, size (+4 more)
 
 ### Community 79 - "daily_missions_dialog.dart"
-Cohesion: 0.15
-Nodes (10): build, _buildMissionCard, _claimChest, _claimMission, createState, DailyMissionsDialog, _DailyMissionsDialogState, services (+2 more)
+Cohesion: 0.17
+Nodes (8): build, _buildMissionCard, _claimChest, _claimMission, createState, services, show, _today
 
 ### Community 80 - "State"
-Cohesion: 0.15
-Nodes (20): HomeScreen, _HomeScreenState, ObraScreen, _ObraScreenState, _Settings, _SettingsState, TowerScreen, _TowerScreenState (+12 more)
+Cohesion: 0.10
+Nodes (30): _FakeAd, _FakeAdState, DailyMissionsDialog, _DailyMissionsDialogState, GameScreen, _GameScreenState, _ToolsSheet, _ToolsSheetState (+22 more)
 
 ### Community 81 - "missions_hats_painters.dart"
 Cohesion: 0.18
@@ -446,6 +457,10 @@ Nodes (12): { chromium }, composeAndSave(), dragObraPiece(), dragTrayPiece(), fs
 ### Community 86 - "AdMob: como ativar os anúncios reais"
 Cohesion: 0.33
 Nodes (5): 1. Conta e blocos de anúncio (pode ser feito já), 2. Testar no celular (anúncios de teste), 3. Depois que o app for aprovado na Play Store, 4. Play Console, no envio da versão com anúncios (1.1.0), AdMob: como ativar os anúncios reais
+
+### Community 87 - "analytics_firebase.dart"
+Cohesion: 0.17
+Nodes (5): _analytics, createFirebaseBackend, log, setEnabled, createFirebaseBackend
 
 ### Community 88 - "Respostas Sugeridas para os Formulários da Google Play Console — CapiBlocks"
 Cohesion: 0.17
@@ -487,29 +502,57 @@ Nodes (6): artDir, { execSync }, fs, jobs, path, towerDir
 Cohesion: 0.33
 Nodes (5): Build no seu computador (opcional), Chave de envio (upload key), Identificador do app, Publicação Android (Google Play), Versão
 
-### Community 99 - "TowerController"
-Cohesion: 0.50
-Nodes (4): place, reset, TowerBlock, TowerController
+### Community 99 - "analytics.dart"
+Cohesion: 0.17
+Nodes (8): active, Analytics, _backend, event, log, setEnabled, start, use
+
+### Community 102 - "firebase_config.dart"
+Cohesion: 0.20
+Nodes (7): android, _apiKey, _appId, FirebaseConfig, _messagingSenderId, _projectId, ready
+
+### Community 103 - "bridge_web.dart"
+Cohesion: 0.22
+Nodes (3): installJsBridge, api, installJsBridge
+
+### Community 104 - "sound_player.dart"
+Cohesion: 0.25
+Nodes (5): PlatformSoundPlayer, loadAll, play, SoundPlayer, PlatformSoundPlayer
+
+### Community 106 - "analytics_test.dart"
+Cohesion: 0.29
+Nodes (5): enabled, events, log, main, setEnabled
+
+### Community 107 - "Estatísticas de uso (Firebase Analytics)"
+Cohesion: 0.40
+Nodes (4): Estatísticas de uso (Firebase Analytics), O que é registrado, Para ligar, Play Console (junto com o envio da 1.1.0)
+
+### Community 109 - "web_url_web.dart"
+Cohesion: 0.40
+Nodes (3): clearUrlQuery, openExternalUrl, path
+
+### Community 110 - "AnalyticsBackend"
+Cohesion: 0.67
+Nodes (3): AnalyticsBackend, _FirebaseBackend, _Recorder
 
 ## Knowledge Gaps
-- **1292 isolated node(s):** `@types/node`, `typescript`, `XCTest`, `AdConfig`, `forceTestAds` (+1287 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1530 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1319 isolated node(s):** `@types/node`, `typescript`, `XCTest`, `AdConfig`, `forceTestAds` (+1314 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1566 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `ProgressStore` connect `package:flutter_test/flutter_test.dart` to `Tela de partida e cartões`, `Progresso salvo e estatísticas`, `Controlador do jogo`, `tower_controller.dart`, `main.dart`, `Política de anúncios`, `Ponte de testes`, `feedback.dart`, `tower_test.dart`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **What connects `@types/node`, `typescript`, `XCTest` to the rest of the system?**
-  _1292 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1319 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Efeitos visuais e partículas` be split into smaller, more focused modules?**
   _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._
+- **Why does `TrayPiece` connect `TrayPiece` to `Cena Flame do jogo`, `Componentes de texto e luz`, `Arrastar peças da bandeja`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **Should `Cena Flame do jogo` be split into smaller, more focused modules?**
   _Cohesion score 0.04081632653061224 - nodes in this community are weakly interconnected._
+- **Why does `CapiTool` connect `tool_painter.dart` to `Tela de partida e cartões`, `Progresso salvo e estatísticas`, `Controlador do jogo`?**
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Should `package:flutter/material.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.08374384236453201 - nodes in this community are weakly interconnected._
-- **Should `Tela de partida e cartões` be split into smaller, more focused modules?**
-  _Cohesion score 0.0273972602739726 - nodes in this community are weakly interconnected._
-- **Should `Progresso salvo e estatísticas` be split into smaller, more focused modules?**
-  _Cohesion score 0.025974025974025976 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.12418300653594772 - nodes in this community are weakly interconnected._
