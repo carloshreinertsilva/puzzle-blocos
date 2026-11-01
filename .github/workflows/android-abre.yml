@@ -2,7 +2,8 @@
 name: Android (abre no emulador)
 
 on:
-  pull_request:
+  push:
+    branches: ['claude/android-controle']
   workflow_dispatch:
 
 permissions:
