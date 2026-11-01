@@ -95,9 +95,11 @@ Para ver no navegador: `flutter run -d chrome`.
   ```
 
 - **GitHub Actions** (`.github/workflows/ci.yml`) roda tudo a cada envio para
-  `main` e em cada pull request: formatação, análise, testes de unidade e um
-  job do Playwright por tamanho de tela. O relatório de cada tamanho fica nos
-  artefatos da execução.
+  `main` e em cada pull request: formatação, análise, testes de unidade e o
+  Playwright nos 4 tamanhos de tela (o relatório fica nos artefatos da
+  execução). O job do Android gera o `.aab` e abre o jogo num emulador
+  (`tool/android_abre.sh`); por ser o mais caro em minutos, não roda em PRs
+  de rascunho, só quando o PR fica pronto para revisão e na `main`.
 
 ## Grafo do projeto (graphify)
 
@@ -167,7 +169,7 @@ separada da do Desafio diário.
 ## Publicação Android
 
 Identificador `com.capiblocks.app` (não muda depois do primeiro envio). O CI
-gera o pacote da Play Store (`.aab`) a cada push, assinado com a chave de
+gera o pacote da Play Store (`.aab`) na `main` e nos PRs prontos, assinado com a chave de
 envio guardada nos segredos do GitHub. Como criar a chave e cadastrar os
 segredos: `docs/publicacao-android.md`.
 
@@ -196,3 +198,8 @@ anúncio; a próxima etapa é trocá-lo pelo AdMob.
 4. Ícone, tela de abertura, identificador final do app
    (`com.puzzleblocos.puzzle_blocos` é provisório) e páginas nas lojas.
 5. Lançamento discreto só no Brasil, medir retenção e ajustar.
+
+## Licença
+
+Código visível apenas para consulta: todos os direitos reservados à CHS
+CONSULTORIA LTDA (veja `LICENSE`).
