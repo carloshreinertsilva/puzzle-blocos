@@ -72,12 +72,12 @@ Para viabilizar a publicação profissional nas lojas e cumprir as exigências d
 
 Todos os ativos de marketing foram produzidos sob medida para atender rigorosamente às diretrizes visuais da Play Store:
 
-1. **Ícone Oficial (512x512):** [docs/loja/icone-512.png](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/docs/loja/icone-512.png)
+1. **Ícone Oficial (512x512):** [docs/loja/icone-512.png](docs/loja/icone-512.png)
    - Capi com capacete de obra segurando um bloco dourado com fundo gradiente contrastante.
-2. **Gráfico de Recursos / Banner (1024x500):** [docs/loja/banner-1024x500.png](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/docs/loja/banner-1024x500.png)
+2. **Gráfico de Recursos / Banner (1024x500):** [docs/loja/banner-1024x500.png](docs/loja/banner-1024x500.png)
    - Composição horizontal equilibrada, ilha 2.5D ao centro, logo estilizado, Capi construtor e blocos coloridos flutuantes.
 3. **6 Capturas de Tela do Smartphone (1080x1920 - 9:16):**
-   - Refatoração do script [tool/loja_capturas.js](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/tool/loja_capturas.js) em Playwright.
+   - Refatoração do script [tool/loja_capturas.js](tool/loja_capturas.js) em Playwright.
    - Tipografia oficial do jogo (`Lilita One`) aplicada nos títulos superiores com contorno escuro e relevo 3D.
    - Moldura de smartphone dedicada sem sobrepor os cabeçalhos das telas.
    - Tabuleiros reais em ação:
@@ -93,7 +93,7 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 ## 4. Polimento Técnico e Preparação de Produção
 
 ### A. Política de Privacidade In-App (Offline & Web)
-- Criado o componente [lib/ui/privacy_dialog.dart](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/lib/ui/privacy_dialog.dart).
+- Criado o componente [lib/ui/privacy_dialog.dart](lib/ui/privacy_dialog.dart).
 - Permite que jogadores e revisores da Google leiam a íntegra dos termos legais dentro do aplicativo mesmo sem internet, com botão para abrir a versão online.
 
 ### B. Nuvem & Conquistas (removido na v1.0.1)
@@ -102,15 +102,30 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 - Para voltar, é preciso integrar de verdade o Play Games Services (Saved Games), com login real e testes.
 
 ### C. Estrutura de Anúncios Google AdMob
-- **Ainda não há SDK de anúncios no app** (sem `google_mobile_ads` no `pubspec.yaml`).
+- **v1.1.0: AdMob integrado** (`google_mobile_ads`, só Android), em `lib/ads/admob_service.dart`:
+  - mensagem de consentimento do Google (UMP) antes de pedir anúncios, e o botão "Privacidade dos anúncios" nas configurações quando a lei exige;
+  - um vídeo com recompensa e um intersticial ficam carregados; se o vídeo não carregar em 8 s, o jogador vê "Nenhum vídeo disponível agora";
+  - intersticial que não carregou é pulado, sem esperar, e não conta no intervalo da política;
+  - só anúncios com classificação até PG;
+  - versões de depuração usam os IDs de teste do Google; a versão da loja usa os IDs reais do AdMob (app `ca-app-pub-2477171262502738~3756164094`, em `lib/ads/ad_config.dart` e no `AndroidManifest.xml`);
+  - o CI gera também um APK com anúncios de teste (`capiblocks-apk-teste`) para conferir no celular;
+  - passo a passo para os IDs reais, o `app-ads.txt` e os formulários da Play Console: `docs/admob.md`.
+- **v1.0.2 (01/11/2026): o jogo não abria no Android.** A versão de loja ficava na tela branca: a `shared_preferences_android` 2.5.1 falhava com o código otimizado (R8), com `NoSuchMethodError` em `SharedPreferencesApiRegistrar.getAll`. Corrigido com a 2.5.2+ (lock em 2.5.4) e regras do R8 em `android/app/proguard-rules.pro`. Desde então o CI instala a versão de loja num emulador Android e confere se o jogo abre (`tool/android_abre.sh`).
+- **v1.1.0: estatísticas de uso** (Firebase Analytics, só Android), em `lib/services/analytics.dart`:
+  - eventos anônimos de partidas, modos, ferramentas, anúncios, obras e torre;
+  - desligados enquanto `lib/services/firebase_config.dart` estiver vazio;
+  - o jogador pode desligar em Configurações → Estatísticas de uso;
+  - política de privacidade (página e app) atualizada;
+  - passo a passo e respostas da Play Console: `docs/estatisticas.md`.
+- Antes disso:
   - Na v1.0.0, a versão publicada usava o simulador `DebugAdService`: aparecia uma tela preta escrita "Anúncio (teste)" entre fases e ao pedir ferramentas.
   - Na v1.0.1 a versão publicada usa o `NoAdService`:
     - sem anúncios entre fases;
     - o "Continuar" vira uma chance extra grátis por partida;
     - a oferta "ferramenta grátis com vídeo" fica escondida.
   - O simulador continua só nas versões de teste e depuração.
-- Criado [lib/ads/ad_config.dart](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/lib/ads/ad_config.dart) com os IDs de teste oficiais da Google para Intersticiais e Recompensados (evitando qualquer penalização por tráfego inválido na fase de testes).
-- Inserido o metadado `APPLICATION_ID` em [android/app/src/main/AndroidManifest.xml](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/android/app/src/main/AndroidManifest.xml).
+- Criado [lib/ads/ad_config.dart](lib/ads/ad_config.dart) com os IDs de teste oficiais da Google para Intersticiais e Recompensados (evitando qualquer penalização por tráfego inválido na fase de testes).
+- Inserido o metadado `APPLICATION_ID` em [android/app/src/main/AndroidManifest.xml](android/app/src/main/AndroidManifest.xml).
 
 ### D. Chave de Assinatura Privada (*Upload Keystore*)
 - Gerado o keystore RSA 4096-bit corporativo `android/upload-keystore.jks` emitido para **CHS CONSULTORIA LTDA** com validade até **2054** (10.000 dias).
@@ -120,7 +135,7 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
   - `CAPI_KEYSTORE_PASSWORD`
   - `CAPI_KEY_ALIAS`
   - `CAPI_KEY_PASSWORD`
-- Pipeline de compilação em [.github/workflows/ci.yml](file:///c:/Users/carlos/Desktop/Pessoal/Capiblocks/.github/workflows/ci.yml) compilou e assinou com sucesso o arquivo final de distribuição:
+- Pipeline de compilação em [.github/workflows/ci.yml](.github/workflows/ci.yml) compilou e assinou com sucesso o arquivo final de distribuição:
   👉 **`build_release/app-release.aab`** (51.9 MB).
 
 ---
@@ -154,6 +169,6 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 ## 6. Próximos Passos (Pós-Aprovação na Loja)
 
 1. **Acompanhar a Aprovação:** Prazo médio da Google de 2 a 5 dias úteis.
-2. **Vincular o Google AdMob:** Com o app ativo na Play Store, criar os blocos comerciais reais no painel do AdMob e atualizar `lib/ads/ad_config.dart`.
+2. **Ativar o Google AdMob:** Com o app ativo na Play Store, seguir `docs/admob.md` (IDs reais, `app-ads.txt`, formulários da Play Console) e publicar a v1.1.0.
 3. **Internacionalização da Ficha:** Adicionar traduções da página da loja para **Inglês** e **Espanhol** para impulsionar downloads globais.
 4. **Preparação para a Apple App Store:** Replicar a publicação para o ecossistema iOS (App Store Connect / TestFlight).

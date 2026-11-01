@@ -64,6 +64,8 @@ class ProgressStore {
 
   bool get hapticsOn => _prefs.getBool('hapticsOn') ?? true;
   Future<void> setHapticsOn(bool v) => _prefs.setBool('hapticsOn', v);
+  bool get analyticsOn => _prefs.getBool('analyticsOn') ?? true;
+  Future<void> setAnalyticsOn(bool v) => _prefs.setBool('analyticsOn', v);
 
   // Statistics shown on the stats screen.
   int get gamesPlayed => _prefs.getInt('gamesPlayed') ?? 0;

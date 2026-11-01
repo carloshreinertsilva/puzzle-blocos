@@ -87,7 +87,7 @@ class _PrivacySheet extends StatelessWidget {
                         const SizedBox(height: 14),
                         _section(
                           '1. Compromisso e Jogo Offline',
-                          'O CapiBlocks foi desenvolvido com o compromisso absoluto de respeitar sua privacidade. O jogo funciona 100% offline, não exige cadastro, criação de conta nem senhas.',
+                          'O CapiBlocks foi desenvolvido com o compromisso absoluto de respeitar sua privacidade. O jogo funciona sem internet, não exige cadastro, criação de conta nem senhas.',
                         ),
                         _section(
                           '2. Dados Pessoais',
@@ -99,7 +99,7 @@ class _PrivacySheet extends StatelessWidget {
                         ),
                         _section(
                           '4. Serviços Opcionais',
-                          '• Anúncios: Se anúncios estiverem ativados, os identificadores anônimos de publicidade e diagnóstico são tratados em estrita conformidade com as políticas do Google AdMob.',
+                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.',
                         ),
                         _section(
                           '5. Seus Direitos e Exclusão (LGPD)',

@@ -120,6 +120,16 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
       - run: flutter pub get
+      # android/gradle.properties pede 8 GB para o Gradle; a máquina do CI tem
+      # menos e caía no meio do build ("runner has received a shutdown
+      # signal"). O gradle.properties do usuário vale mais que o do projeto.
+      - name: Memória do Gradle
+        run: |
+          mkdir -p ~/.gradle
+          cat >> ~/.gradle/gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError
+          kotlin.daemon.jvmargs=-Xmx1g
+          PROPS
       - name: Chave de envio (se configurada)
         if: ${{ env.KEYSTORE_BASE64 != '' }}
         run: |
@@ -138,6 +148,8 @@ jobs:
           retention-days: 30
       - name: Versão da biblioteca de progresso salvo
         run: grep -A7 '^  shared_preferences_android:' pubspec.lock | grep version
+      - name: Fecha o Gradle do build anterior (libera memória)
+        run: (cd android && ./gradlew --stop) || true
       - name: APK de lançamento para o emulador
         env:
           CAPI_KEYSTORE_PASSWORD: ${{ secrets.CAPI_KEYSTORE_PASSWORD }}
@@ -165,3 +177,18 @@ jobs:
           name: android-abre
           path: build/android_abre
           retention-days: 14
+      # An APK with Google's test ads, to install on a phone and check the
+      # ads without touching real ad units.
+      - name: Fecha o Gradle antes do APK de teste
+        run: (cd android && ./gradlew --stop) || true
+      - name: APK com anúncios de teste
+        env:
+          CAPI_KEYSTORE_PASSWORD: ${{ secrets.CAPI_KEYSTORE_PASSWORD }}
+          CAPI_KEY_ALIAS: ${{ secrets.CAPI_KEY_ALIAS }}
+          CAPI_KEY_PASSWORD: ${{ secrets.CAPI_KEY_PASSWORD }}
+        run: flutter build apk --release --dart-define=ADMOB_TEST=true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capiblocks-apk-teste
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30

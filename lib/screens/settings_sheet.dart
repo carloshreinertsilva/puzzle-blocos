@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../services/analytics.dart';
 import '../services/web_url.dart';
 import '../ui/palette.dart';
 import '../ui/privacy_dialog.dart';
@@ -70,10 +71,42 @@ class _SettingsState extends State<_Settings> {
                   setState(() {});
                 },
               ),
+              // Anonymous usage statistics (Firebase on Android).
+              if (Analytics.active)
+                SwitchListTile(
+                  title: Text('Estatísticas de uso', style: bodyText(17)),
+                  subtitle: Text(
+                    'Anônimas, para melhorar o jogo',
+                    style: bodyText(12, color: Palette.textDim),
+                  ),
+                  secondary: const Icon(Icons.insights_rounded),
+                  value: store.analyticsOn,
+                  onChanged: (v) async {
+                    await store.setAnalyticsOn(v);
+                    await Analytics.setEnabled(v);
+                    setState(() {});
+                  },
+                ),
 
               const Divider(color: Color(0x22FFFFFF), height: 20),
 
-              const Divider(color: Color(0x22FFFFFF), height: 20),
+              // AdMob consent: in regions whose law requires it, players
+              // can change their choice at any time.
+              if (widget.services.ads.privacyOptionsRequired)
+                ListTile(
+                  leading: const Icon(
+                    Icons.tune_rounded,
+                    color: Palette.accent,
+                  ),
+                  title: Text('Privacidade dos anúncios', style: bodyText(16)),
+                  onTap: () {
+                    widget.services.feedback.click();
+                    widget.services.ads.showPrivacyOptions();
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
 
               // Privacy Policy
               ListTile(
@@ -94,7 +127,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.0.2 · CHS CONSULTORIA LTDA',
+                'CapiBlocks v1.1.0 · CHS CONSULTORIA LTDA',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],
