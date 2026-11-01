@@ -19,20 +19,14 @@ enum RewardPlacement {
   };
 }
 
-<<<<<<< HEAD
 /// Shows ads: AdMob on Android (`admob_service.dart`), [NoAdService] in
 /// release builds without ad units, [DebugAdService] on the web in debug and
 /// in browser tests.
-=======
-/// Shows ads. The AdMob implementation plugs in here; until then release
-/// builds use [NoAdService] and test builds [DebugAdService].
->>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 abstract class AdService {
   /// Whether rewarded videos really exist. Without them the game doesn't
   /// promise "watch a video" anywhere.
   bool get hasVideoAds;
 
-<<<<<<< HEAD
   /// Whether the settings must offer a way to change the ad consent choice
   /// (AdMob, in regions whose law requires it).
   bool get privacyOptionsRequired;
@@ -42,8 +36,6 @@ abstract class AdService {
 
   Future<void> showPrivacyOptions();
 
-=======
->>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
   /// Returns true when the player watched to the end and earned the reward.
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement);
 
@@ -59,7 +51,6 @@ class NoAdService implements AdService {
   bool get hasVideoAds => false;
 
   @override
-<<<<<<< HEAD
   bool get privacyOptionsRequired => false;
 
   @override
@@ -69,17 +60,11 @@ class NoAdService implements AdService {
   Future<void> showPrivacyOptions() async {}
 
   @override
-=======
->>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement) =>
       Future.value(true);
 
   @override
-<<<<<<< HEAD
   Future<bool> showInterstitial(BuildContext context) => Future.value(false);
-=======
-  Future<void> showInterstitial(BuildContext context) async {}
->>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 }
 
 /// Debug and browser-test builds: a black placeholder screen stands in for
@@ -89,7 +74,6 @@ class DebugAdService implements AdService {
   bool get hasVideoAds => true;
 
   @override
-<<<<<<< HEAD
   bool get privacyOptionsRequired => false;
 
   @override
@@ -99,8 +83,6 @@ class DebugAdService implements AdService {
   Future<void> showPrivacyOptions() async {}
 
   @override
-=======
->>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement) =>
       _show(context, 'Anúncio com recompensa (teste)');
 
@@ -158,13 +140,10 @@ class AdCoordinator {
   final DateTime sessionStart = DateTime.now();
 
   bool get hasVideoAds => service.hasVideoAds;
-<<<<<<< HEAD
   bool get privacyOptionsRequired => service.privacyOptionsRequired;
 
   Future<void> start() => service.start();
   Future<void> showPrivacyOptions() => service.showPrivacyOptions();
-=======
->>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
   Future<bool> rewarded(BuildContext context, RewardPlacement placement) async {
     final ok = await service.showRewarded(context, placement);
