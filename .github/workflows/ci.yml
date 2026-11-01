@@ -1,7 +1,10 @@
 # Verifica o jogo a cada envio e a cada pull request:
 # 1. formatação, análise do código e testes de unidade (Flutter);
 # 2. versão web de teste (com a ponte de testes) gerada uma vez;
-# 3. testes Playwright de ponta a ponta, um job por tamanho de tela.
+# 3. testes Playwright de ponta a ponta nos 4 tamanhos de tela;
+# 4. Android: o pacote da Play Store e o jogo abrindo num emulador. É o job
+#    mais caro, então não roda em PRs de rascunho (os minutos do GitHub
+#    Actions são contados num repositório privado).
 name: CI
 
 on:
@@ -11,6 +14,8 @@ on:
   # Pull requests always run, so a required check never waits forever on a
   # PR that only touches docs.
   pull_request:
+    # ready_for_review: o job do Android roda quando o rascunho fica pronto.
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -50,15 +55,12 @@ jobs:
           path: build/web_test
           retention-days: 3
 
+  # Um job só para os 4 tamanhos: prepara o navegador uma vez.
   e2e:
-    name: Playwright (${{ matrix.project }})
+    name: Playwright
     needs: flutter
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [iphone-se, iphone-pro-max, android-pequeno, tablet]
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: e2e
@@ -77,12 +79,12 @@ jobs:
       - name: Navegador (Chromium)
         run: npx playwright install --with-deps chromium
       - name: Testes de ponta a ponta
-        run: npx playwright test --project=${{ matrix.project }}
+        run: npx playwright test
       - name: Relatório
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: relatorio-${{ matrix.project }}
+          name: relatorio-playwright
           path: e2e/playwright-report
           retention-days: 14
 
@@ -90,12 +92,23 @@ jobs:
     # Builds the Play Store bundle (.aab). With the upload key in the
     # repository secrets it comes out signed and ready to upload; without
     # them it is signed with a throwaway debug key (just proves it builds).
-    name: Android (.aab)
+    # Then installs the release build on an emulator and checks the game
+    # opens: the browser tests can't catch Android-only release problems
+    # (R8), like the white start screen of v1.0.1.
+    name: Android (.aab e abre no emulador)
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 50
     env:
       KEYSTORE_BASE64: ${{ secrets.CAPI_KEYSTORE_BASE64 }}
     steps:
+      # A imagem do emulador não cabe no disco que sobra depois do build.
+      - name: Liberar espaço em disco
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /usr/local/lib/node_modules /opt/hostedtoolcache/CodeQL /usr/share/swift
+          sudo docker image prune --all --force > /dev/null || true
+          df -h /
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
@@ -123,3 +136,32 @@ jobs:
           name: capiblocks-aab
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
+      - name: Versão da biblioteca de progresso salvo
+        run: grep -A7 '^  shared_preferences_android:' pubspec.lock | grep version
+      - name: APK de lançamento para o emulador
+        env:
+          CAPI_KEYSTORE_PASSWORD: ${{ secrets.CAPI_KEYSTORE_PASSWORD }}
+          CAPI_KEY_ALIAS: ${{ secrets.CAPI_KEY_ALIAS }}
+          CAPI_KEY_PASSWORD: ${{ secrets.CAPI_KEY_PASSWORD }}
+        run: flutter build apk --release --target-platform android-x64
+      - run: python3 -m pip install pillow
+      - name: Liberar o emulador (KVM)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Abrir o jogo no emulador
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tool/android_abre.sh
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: android-abre
+          path: build/android_abre
+          retention-days: 14
