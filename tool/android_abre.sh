@@ -17,6 +17,8 @@ adb logcat -d > "$saida/logcat.txt"
 falhou=0
 if grep -E 'Unhandled Exception|NoSuchMethodError|FATAL EXCEPTION' "$saida/logcat.txt"; then
   echo '::error::O jogo registrou um erro ao abrir no Android.'
+  # O erro completo, para ler direto no log do CI.
+  grep -E -A40 'FATAL EXCEPTION|Unhandled Exception' "$saida/logcat.txt" | head -120
   falhou=1
 fi
 if [ -z "$(adb shell pidof com.capiblocks.app | tr -d '[:space:]')" ]; then
