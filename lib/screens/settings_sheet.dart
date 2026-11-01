@@ -90,6 +90,7 @@ class _SettingsState extends State<_Settings> {
 
               const Divider(color: Color(0x22FFFFFF), height: 20),
 
+<<<<<<< HEAD
               // AdMob consent: in regions whose law requires it, players
               // can change their choice at any time.
               if (widget.services.ads.privacyOptionsRequired)
@@ -107,6 +108,9 @@ class _SettingsState extends State<_Settings> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+=======
+              const Divider(color: Color(0x22FFFFFF), height: 20),
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
               // Privacy Policy
               ListTile(
@@ -127,7 +131,11 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
+<<<<<<< HEAD
                 'CapiBlocks v1.1.0 · CHS CONSULTORIA LTDA',
+=======
+                'CapiBlocks v1.0.1 · CHS CONSULTORIA LTDA',
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],

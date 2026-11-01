@@ -102,6 +102,7 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 - Para voltar, é preciso integrar de verdade o Play Games Services (Saved Games), com login real e testes.
 
 ### C. Estrutura de Anúncios Google AdMob
+<<<<<<< HEAD
 - **v1.1.0: AdMob integrado** (`google_mobile_ads`, só Android), em `lib/ads/admob_service.dart`:
   - mensagem de consentimento do Google (UMP) antes de pedir anúncios, e o botão "Privacidade dos anúncios" nas configurações quando a lei exige;
   - um vídeo com recompensa e um intersticial ficam carregados; se o vídeo não carregar em 8 s, o jogador vê "Nenhum vídeo disponível agora";
@@ -117,6 +118,9 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
   - política de privacidade (página e app) atualizada;
   - passo a passo e respostas da Play Console: `docs/estatisticas.md`.
 - Antes disso:
+=======
+- **Ainda não há SDK de anúncios no app** (sem `google_mobile_ads` no `pubspec.yaml`).
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
   - Na v1.0.0, a versão publicada usava o simulador `DebugAdService`: aparecia uma tela preta escrita "Anúncio (teste)" entre fases e ao pedir ferramentas.
   - Na v1.0.1 a versão publicada usa o `NoAdService`:
     - sem anúncios entre fases;

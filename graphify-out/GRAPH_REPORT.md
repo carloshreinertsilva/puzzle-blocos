@@ -1,17 +1,33 @@
+<<<<<<< HEAD
 # Graph Report - puzzle-blocos  (2026-10-29)
 
 ## Corpus Check
 - 134 files · ~97,339 words
+=======
+# Graph Report - puzzle-blocos  (2026-10-27)
+
+## Corpus Check
+- 124 files · ~94,235 words
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 44 file(s) not represented in the graph (top: .vectorcraft 14, .xml 7, (none) 6)
 
 ## Summary
+<<<<<<< HEAD
 - 2035 nodes · 2667 edges · 111 communities (95 shown, 16 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 - Built from commit: `971cd0aa`
+=======
+- 1933 nodes · 2541 edges · 102 communities (84 shown, 18 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.82)
+- Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `47e5780a`
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -97,12 +113,21 @@
 - blitz_duel_painter.dart
 - loja_capturas.js
 - web_url.dart
+<<<<<<< HEAD
 - AdMob: como ativar os anúncios reais
 - analytics_firebase.dart
 - Respostas Sugeridas para os Formulários da Google Play Console — CapiBlocks
 - 1. Dados Básicos da Ficha
 - web_url_stub.dart
 - blueprint_test.dart
+=======
+- web_url_web.dart
+- GameController
+- Respostas Sugeridas para os Formulários da Google Play Console — CapiBlocks
+- 1. Dados Básicos da Ficha
+- web_url_stub.dart
+- settings_sheet.dart
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 - privacy_dialog.dart
 - generate_banner.js
 - generate_hats_missions_art.js
@@ -110,6 +135,7 @@
 - ref_path
 - generate_tower_art.js
 - Publicação Android (Google Play)
+<<<<<<< HEAD
 - analytics.dart
 - firebase_config.dart
 - bridge_web.dart
@@ -120,6 +146,9 @@
 - sound_native.dart
 - web_url_web.dart
 - AnalyticsBackend
+=======
+- TowerController
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ## God Nodes (most connected - your core abstractions)
 1. `state()` - 15 edges
@@ -152,7 +181,11 @@
 - **CI pipeline: Flutter build with test bridge feeding Playwright e2e** — _github_workflows_ci_flutter_job, _github_workflows_ci_web_test_artifact, _github_workflows_ci_e2e_job, readme_test_bridge [EXTRACTED 1.00]
 - **Difficulty design principles** — readme_solver_always_playable, readme_sawtooth_difficulty, readme_invisible_adjustment, readme_deterministic_levels, readme_level_simulator [EXTRACTED 1.00]
 
+<<<<<<< HEAD
 ## Communities (111 total, 16 thin omitted)
+=======
+## Communities (102 total, 18 thin omitted)
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ### Community 0 - "Efeitos visuais e partículas"
 Cohesion: 0.04
@@ -163,8 +196,13 @@ Cohesion: 0.04
 Nodes (39): activeDrag, _announce, _announcePending, _avgCell, backgroundColor, boardRect, boardView, _celebrate (+31 more)
 
 ### Community 2 - "package:flutter/material.dart"
+<<<<<<< HEAD
 Cohesion: 0.12
 Nodes (10): build, createState, _openPrivacy, services, showModalBottomSheet, showSettings, showModalBottomSheet, showStats (+2 more)
+=======
+Cohesion: 0.11
+Nodes (14): showModalBottomSheet, showStats, store, tiles, build, createState, _cycleMood, _equip (+6 more)
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ### Community 3 - "Tela de partida e cartões"
 Cohesion: 0.03
@@ -196,7 +234,11 @@ Nodes (24): accent, accentDeep, appTitle, backgroundGradient, bgBottom, bgTop, b
 
 ### Community 10 - "Menu: caminho de fases"
 Cohesion: 0.06
+<<<<<<< HEAD
 Nodes (30): badge, _blocks, build, _card, child, _clock, color, compact (+22 more)
+=======
+Nodes (29): badge, _blocks, build, _card, child, _clock, color, compact (+21 more)
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ### Community 11 - "package:flutter_test/flutter_test.dart"
 Cohesion: 0.16
@@ -212,7 +254,7 @@ Nodes (19): _appear, _appearDelay, _center, _dragging, _finger, _grow, layout, _
 
 ### Community 14 - "Botões e widgets"
 Cohesion: 0.06
-Nodes (33): animate, badge, big, _body, build, _c, _capi, child (+25 more)
+Nodes (34): animate, badge, big, _body, build, _c, _capi, CardPanel (+26 more)
 
 ### Community 15 - "Arte dos blocos"
 Cohesion: 0.08
@@ -320,11 +362,19 @@ Nodes (10): board, done, needLines, piece, retry, say, steps, target (+2 more)
 
 ### Community 51 - "root.dart"
 Cohesion: 0.15
+<<<<<<< HEAD
 Nodes (7): AppServices, _advance, build, _challengeOpen, createState, initState, services
 
 ### Community 52 - "ad_config.dart"
 Cohesion: 0.15
 Nodes (10): AdConfig, enabled, forceTestAds, interstitial, prodInterstitial, prodRewarded, rewarded, testInterstitial (+2 more)
+=======
+Nodes (6): _advance, build, _challengeOpen, createState, initState, services
+
+### Community 52 - "ad_config.dart"
+Cohesion: 0.14
+Nodes (10): AdConfig, prodAndroidInterstitial, prodAndroidRewarded, prodIosInterstitial, prodIosRewarded, testAndroidInterstitial, testAndroidRewarded, testIosInterstitial (+2 more)
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ### Community 53 - "scene.dart"
 Cohesion: 0.02
@@ -404,7 +454,7 @@ Nodes (10): cell, delay, from, _heart, _life, render, _t, to (+2 more)
 
 ### Community 72 - "tower_controller.dart"
 Cohesion: 0.04
-Nodes (47): baseSize, bestHeight, blockDz, blocks, cameraZ, colorIndex, combo, currentDx (+39 more)
+Nodes (43): baseSize, bestHeight, blockDz, blocks, cameraZ, colorIndex, combo, currentDx (+35 more)
 
 ### Community 73 - "generate_blitz_duel_art.js"
 Cohesion: 0.25
@@ -431,8 +481,8 @@ Cohesion: 0.13
 Nodes (12): build, controller, _drawFloorLabel, _drawIsoBox, _drawMiniCapi, paint, shouldRepaint, size (+4 more)
 
 ### Community 79 - "daily_missions_dialog.dart"
-Cohesion: 0.17
-Nodes (8): build, _buildMissionCard, _claimChest, _claimMission, createState, services, show, _today
+Cohesion: 0.13
+Nodes (9): build, _buildMissionCard, _claimChest, _claimMission, createState, services, show, _today (+1 more)
 
 ### Community 80 - "State"
 Cohesion: 0.10
@@ -454,6 +504,7 @@ Nodes (8): BlitzIcon, BlitzIconPainter, build, DuelIcon, DuelIconPainter, paint,
 Cohesion: 0.23
 Nodes (12): { chromium }, composeAndSave(), dragObraPiece(), dragTrayPiece(), fs, main(), openWithState(), path (+4 more)
 
+<<<<<<< HEAD
 ### Community 86 - "AdMob: como ativar os anúncios reais"
 Cohesion: 0.33
 Nodes (5): 1. Conta e blocos de anúncio (pode ser feito já), 2. Testar no celular (anúncios de teste), 3. Depois que o app for aprovado na Play Store, 4. Play Console, no envio da versão com anúncios (1.1.0), AdMob: como ativar os anúncios reais
@@ -461,6 +512,11 @@ Nodes (5): 1. Conta e blocos de anúncio (pode ser feito já), 2. Testar no celu
 ### Community 87 - "analytics_firebase.dart"
 Cohesion: 0.17
 Nodes (5): _analytics, createFirebaseBackend, log, setEnabled, createFirebaseBackend
+=======
+### Community 86 - "web_url_web.dart"
+Cohesion: 0.40
+Nodes (3): clearUrlQuery, openExternalUrl, path
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ### Community 88 - "Respostas Sugeridas para os Formulários da Google Play Console — CapiBlocks"
 Cohesion: 0.17
@@ -470,9 +526,15 @@ Nodes (11): 1. Segurança dos Dados (Data Safety), 2. Classificação de Conteú
 Cohesion: 0.17
 Nodes (11): 1. Dados Básicos da Ficha, 2. Descrição Completa, 3. O que Destacar e o que Evitar, Categoria e Classificação, Contato de Suporte na Loja, Descrição Curta, Nome do Aplicativo, ✅ O que foi destacado: (+3 more)
 
+<<<<<<< HEAD
 ### Community 91 - "blueprint_test.dart"
 Cohesion: 0.33
 Nodes (3): covered, expectSolved, main
+=======
+### Community 91 - "settings_sheet.dart"
+Cohesion: 0.20
+Nodes (7): AppServices, build, createState, _openPrivacy, services, showModalBottomSheet, showSettings
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ### Community 92 - "privacy_dialog.dart"
 Cohesion: 0.20
@@ -502,6 +564,7 @@ Nodes (6): artDir, { execSync }, fs, jobs, path, towerDir
 Cohesion: 0.33
 Nodes (5): Build no seu computador (opcional), Chave de envio (upload key), Identificador do app, Publicação Android (Google Play), Versão
 
+<<<<<<< HEAD
 ### Community 99 - "analytics.dart"
 Cohesion: 0.17
 Nodes (8): active, Analytics, _backend, event, log, setEnabled, start, use
@@ -538,10 +601,21 @@ Nodes (3): AnalyticsBackend, _FirebaseBackend, _Recorder
 - **1319 isolated node(s):** `@types/node`, `typescript`, `XCTest`, `AdConfig`, `forceTestAds` (+1314 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1566 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+=======
+### Community 99 - "TowerController"
+Cohesion: 0.50
+Nodes (4): place, reset, TowerBlock, TowerController
+
+## Knowledge Gaps
+- **1263 isolated node(s):** `@types/node`, `typescript`, `XCTest`, `AdConfig`, `useTestAds` (+1258 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1486 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+<<<<<<< HEAD
 - **Why does `ProgressStore` connect `package:flutter_test/flutter_test.dart` to `Tela de partida e cartões`, `Progresso salvo e estatísticas`, `Controlador do jogo`, `tower_controller.dart`, `main.dart`, `Política de anúncios`, `Ponte de testes`, `feedback.dart`, `tower_test.dart`?**
   _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **What connects `@types/node`, `typescript`, `XCTest` to the rest of the system?**
@@ -556,3 +630,19 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Should `package:flutter/material.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.12418300653594772 - nodes in this community are weakly interconnected._
+=======
+- **Why does `ProgressStore` connect `simulate.dart` to `Tela de partida e cartões`, `Progresso salvo e estatísticas`, `Controlador do jogo`, `tower_controller.dart`, `main.dart`, `Política de anúncios`, `Ponte de testes`, `feedback.dart`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **What connects `@types/node`, `typescript`, `XCTest` to the rest of the system?**
+  _1263 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Efeitos visuais e partículas` be split into smaller, more focused modules?**
+  _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._
+- **Why does `CapiTool` connect `tool_painter.dart` to `Tela de partida e cartões`, `Progresso salvo e estatísticas`, `Controlador do jogo`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Should `Cena Flame do jogo` be split into smaller, more focused modules?**
+  _Cohesion score 0.04081632653061224 - nodes in this community are weakly interconnected._
+- **Why does `GameFeedback` connect `simulate.dart` to `tower_controller.dart`, `main.dart`, `feedback.dart`, `Controlador do jogo`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
+- **Should `package:flutter/material.dart` be split into smaller, more focused modules?**
+  _Cohesion score 0.11052631578947368 - nodes in this community are weakly interconnected._
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))

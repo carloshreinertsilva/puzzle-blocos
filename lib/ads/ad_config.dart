@@ -16,8 +16,8 @@ abstract final class AdConfig {
 
   // Real ad units from the AdMob console (the app ID goes in
   // android/app/src/main/AndroidManifest.xml).
-  static const prodRewarded = '';
-  static const prodInterstitial = '';
+  static const prodRewarded = 'ca-app-pub-2477171262502738/4877674077';
+  static const prodInterstitial = 'ca-app-pub-2477171262502738/8764948192';
 
   static bool get enabled =>
       useTestAds || (prodRewarded.isNotEmpty && prodInterstitial.isNotEmpty);

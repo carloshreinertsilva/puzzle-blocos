@@ -26,11 +26,10 @@
             </intent-filter>
         </activity>
 
-        <!-- Google AdMob app ID. This is Google's sample ID (test ads only);
-             swap in the real one from the AdMob console before release. -->
+        <!-- Google AdMob app ID. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-2477171262502738~3756164094"/>
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

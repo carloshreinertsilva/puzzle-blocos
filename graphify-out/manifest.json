@@ -90,9 +90,15 @@
     "semantic_hash": "45e76f133766029100fe937f035d33fe"
   },
   "lib/ads/ad_service.dart": {
+<<<<<<< HEAD
     "mtime": 1793297868.6774666,
     "seen": 1793298157.9186194,
     "ast_hash": "4ccada00b869ac21d0459ee70b739137",
+=======
+    "mtime": 1793113650.4137945,
+    "seen": 1793114113.1522732,
+    "ast_hash": "1669b39827d7ddac1bdce5aa423e1ca1",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "lib/core/board.dart": {
@@ -150,9 +156,15 @@
     "semantic_hash": ""
   },
   "lib/game/game_controller.dart": {
+<<<<<<< HEAD
     "mtime": 1793297868.6768467,
     "seen": 1793298157.9186635,
     "ast_hash": "c1189ca68c57490df25a2e114b856a62",
+=======
+    "mtime": 1793113160.366089,
+    "seen": 1793114113.1523,
+    "ast_hash": "1f9a08ede4af10c2474a27cfb22e3e2c",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "lib/game/puzzle_game.dart": {
@@ -168,6 +180,7 @@
     "semantic_hash": ""
   },
   "lib/main.dart": {
+<<<<<<< HEAD
     "mtime": 1793297854.1856668,
     "seen": 1793298157.918681,
     "ast_hash": "a7835d9429474ad8eb80f027ac061b54",
@@ -189,6 +202,29 @@
     "mtime": 1793298078.606578,
     "seen": 1793298157.9187138,
     "ast_hash": "2e797fc0f2c8765c9b6714d52a1c525b",
+=======
+    "mtime": 1793113689.8874242,
+    "seen": 1793114113.1523118,
+    "ast_hash": "b63cfd704929a38807cf366d5e23f0c8",
+    "semantic_hash": ""
+  },
+  "lib/screens/game_screen.dart": {
+    "mtime": 1793113655.8501184,
+    "seen": 1793114113.1523147,
+    "ast_hash": "c7294e320f3e05ad68da47ed9b577add",
+    "semantic_hash": ""
+  },
+  "lib/screens/home_screen.dart": {
+    "mtime": 1793113160.370089,
+    "seen": 1793114113.152316,
+    "ast_hash": "6b4e739b4ae63d30d4262cadc55db60e",
+    "semantic_hash": ""
+  },
+  "lib/screens/settings_sheet.dart": {
+    "mtime": 1793113689.8870876,
+    "seen": 1793114113.1523206,
+    "ast_hash": "9fd1f23e6e33c1933fa1eec21c7967fd",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "lib/screens/stats_sheet.dart": {
@@ -204,9 +240,15 @@
     "semantic_hash": ""
   },
   "lib/services/progress_store.dart": {
+<<<<<<< HEAD
     "mtime": 1793297854.1845253,
     "seen": 1793298157.9187436,
     "ast_hash": "487e0bef846f6c98da61acf7477fb077",
+=======
+    "mtime": 1793113712.350122,
+    "seen": 1793114113.1523297,
+    "ast_hash": "7f5a522537fe8b4a9e455947670a619d",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "lib/testing/bridge_stub.dart": {
@@ -312,6 +354,7 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
+<<<<<<< HEAD
     "mtime": 1793120856.0883355,
     "seen": 1793120913.2216938,
     "ast_hash": "0f0d0f838036e1ef17fb582be6ec0792",
@@ -321,6 +364,17 @@
     "mtime": 1793298106.540773,
     "seen": 1793298157.9188411,
     "ast_hash": "a9dc2c4b2969240e7b2771b93f4f1b34",
+=======
+    "mtime": 1793113160.1580892,
+    "seen": 1793114113.1524484,
+    "ast_hash": "c02c96467783e3760c7fe18ad5df57a0",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1793113160.162089,
+    "seen": 1793114113.152454,
+    "ast_hash": "a1525fc24fb7743171c9fc6f9ffc6005",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "analysis_options.yaml": {
@@ -336,9 +390,15 @@
     "semantic_hash": "e175e436acacf76c814d83532d0b662c"
   },
   "pubspec.yaml": {
+<<<<<<< HEAD
     "mtime": 1793297819.8505626,
     "seen": 1793298157.918854,
     "ast_hash": "58284adf63ea2cabac7d9d7a23a9bee2",
+=======
+    "mtime": 1793113689.8994672,
+    "seen": 1793114113.1524632,
+    "ast_hash": "5bcb1a1df5ff5253f9dbbaf474daadc7",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "web/index.html": {
@@ -618,9 +678,15 @@
     "semantic_hash": ""
   },
   "lib/tower/tower_controller.dart": {
+<<<<<<< HEAD
     "mtime": 1793297882.0355475,
     "seen": 1793298157.918765,
     "ast_hash": "f6e6e42c342963a2bf5bd11bfff10f1c",
+=======
+    "mtime": 1793113160.370089,
+    "seen": 1793114113.152343,
+    "ast_hash": "ad20c34ef1e7b6ce0e7c819636ed3a03",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "lib/ui/blitz_duel_painter.dart": {
@@ -780,6 +846,7 @@
     "semantic_hash": ""
   },
   "lib/ads/ad_config.dart": {
+<<<<<<< HEAD
     "mtime": 1793120315.410729,
     "seen": 1793120913.2211177,
     "ast_hash": "09c6cde603363238ae27e5be09beeadb",
@@ -795,6 +862,23 @@
     "mtime": 1793120448.5401254,
     "seen": 1793120913.2216275,
     "ast_hash": "70ca0ee14e48524cc7ed6176fedf5359",
+=======
+    "mtime": 1793113160.366089,
+    "seen": 1793114113.1522696,
+    "ast_hash": "a5043418f529129596ebecc7904bb6fb",
+    "semantic_hash": ""
+  },
+  "lib/ui/privacy_dialog.dart": {
+    "mtime": 1793113689.8878152,
+    "seen": 1793114113.1523542,
+    "ast_hash": "4e309a96c66219e57ec1b5b5707a06bf",
+    "semantic_hash": ""
+  },
+  "test/ads_test.dart": {
+    "mtime": 1793113759.4621246,
+    "seen": 1793114113.152367,
+    "ast_hash": "e8aec18d3b30b10abb1a3097e6729e33",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "tool/generate_banner.js": {
@@ -822,9 +906,15 @@
     "semantic_hash": ""
   },
   "HISTORICO_DESENVOLVIMENTO.md": {
+<<<<<<< HEAD
     "mtime": 1793298106.5529718,
     "seen": 1793298157.9188395,
     "ast_hash": "17ac37c49c2a6753396d9dbb94793c28",
+=======
+    "mtime": 1793113759.4609663,
+    "seen": 1793114113.1524515,
+    "ast_hash": "b566ea13ff1986383e86f69aba0d09c4",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   },
   "docs/loja/formularios-play.md": {
@@ -846,6 +936,7 @@
     "semantic_hash": ""
   },
   "web/privacidade/index.html": {
+<<<<<<< HEAD
     "mtime": 1793298070.9855068,
     "seen": 1793298157.9188569,
     "ast_hash": "d6343e508aaaf7a7eddb7292f2e61d4d",
@@ -909,6 +1000,11 @@
     "mtime": 1793298100.1345792,
     "seen": 1793298157.9188457,
     "ast_hash": "bc3220a0ed6863d5c8b041f652accf5c",
+=======
+    "mtime": 1793113160.374089,
+    "seen": 1793114113.1524658,
+    "ast_hash": "f2246b604bc82e54822412735b3ce799",
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
     "semantic_hash": ""
   }
 }

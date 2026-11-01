@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+<<<<<<< HEAD
 import 'package:puzzle_blocos/ads/ad_config.dart';
 import 'package:puzzle_blocos/ads/ad_policy.dart';
 import 'package:puzzle_blocos/ads/ad_service.dart';
@@ -17,6 +18,9 @@ class _NoFillAds extends NoAdService {
     return false;
   }
 }
+=======
+import 'package:puzzle_blocos/ads/ad_service.dart';
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 
 void main() {
   testWidgets('release builds without an ad network show no ads', (
@@ -32,6 +36,7 @@ void main() {
     await tester.pump();
     expect(find.textContaining('Anúncio'), findsNothing);
   });
+<<<<<<< HEAD
 
   testWidgets('an interstitial that did not show leaves the clock alone', (
     tester,
@@ -63,4 +68,6 @@ void main() {
     // Tests run on the desktop VM: no AdMob, the app picks another service.
     expect(createAdMobService(), isNull);
   });
+=======
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 }

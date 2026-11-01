@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 import 'dart:async';
 
+=======
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -30,6 +33,7 @@ Future<void> main() async {
   }
   final feedback = GameFeedback(store);
   feedback.preload();
+<<<<<<< HEAD
   // AdMob on Android (test ads in debug); browser tests and web debug get
   // the placeholder; anything else shows no ads at all.
   final ads = AdCoordinator(
@@ -42,6 +46,15 @@ Future<void> main() async {
   runApp(App(services: AppServices(store, feedback, ads)));
   unawaited(ads.start());
   unawaited(Analytics.start(enabled: store.analyticsOn));
+=======
+  // No real ad network yet: release builds show no ads (never the test
+  // placeholder).
+  final ads = AdCoordinator(
+    kDebugMode || kTestBridge ? DebugAdService() : NoAdService(),
+    store,
+  );
+  runApp(App(services: AppServices(store, feedback, ads)));
+>>>>>>> fba42f5 (v1.0.1: sem anúncios de teste nem nuvem simulada na versão publicada (#18))
 }
 
 class AppServices {
