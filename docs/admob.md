@@ -1,8 +1,34 @@
 # AdMob: como ativar os anúncios reais
 
-O código do AdMob já está no app (`lib/ads/admob_service.dart`). Hoje ele usa
-só os **anúncios de teste do Google**. Para ligar os anúncios reais, siga os
-passos abaixo, nesta ordem.
+O código do AdMob está no app (`lib/ads/admob_service.dart`) e, desde a
+v1.1.0, com os IDs reais:
+
+| O quê | ID |
+|---|---|
+| App | `ca-app-pub-2477171262502738~3756164094` (`AndroidManifest.xml`) |
+| Premiado ("Continuar" e ferramentas) | `ca-app-pub-2477171262502738/4877674077` |
+| Intersticial (entre fases) | `ca-app-pub-2477171262502738/8764948192` |
+
+Linha do `app-ads.txt` (em `https://www.chstech.dev.br/app-ads.txt`):
+
+```
+google.com, pub-2477171262502738, DIRECT, f08c47fec0942fa0
+```
+
+## Lista para publicar a v1.1.0
+
+1. A v1.0.2 aprovada na Play Store (não envie a 1.1.0 enquanto a 1.0.2
+   estiver em análise: a análise recomeçaria).
+2. No AdMob: app vinculado à loja, mensagem de consentimento (GDPR)
+   publicada e o `app-ads.txt` acima publicado no site.
+3. Testar no celular o APK `capiblocks-apk-teste` (anúncios de teste) da
+   última execução do CI da `main`.
+4. Baixar o `capiblocks-aab` (1.1.0, versionCode 4) da mesma execução e
+   enviar para o Teste interno; conferir no celular; promover para Produção.
+5. Na mesma submissão, atualizar a Play Console (seção 4 abaixo e
+   `docs/estatisticas.md`, se o Firebase estiver ligado).
+
+O passo a passo completo, desde a criação da conta, segue abaixo.
 
 ## 1. Conta e blocos de anúncio (pode ser feito já)
 
