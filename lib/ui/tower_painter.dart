@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../tower/tower_controller.dart';
 import '../village/iso.dart';
+import 'capi.dart';
 
 /// Rainbow/block color palette for the tower blocks.
 const towerPalette = [
@@ -125,184 +126,24 @@ class TowerWorldPainter extends CustomPainter {
     tp.paint(canvas, pt - Offset(tp.width / 2, tp.height / 2));
   }
 
+  /// The same Capi as everywhere else, small, standing on the top block.
   void _drawMiniCapi(Canvas canvas, Offset center, int combo) {
+    const size = 38.0;
     canvas.save();
-    canvas.translate(center.dx, center.dy - 16);
+    canvas.translate(center.dx - size / 2, center.dy - 4 - size * 0.95);
+    CapiPainter(
+      mood: combo > 0 ? CapiMood.cheer : CapiMood.happy,
+      t: 0,
+      hat: CapiHat.fromId(controller.store.equippedHat),
+    ).paint(canvas, const Size.square(size));
+    canvas.restore();
 
-    // Little body
-    final bodyPaint = Paint()..color = const Color(0xFFA06030);
-    canvas.drawOval(
-      Rect.fromCenter(center: const Offset(0, 4), width: 22, height: 16),
-      bodyPaint,
-    );
-
-    // Head
-    canvas.drawCircle(const Offset(0, -4), 10, bodyPaint);
-
-    // Snout
-    final snoutPaint = Paint()..color = const Color(0xFFC4824D);
-    canvas.drawOval(
-      Rect.fromCenter(center: const Offset(0, -2), width: 12, height: 8),
-      snoutPaint,
-    );
-
-    // Hat according to equipped hat
-    final hat = CapiHat.fromId(controller.store.equippedHat);
-    switch (hat) {
-      case CapiHat.helmet:
-        final helmetPaint = Paint()..color = const Color(0xFFFFD43B);
-        final rimPaint = Paint()
-          ..color = const Color(0xFFFCC419)
-          ..strokeWidth = 3
-          ..style = PaintingStyle.stroke;
-        final helmetPath = Path()
-          ..moveTo(-11, -8)
-          ..quadraticBezierTo(0, -20, 11, -8)
-          ..close();
-        canvas.drawPath(helmetPath, helmetPaint);
-        canvas.drawLine(const Offset(-13, -8), const Offset(13, -8), rimPaint);
-      case CapiHat.crown:
-        final crownPath = Path()
-          ..moveTo(-10, -8)
-          ..lineTo(-11, -17)
-          ..lineTo(-5, -13)
-          ..lineTo(0, -21)
-          ..lineTo(5, -13)
-          ..lineTo(11, -17)
-          ..lineTo(10, -8)
-          ..close();
-        canvas.drawPath(crownPath, Paint()..color = const Color(0xFFFDE047));
-        canvas.drawCircle(
-          const Offset(0, -21),
-          2.2,
-          Paint()..color = const Color(0xFF38BDF8),
-        );
-      case CapiHat.party:
-        final partyPath = Path()
-          ..moveTo(-8, -8)
-          ..lineTo(0, -22)
-          ..lineTo(8, -8)
-          ..close();
-        canvas.drawPath(partyPath, Paint()..color = const Color(0xFFEC4899));
-        canvas.drawCircle(
-          const Offset(0, -23),
-          2.5,
-          Paint()..color = const Color(0xFFFDE047),
-        );
-      case CapiHat.chef:
-        final chefPath = Path()
-          ..moveTo(-9, -8)
-          ..cubicTo(-13, -16, -6, -21, 0, -20)
-          ..cubicTo(6, -21, 13, -16, 9, -8)
-          ..close();
-        canvas.drawPath(chefPath, Paint()..color = Colors.white);
-      case CapiHat.pirate:
-        final tricorn = Path()
-          ..moveTo(-13, -7)
-          ..quadraticBezierTo(0, -16, 13, -7)
-          ..lineTo(10, -5)
-          ..quadraticBezierTo(0, -11, -10, -5)
-          ..close();
-        canvas.drawPath(tricorn, Paint()..color = const Color(0xFF0F172A));
-      case CapiHat.straw:
-        final brim = Rect.fromCenter(
-          center: const Offset(0, -7),
-          width: 26,
-          height: 4,
-        );
-        canvas.drawOval(brim, Paint()..color = const Color(0xFFFDE68A));
-        final dome = Rect.fromCenter(
-          center: const Offset(0, -11),
-          width: 14,
-          height: 8,
-        );
-        canvas.drawOval(dome, Paint()..color = const Color(0xFFD97706));
-      case CapiHat.wizard:
-        final cone = Path()
-          ..moveTo(-9, -8)
-          ..lineTo(6, -24)
-          ..lineTo(9, -8)
-          ..close();
-        canvas.drawPath(cone, Paint()..color = const Color(0xFF6D28D9));
-        canvas.drawCircle(
-          const Offset(2, -18),
-          1.5,
-          Paint()..color = const Color(0xFFFDE047),
-        );
-      case CapiHat.vip:
-        canvas.drawRect(
-          const Rect.fromLTWH(-7, -21, 14, 13),
-          Paint()..color = const Color(0xFF15172A),
-        );
-        canvas.drawRect(
-          const Rect.fromLTWH(-7, -13, 14, 2.5),
-          Paint()..color = const Color(0xFFFFC94D),
-        );
-        canvas.drawLine(
-          const Offset(-12, -8),
-          const Offset(12, -8),
-          Paint()
-            ..color = const Color(0xFF15172A)
-            ..strokeWidth = 3,
-        );
-      case CapiHat.fundador:
-        final dome = Path()
-          ..moveTo(-11, -8)
-          ..quadraticBezierTo(0, -20, 11, -8)
-          ..close();
-        canvas.drawPath(dome, Paint()..color = const Color(0xFFFFD84D));
-        canvas.drawLine(
-          const Offset(-13, -8),
-          const Offset(13, -8),
-          Paint()
-            ..color = const Color(0xFFC98A00)
-            ..strokeWidth = 3,
-        );
-        canvas.drawCircle(
-          const Offset(0, -12),
-          2,
-          Paint()..color = Colors.white,
-        );
-    }
-
-    // Cheering eyes if combo > 0
-    final eyePaint = Paint()
-      ..color = const Color(0xFF1E293B)
-      ..strokeWidth = 1.6
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    if (combo > 0) {
-      // Arcs
-      canvas.drawArc(
-        Rect.fromCircle(center: const Offset(-4, -5), radius: 2.5),
-        pi,
-        pi,
-        false,
-        eyePaint,
-      );
-      canvas.drawArc(
-        Rect.fromCircle(center: const Offset(4, -5), radius: 2.5),
-        pi,
-        pi,
-        false,
-        eyePaint,
-      );
-    } else {
-      // Dots
-      final dotPaint = Paint()..color = const Color(0xFF1E293B);
-      canvas.drawCircle(const Offset(-4, -5), 1.2, dotPaint);
-      canvas.drawCircle(const Offset(4, -5), 1.2, dotPaint);
-    }
-
-    // Sparkles if combo >= 2
+    // Sparkles on a combo of 2 or more.
     if (combo >= 2) {
       final starPaint = Paint()..color = const Color(0xFFFDE047);
-      canvas.drawCircle(const Offset(-14, -16), 2.5, starPaint);
-      canvas.drawCircle(const Offset(14, -18), 3.0, starPaint);
+      canvas.drawCircle(center + const Offset(-16, -34), 2.5, starPaint);
+      canvas.drawCircle(center + const Offset(16, -38), 3.0, starPaint);
     }
-
-    canvas.restore();
   }
 
   @override

@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 /// Capybara pups: trapped in blocks on the board, then free in Capi's
 /// village. Same fur colors as Capi, rounder and smaller.
 abstract final class PupPainter {
-  static const _line = Color(0xFF4A2A12);
-  static const _furTop = Color(0xFFDDA872);
-  static const _furBottom = Color(0xFFB07A47);
+  // Same soft, glossy 2.5D look as Capi (see capi.dart).
+  static const _line = Color(0xAA4A2A12);
+  static const _furLight = Color(0xFFF6D3A6);
+  static const _furMid = Color(0xFFD9A06A);
+  static const _furDark = Color(0xFFA66C3C);
   static const _snout = Color(0xFF8E5A30);
   static const _ink = Color(0xFF2A1A0E);
 
@@ -22,11 +24,22 @@ abstract final class PupPainter {
     Color(0xFFFF8A3D),
   ];
 
+  /// Fur lit from the top left, so each shape reads as a soft ball.
   static Paint _fur(Rect r) => Paint()
-    ..shader = ui.Gradient.linear(r.topCenter, r.bottomCenter, [
-      _furTop,
-      _furBottom,
-    ]);
+    ..shader = ui.Gradient.radial(
+      r.topLeft + Offset(r.width * 0.36, r.height * 0.28),
+      r.longestSide * 0.85,
+      const [_furLight, _furMid, _furDark],
+      const [0.0, 0.55, 1.0],
+    );
+
+  /// A blurred light spot: shine on the fur, blush on the cheeks.
+  static void _glow(Canvas canvas, Rect r, Color color) => canvas.drawOval(
+    r,
+    Paint()
+      ..color = color
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, r.shortestSide * 0.35),
+  );
 
   static Paint _outline(double w) => Paint()
     ..color = _line
@@ -55,6 +68,15 @@ abstract final class PupPainter {
     );
     canvas.drawRRect(head, _fur(head.outerRect));
     canvas.drawRRect(head, _outline(stroke));
+    _glow(
+      canvas,
+      Rect.fromCenter(
+        center: c + Offset(-s * 0.12, -s * 0.24),
+        width: s * 0.3,
+        height: s * 0.12,
+      ),
+      const Color(0x66FFFFFF),
+    );
     // Muzzle, like Capi's: a broad band with the nostrils on top and a
     // little buck-toothed smile.
     final snout = RRect.fromRectAndRadius(
@@ -65,7 +87,15 @@ abstract final class PupPainter {
       ),
       Radius.circular(s * 0.15),
     );
-    canvas.drawRRect(snout, Paint()..color = const Color(0xFFB98250));
+    canvas.drawRRect(
+      snout,
+      Paint()
+        ..shader = ui.Gradient.linear(
+          snout.outerRect.topCenter,
+          snout.outerRect.bottomCenter,
+          const [Color(0xFFF3CC9C), Color(0xFFC98E58)],
+        ),
+    );
     for (final side in [-1.0, 1.0]) {
       canvas.drawOval(
         Rect.fromCenter(
@@ -112,18 +142,24 @@ abstract final class PupPainter {
           Paint()..color = _ink,
         );
         canvas.drawCircle(
-          eye + Offset(-s * 0.015, -s * 0.025),
-          s * 0.022,
+          eye + Offset(-s * 0.017, -s * 0.026),
+          s * 0.026,
           Paint()..color = Colors.white,
         );
+        canvas.drawCircle(
+          eye + Offset(s * 0.02, s * 0.025),
+          s * 0.011,
+          Paint()..color = Colors.white70,
+        );
       }
-      canvas.drawOval(
+      _glow(
+        canvas,
         Rect.fromCenter(
           center: c + Offset(side * s * 0.27, s * 0.05),
-          width: s * 0.12,
-          height: s * 0.07,
+          width: s * 0.14,
+          height: s * 0.08,
         ),
-        Paint()..color = const Color(0x66FF7E9E),
+        const Color(0x99FF8A9A),
       );
     }
     if (bow != null) {
@@ -165,7 +201,13 @@ abstract final class PupPainter {
           width: s * 0.22,
           height: s * 0.12,
         ),
-        Paint()..color = _snout,
+        _fur(
+          Rect.fromCenter(
+            center: Offset(s / 2 + side * s * 0.18, size.height - s * 0.05),
+            width: s * 0.22,
+            height: s * 0.12,
+          ),
+        ),
       );
     }
     final belly = Rect.fromCenter(
