@@ -6,6 +6,7 @@ import '../core/board.dart';
 import '../core/shapes.dart';
 import '../services/progress_store.dart';
 import '../game/game_controller.dart';
+import '../core/passe.dart';
 import '../game/obra_controller.dart';
 import '../tower/tower_controller.dart';
 import '../game/puzzle_game.dart';
@@ -103,6 +104,11 @@ class TestBridge {
         'unlockedHats': hats,
         'dailyChestAvailable': chestAvail,
         'dailyChestClaimed': chestDone,
+        if (sStore != null)
+          'passe': {
+            'nivel': PasseDoCapi.nivel(sStore, DateTime.now()),
+            'premium': PasseDoCapi.premium(sStore, DateTime.now()),
+          },
         if (dMissions != null && sStore != null)
           'missions': [
             for (final m in dMissions)
@@ -242,6 +248,12 @@ class TestBridge {
   Future<void> equipHat(String hatId) async {
     final s = store ?? controller?.store;
     if (s != null) await s.equipHat(hatId);
+  }
+
+  /// Stars as if earned by playing (they also count for the Passe do Capi).
+  Future<void> earnStars(int n) async {
+    final s = store ?? controller?.store;
+    if (s != null) await s.addStars(n);
   }
 
   Future<void> unlockHat(String hatId) async {

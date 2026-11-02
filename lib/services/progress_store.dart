@@ -1,3 +1,4 @@
+import '../core/passe.dart' show PasseDoCapi;
 import '../core/wardrobe.dart' show Slot;
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -137,7 +138,35 @@ class ProgressStore {
     if (n <= 0) return;
     await _prefs.setInt('stars', stars + n);
     await _prefs.setInt('starsEarned', starsEarned + n);
+    // Stars earned by playing are also the Passe do Capi's points.
+    final t = PasseDoCapi.temporada(DateTime.now());
+    await _prefs.setInt('passPoints_$t', passPoints(t) + n);
   }
+
+  // --- Passe do Capi (see core/passe.dart) ---
+
+  int passPoints(int temporada) => _prefs.getInt('passPoints_$temporada') ?? 0;
+
+  bool passPremium(int temporada) =>
+      _prefs.getBool('passPremium_$temporada') ?? false;
+
+  Future<void> setPassPremium(int temporada) =>
+      _prefs.setBool('passPremium_$temporada', true);
+
+  bool passClaimed(int temporada, int nivel, {required bool premium}) =>
+      _prefs.getBool(
+        'passClaim_${temporada}_${nivel}_${premium ? 'p' : 'g'}',
+      ) ??
+      false;
+
+  Future<void> markPassClaimed(
+    int temporada,
+    int nivel, {
+    required bool premium,
+  }) => _prefs.setBool(
+    'passClaim_${temporada}_${nivel}_${premium ? 'p' : 'g'}',
+    true,
+  );
 
   /// Returns false (and spends nothing) when there are not enough stars.
   Future<bool> spendStars(int n) async {

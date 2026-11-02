@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/daily_missions.dart';
+import '../core/passe.dart';
 import '../core/wardrobe.dart';
 import '../main.dart';
 import '../ads/ad_service.dart';
@@ -8,6 +9,7 @@ import '../services/progress_store.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
+import 'passe_sheet.dart';
 import 'wardrobe_dialog.dart';
 
 /// Modal dialog showing the daily 3 missions, progress tracking, and the daily chest.
@@ -255,13 +257,23 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$streak ${streak == 1 ? 'dia' : 'dias'} de sequência',
+                          '$streak ${streak == 1 ? 'dia' : 'dias'}',
+                          semanticsLabel:
+                              '$streak ${streak == 1 ? 'dia' : 'dias'} de sequência',
                           style: displayText(12, color: Colors.white),
                         ),
                       ],
                     ),
                   ),
                   const Spacer(),
+                  _PasseChip(
+                    prontas: PasseDoCapi.prontas(store, DateTime.now()),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      showPasse(context, widget.services);
+                    },
+                  ),
+                  const SizedBox(width: 6),
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pop();
@@ -638,4 +650,58 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
       ),
     );
   }
+}
+
+/// Opens the Passe do Capi; a dot shows rewards waiting.
+class _PasseChip extends StatelessWidget {
+  const _PasseChip({required this.prontas, required this.onTap});
+  final int prontas;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: prontas > 0
+        ? 'Passe do Capi, $prontas prêmios para pegar'
+        : 'Passe do Capi',
+    excludeSemantics: true,
+    onTap: onTap,
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0x33FFC94D),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0x88FFC94D)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.military_tech_rounded,
+              color: Palette.accent,
+              size: 16,
+            ),
+            const SizedBox(width: 4),
+            Text('Passe', style: displayText(12, color: Palette.accent)),
+            if (prontas > 0) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                  color: Palette.danger,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$prontas',
+                  style: displayText(10, color: Colors.white),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
 }

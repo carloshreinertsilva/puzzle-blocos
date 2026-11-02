@@ -1,3 +1,4 @@
+import '../core/passe.dart';
 import '../core/wardrobe.dart';
 import '../core/daily_missions.dart';
 import 'daily_missions_dialog.dart';
@@ -63,6 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
     await showLoja(context, widget.services);
     if (mounted) setState(() {});
   }
+
+  int _waiting(ProgressStore store, DateTime today) =>
+      DailyMissionsManager.unclaimedCount(store, today) +
+      PasseDoCapi.prontas(store, today);
 
   void _dismissCapi() {
     widget.services.feedback.click();
@@ -447,13 +452,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             RoundIconButton(
                               icon: Icons.assignment_turned_in_rounded,
                               label: 'Missões Diárias',
-                              badge:
-                                  DailyMissionsManager.unclaimedCount(
-                                        store,
-                                        today,
-                                      ) >
-                                      0
-                                  ? '${DailyMissionsManager.unclaimedCount(store, today)}'
+                              // Missions, chest and Passe rewards waiting.
+                              badge: _waiting(store, today) > 0
+                                  ? '${_waiting(store, today)}'
                                   : null,
                               onTap: _openDailyMissions,
                             ),

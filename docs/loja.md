@@ -17,6 +17,7 @@ criado.
 | `estrelas_400` | 400 estrelas | 400 estrelas para a vila, ferramentas e chapéus. | R$ 9,90 |
 | `estrelas_1000` | 1.000 estrelas | 1.000 estrelas para a vila, ferramentas e chapéus. | R$ 19,90 |
 | `kit_ferramentas` | Kit de ferramentas | 3 martelos, 3 pás e 3 trocas de peças. | R$ 4,90 |
+| `passe_capi` | Passe do Capi premium | Trilha premium da temporada: 4 itens lendários, 140 estrelas e ferramentas. | R$ 9,90 |
 
 - Os preços em outros países podem ser convertidos automaticamente pela
   Play Console.
@@ -25,6 +26,10 @@ criado.
 - Remover anúncios e o Pacote Inicial são **compras únicas**: voltam com
   "Restaurar compras" num celular novo. Estrelas e o kit podem ser
   comprados várias vezes.
+- O Passe do Capi premium vale para a **temporada em que foi comprado**
+  (30 dias). Na Play Console ele é um produto comum, como as estrelas: o app
+  consome a compra, e o jogador pode comprar de novo na temporada seguinte.
+  Regras e prêmios: `lib/core/passe.dart` e `docs/passe.md`.
 - O Pacote Inicial aparece só nos **3 primeiros dias** desde que o jogador
   abriu a versão com a loja, e só para quem ainda vê anúncios.
 

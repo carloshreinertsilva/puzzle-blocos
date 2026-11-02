@@ -152,7 +152,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.2.0 · CHS CONSULTORIA LTDA',
+                'CapiBlocks v1.3.0 · CHS CONSULTORIA LTDA',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],

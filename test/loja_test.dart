@@ -22,6 +22,7 @@ void main() {
       'estrelas_400',
       'estrelas_1000',
       'kit_ferramentas',
+      'passe_capi',
     ]);
   });
 
