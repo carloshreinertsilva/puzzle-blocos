@@ -12,6 +12,7 @@ import 'services/analytics.dart';
 import 'services/feedback.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
+import 'ui/abertura.dart';
 import 'ui/palette.dart';
 import 'ui/typography.dart';
 
@@ -22,6 +23,20 @@ Future<void> main() async {
     SemanticsBinding.instance.ensureSemantics();
     TestBridge.instance.install();
   }
+  if (kIsWeb) {
+    // The page's own loading screen (web/index.html) covers the start.
+    final services = await _iniciar();
+    runApp(App(services: services));
+    _depoisDeAbrir(services);
+  } else {
+    // On the phone the opening screen shows at once and covers the loading,
+    // and a failure there becomes a message instead of a frozen screen.
+    runApp(const Inicio());
+  }
+}
+
+/// Loads the saved progress and sets up sounds and ads.
+Future<AppServices> _iniciar() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final store = await ProgressStore.load();
   if (kTestBridge) {
@@ -39,9 +54,65 @@ Future<void> main() async {
               (kDebugMode ? DebugAdService() : NoAdService()),
     store,
   );
-  runApp(App(services: AppServices(store, feedback, ads)));
-  unawaited(ads.start());
-  unawaited(Analytics.start(enabled: store.analyticsOn));
+  return AppServices(store, feedback, ads);
+}
+
+void _depoisDeAbrir(AppServices services) {
+  unawaited(services.ads.start());
+  unawaited(Analytics.start(enabled: services.store.analyticsOn));
+}
+
+/// Shows the opening screen ([Abertura]) while the game loads, for at least
+/// a moment so it doesn't just flash, then fades into the game.
+class Inicio extends StatefulWidget {
+  const Inicio({super.key, this.carregar = _iniciar});
+
+  final Future<AppServices> Function() carregar;
+  static const tempoMinimo = Duration(milliseconds: 900);
+
+  @override
+  State<Inicio> createState() => _InicioState();
+}
+
+class _InicioState extends State<Inicio> {
+  AppServices? _services;
+  bool _erro = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    setState(() => _erro = false);
+    try {
+      final resultado = await Future.wait([
+        widget.carregar(),
+        Future<void>.delayed(Inicio.tempoMinimo),
+      ]);
+      final services = resultado.first as AppServices;
+      if (!mounted) return;
+      setState(() => _services = services);
+      _depoisDeAbrir(services);
+    } catch (e, pilha) {
+      FlutterError.reportError(
+        FlutterErrorDetails(exception: e, stack: pilha, library: 'abertura'),
+      );
+      if (mounted) setState(() => _erro = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final services = _services;
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      child: services != null
+          ? App(services: services)
+          : Abertura(erro: _erro, onTentarDeNovo: _carregar),
+    );
+  }
 }
 
 class AppServices {

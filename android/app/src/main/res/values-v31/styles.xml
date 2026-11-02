@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: a tela de abertura do sistema, com as cores do jogo (sem
+         o círculo branco), o Capi no meio e o nome CapiBlocks embaixo. Some
+         quando o Flutter desenha a primeira tela, que continua a abertura
+         com animação (lib/ui/abertura.dart). -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@color/capi_fundo</item>
+        <item name="android:windowSplashScreenBackground">@color/capi_fundo</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_capi</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/capi_fundo</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/splash_marca</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@color/capi_fundo</item>
+    </style>
+</resources>
