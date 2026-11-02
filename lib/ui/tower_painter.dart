@@ -229,6 +229,40 @@ class TowerWorldPainter extends CustomPainter {
           1.5,
           Paint()..color = const Color(0xFFFDE047),
         );
+      case CapiHat.vip:
+        canvas.drawRect(
+          const Rect.fromLTWH(-7, -21, 14, 13),
+          Paint()..color = const Color(0xFF15172A),
+        );
+        canvas.drawRect(
+          const Rect.fromLTWH(-7, -13, 14, 2.5),
+          Paint()..color = const Color(0xFFFFC94D),
+        );
+        canvas.drawLine(
+          const Offset(-12, -8),
+          const Offset(12, -8),
+          Paint()
+            ..color = const Color(0xFF15172A)
+            ..strokeWidth = 3,
+        );
+      case CapiHat.fundador:
+        final dome = Path()
+          ..moveTo(-11, -8)
+          ..quadraticBezierTo(0, -20, 11, -8)
+          ..close();
+        canvas.drawPath(dome, Paint()..color = const Color(0xFFFFD84D));
+        canvas.drawLine(
+          const Offset(-13, -8),
+          const Offset(13, -8),
+          Paint()
+            ..color = const Color(0xFFC98A00)
+            ..strokeWidth = 3,
+        );
+        canvas.drawCircle(
+          const Offset(0, -12),
+          2,
+          Paint()..color = Colors.white,
+        );
     }
 
     // Cheering eyes if combo > 0

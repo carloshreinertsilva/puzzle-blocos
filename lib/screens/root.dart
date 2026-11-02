@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../game/game_controller.dart';
 import '../game/onboarding.dart';
 import '../main.dart';
+import '../services/duelo_link.dart';
 import '../services/web_url.dart';
 import '../ui/palette.dart';
 import 'game_screen.dart';
@@ -29,11 +30,13 @@ class _RootState extends State<Root> {
   @override
   void initState() {
     super.initState();
-    final query = Uri.base.queryParameters;
-    final seed = int.tryParse(query['duelo'] ?? '');
-    if (seed == null) return;
-    final target = int.tryParse(query['p'] ?? '') ?? 1000;
-    final mode = query['m'] == 'blitz' ? GameMode.blitz : GameMode.duel;
+    // On the web the link is the page address. (On Android a link opens
+    // the app through App.onGenerateRoute instead.)
+    final convite = DueloConvite.ler(Uri.base);
+    if (convite == null) return;
+    final seed = convite.semente;
+    final target = convite.meta;
+    final mode = convite.blitz ? GameMode.blitz : GameMode.duel;
     clearUrlQuery();
     _challengeOpen = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {

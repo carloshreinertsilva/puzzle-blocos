@@ -198,6 +198,48 @@ class ProgressStore {
   }
 
   bool get adsRemoved => _prefs.getBool('adsRemoved') ?? false;
+  Future<void> setAdsRemoved(bool v) => _prefs.setBool('adsRemoved', v);
+
+  // --- Shop ---
+
+  /// Stars bought in the shop: they go to the wallet but not to the
+  /// "stars earned" statistic.
+  Future<void> addBoughtStars(int n) async {
+    if (n <= 0) return;
+    await _prefs.setInt('stars', stars + n);
+  }
+
+  /// One-time purchases already delivered (product ids).
+  List<String> get ownedProducts => _prefs.getStringList('ownedProducts') ?? [];
+  bool owns(String productId) => ownedProducts.contains(productId);
+  Future<void> addOwnedProduct(String productId) async {
+    if (owns(productId)) return;
+    await _prefs.setStringList('ownedProducts', [...ownedProducts, productId]);
+  }
+
+  /// Store purchase ids already delivered, so a consumable delivered again
+  /// by the store (app restart, slow connection) pays only once.
+  bool purchaseDelivered(String purchaseId) =>
+      (_prefs.getStringList('deliveredPurchases') ?? []).contains(purchaseId);
+  Future<void> markPurchaseDelivered(String purchaseId) async {
+    final list = _prefs.getStringList('deliveredPurchases') ?? [];
+    if (list.contains(purchaseId)) return;
+    // Old ids are never delivered again; keep the list short.
+    final kept = list.length >= 200 ? list.sublist(list.length - 199) : list;
+    await _prefs.setStringList('deliveredPurchases', [...kept, purchaseId]);
+  }
+
+  /// When the game was first opened with the shop (the starter pack is
+  /// offered for a few days from then).
+  DateTime? get firstOpenAt {
+    final ms = _prefs.getInt('firstOpenAt');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> noteFirstOpen(DateTime now) async {
+    if (firstOpenAt != null) return;
+    await _prefs.setInt('firstOpenAt', now.millisecondsSinceEpoch);
+  }
 
   // --- Blitz & Duelo (Step 3) ---
 
@@ -350,4 +392,10 @@ class ProgressStore {
   Future<void> setDailyChestClaimed(DateTime day, bool claimed) async {
     await _prefs.setBool('chest_claimed_${dayKey(day)}', claimed);
   }
+
+  /// The bonus chest (a video for a few stars), once a day.
+  bool isBonusChestClaimed(DateTime day) =>
+      _prefs.getBool('bonus_chest_${dayKey(day)}') ?? false;
+  Future<void> setBonusChestClaimed(DateTime day) =>
+      _prefs.setBool('bonus_chest_${dayKey(day)}', true);
 }

@@ -6,6 +6,8 @@ import 'ad_policy.dart';
 
 enum RewardPlacement {
   revive,
+  doubleStars,
+  bonusChest,
   toolHammer,
   toolRotate,
   toolReroll,

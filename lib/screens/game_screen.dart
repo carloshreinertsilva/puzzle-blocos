@@ -1,12 +1,15 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
 import '../services/analytics.dart';
+import '../services/duelo_link.dart';
 import '../core/missions.dart';
 import '../game/game_controller.dart';
 import '../game/onboarding.dart';
@@ -113,7 +116,24 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  /// Whether this win's stars were already doubled with a video.
+  bool _dobrado = false;
+
+  Future<void> _dobrarEstrelas() => _guard(() async {
+    final ganhas = controller.starsGained;
+    if (_dobrado || ganhas <= 0) return;
+    final ok = await widget.services.ads.rewarded(
+      context,
+      RewardPlacement.doubleStars,
+    );
+    if (!ok || !mounted) return;
+    await widget.services.store.addStars(ganhas);
+    widget.services.feedback.praise(3);
+    setState(() => _dobrado = true);
+  });
+
   Future<void> _next() => _guard(() async {
+    _dobrado = false;
     widget.services.feedback.click();
     await widget.services.ads.betweenLevels(context, controller.level.number);
     if (_onboarding && controller.level.number >= Onboarding.railLevels) {
@@ -262,6 +282,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _retry() {
+    _dobrado = false;
     widget.services.feedback.click();
     controller.restart();
   }
@@ -271,17 +292,33 @@ class _GameScreenState extends State<GameScreen> {
     Navigator.of(context).pop();
   }
 
-  void _shareDuelLink(int score) {
+  /// On the phone: the share sheet (WhatsApp & co.). On the web: copies
+  /// the link.
+  Future<void> _shareDuelLink(int score) async {
     widget.services.feedback.click();
-    final seed =
-        controller.level.seed ??
-        (DateTime.now().millisecondsSinceEpoch % 1000000);
-    final blitz = controller.isBlitz ? '&m=blitz' : '';
-    final url = 'https://capiblocks.vercel.app/?duelo=$seed&p=$score$blitz';
-    Clipboard.setData(ClipboardData(text: url));
+    final convite = DueloConvite(
+      semente:
+          controller.level.seed ??
+          (DateTime.now().millisecondsSinceEpoch % 1000000),
+      meta: score,
+      blitz: controller.isBlitz,
+    );
+    Analytics.event('duel_share', {'mode': controller.mode.name});
+    if (!kIsWeb) {
+      try {
+        await SharePlus.instance.share(
+          ShareParams(text: convite.mensagem, subject: 'Desafio no CapiBlocks'),
+        );
+        return;
+      } catch (_) {
+        // No share sheet: copy instead.
+      }
+    }
+    await Clipboard.setData(ClipboardData(text: convite.mensagem));
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Link de duelo copiado para a área de transferência!'),
+        content: Text('Desafio copiado! Cole no WhatsApp para um amigo.'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -413,6 +450,12 @@ class _GameScreenState extends State<GameScreen> {
                 starBits: controller.starBits | controller.previousStarBits,
                 newBits: controller.starBits & ~controller.previousStarBits,
                 starsGained: controller.starsGained,
+                dobrado: _dobrado,
+                onDobrar:
+                    widget.services.ads.hasVideoAds &&
+                        controller.starsGained > 0
+                    ? _dobrarEstrelas
+                    : null,
                 replay: controller.isReplay,
                 onNext: _next,
                 onRetry: _retry,
@@ -1214,8 +1257,14 @@ class _WinCard extends StatelessWidget {
     required this.onNext,
     required this.onRetry,
     required this.onExit,
+    this.dobrado = false,
+    this.onDobrar,
   });
   final int level;
+
+  /// Watch a video to get this win's stars again (once per win).
+  final bool dobrado;
+  final VoidCallback? onDobrar;
   final int score;
 
   /// Missions done on this level so far, and the ones this win added.
@@ -1256,6 +1305,22 @@ class _WinCard extends StatelessWidget {
               : '${formatInt(score)} pontos',
           style: _bodyStyle,
         ),
+        if (onDobrar != null) ...[
+          const SizedBox(height: 10),
+          if (dobrado)
+            Text(
+              'Estrelas dobradas: +$starsGained!',
+              style: displayText(16, color: Palette.accent),
+            )
+          else
+            ChunkyButton(
+              label: 'Dobrar: +$starsGained com vídeo',
+              icon: Icons.smart_display_rounded,
+              color: Palette.good,
+              textColor: const Color(0xFF0B3D1A),
+              onTap: onDobrar,
+            ),
+        ],
         const SizedBox(height: 18),
         if (replay) ...[
           ChunkyButton(

@@ -15,6 +15,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         ".mjs": "text/javascript",
     }
 
+    def do_GET(self):
+        # Like vercel.json: /duelo is the game page (challenge links).
+        if self.path == "/duelo" or self.path.startswith("/duelo?"):
+            self.path = "/index.html"
+        super().do_GET()
+
     def end_headers(self):
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")

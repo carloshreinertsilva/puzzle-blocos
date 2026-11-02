@@ -1,8 +1,8 @@
 import 'package:web/web.dart' as web;
 
+/// Back to the plain address (`/duelo?s=…` or `/?duelo=…` become `/`).
 void clearUrlQuery() {
-  final path = web.window.location.pathname;
-  web.window.history.replaceState(null, '', path);
+  web.window.history.replaceState(null, '', '/');
 }
 
 void openExternalUrl(String url) {

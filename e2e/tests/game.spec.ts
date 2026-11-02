@@ -124,6 +124,9 @@ test('modo infinito: pontua e não tem metas', async ({ page }) => {
 
 test('estatísticas e configurações abrem a partir do menu', async ({ page }) => {
   await openApp(page, { linesCleared: 42, bestCombo: 3 });
+  // With a shop (the simulated one in these tests), the statistics live in
+  // the settings.
+  await page.getByRole('button', { name: 'Configurações' }).click();
   await page.getByRole('button', { name: 'Estatísticas' }).click();
   await expect(page.getByText('42 Linhas limpas')).toBeVisible();
   await expect(page.getByText('x3 Maior combo')).toBeVisible();

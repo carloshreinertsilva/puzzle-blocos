@@ -1,0 +1,111 @@
+import '../core/hats.dart';
+import '../services/progress_store.dart';
+
+/// What the shop sells. The ids are the product ids registered in the Play
+/// Console (Monetizar → Produtos no app); the prices there win, [precoBase]
+/// only shows while the store hasn't answered. See `docs/loja.md`.
+enum Produto {
+  removerAnuncios(
+    'remover_anuncios',
+    'Remover anúncios',
+    'Sem anúncios entre fases, para sempre. De presente: a Cartola VIP.',
+    'R\$ 12,90',
+  ),
+  pacoteInicial(
+    'pacote_inicial',
+    'Pacote Inicial',
+    'Sem anúncios entre fases + 300 estrelas + o Capacete Fundador.',
+    'R\$ 14,90',
+  ),
+  estrelas150('estrelas_150', '150 estrelas', '', 'R\$ 4,90', estrelas: 150),
+  estrelas400('estrelas_400', '400 estrelas', '', 'R\$ 9,90', estrelas: 400),
+  estrelas1000(
+    'estrelas_1000',
+    '1.000 estrelas',
+    '',
+    'R\$ 19,90',
+    estrelas: 1000,
+  ),
+  kitFerramentas(
+    'kit_ferramentas',
+    'Kit de ferramentas',
+    '3 martelos, 3 pás e 3 trocas de peças.',
+    'R\$ 4,90',
+  );
+
+  const Produto(
+    this.id,
+    this.nome,
+    this.descricao,
+    this.precoBase, {
+    this.estrelas = 0,
+  });
+
+  final String id;
+  final String nome;
+  final String descricao;
+  final String precoBase;
+
+  /// Stars in a star pack.
+  final int estrelas;
+
+  /// Star packs and the tool kit can be bought again and again; the rest
+  /// once, and come back with "Restaurar compras".
+  bool get consumivel => estrelas > 0 || this == kitFerramentas;
+
+  static Produto? porId(String id) {
+    for (final p in values) {
+      if (p.id == id) return p;
+    }
+    return null;
+  }
+}
+
+/// How long after the first opening the starter pack is offered.
+const ofertaPacoteInicial = Duration(days: 3);
+
+abstract final class Entrega {
+  /// Gives what [produto] promises. One-time products give their content
+  /// only the first time; consumables only once per store purchase
+  /// ([compraId]), however often the store reports it.
+  static Future<void> aplicar(
+    ProgressStore store,
+    Produto produto, {
+    String? compraId,
+  }) async {
+    if (produto.consumivel) {
+      if (compraId != null && store.purchaseDelivered(compraId)) return;
+      if (produto.estrelas > 0) {
+        await store.addBoughtStars(produto.estrelas);
+      } else {
+        await store.addTool(CapiTool.hammer, 3);
+        await store.addTool(CapiTool.shovel, 3);
+        await store.addTool(CapiTool.reroll, 3);
+      }
+      if (compraId != null) await store.markPurchaseDelivered(compraId);
+      return;
+    }
+    final primeiraVez = !store.owns(produto.id);
+    await store.setAdsRemoved(true);
+    switch (produto) {
+      case Produto.removerAnuncios:
+        await store.unlockHat(CapiHat.vip.id);
+      case Produto.pacoteInicial:
+        await store.unlockHat(CapiHat.fundador.id);
+        if (primeiraVez) await store.addBoughtStars(300);
+      default:
+        break;
+    }
+    await store.addOwnedProduct(produto.id);
+  }
+
+  /// The starter pack shows for the first days, for players who still see
+  /// ads and haven't bought it.
+  static bool mostraPacoteInicial(ProgressStore store, DateTime agora) {
+    final inicio = store.firstOpenAt;
+    return inicio != null &&
+        !store.adsRemoved &&
+        !store.owns(Produto.pacoteInicial.id) &&
+        agora.difference(inicio) < ofertaPacoteInicial;
+  }
+}

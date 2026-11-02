@@ -597,6 +597,59 @@ class CapiPainter extends CustomPainter {
           2.0,
           Paint()..color = const Color(0xFFFDE047),
         );
+
+      case CapiHat.vip:
+        // Black top hat with a gold band.
+        final brim = Path()
+          ..moveTo(18, 24)
+          ..quadraticBezierTo(50, 19, 82, 24)
+          ..lineTo(80, 28)
+          ..quadraticBezierTo(50, 23, 20, 28)
+          ..close();
+        _shape(canvas, brim, const Color(0xFF3B3F55), const Color(0xFF15172A));
+        final tube = Path()
+          ..addRRect(
+            RRect.fromRectAndRadius(
+              const Rect.fromLTWH(33, 1, 34, 22),
+              const Radius.circular(3),
+            ),
+          );
+        _shape(canvas, tube, const Color(0xFF3B3F55), const Color(0xFF15172A));
+        canvas.drawRect(
+          const Rect.fromLTWH(33.6, 15, 32.8, 4.5),
+          Paint()..color = const Color(0xFFFFC94D),
+        );
+        // Shine down the side.
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            const Rect.fromLTWH(37, 3, 3, 11),
+            const Radius.circular(1.5),
+          ),
+          Paint()..color = const Color(0x40FFFFFF),
+        );
+
+      case CapiHat.fundador:
+        // Capi's helmet, in gold, with a star on the front.
+        final dome = Path()
+          ..moveTo(26, 25.6)
+          ..cubicTo(26, 3.9, 74, 3.9, 74, 25.6)
+          ..close();
+        _shape(canvas, dome, const Color(0xFFFFF1A8), const Color(0xFFE0A100));
+        final brim = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(19.1, 23.2, 61.8, 4.9),
+          const Radius.circular(2.4),
+        );
+        canvas.drawRRect(brim, Paint()..color = const Color(0xFFC98A00));
+        canvas.drawRRect(brim, _outline);
+        final star = Path();
+        for (var i = 0; i < 10; i++) {
+          final r = i.isEven ? 5.2 : 2.2;
+          final a = -pi / 2 + i * pi / 5;
+          final p = Offset(50 + r * cos(a), 15.5 + r * sin(a));
+          i == 0 ? star.moveTo(p.dx, p.dy) : star.lineTo(p.dx, p.dy);
+        }
+        star.close();
+        canvas.drawPath(star, Paint()..color = Colors.white);
     }
   }
 

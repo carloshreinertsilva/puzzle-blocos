@@ -111,6 +111,15 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
   - o CI gera também um APK com anúncios de teste (`capiblocks-apk-teste`) para conferir no celular;
   - passo a passo para os IDs reais, o `app-ads.txt` e os formulários da Play Console: `docs/admob.md`.
 - **v1.0.2 (01/11/2026): o jogo não abria no Android.** A versão de loja ficava na tela branca: a `shared_preferences_android` 2.5.1 falhava com o código otimizado (R8), com `NoSuchMethodError` em `SharedPreferencesApiRegistrar.getAll`. Corrigido com a 2.5.2+ (lock em 2.5.4) e regras do R8 em `android/app/proguard-rules.pro`. Desde então o CI instala a versão de loja num emulador Android e confere se o jogo abre (`tool/android_abre.sh`).
+- **v1.2.0: Loja do Capi** (`lib/shop/`, Google Play Billing):
+  - Remover anúncios (R$ 12,90, com a Cartola VIP), Pacote Inicial (R$ 14,90, só nos 3 primeiros dias: sem anúncios + 300 estrelas + Capacete Fundador), pacotes de 150/400/1.000 estrelas (R$ 4,90/9,90/19,90) e kit de ferramentas (R$ 4,90);
+  - nada é sorteio pago; restaurar compras; compras pendentes entregues depois;
+  - "Dobrar estrelas com vídeo" no fim da fase;
+  - baú bônus diário nas Missões: +5 estrelas com um vídeo, uma vez por dia (o conteúdo aparece antes, nada sorteado);
+  - o botão Loja entra no lugar de Estatísticas no menu (que vão para as configurações);
+  - IDs e passo a passo da Play Console: `docs/loja.md`.
+- **v1.2.0: tela de ponta a ponta em todo Android** (recomendação da Play Console para o Android 15): `SystemUiMode.edgeToEdge` na abertura; todas as telas já respeitam a área segura.
+- **v1.2.0: Duelo que convida** (`docs/duelo.md`): compartilhar pela janela do Android (WhatsApp etc.), link novo `/duelo?s=…&p=…`, convite na web para quem não tem o app (Play Store ou jogar no navegador) e App Links (o link abre o app; falta o `assetlinks.json` com a impressão digital da chave).
 - **Som no Android corrigido.** O `FlameAudio.play` criava um tocador novo a cada som e nunca o liberava: os sons atrasavam, cortavam ou sumiam ao longo da partida (relato de jogadores: "som bugado"). Agora `lib/services/sound/sound_native.dart` prepara 3 tocadores de baixa latência por som na abertura e os reutiliza em rodízio; os sons do jogo se misturam com a música do jogador em vez de pausá-la.
 - **v1.1.0: abertura nova no Android.** No lugar do fundo preto com o ícone num círculo branco: o fundo roxo do jogo, o Capi no meio e o nome CapiBlocks embaixo (Android 12+ em `values-v31/styles.xml`; antes disso em `drawable/launch_background.xml`). Em seguida o Flutter continua a abertura com os blocos pulando (`lib/ui/abertura.dart`) e, se o carregamento falhar, mostra "Ops! O jogo não conseguiu abrir." com "Tentar de novo" em vez de travar. Ícone adaptativo (o celular recorta no seu formato). Imagens geradas por `tool/gerar_abertura_android.py`.
 - **v1.1.0: estatísticas de uso** (Firebase Analytics, só Android), em `lib/services/analytics.dart`:

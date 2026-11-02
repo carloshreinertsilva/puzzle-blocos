@@ -7,6 +7,7 @@ import '../ui/palette.dart';
 import '../ui/privacy_dialog.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
+import 'stats_sheet.dart';
 
 Future<void> showSettings(BuildContext context, AppServices services) {
   return showModalBottomSheet(
@@ -16,13 +17,21 @@ Future<void> showSettings(BuildContext context, AppServices services) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (context) => _Settings(services: services),
+    builder: (sheet) => _Settings(
+      services: services,
+      // Statistics replace the settings, so only one sheet is open.
+      onStats: () {
+        Navigator.of(sheet).pop();
+        showStats(context, services);
+      },
+    ),
   );
 }
 
 class _Settings extends StatefulWidget {
-  const _Settings({required this.services});
+  const _Settings({required this.services, required this.onStats});
   final AppServices services;
+  final VoidCallback onStats;
 
   @override
   State<_Settings> createState() => _SettingsState();
@@ -108,6 +117,22 @@ class _SettingsState extends State<_Settings> {
                   ),
                 ),
 
+              if (widget.services.loja.disponivel)
+                ListTile(
+                  leading: const Icon(
+                    Icons.bar_chart_rounded,
+                    color: Palette.accent,
+                  ),
+                  title: Text('Estatísticas', style: bodyText(16)),
+                  onTap: () {
+                    widget.services.feedback.click();
+                    widget.onStats();
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+
               // Privacy Policy
               ListTile(
                 leading: const Icon(
@@ -127,7 +152,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.1.0 · CHS CONSULTORIA LTDA',
+                'CapiBlocks v1.2.0 · CHS CONSULTORIA LTDA',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],

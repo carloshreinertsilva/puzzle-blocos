@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/daily_missions.dart';
 import '../main.dart';
+import '../ads/ad_service.dart';
 import '../services/progress_store.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
@@ -9,6 +10,9 @@ import '../ui/widgets.dart';
 import 'wardrobe_dialog.dart';
 
 /// Modal dialog showing the daily 3 missions, progress tracking, and the daily chest.
+/// Stars in the daily bonus chest.
+const bauBonusEstrelas = 5;
+
 class DailyMissionsDialog extends StatefulWidget {
   const DailyMissionsDialog({super.key, required this.services});
   final AppServices services;
@@ -170,8 +174,8 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                   Semantics(
                     button: true,
                     label: 'Fechar',
+                    // No tooltip: it would read "Fechar" a second time.
                     child: IconButton(
-                      tooltip: 'Fechar',
                       icon: const Icon(
                         Icons.close_rounded,
                         color: Palette.textDim,
@@ -353,11 +357,89 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                   ],
                 ),
               ),
+              if (widget.services.ads.hasVideoAds) ...[
+                const SizedBox(height: 10),
+                _bauBonus(store),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// Once a day, a short video gives a few stars. What it gives is shown
+  /// up front: nothing random.
+  Widget _bauBonus(ProgressStore store) {
+    final aberto = store.isBonusChestClaimed(_today);
+    return Semantics(
+      button: !aberto,
+      label: aberto
+          ? 'Baú bônus aberto. Volte amanhã'
+          : 'Abrir baú bônus: +$bauBonusEstrelas estrelas com vídeo',
+      excludeSemantics: true,
+      onTap: aberto ? null : _abrirBauBonus,
+      child: Material(
+        color: const Color(0x2234D399),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: aberto ? null : _abrirBauBonus,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.smart_display_rounded,
+                  color: Color(0xFF34D399),
+                  size: 28,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    aberto
+                        ? 'Baú bônus aberto! Volte amanhã'
+                        : 'Baú bônus: +$bauBonusEstrelas★ com um vídeo',
+                    style: displayText(14, color: Colors.white),
+                  ),
+                ),
+                if (aberto)
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF34D399),
+                  )
+                else
+                  const Icon(
+                    Icons.play_circle_fill_rounded,
+                    color: Color(0xFF34D399),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _abrindoBonus = false;
+
+  Future<void> _abrirBauBonus() async {
+    final store = widget.services.store;
+    if (_abrindoBonus || store.isBonusChestClaimed(_today)) return;
+    _abrindoBonus = true;
+    try {
+      final ok = await widget.services.ads.rewarded(
+        context,
+        RewardPlacement.bonusChest,
+      );
+      if (!ok || !mounted) return;
+      await store.setBonusChestClaimed(_today);
+      await store.addStars(bauBonusEstrelas);
+      widget.services.feedback.praise(3);
+      if (mounted) setState(() {});
+    } finally {
+      _abrindoBonus = false;
+    }
   }
 
   Widget _buildMissionCard(DailyMission m, ProgressStore store) {
