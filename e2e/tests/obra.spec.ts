@@ -1,15 +1,9 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
 import { openApp, snap, state, waitForState } from './helpers';
 
-test('obras: arrastar as peças monta o desenho e dá estrelas', async ({ page }, testInfo) => {
-  await openApp(page, { level: 6, stars: 0 });
-  await page.getByRole('button', { name: /^Obras/ }).click();
-  await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
-  await page.waitForTimeout(400);
-  await snap(page, testInfo, `obra-inicio-${testInfo.project.name}`);
-
-  // Drag every piece to its spot with the real mouse. The tray reflows
-  // after each drop, so ask for a fresh path each time.
+/** Drags every piece to its spot with the real mouse. The tray reflows
+ * after each drop, so it asks for a fresh path each time. */
+async function buildAll(page: Page, onPlaced?: (i: number) => Promise<void>) {
   const total = (await state(page)).obra!.pieces;
   for (let i = 0; i < total; i++) {
     const path = JSON.parse(await page.evaluate((p) => (window as any).__bb.obraDrag(p), i));
@@ -21,11 +15,21 @@ test('obras: arrastar as peças monta o desenho e dá estrelas', async ({ page }
     await page.waitForTimeout(60);
     await page.mouse.up();
     await page.waitForTimeout(150);
-    const after = await state(page);
-    if (after.obra!.placed !== i + 1) console.log(JSON.stringify({ i, path, after: after.obra }));
     await waitForState(page, (x) => x.obra!.placed === i + 1, `peça ${i} encaixada`);
-    if (i === 1) await snap(page, testInfo, `obra-meio-${testInfo.project.name}`);
+    await onPlaced?.(i);
   }
+}
+
+test('obras: arrastar as peças monta o desenho e dá estrelas', async ({ page }, testInfo) => {
+  await openApp(page, { level: 6, stars: 0 });
+  await page.getByRole('button', { name: /^Obras/ }).click();
+  await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
+  await page.waitForTimeout(400);
+  await snap(page, testInfo, `obra-inicio-${testInfo.project.name}`);
+
+  await buildAll(page, async (i) => {
+    if (i === 1) await snap(page, testInfo, `obra-meio-${testInfo.project.name}`);
+  });
   const done = await waitForState(page, (x) => x.obra!.solved, 'obra pronta');
   expect(done.obra!.stars).toBe(3);
   await expect(page.getByText('Obra 1 concluída!')).toBeVisible();
@@ -46,4 +50,16 @@ test('obras: dica mostra a peça e custa uma estrela', async ({ page }) => {
   await page.evaluate(() => (window as any).__bb.win());
   const s = await waitForState(page, (x) => x.obra!.solved, 'obra pronta');
   expect(s.obra!.stars).toBe(2);
+});
+
+// The finger sits below the dragged piece, so on the drawing's bottom row
+// it is already off the board: the drop must still count (bug from a
+// player, on the lamp post).
+test('obras: peças na última linha do desenho encaixam', async ({ page }) => {
+  await openApp(page, { level: 6, obraLevel: 6 });
+  await page.getByRole('button', { name: /^Obras/ }).click();
+  await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
+  await page.waitForTimeout(400);
+  await buildAll(page);
+  await waitForState(page, (x) => x.obra!.solved, 'obra pronta');
 });
