@@ -17,19 +17,18 @@ Quem recebe o link:
 | Android **sem** o app | Abre a página do jogo com o convite "Você foi desafiado!": **Baixar o app grátis** (Play Store) ou **Jogar aqui no navegador** (`web/index.html`). |
 | iPhone ou computador | Abre o jogo no navegador, direto no desafio. |
 
-## Falta para o link abrir o app (App Links)
+## Link abrindo o app (App Links)
 
 O Android só abre o app se o site provar que o app é dele, com o arquivo
 `web/.well-known/assetlinks.json` (publicado em
-`https://capiblocks.vercel.app/.well-known/assetlinks.json`). O arquivo
-precisa da **impressão digital SHA-256 da chave de assinatura do app**:
+`https://capiblocks.vercel.app/.well-known/assetlinks.json`). Ele traz as
+impressões digitais SHA-256 das duas chaves, tiradas da Play Console
+(**Configuração → Integridade do app**):
 
-1. Play Console → CapiBlocks → **Testar e lançar → Configuração →
-   Integridade do app** (ou "Assinatura de apps").
-2. Copie os dois valores **SHA-256**: o do "Certificado da chave de
-   assinatura do app" e o do "Certificado da chave de upload".
-3. Mande para o Claude, que cria o arquivo. Não são segredo: servem só para
-   o Android conferir quem assinou o app.
+- chave de assinatura do app (Google Play), usada no app baixado da loja;
+- chave de upload, usada nos APKs de teste do CI.
 
-Enquanto o arquivo não existe, o link abre a página com o convite, que já
-leva à Play Store ou ao jogo no navegador.
+Não são segredo: servem só para o Android conferir quem assinou o app. Se a
+chave mudar, atualize o arquivo. Num celular sem a versão com App Links
+(1.2.0 ou mais nova), o link abre a página com o convite, que leva à Play
+Store ou ao jogo no navegador.

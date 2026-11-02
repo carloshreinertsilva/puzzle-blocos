@@ -1,9 +1,11 @@
 # Estatísticas de uso (Firebase Analytics)
 
 O app Android registra eventos anônimos de uso (`lib/services/analytics.dart`).
-Enquanto o projeto do Firebase não estiver configurado, nada é enviado.
+Projeto do Firebase: **CapiBlocks** (`capiblocks`, número 731810631964), plano
+grátis (Spark), conta cewmusica@gmail.com. App Android `com.capiblocks.app`.
+AdMob e Google Play ainda não vinculados (opcional).
 
-## Para ligar
+## Como foi ligado
 
 1. Em https://console.firebase.google.com, crie o projeto **CapiBlocks** com a
    conta Google da empresa. O Google Analytics é ativado durante a criação.

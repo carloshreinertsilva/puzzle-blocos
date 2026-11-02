@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.capiblocks.app",
+      "sha256_cert_fingerprints": [
+        "86:56:D6:EA:6F:1B:96:37:E2:88:60:5E:3F:56:66:28:53:D8:B2:4E:1C:C6:AB:C2:1A:27:2B:F8:66:46:44:F7",
+        "61:78:DA:79:E5:DC:F7:CE:91:07:1B:C4:14:B3:8C:53:1A:73:BA:2B:BE:70:26:28:C5:DB:35:50:59:B3:7F:7C"
+      ]
+    }
+  }
+]

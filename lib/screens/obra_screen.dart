@@ -271,23 +271,31 @@ class _ObraScreenState extends State<ObraScreen>
     );
   }
 
-  Widget _board(double side) => DragTarget<int>(
-    onMove: (d) {
-      final (r, c) = _cellAt(d.offset);
-      final next = (d.data, r, c, _obra.canPlace(d.data, r, c));
-      if (next != _preview) setState(() => _preview = next);
-    },
-    onLeave: (_) => setState(() => _preview = null),
-    onAcceptWithDetails: (d) {
-      final (r, c) = _cellAt(d.offset);
-      setState(() => _preview = null);
-      if (_obra.place(d.data, r, c)) {
-        widget.services.feedback.place();
-      } else {
-        widget.services.feedback.pick();
-      }
-    },
-    builder: (context, _, _) => Semantics(
+  /// Shows where [piece] would land with its top-left corner at [topLeft]
+  /// (global), or nothing while it is away from the board.
+  void _movePreview(int piece, Offset topLeft) {
+    final s = _obra.blueprint.pieces[piece];
+    final (r, c) = _cellAt(topLeft);
+    final near = r > -s.rows && c > -s.cols && r < Board.size && c < Board.size;
+    final next = near ? (piece, r, c, _obra.canPlace(piece, r, c)) : null;
+    if (next != _preview) setState(() => _preview = next);
+  }
+
+  /// Drops [piece] where it is drawn. Uses the piece's position, not the
+  /// finger's: the finger sits below the piece, so on the bottom rows it is
+  /// already off the board.
+  void _drop(int piece, Offset topLeft) {
+    final (r, c) = _cellAt(topLeft);
+    setState(() => _preview = null);
+    if (_obra.place(piece, r, c)) {
+      widget.services.feedback.place();
+    } else {
+      widget.services.feedback.pick();
+    }
+  }
+
+  Widget _board(double side) => Builder(
+    builder: (context) => Semantics(
       label: 'Planta da obra: ${_obra.unplaced.length} peças para encaixar',
       child: GestureDetector(
         onTapUp: (d) {
@@ -334,6 +342,8 @@ class _ObraScreenState extends State<ObraScreen>
         child: _slot(view(cell), false),
       ),
       onDragStarted: () => widget.services.feedback.pick(),
+      onDragUpdate: (d) => _movePreview(i, d.globalPosition - _anchor(s)),
+      onDragEnd: (d) => _drop(i, d.offset),
       child: Semantics(
         label: 'Peça ${i + 1}',
         child: _slot(view(cell), hinted),
