@@ -65,6 +65,29 @@
       40% { transform: translateY(-14px); }
     }
     @media (prefers-reduced-motion: reduce) { #splash .blocks i, #splash .capi { animation: none; } }
+    /* Challenge invite (Android, from a challenge link): play here or get the app. */
+    #convite {
+      position: fixed; inset: 0; z-index: 20; display: none;
+      align-items: center; justify-content: center; padding: 24px;
+      background: rgba(10, 8, 40, .72);
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    #convite.aberto { display: flex; }
+    #convite .cartao {
+      width: 100%; max-width: 360px; box-sizing: border-box; padding: 24px 20px;
+      border-radius: 22px; text-align: center; color: #F4F1FF;
+      background: linear-gradient(#2E3577, #1C2155); border: 2px solid #FFC94D;
+    }
+    #convite h1 { font: 30px/1.1 Lilita, system-ui, sans-serif; margin: 0 0 8px; }
+    #convite p { margin: 0 0 18px; font-size: 16px; line-height: 1.4; color: #D8D4FF; }
+    #convite b { color: #FFC94D; }
+    #convite a, #convite button {
+      display: block; width: 100%; box-sizing: border-box; margin-top: 10px;
+      padding: 14px; border-radius: 16px; border: 0; cursor: pointer;
+      font: 20px/1 Lilita, system-ui, sans-serif; text-decoration: none;
+    }
+    #convite .baixar { background: #FFC94D; color: #3A2200; box-shadow: inset 0 -4px 0 rgba(0,0,0,.2); }
+    #convite .jogar { background: transparent; color: #F4F1FF; border: 2px solid #6B6FB8; }
   </style>
 </head>
 <body>
@@ -142,6 +165,34 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <div id="convite" role="dialog" aria-label="Desafio no CapiBlocks">
+    <div class="cartao">
+      <h1>Você foi desafiado!</h1>
+      <p>Um amigo fez <b id="convite-meta">muitos</b> pontos neste tabuleiro. Consegue passar?</p>
+      <a class="baixar" href="https://play.google.com/store/apps/details?id=com.capiblocks.app&amp;referrer=utm_source%3Dduelo">Baixar o app grátis</a>
+      <button class="jogar" type="button">Jogar aqui no navegador</button>
+    </div>
+  </div>
+  <script>
+    // A challenge link opened on an Android phone without the app: offer the
+    // Play Store, or play right here (the game keeps loading underneath).
+    (function () {
+      var url = new URL(location.href);
+      var q = url.searchParams;
+      var path = url.pathname.replace(/\/$/, '');
+      var desafio = (path === '/duelo' && q.get('s')) || q.get('duelo');
+      if (!desafio || !/Android/i.test(navigator.userAgent)) return;
+      var meta = parseInt(q.get('p') || '', 10);
+      if (meta > 0) {
+        document.getElementById('convite-meta').textContent = meta.toLocaleString('pt-BR');
+      }
+      var convite = document.getElementById('convite');
+      convite.classList.add('aberto');
+      convite.querySelector('.jogar').addEventListener('click', function () {
+        convite.classList.remove('aberto');
+      });
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

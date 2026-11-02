@@ -24,6 +24,22 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Challenge links (https://capiblocks.vercel.app/duelo?s=...)
+                 open the game when it is installed. Android checks
+                 web/.well-known/assetlinks.json; until it matches, the link
+                 opens the web page, which offers the Play Store. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/>
+                <data android:host="capiblocks.vercel.app"/>
+                <data android:path="/duelo"/>
+            </intent-filter>
+            <!-- The link reaches Flutter as a route (App.onGenerateRoute). -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="true" />
         </activity>
 
         <!-- Google AdMob app ID. -->

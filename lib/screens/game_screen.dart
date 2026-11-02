@@ -1,12 +1,15 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
 import '../services/analytics.dart';
+import '../services/duelo_link.dart';
 import '../core/missions.dart';
 import '../game/game_controller.dart';
 import '../game/onboarding.dart';
@@ -289,17 +292,33 @@ class _GameScreenState extends State<GameScreen> {
     Navigator.of(context).pop();
   }
 
-  void _shareDuelLink(int score) {
+  /// On the phone: the share sheet (WhatsApp & co.). On the web: copies
+  /// the link.
+  Future<void> _shareDuelLink(int score) async {
     widget.services.feedback.click();
-    final seed =
-        controller.level.seed ??
-        (DateTime.now().millisecondsSinceEpoch % 1000000);
-    final blitz = controller.isBlitz ? '&m=blitz' : '';
-    final url = 'https://capiblocks.vercel.app/?duelo=$seed&p=$score$blitz';
-    Clipboard.setData(ClipboardData(text: url));
+    final convite = DueloConvite(
+      semente:
+          controller.level.seed ??
+          (DateTime.now().millisecondsSinceEpoch % 1000000),
+      meta: score,
+      blitz: controller.isBlitz,
+    );
+    Analytics.event('duel_share', {'mode': controller.mode.name});
+    if (!kIsWeb) {
+      try {
+        await SharePlus.instance.share(
+          ShareParams(text: convite.mensagem, subject: 'Desafio no CapiBlocks'),
+        );
+        return;
+      } catch (_) {
+        // No share sheet: copy instead.
+      }
+    }
+    await Clipboard.setData(ClipboardData(text: convite.mensagem));
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Link de duelo copiado para a área de transferência!'),
+        content: Text('Desafio copiado! Cole no WhatsApp para um amigo.'),
         duration: Duration(seconds: 2),
       ),
     );

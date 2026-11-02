@@ -7,7 +7,10 @@ import 'package:flutter/services.dart';
 
 import 'ads/ad_service.dart';
 import 'ads/admob.dart';
+import 'game/game_controller.dart';
+import 'screens/game_screen.dart';
 import 'screens/root.dart';
+import 'services/duelo_link.dart';
 import 'services/analytics.dart';
 import 'services/feedback.dart';
 import 'testing/test_bridge.dart';
@@ -152,6 +155,28 @@ class App extends StatelessWidget {
         useMaterial3: true,
       ),
       home: Root(services: services),
+      // Android App Links: a challenge link (`/duelo?s=…&p=…`) arrives as a
+      // route, at start or while the game is open, and opens the match on
+      // top of wherever the player is.
+      onGenerateRoute: (settings) {
+        final convite = DueloConvite.ler(Uri.parse(settings.name ?? ''));
+        if (convite == null) return null;
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => GameScreen(
+            services: services,
+            mode: convite.blitz ? GameMode.blitz : GameMode.duel,
+            duelSeed: convite.semente,
+            duelTargetScore: convite.meta,
+            duelRivalName: 'Amigo',
+          ),
+        );
+      },
+      // Any other address: just the game.
+      onUnknownRoute: (settings) => MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => Root(services: services),
+      ),
     );
   }
 }
