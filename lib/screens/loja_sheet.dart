@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/hats.dart';
+import '../core/mercado.dart';
 import '../core/passe.dart';
 import '../main.dart';
 import '../services/analytics.dart';
@@ -12,6 +13,7 @@ import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import 'passe_sheet.dart';
+import 'wardrobe_dialog.dart';
 
 /// The shop: the starter pack (first days only), removing ads, star packs
 /// and the tool kit. Payment is all Google Play's; nothing is random.
@@ -165,6 +167,24 @@ class _LojaState extends State<_Loja> {
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              Semantics(
+                button: true,
+                label: 'Abrir o Mercado do Capi',
+                excludeSemantics: true,
+                onTap: _abrirMercado,
+                child: GestureDetector(
+                  onTap: _abrirMercado,
+                  child: _Linha(
+                    icone: Icons.storefront_rounded,
+                    cor: const Color(0xFFFFC94D),
+                    titulo: 'Mercado do Capi',
+                    subtitulo:
+                        'Hoje: ${Mercado.lendarioDoDia(DateTime.now()).label} '
+                        '(lendário). Ofertas novas todo dia.',
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerLeft,
@@ -211,6 +231,13 @@ class _LojaState extends State<_Loja> {
         ),
       ),
     );
+  }
+
+  void _abrirMercado() {
+    final services = widget.services;
+    final nav = Navigator.of(context);
+    nav.pop();
+    WardrobeDialog.show(nav.context, services, mercado: true);
   }
 
   void _abrirPasse() {

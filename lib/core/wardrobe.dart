@@ -57,9 +57,14 @@ class Loja extends Fonte {
   final String texto;
 }
 
-/// A reward on the Passe do Capi's track.
+/// A reward on the Passe do Capi's track (exclusive to it).
 class Passe extends Fonte {
   const Passe();
+}
+
+/// Sold now and then in the Mercado do Capi (see [Mercado]).
+class NoMercado extends Fonte {
+  const NoMercado();
 }
 
 /// An item Capi can wear. [id]s are saved on the player's phone, so they
@@ -93,6 +98,7 @@ class Cosmetic {
     PremioColecao(:final colecao) => 'Complete a coleção $colecao',
     Loja(:final texto) => texto,
     Passe() => 'Trilha premium do Passe do Capi',
+    NoMercado() => 'Aparece à venda no Mercado do Capi',
   };
 
   /// The hat this item is, for the head slot.
@@ -167,12 +173,17 @@ class CapiLook {
   int get hashCode => Object.hash(hat, rosto, pescoco, costas, pelagem);
 }
 
-/// The catalog. Prices are a first proposal: an active player earns about
-/// 15 to 25 stars a day, so a common item is one or two days of play and a
-/// rare one about a week.
+/// The catalog. Prices (agreed with the owner, see docs/economia.md): a
+/// regular player earns about 35 to 60 stars a day, so a common item is
+/// about a day of play and a rare one about a week, or 5 videos.
 abstract final class Wardrobe {
-  static const precoComum = 25;
-  static const precoRaro = 75;
+  static const precoComum = 40;
+  static const precoRaro = 150;
+
+  /// A rare item can also be earned with this many videos, at most
+  /// [videosPorDia] wardrobe videos a day.
+  static const videosRaro = 5;
+  static const videosPorDia = 5;
   static const pelagemPadrao = 'caramelo';
 
   static const catalog = <Cosmetic>[
@@ -312,7 +323,7 @@ abstract final class Wardrobe {
       'Máscara de Herói',
       Slot.rosto,
       Raridade.lendario,
-      Passe(),
+      NoMercado(),
       descricao: 'O protetor secreto da vila.',
     ),
 
@@ -380,7 +391,7 @@ abstract final class Wardrobe {
       'Asinhas de Anjo',
       Slot.costas,
       Raridade.lendario,
-      Passe(),
+      NoMercado(),
       descricao: 'Batem de leve quando o Capi fica feliz.',
     ),
 
@@ -422,8 +433,52 @@ abstract final class Wardrobe {
       'Arco-Íris',
       Slot.pelagem,
       Raridade.lendario,
-      Passe(),
+      NoMercado(),
       descricao: 'Todas as cores dos blocos.',
+    ),
+    Cosmetic(
+      'galaxia',
+      'Galáxia',
+      Slot.pelagem,
+      Raridade.lendario,
+      NoMercado(),
+      descricao: 'Pelo azul-noite, cheio de estrelinhas.',
+    ),
+
+    // Exclusive to the Passe do Capi (rare, on the premium track).
+    Cosmetic(
+      'oculos_estrelados',
+      'Óculos Estrelados',
+      Slot.rosto,
+      Raridade.raro,
+      Passe(),
+      descricao: 'Do Passe do Capi, temporada 1.',
+    ),
+    Cosmetic(
+      'medalha',
+      'Medalha da Temporada',
+      Slot.pescoco,
+      Raridade.raro,
+      Passe(),
+      descricao: 'Do Passe do Capi, temporada 1.',
+    ),
+
+    // More legendaries for the Mercado.
+    Cosmetic(
+      'colar_diamante',
+      'Colar de Diamante',
+      Slot.pescoco,
+      Raridade.lendario,
+      NoMercado(),
+      descricao: 'Brilha a cada combo.',
+    ),
+    Cosmetic(
+      'jetpack',
+      'Mochila a Jato',
+      Slot.costas,
+      Raridade.lendario,
+      NoMercado(),
+      descricao: 'Para chegar mais rápido à próxima fase.',
     ),
   ];
 
@@ -498,6 +553,33 @@ abstract final class Wardrobe {
   static Future<void> takeOff(ProgressStore store, Slot slot) async {
     if (slot == Slot.cabeca || slot == Slot.pelagem) return;
     await store.equipIn(slot, null);
+  }
+
+  /// Videos watched toward [item] (a rare one), and whether one more can
+  /// be watched today.
+  static int videos(ProgressStore store, Cosmetic item) =>
+      store.itemVideos(item.id);
+
+  static bool podeVerVideo(ProgressStore store, Cosmetic item, DateTime dia) =>
+      item.raridade == Raridade.raro &&
+      item.fonte is Estrelas &&
+      !owns(store, item) &&
+      store.videosToday('guardaRoupa', dia) < videosPorDia;
+
+  /// Counts one watched video toward [item]; the [videosRaro]th gives it.
+  /// Returns true when the item is now the player's.
+  static Future<bool> videoVisto(
+    ProgressStore store,
+    Cosmetic item,
+    DateTime dia,
+  ) async {
+    if (!podeVerVideo(store, item, dia)) return false;
+    await store.addVideoToday('guardaRoupa', dia);
+    await store.addItemVideo(item.id);
+    if (store.itemVideos(item.id) < videosRaro) return false;
+    await store.unlockHat(item.id);
+    await awardCollections(store);
+    return true;
   }
 
   /// What the free daily chest can give: common and rare items bought with

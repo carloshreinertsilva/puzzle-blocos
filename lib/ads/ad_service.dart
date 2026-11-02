@@ -8,6 +8,7 @@ enum RewardPlacement {
   revive,
   doubleStars,
   bonusChest,
+  wardrobeItem,
   toolHammer,
   toolRotate,
   toolReroll,

@@ -50,62 +50,95 @@ class NivelPasse {
 /// The Passe do Capi: a 30-day season. Stars earned by playing (not bought)
 /// are the pass points; every [pontosPorNivel] points open a level. The free
 /// track is for everyone; the premium track ([Produto.passeCapi], once per
-/// season) adds more stars, tools and the 4 legendary items. Nothing in it
+/// season) adds more stars, tools, 2 exclusive rare items and the season's
+/// legendary one. Nothing in it
 /// is random: every reward is shown from the start.
 abstract final class PasseDoCapi {
   /// Season 1 starts here; each season lasts [diasPorTemporada] days.
   static final inicio = DateTime(2026, 11, 1);
   static const diasPorTemporada = 30;
-  static const pontosPorNivel = 12;
+  static const pontosPorNivel = 30;
 
   static const trilha = <NivelPasse>[
-    NivelPasse(Recompensa.estrelas(3), Recompensa.estrelas(10)),
-    NivelPasse(
-      Recompensa.ferramenta(CapiTool.hammer, 1),
-      Recompensa.ferramenta(CapiTool.hammer, 2),
-    ),
-    NivelPasse(Recompensa.estrelas(3), Recompensa.estrelas(10)),
+    NivelPasse(Recompensa.estrelas(3), Recompensa.estrelas(8)),
     NivelPasse(
       Recompensa.ferramenta(CapiTool.shovel, 1),
       Recompensa.ferramenta(CapiTool.shovel, 2),
     ),
-    NivelPasse(Recompensa.estrelas(5), Recompensa.item('mascara_heroi')),
+    NivelPasse(Recompensa.estrelas(3), Recompensa.estrelas(8)),
     NivelPasse(
       Recompensa.ferramenta(CapiTool.reroll, 1),
       Recompensa.ferramenta(CapiTool.reroll, 2),
     ),
-    NivelPasse(Recompensa.estrelas(4), Recompensa.estrelas(15)),
+    NivelPasse(Recompensa.estrelas(3), Recompensa.estrelas(15)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.hammer, 1),
+      Recompensa.ferramenta(CapiTool.hammer, 2),
+    ),
+    NivelPasse(Recompensa.estrelas(3), Recompensa.estrelas(8)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.shovel, 1),
+      Recompensa.ferramenta(CapiTool.shovel, 2),
+    ),
+    NivelPasse(Recompensa.estrelas(3), Recompensa.estrelas(8)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.reroll, 1),
+      Recompensa.item('oculos_estrelados'),
+    ),
+    NivelPasse(Recompensa.estrelas(4), Recompensa.estrelas(8)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.hammer, 1),
+      Recompensa.ferramenta(CapiTool.hammer, 2),
+    ),
+    NivelPasse(Recompensa.estrelas(4), Recompensa.estrelas(8)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.shovel, 1),
+      Recompensa.ferramenta(CapiTool.shovel, 2),
+    ),
+    NivelPasse(Recompensa.estrelas(10), Recompensa.estrelas(15)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.reroll, 1),
+      Recompensa.ferramenta(CapiTool.reroll, 2),
+    ),
+    NivelPasse(Recompensa.estrelas(4), Recompensa.estrelas(8)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.hammer, 1),
+      Recompensa.ferramenta(CapiTool.hammer, 2),
+    ),
+    NivelPasse(Recompensa.estrelas(4), Recompensa.estrelas(8)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.shovel, 1),
+      Recompensa.item('medalha'),
+    ),
+    NivelPasse(Recompensa.estrelas(5), Recompensa.estrelas(8)),
+    NivelPasse(
+      Recompensa.ferramenta(CapiTool.reroll, 1),
+      Recompensa.ferramenta(CapiTool.reroll, 2),
+    ),
+    NivelPasse(Recompensa.estrelas(5), Recompensa.estrelas(8)),
     NivelPasse(
       Recompensa.ferramenta(CapiTool.hammer, 1),
       Recompensa.ferramenta(CapiTool.hammer, 2),
     ),
     NivelPasse(Recompensa.estrelas(5), Recompensa.estrelas(15)),
-    NivelPasse(Recompensa.estrelas(8), Recompensa.item('asinhas')),
     NivelPasse(
       Recompensa.ferramenta(CapiTool.shovel, 1),
       Recompensa.ferramenta(CapiTool.shovel, 2),
     ),
-    NivelPasse(Recompensa.estrelas(5), Recompensa.estrelas(20)),
+    NivelPasse(Recompensa.estrelas(5), Recompensa.estrelas(8)),
     NivelPasse(
       Recompensa.ferramenta(CapiTool.reroll, 1),
       Recompensa.ferramenta(CapiTool.reroll, 2),
     ),
-    NivelPasse(Recompensa.estrelas(5), Recompensa.estrelas(20)),
-    NivelPasse(Recompensa.estrelas(10), Recompensa.item('arco_iris')),
-    NivelPasse(
-      Recompensa.ferramenta(CapiTool.hammer, 1),
-      Recompensa.ferramenta(CapiTool.hammer, 3),
-    ),
-    NivelPasse(Recompensa.estrelas(6), Recompensa.estrelas(25)),
-    NivelPasse(
-      Recompensa.ferramenta(CapiTool.shovel, 1),
-      Recompensa.ferramenta(CapiTool.shovel, 3),
-    ),
-    NivelPasse(Recompensa.estrelas(6), Recompensa.estrelas(25)),
+    NivelPasse(Recompensa.estrelas(5), Recompensa.estrelas(8)),
     NivelPasse(Recompensa.estrelas(15), Recompensa.item('coroa_estrelas')),
   ];
 
   static int get niveis => trilha.length;
+
+  /// Season 1 sells the premium track at a launch price (set in the Play
+  /// Console; later seasons cost more).
+  static bool precoLancamento(DateTime agora) => temporada(agora) == 1;
 
   static int temporada(DateTime agora) =>
       max(0, agora.difference(inicio).inDays) ~/ diasPorTemporada + 1;

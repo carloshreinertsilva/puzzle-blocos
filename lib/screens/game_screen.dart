@@ -25,6 +25,10 @@ import '../services/progress_store.dart';
 import '../ui/tool_painter.dart';
 import '../ui/widgets.dart';
 
+/// "Dobrar com vídeo" at most this many times a day, so watching every
+/// video doesn't double the whole star economy.
+const dobrarPorDia = 10;
+
 /// A level, the daily challenge or an endless run. The play area stays
 /// clean: a slim HUD on top, the board and the tray. No banners; cards only
 /// appear before or after an attempt.
@@ -127,6 +131,7 @@ class _GameScreenState extends State<GameScreen> {
       RewardPlacement.doubleStars,
     );
     if (!ok || !mounted) return;
+    await widget.services.store.addVideoToday('dobrar', DateTime.now());
     await widget.services.store.addStars(ganhas);
     widget.services.feedback.praise(3);
     setState(() => _dobrado = true);
@@ -453,7 +458,12 @@ class _GameScreenState extends State<GameScreen> {
                 dobrado: _dobrado,
                 onDobrar:
                     widget.services.ads.hasVideoAds &&
-                        controller.starsGained > 0
+                        controller.starsGained > 0 &&
+                        widget.services.store.videosToday(
+                              'dobrar',
+                              DateTime.now(),
+                            ) <
+                            dobrarPorDia
                     ? _dobrarEstrelas
                     : null,
                 replay: controller.isReplay,

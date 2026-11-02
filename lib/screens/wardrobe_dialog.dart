@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../ads/ad_service.dart';
+import '../core/mercado.dart';
 import '../core/wardrobe.dart';
+import '../shop/loja_service.dart';
 import '../main.dart';
 import '../services/progress_store.dart';
 import '../ui/capi.dart';
@@ -11,13 +14,24 @@ import '../ui/widgets.dart';
 /// Capi's wardrobe: items by slot, with rarity, prices in stars, a try-on
 /// preview and the collections.
 class WardrobeDialog extends StatefulWidget {
-  const WardrobeDialog({super.key, required this.services});
+  const WardrobeDialog({
+    super.key,
+    required this.services,
+    this.mercado = false,
+  });
   final AppServices services;
 
-  static Future<void> show(BuildContext context, AppServices services) {
+  /// Opens on the Mercado tab.
+  final bool mercado;
+
+  static Future<void> show(
+    BuildContext context,
+    AppServices services, {
+    bool mercado = false,
+  }) {
     return showDialog(
       context: context,
-      builder: (_) => WardrobeDialog(services: services),
+      builder: (_) => WardrobeDialog(services: services, mercado: mercado),
     );
   }
 
@@ -26,8 +40,10 @@ class WardrobeDialog extends StatefulWidget {
 }
 
 class _WardrobeDialogState extends State<WardrobeDialog> {
-  /// The open tab: a slot, or null for the collections.
+  /// The open tab: a slot, or null for the Mercado or the collections.
   Slot? _tab = Slot.cabeca;
+  late _Aba _aba = widget.mercado ? _Aba.mercado : _Aba.slot;
+  bool _vendo = false;
   Cosmetic? _selected;
   CapiMood _previewMood = CapiMood.happy;
   String? _note;
@@ -134,7 +150,11 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
               const SizedBox(height: 8),
               Flexible(
                 child: SingleChildScrollView(
-                  child: _tab == null ? _collections() : _grid(_tab!, look),
+                  child: switch (_aba) {
+                    _Aba.mercado => _mercado(),
+                    _Aba.colecoes => _collections(),
+                    _Aba.slot => _grid(_tab!, look),
+                  },
                 ),
               ),
             ],
@@ -275,6 +295,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
           ),
         const SizedBox(height: 6),
         action,
+        ?_videoAction(c),
       ],
     );
   }
@@ -293,41 +314,274 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     scrollDirection: Axis.horizontal,
     child: Row(
       children: [
-        for (final tab in [...Slot.values, null])
-          Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: Semantics(
-              button: true,
-              selected: _tab == tab,
-              label: 'Aba ${tab?.label ?? 'Coleções'}',
-              excludeSemantics: true,
-              onTap: () => _openTab(tab),
-              child: ChoiceChip(
-                label: Text(tab?.label ?? 'Coleções', style: bodyText(13)),
-                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                selected: _tab == tab,
-                showCheckmark: false,
-                selectedColor: Palette.accent.withValues(alpha: 0.35),
-                backgroundColor: const Color(0x22FFFFFF),
-                side: BorderSide(
-                  color: _tab == tab ? Palette.accent : const Color(0x33FFFFFF),
-                ),
-                onSelected: (_) => _openTab(tab),
-              ),
-            ),
+        _chip('Mercado', _aba == _Aba.mercado, () => _openTab(_Aba.mercado)),
+        for (final slot in Slot.values)
+          _chip(
+            slot.label,
+            _aba == _Aba.slot && _tab == slot,
+            () => _openTab(_Aba.slot, slot),
           ),
+        _chip('Coleções', _aba == _Aba.colecoes, () => _openTab(_Aba.colecoes)),
       ],
     ),
   );
 
-  void _openTab(Slot? tab) {
+  Widget _chip(String label, bool selected, VoidCallback onTap) => Padding(
+    padding: const EdgeInsets.only(right: 6),
+    child: Semantics(
+      button: true,
+      selected: selected,
+      label: 'Aba $label',
+      excludeSemantics: true,
+      onTap: onTap,
+      child: ChoiceChip(
+        label: Text(label, style: bodyText(13)),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        selected: selected,
+        showCheckmark: false,
+        selectedColor: Palette.accent.withValues(alpha: 0.35),
+        backgroundColor: const Color(0x22FFFFFF),
+        side: BorderSide(
+          color: selected ? Palette.accent : const Color(0x33FFFFFF),
+        ),
+        onSelected: (_) => onTap(),
+      ),
+    ),
+  );
+
+  void _openTab(_Aba aba, [Slot? slot]) {
     widget.services.feedback.click();
     setState(() {
-      _tab = tab;
+      _aba = aba;
+      if (slot != null) _tab = slot;
       _selected = null;
       _note = null;
     });
+  }
+
+  /// One more video toward a rare item.
+  Future<void> _video(Cosmetic c) async {
+    if (_vendo) return;
+    setState(() => _vendo = true);
+    final ok = await widget.services.ads.rewarded(
+      context,
+      RewardPlacement.wardrobeItem,
+    );
+    if (!mounted) return;
+    var note = _note;
+    if (ok) {
+      final ganhou = await Wardrobe.videoVisto(_store, c, DateTime.now());
+      if (ganhou) {
+        widget.services.feedback.praise(3);
+        await Wardrobe.equip(_store, c);
+        note = '${c.label} é seu!';
+      } else {
+        note =
+            'Vídeo ${Wardrobe.videos(_store, c)} de ${Wardrobe.videosRaro} '
+            'para ${c.label}.';
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _vendo = false;
+      _note = note;
+    });
+  }
+
+  /// The video path for a rare item, under the star price.
+  Widget? _videoAction(Cosmetic c) {
+    if (c.raridade != Raridade.raro ||
+        c.fonte is! Estrelas ||
+        Wardrobe.owns(_store, c) ||
+        !widget.services.ads.hasVideoAds) {
+      return null;
+    }
+    final feitos = Wardrobe.videos(_store, c);
+    if (!Wardrobe.podeVerVideo(_store, c, DateTime.now())) {
+      return _says(
+        'Ou com vídeos: $feitos de ${Wardrobe.videosRaro}. '
+        'Volte amanhã para assistir mais.',
+        textAlign: TextAlign.center,
+        style: bodyText(12, color: Palette.textDim),
+      );
+    }
+    return TextButton.icon(
+      onPressed: _vendo ? null : () => _video(c),
+      icon: const Icon(Icons.play_circle_rounded, color: Palette.accent),
+      label: Text(
+        'Ou ganhe com vídeos: $feitos/${Wardrobe.videosRaro}',
+        semanticsLabel:
+            'Ver vídeo para ganhar ${c.label}: $feitos de '
+            '${Wardrobe.videosRaro}',
+        style: bodyText(13, color: Palette.accent),
+      ),
+    );
+  }
+
+  // --- Mercado do Capi ---
+
+  Future<void> _comprarLendario(Cosmetic c) async {
+    if (_vendo) return;
+    setState(() => _vendo = true);
+    final r = await widget.services.loja.comprar(Mercado.produtoDe(c));
+    if (!mounted) return;
+    if (r == ResultadoCompra.ok) {
+      await Wardrobe.equip(_store, c);
+      widget.services.feedback.praise(4);
+    }
+    if (!mounted) return;
+    setState(() {
+      _vendo = false;
+      _note = switch (r) {
+        ResultadoCompra.ok => '${c.label} é seu!',
+        ResultadoCompra.pendente =>
+          'Pagamento pendente: o item chega quando ele for aprovado.',
+        ResultadoCompra.cancelada => null,
+        _ => 'Não deu para comprar agora. Tente de novo mais tarde.',
+      };
+    });
+  }
+
+  Future<void> _comprarOferta(Cosmetic c) async {
+    if (!await Mercado.comprarComEstrelas(_store, c, DateTime.now())) return;
+    widget.services.feedback.praise(3);
+    await Wardrobe.equip(_store, c);
+    final prizes = await Wardrobe.awardCollections(_store);
+    if (!mounted) return;
+    setState(() {
+      _note = prizes.isEmpty
+          ? '${c.label} é seu!'
+          : 'Coleção completa! Você ganhou: '
+                '${prizes.map((p) => p.label).join(', ')}.';
+    });
+  }
+
+  Widget _mercado() {
+    final agora = DateTime.now();
+    final falta = Mercado.ateTrocar(agora);
+    final lendario = Mercado.lendarioDoDia(agora);
+    final loja = widget.services.loja;
+    return Column(
+      children: [
+        _says(
+          'Ofertas de hoje · mudam em ${falta.inHours} h '
+          '${falta.inMinutes % 60} min',
+          textAlign: TextAlign.center,
+          style: bodyText(12, color: Palette.textDim),
+        ),
+        const SizedBox(height: 6),
+        _oferta(
+          lendario,
+          preco: loja.disponivel
+              ? loja.preco(Mercado.produtoDe(lendario))
+              : null,
+          rotulo: loja.disponivel ? null : 'À venda no app Android',
+          onComprar: loja.disponivel ? () => _comprarLendario(lendario) : null,
+        ),
+        for (final c in [Mercado.comumDoDia(agora), Mercado.raroDoDia(agora)])
+          _oferta(
+            c,
+            preco: '${Mercado.precoComDesconto(c)} estrelas',
+            rotulo: 'de ${c.preco}',
+            onComprar: _store.stars >= Mercado.precoComDesconto(c)
+                ? () => _comprarOferta(c)
+                : null,
+          ),
+        Text(
+          'Todo dia tem ofertas novas, na mesma ordem para todos: '
+          'nada é sorteado.',
+          textAlign: TextAlign.center,
+          style: bodyText(11, color: Palette.textDim),
+        ),
+      ],
+    );
+  }
+
+  Widget _oferta(
+    Cosmetic c, {
+    String? preco,
+    String? rotulo,
+    VoidCallback? onComprar,
+  }) {
+    final owned = Wardrobe.owns(_store, c);
+    final look = CapiLook.of(_store).wearing(c);
+    return GestureDetector(
+      onTap: () => setState(() {
+        _selected = c;
+        _note = null;
+      }),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: const Color(0x1AFFFFFF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.raridade.color, width: 1.4),
+        ),
+        child: Row(
+          children: [
+            SizedBox.square(
+              dimension: 52,
+              child: CustomPaint(
+                painter: CapiPainter(
+                  mood: CapiMood.happy,
+                  t: 0,
+                  hat: look.hat,
+                  look: look,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(c.label, style: displayText(14, color: Palette.text)),
+                  Row(
+                    children: [
+                      _RarityChip(c.raridade),
+                      if (rotulo != null && !owned) ...[
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            rotulo,
+                            style: bodyText(11, color: Palette.textDim)
+                                .copyWith(
+                                  decoration: rotulo.startsWith('de ')
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (owned)
+              Text('Seu', style: displayText(13, color: Palette.good))
+            else if (preco != null)
+              Semantics(
+                button: true,
+                label: 'Comprar ${c.label} por $preco',
+                excludeSemantics: true,
+                onTap: onComprar,
+                child: FilledButton(
+                  onPressed: onComprar,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Palette.accent,
+                    foregroundColor: const Color(0xFF3A2200),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  child: Text(preco, style: displayText(12)),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _grid(Slot slot, CapiLook look) => Wrap(
@@ -579,3 +833,5 @@ class _ItemTile extends StatelessWidget {
     );
   }
 }
+
+enum _Aba { mercado, slot, colecoes }

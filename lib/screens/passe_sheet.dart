@@ -237,14 +237,18 @@ class _PasseState extends State<_Passe> {
     return Column(
       children: [
         Text(
-          'Premium: 4 itens lendários, 140 estrelas e ferramentas. '
-          'Você vê tudo antes de comprar.',
+          'Premium: 1 lendário exclusivo, 2 raros exclusivos, 140 estrelas e '
+          'ferramentas. Você vê tudo antes de comprar.',
           textAlign: TextAlign.center,
           style: bodyText(12, color: Palette.text),
         ),
         const SizedBox(height: 6),
         ChunkyButton(
-          label: _comprando ? 'Abrindo…' : 'Liberar premium · $preco',
+          label: _comprando
+              ? 'Abrindo…'
+              : PasseDoCapi.precoLancamento(DateTime.now())
+              ? 'Premium · $preco (lançamento)'
+              : 'Liberar premium · $preco',
           semanticLabel: 'Liberar a trilha premium do Passe por $preco',
           icon: Icons.workspace_premium_rounded,
           onTap: _comprando ? null : _comprar,
