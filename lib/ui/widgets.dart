@@ -1,3 +1,4 @@
+import '../core/wardrobe.dart';
 import '../core/hats.dart';
 
 import 'package:flutter/material.dart';
@@ -22,9 +23,13 @@ class ChunkyButton extends StatefulWidget {
     this.textColor = const Color(0xFF3A2200),
     this.icon,
     this.big = false,
+    this.semanticLabel,
   });
 
   final String label;
+
+  /// What a screen reader says, when the visible [label] is shortened.
+  final String? semanticLabel;
   final VoidCallback? onTap;
   final Color color;
   final Color textColor;
@@ -45,7 +50,7 @@ class _ChunkyButtonState extends State<ChunkyButton> {
     final pressed = _down ? edge - 1 : 0.0;
     return Semantics(
       button: true,
-      label: widget.label,
+      label: widget.semanticLabel ?? widget.label,
       excludeSemantics: true,
       onTap: widget.onTap,
       child: _body(h, edge, pressed),
@@ -98,11 +103,17 @@ class _ChunkyButtonState extends State<ChunkyButton> {
                         ),
                         const SizedBox(width: 8),
                       ],
-                      Text(
-                        widget.label,
-                        style: displayText(
-                          widget.big ? 27 : 21,
-                          color: widget.textColor,
+                      // Long labels shrink instead of spilling out.
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            widget.label,
+                            style: displayText(
+                              widget.big ? 27 : 21,
+                              color: widget.textColor,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -248,12 +259,19 @@ class _GlyphPainter extends CustomPainter {
 /// Logo: Capi beside the row of tilted blocks he built, over the title.
 /// Tapping Capi gets a tip ([onCapiTap]).
 class Logo extends StatelessWidget {
-  const Logo({super.key, this.onCapiTap, this.compact = false, this.hat});
+  const Logo({
+    super.key,
+    this.onCapiTap,
+    this.compact = false,
+    this.hat,
+    this.look,
+  });
   final VoidCallback? onCapiTap;
 
   /// Short screens: the title with Capi beside it, no row of blocks.
   final bool compact;
   final CapiHat? hat;
+  final CapiLook? look;
 
   Widget _capi(double size) => Semantics(
     button: true,
@@ -262,7 +280,7 @@ class Logo extends StatelessWidget {
     onTap: onCapiTap,
     child: GestureDetector(
       onTap: onCapiTap,
-      child: Capi(size: size, hat: hat),
+      child: Capi(size: size, hat: hat, look: look),
     ),
   );
 

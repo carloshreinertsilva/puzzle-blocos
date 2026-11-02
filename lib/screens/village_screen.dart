@@ -1,3 +1,5 @@
+import '../core/wardrobe.dart';
+
 import 'dart:async';
 import 'dart:math';
 
@@ -68,7 +70,8 @@ class _VillageScreenState extends State<VillageScreen>
     super.initState();
     _model
       ..built = _built
-      ..pups = widget.services.store.pupsSaved;
+      ..pups = widget.services.store.pupsSaved
+      ..look = CapiLook.of(widget.services.store);
     _ticker = createTicker((elapsed) {
       _clock.value = elapsed.inMicroseconds / 1e6;
     })..start();

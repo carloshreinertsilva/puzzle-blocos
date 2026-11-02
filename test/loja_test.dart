@@ -1,6 +1,6 @@
+import 'package:puzzle_blocos/core/wardrobe.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_blocos/core/daily_missions.dart';
-import 'package:puzzle_blocos/core/hats.dart';
 import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:puzzle_blocos/shop/loja_service.dart';
 import 'package:puzzle_blocos/shop/produtos.dart';
@@ -90,10 +90,10 @@ void main() {
 
   test('the daily chest never gives a shop-only hat', () async {
     final store = await _store();
-    for (final h in CapiHat.values.where((h) => !h.exclusivo)) {
-      await store.unlockHat(h.id);
+    for (final c in Wardrobe.chestPool(store)) {
+      await store.unlockHat(c.id);
     }
-    // Every chest hat is owned: nothing left to give.
+    // Every chest item is owned: nothing left to give.
     final day = DateTime(2026, 11, 2);
     for (final m in DailyMissionsManager.missionsFor(store, day)) {
       await store.setDailyMissionProgress(day, m.index, 999);

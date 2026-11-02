@@ -1,5 +1,5 @@
+import '../core/wardrobe.dart';
 import '../core/daily_missions.dart';
-import '../core/hats.dart';
 import 'daily_missions_dialog.dart';
 import 'wardrobe_dialog.dart';
 
@@ -500,7 +500,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Logo(
                           onCapiTap: _tip,
                           compact: isSmall,
-                          hat: CapiHat.fromId(store.equippedHat),
+                          look: CapiLook.of(store),
                         ),
                         Expanded(
                           child: Padding(

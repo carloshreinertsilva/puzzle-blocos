@@ -2,7 +2,7 @@ import 'dart:math';
 
 import '../game/onboarding.dart';
 import '../services/progress_store.dart';
-import 'hats.dart';
+import 'wardrobe.dart';
 
 enum DailyMissionType {
   clearLines('clear_lines', 'Limpar linhas', 'Limpe {n} linhas no total'),
@@ -184,30 +184,24 @@ abstract final class DailyMissionsManager {
     return store.isDailyChestClaimed(day);
   }
 
-  /// Claims the daily chest: gives 5 stars, streak bonus, and unlocks a random locked hat if any.
-  static Future<CapiHat?> claimChest(ProgressStore store, DateTime day) async {
+  /// Claims the daily chest: gives 5 stars, the streak bonus, and one
+  /// common or rare item the player doesn't own yet (from
+  /// [Wardrobe.chestPool], shown before opening). Completing a collection
+  /// with it also gives the collection's prize.
+  static Future<Cosmetic?> claimChest(ProgressStore store, DateTime day) async {
     if (!isChestAvailable(store, day)) return null;
 
     await store.setDailyChestClaimed(day, true);
     await store.addStars(chestStarsReward);
     await store.completeMissionsDay(day);
 
-    // Find locked hats
-    final unlocked = store.unlockedHats;
-    final locked = CapiHat.values
-        .where((h) => !h.exclusivo && !unlocked.contains(h.id))
-        .toList();
-
-    if (locked.isNotEmpty) {
-      // Pick one locked hat deterministically based on day and locked count
-      final key = ProgressStore.dayKey(day);
-      final index = key % locked.length;
-      final newlyUnlocked = locked[index];
-      await store.unlockHat(newlyUnlocked.id);
-      return newlyUnlocked;
-    }
-
-    return null;
+    final pool = Wardrobe.chestPool(store);
+    if (pool.isEmpty) return null;
+    // One item, picked from the day so reopening the app changes nothing.
+    final item = pool[ProgressStore.dayKey(day) % pool.length];
+    await store.unlockHat(item.id);
+    await Wardrobe.awardCollections(store);
+    return item;
   }
 
   /// Count of unclaimed rewards available (missions ready to claim + chest ready).

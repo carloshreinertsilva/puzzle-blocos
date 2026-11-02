@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../tower/tower_controller.dart';
 import '../village/iso.dart';
 import 'capi.dart';
+import '../core/wardrobe.dart';
 
 /// Rainbow/block color palette for the tower blocks.
 const towerPalette = [
@@ -135,6 +136,7 @@ class TowerWorldPainter extends CustomPainter {
       mood: combo > 0 ? CapiMood.cheer : CapiMood.happy,
       t: 0,
       hat: CapiHat.fromId(controller.store.equippedHat),
+      look: CapiLook.of(controller.store),
     ).paint(canvas, const Size.square(size));
     canvas.restore();
 

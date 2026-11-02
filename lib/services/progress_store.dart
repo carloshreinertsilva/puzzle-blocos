@@ -1,3 +1,5 @@
+import '../core/wardrobe.dart' show Slot;
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// The 4 tools of Capi (Step 2).
@@ -332,6 +334,14 @@ class ProgressStore {
       await _prefs.setStringList('unlockedHats', [...cur, hatId]);
     }
   }
+
+  /// The item worn in a slot other than the head (see wardrobe.dart), or
+  /// null. Owned items share the `unlockedHats` list, whatever the slot.
+  String? equippedIn(Slot slot) => _prefs.getString('equipped_${slot.name}');
+
+  Future<void> equipIn(Slot slot, String? id) => id == null
+      ? _prefs.remove('equipped_${slot.name}')
+      : _prefs.setString('equipped_${slot.name}', id);
 
   // --- Daily Missions & Chest (Step 5) ---
 
