@@ -248,7 +248,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
                                 )
                               else
                                 Text(
-                                  'No Baú',
+                                  hat.exclusivo ? 'Na Loja' : 'No Baú',
                                   style: bodyText(10, color: Palette.textDim),
                                 ),
                             ],
@@ -319,9 +319,13 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
                         size: 18,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Complete missões para abrir o Baú!',
-                        style: displayText(13, color: Colors.white70),
+                      Flexible(
+                        child: Text(
+                          _selectedHat.loja ??
+                              'Complete missões para abrir o Baú!',
+                          textAlign: TextAlign.center,
+                          style: displayText(13, color: Colors.white70),
+                        ),
                       ),
                     ],
                   ),

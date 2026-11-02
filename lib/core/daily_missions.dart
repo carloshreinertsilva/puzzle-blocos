@@ -195,7 +195,7 @@ abstract final class DailyMissionsManager {
     // Find locked hats
     final unlocked = store.unlockedHats;
     final locked = CapiHat.values
-        .where((h) => !unlocked.contains(h.id))
+        .where((h) => !h.exclusivo && !unlocked.contains(h.id))
         .toList();
 
     if (locked.isNotEmpty) {

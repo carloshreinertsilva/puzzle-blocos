@@ -12,6 +12,7 @@ import 'services/analytics.dart';
 import 'services/feedback.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
+import 'shop/loja_service.dart';
 import 'ui/abertura.dart';
 import 'ui/palette.dart';
 import 'ui/typography.dart';
@@ -54,10 +55,16 @@ Future<AppServices> _iniciar() async {
               (kDebugMode ? DebugAdService() : NoAdService()),
     store,
   );
-  return AppServices(store, feedback, ads);
+  await store.noteFirstOpen(DateTime.now());
+  final loja = kTestBridge
+      ? LojaSimulada(store)
+      : LojaService.play(store) ??
+            (kDebugMode ? LojaSimulada(store) : SemLoja(store));
+  return AppServices(store, feedback, ads, loja: loja);
 }
 
 void _depoisDeAbrir(AppServices services) {
+  unawaited(services.loja.iniciar());
   unawaited(services.ads.start());
   unawaited(Analytics.start(enabled: services.store.analyticsOn));
 }
@@ -116,11 +123,13 @@ class _InicioState extends State<Inicio> {
 }
 
 class AppServices {
-  AppServices(this.store, this.feedback, this.ads);
+  AppServices(this.store, this.feedback, this.ads, {LojaService? loja})
+    : loja = loja ?? SemLoja(store);
 
   final ProgressStore store;
   final GameFeedback feedback;
   final AdCoordinator ads;
+  final LojaService loja;
 }
 
 class App extends StatelessWidget {

@@ -17,7 +17,9 @@ import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
+import '../shop/produtos.dart';
 import 'game_screen.dart';
+import 'loja_sheet.dart';
 import 'obra_screen.dart';
 import 'settings_sheet.dart';
 import 'stats_sheet.dart';
@@ -38,6 +40,29 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _hint;
 
   String? get _capiLine => _news.isNotEmpty ? _news.first.text : _hint;
+
+  // The shop button shows once the store answers (and the starter pack
+  // badge as soon as it is on offer).
+  @override
+  void initState() {
+    super.initState();
+    widget.services.loja.addListener(_lojaMudou);
+  }
+
+  @override
+  void dispose() {
+    widget.services.loja.removeListener(_lojaMudou);
+    super.dispose();
+  }
+
+  void _lojaMudou() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openLoja() async {
+    await showLoja(context, widget.services);
+    if (mounted) setState(() {});
+  }
 
   void _dismissCapi() {
     widget.services.feedback.click();
@@ -439,11 +464,29 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: _openWardrobe,
                             ),
                             SizedBox(width: buttonGap),
-                            RoundIconButton(
-                              icon: Icons.bar_chart_rounded,
-                              label: 'Estatísticas',
-                              onTap: () => showStats(context, widget.services),
-                            ),
+                            // No room for one more button on small phones:
+                            // with a shop, the statistics move to the
+                            // settings.
+                            if (widget.services.loja.disponivel)
+                              RoundIconButton(
+                                icon: Icons.storefront_rounded,
+                                label: 'Loja',
+                                badge:
+                                    Entrega.mostraPacoteInicial(
+                                      store,
+                                      DateTime.now(),
+                                    )
+                                    ? '!'
+                                    : null,
+                                onTap: _openLoja,
+                              )
+                            else
+                              RoundIconButton(
+                                icon: Icons.bar_chart_rounded,
+                                label: 'Estatísticas',
+                                onTap: () =>
+                                    showStats(context, widget.services),
+                              ),
                             SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.settings_rounded,

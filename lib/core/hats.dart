@@ -28,13 +28,30 @@ enum CapiHat {
     'wizard',
     'Chapéu de Mago',
     'Místico e estrelado para quem faz mágicas no tabuleiro.',
+  ),
+  vip(
+    'vip',
+    'Cartola VIP',
+    'Elegância de quem joga sem interrupções.',
+    loja: 'Vem com Remover anúncios',
+  ),
+  fundador(
+    'fundador',
+    'Capacete Fundador',
+    'Dourado, com estrela: para quem chegou primeiro à vila.',
+    loja: 'Vem com o Pacote Inicial',
   );
 
-  const CapiHat(this.id, this.label, this.description);
+  const CapiHat(this.id, this.label, this.description, {this.loja});
 
   final String id;
   final String label;
   final String description;
+
+  /// Shop-only hats say where they come from; the daily chest never gives
+  /// them.
+  final String? loja;
+  bool get exclusivo => loja != null;
 
   static CapiHat fromId(String id) {
     for (final h in values) {

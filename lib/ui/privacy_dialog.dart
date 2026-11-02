@@ -99,7 +99,7 @@ class _PrivacySheet extends StatelessWidget {
                         ),
                         _section(
                           '4. Serviços Opcionais',
-                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.',
+                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo do Google Play; não recebemos dados de cartão. Nada é vendido por sorteio.',
                         ),
                         _section(
                           '5. Seus Direitos e Exclusão (LGPD)',
