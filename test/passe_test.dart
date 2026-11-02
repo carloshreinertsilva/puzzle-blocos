@@ -19,8 +19,8 @@ void main() {
     expect(PasseDoCapi.diasRestantes(DateTime(2026, 11, 30, 12)), 1);
   });
 
-  test('the track has 20 levels and the 4 pass legendaries', () {
-    expect(PasseDoCapi.niveis, 20);
+  test('the track has 30 levels and the pass-only items', () {
+    expect(PasseDoCapi.niveis, 30);
     final itens = [for (final n in PasseDoCapi.trilha) ?n.premium.item];
     final doPasse = [
       for (final c in Wardrobe.catalog)
@@ -37,9 +37,9 @@ void main() {
     () async {
       final store = await _store();
       final agora = DateTime.now();
-      await store.addStars(25);
+      await store.addStars(65);
       await store.addBoughtStars(400);
-      expect(PasseDoCapi.pontos(store, agora), 25);
+      expect(PasseDoCapi.pontos(store, agora), 65);
       expect(PasseDoCapi.nivel(store, agora), 2);
     },
   );
@@ -47,7 +47,7 @@ void main() {
   test('free rewards once; premium only with the pass', () async {
     final store = await _store();
     final agora = DateTime.now();
-    await store.addStars(PasseDoCapi.pontosPorNivel * 5);
+    await store.addStars(PasseDoCapi.pontosPorNivel * 10);
     final antes = store.stars;
 
     expect(
@@ -60,12 +60,12 @@ void main() {
       isFalse,
     );
     expect(
-      await PasseDoCapi.pegar(store, agora, 6, trilhaPremium: false),
+      await PasseDoCapi.pegar(store, agora, 11, trilhaPremium: false),
       isFalse,
       reason: 'level not reached',
     );
     expect(
-      await PasseDoCapi.pegar(store, agora, 5, trilhaPremium: true),
+      await PasseDoCapi.pegar(store, agora, 10, trilhaPremium: true),
       isFalse,
       reason: 'no premium',
     );
@@ -77,12 +77,12 @@ void main() {
     expect(store.adsRemoved, isFalse, reason: 'the pass does not remove ads');
 
     expect(
-      await PasseDoCapi.pegar(store, agora, 5, trilhaPremium: true),
+      await PasseDoCapi.pegar(store, agora, 10, trilhaPremium: true),
       isTrue,
     );
-    expect(store.unlockedHats, contains('mascara_heroi'));
+    expect(store.unlockedHats, contains('oculos_estrelados'));
     // Claimed reward stars don't add pass points.
-    expect(PasseDoCapi.pontos(store, agora), PasseDoCapi.pontosPorNivel * 5);
-    expect(PasseDoCapi.prontas(store, agora), 8);
+    expect(PasseDoCapi.pontos(store, agora), PasseDoCapi.pontosPorNivel * 10);
+    expect(PasseDoCapi.prontas(store, agora), 18);
   });
 }

@@ -23,6 +23,12 @@ void main() {
       'estrelas_1000',
       'kit_ferramentas',
       'passe_capi',
+      'lendario_mascara_heroi',
+      'lendario_asinhas',
+      'lendario_arco_iris',
+      'lendario_galaxia',
+      'lendario_colar_diamante',
+      'lendario_jetpack',
     ]);
   });
 

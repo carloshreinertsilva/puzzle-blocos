@@ -11,18 +11,27 @@ criado.
 
 | ID do produto | Nome | Descrição | Preço (BRL) |
 |---|---|---|---|
-| `remover_anuncios` | Remover anúncios | Sem anúncios entre fases, para sempre. De presente: a Cartola VIP. | R$ 12,90 |
-| `pacote_inicial` | Pacote Inicial | Sem anúncios entre fases + 300 estrelas + o Capacete Fundador. | R$ 14,90 |
+| `remover_anuncios` | Remover anúncios | Sem anúncios entre fases, para sempre. De presente: a Cartola VIP. | R$ 19,90 (US$ 3,99) |
+| `pacote_inicial` | Pacote Inicial | Sem anúncios entre fases + 300 estrelas + o Capacete Fundador. | R$ 24,90 (US$ 4,99) |
 | `estrelas_150` | 150 estrelas | 150 estrelas para a vila, ferramentas e chapéus. | R$ 4,90 |
 | `estrelas_400` | 400 estrelas | 400 estrelas para a vila, ferramentas e chapéus. | R$ 9,90 |
 | `estrelas_1000` | 1.000 estrelas | 1.000 estrelas para a vila, ferramentas e chapéus. | R$ 19,90 |
 | `kit_ferramentas` | Kit de ferramentas | 3 martelos, 3 pás e 3 trocas de peças. | R$ 4,90 |
-| `passe_capi` | Passe do Capi premium | Trilha premium da temporada: 4 itens lendários, 140 estrelas e ferramentas. | R$ 9,90 |
+| `passe_capi` | Passe do Capi premium | Trilha premium da temporada: 1 lendário exclusivo, 2 raros exclusivos, 140 estrelas e ferramentas. | R$ 9,90 na temporada 1 (lançamento); R$ 14,90 a partir de 01/12/2026 |
+| `lendario_mascara_heroi` | Máscara de Herói | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
+| `lendario_asinhas` | Asinhas de Anjo | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
+| `lendario_arco_iris` | Pelagem Arco-Íris | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
+| `lendario_galaxia` | Pelagem Galáxia | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
+| `lendario_colar_diamante` | Colar de Diamante | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
+| `lendario_jetpack` | Mochila a Jato | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
 
 - Os preços em outros países podem ser convertidos automaticamente pela
   Play Console.
 - No jogo, o preço mostrado vem da Play Store; os valores acima só aparecem
   enquanto a loja não responde.
+- Os lendários (`lendario_*`) aparecem um por dia no **Mercado do Capi**
+  (guarda-roupa, aba Mercado). São **compras únicas** e voltam com
+  "Restaurar compras".
 - Remover anúncios e o Pacote Inicial são **compras únicas**: voltam com
   "Restaurar compras" num celular novo. Estrelas e o kit podem ser
   comprados várias vezes.

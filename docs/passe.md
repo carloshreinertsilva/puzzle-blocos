@@ -8,19 +8,23 @@ Temporadas de 30 dias (`lib/core/passe.dart`). A temporada 1 começou em
 - **Pontos:** cada estrela ganha jogando (fases, obras, missões, baú, Blitz,
   Torre) vale 1 ponto do passe. Estrelas compradas ou ganhas no próprio passe
   não contam.
-- **Níveis:** 20, um a cada 12 pontos (240 pontos para completar). Um
-  jogador ativo, que ganha uns 15 a 25 estrelas por dia, completa em duas a
-  três semanas.
+- **Níveis:** 30, um a cada 30 pontos (900 pontos para completar). Um
+  jogador regular completa em umas 3 semanas; um casual, na temporada
+  inteira.
 - **Trilha grátis:** estrelas e ferramentas para todos.
-- **Trilha premium** (produto `passe_capi`, R$ 9,90 por temporada): 140
-  estrelas, ferramentas e os 4 itens lendários do passe:
+- **Trilha premium** (produto `passe_capi`): 141 estrelas, ferramentas e 3
+  itens exclusivos do passe:
 
-  | Nível | Item lendário |
+  | Nível | Item |
   |---|---|
-  | 5 | Máscara de Herói |
-  | 10 | Asinhas de Anjo |
-  | 15 | Pelagem Arco-Íris |
-  | 20 | Coroa de Estrelas |
+  | 10 | Óculos Estrelados (raro) |
+  | 20 | Medalha da Temporada (raro) |
+  | 30 | Coroa de Estrelas (lendário) |
+
+- **Preço:** R$ 9,90 na temporada 1 (preço de lançamento; o app mostra
+  "(lançamento)"), R$ 14,90 a partir da temporada 2. O preço é mudado na
+  Play Console no dia 01/12/2026.
+- Os itens do passe nunca vão para o Mercado do Capi.
 
 - **Comprar no meio da temporada** libera também os prêmios premium dos
   níveis já alcançados.

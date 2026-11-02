@@ -3,7 +3,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_blocos/core/hats.dart';
+import 'package:puzzle_blocos/core/mercado.dart';
 import 'package:puzzle_blocos/core/wardrobe.dart';
+import 'package:puzzle_blocos/shop/produtos.dart';
 import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:puzzle_blocos/ui/capi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,12 +63,12 @@ void main() {
   });
 
   test('buying spends stars, equips and keeps the item', () async {
-    final store = await _store({'stars': 30});
+    final store = await _store({'stars': 50});
     final touca = Wardrobe.byId('touca')!;
     final chef = Wardrobe.byId('chef')!;
     expect(await Wardrobe.buy(store, chef), isFalse, reason: 'too expensive');
     expect(await Wardrobe.buy(store, touca), isTrue);
-    expect(store.stars, 30 - Wardrobe.precoComum);
+    expect(store.stars, 50 - Wardrobe.precoComum);
     expect(Wardrobe.owns(store, touca), isTrue);
     expect(await Wardrobe.buy(store, touca), isFalse, reason: 'already owned');
     await Wardrobe.equip(store, touca);
@@ -102,5 +104,77 @@ void main() {
     expect(look.pelagem, Wardrobe.pelagemPadrao);
     expect(Wardrobe.owns(store, Wardrobe.byId('crown')!), isTrue);
     expect(Wardrobe.owns(store, Wardrobe.byId('caramelo')!), isTrue);
+  });
+
+  test('a rare item comes with 5 videos, at most 5 a day', () async {
+    final store = await _store();
+    final chef = Wardrobe.byId('chef')!;
+    final pirata = Wardrobe.byId('pirate')!;
+    final dia = DateTime(2026, 11, 5);
+    for (var i = 0; i < 4; i++) {
+      expect(await Wardrobe.videoVisto(store, chef, dia), isFalse);
+    }
+    expect(await Wardrobe.videoVisto(store, chef, dia), isTrue);
+    expect(Wardrobe.owns(store, chef), isTrue);
+    // The day's 5 videos are used.
+    expect(Wardrobe.podeVerVideo(store, pirata, dia), isFalse);
+    expect(
+      Wardrobe.podeVerVideo(store, pirata, dia.add(const Duration(days: 1))),
+      isTrue,
+    );
+    // Only rare items bought with stars.
+    expect(
+      Wardrobe.podeVerVideo(
+        store,
+        Wardrobe.byId('touca')!,
+        dia.add(const Duration(days: 1)),
+      ),
+      isFalse,
+    );
+    expect(
+      Wardrobe.podeVerVideo(
+        store,
+        Wardrobe.byId('jetpack')!,
+        dia.add(const Duration(days: 1)),
+      ),
+      isFalse,
+    );
+  });
+
+  test(
+    'the Mercado changes daily, in a fixed order, with a discount',
+    () async {
+      final d1 = DateTime(2026, 11, 5, 10);
+      final d2 = DateTime(2026, 11, 6, 10);
+      expect(Mercado.lendarioDoDia(d1).id, isNot(Mercado.lendarioDoDia(d2).id));
+      expect(
+        Mercado.lendarioDoDia(d1).id,
+        Mercado.lendarioDoDia(DateTime(2026, 11, 5, 23)).id,
+      );
+      expect(Mercado.lendarios.length, 6);
+      for (final l in Mercado.lendarios) {
+        expect(Mercado.produtoDe(l).item, l.id);
+      }
+      expect(Mercado.comumDoDia(d1).raridade, Raridade.comum);
+      expect(Mercado.raroDoDia(d1).raridade, Raridade.raro);
+
+      final store = await _store({'stars': 200});
+      final raro = Mercado.raroDoDia(d1);
+      expect(
+        await Mercado.comprarComEstrelas(store, raro, d2),
+        isFalse,
+        reason: 'not today',
+      );
+      expect(await Mercado.comprarComEstrelas(store, raro, d1), isTrue);
+      expect(store.stars, 200 - Mercado.precoComDesconto(raro));
+      expect(Mercado.precoComDesconto(raro), 120);
+    },
+  );
+
+  test('a legendary from the Mercado gives the item, not "no ads"', () async {
+    final store = await _store();
+    await Entrega.aplicar(store, Produto.lendarioJetpack, compraId: 'x');
+    expect(store.unlockedHats, contains('jetpack'));
+    expect(store.adsRemoved, isFalse);
   });
 }

@@ -485,6 +485,23 @@ class CapiPainter extends CustomPainter {
       _glow(canvas, Offset(x, 42), 6.5, 4, const Color(0xB3FF8A9A));
     }
 
+    // The galaxy coat twinkles.
+    if (look.pelagem == 'galaxia') {
+      for (final (x, y, r) in [
+        (26.0, 26.0, 1.6),
+        (72.0, 22.0, 1.3),
+        (30.0, 52.0, 1.1),
+        (70.0, 50.0, 1.5),
+        (50.0, 20.0, 1.0),
+      ]) {
+        final tw = 0.6 + 0.4 * sin(t * 2 * pi * 3 + x);
+        canvas.drawPath(
+          _star(Offset(x, y), r * 2 * tw, 0.4),
+          _fill(const Color(0xDDFFFFFF)),
+        );
+      }
+    }
+
     // Face items, over the eyes.
     _face(canvas, look.rosto, closedEyes: cheer || sad);
 
@@ -802,6 +819,54 @@ class CapiPainter extends CustomPainter {
 
   void _backBehind(Canvas canvas, String? id) {
     switch (id) {
+      case 'jetpack':
+        // Two silver tanks peeking out, with little flames.
+        for (final s in [-1.0, 1.0]) {
+          final tank = RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: Offset(50 + s * 22, 70),
+              width: 12,
+              height: 26,
+            ),
+            const Radius.circular(6),
+          );
+          canvas.drawRRect(
+            tank,
+            _ball(tank.outerRect, const [Color(0xFFF1F3F5), Color(0xFF868E96)]),
+          );
+          canvas.drawRRect(tank, _line);
+          canvas.drawRect(
+            Rect.fromCenter(
+              center: Offset(50 + s * 22, 62),
+              width: 12,
+              height: 3,
+            ),
+            _fill(const Color(0xFFFF6B6B)),
+          );
+          final flick = 1 + sin(t * 2 * pi * 4 + s) * 0.18;
+          final flame = Path()
+            ..moveTo(50 + s * 22 - 4, 83)
+            ..quadraticBezierTo(
+              50 + s * 22,
+              83 + 12 * flick,
+              50 + s * 22 + 4,
+              83,
+            )
+            ..close();
+          canvas.drawPath(flame, _fill(const Color(0xFFFFA94D)));
+          canvas.drawPath(
+            Path()
+              ..moveTo(50 + s * 22 - 2, 83)
+              ..quadraticBezierTo(
+                50 + s * 22,
+                83 + 6 * flick,
+                50 + s * 22 + 2,
+                83,
+              )
+              ..close(),
+            _fill(const Color(0xFFFFF3BF)),
+          );
+        }
       case 'asinhas':
         // Two feathered wings, flapping a little.
         final flap = sin(t * 2 * pi * 2) * 0.08;
@@ -922,6 +987,62 @@ class CapiPainter extends CustomPainter {
 
   void _neck(Canvas canvas, String? id) {
     switch (id) {
+      case 'medalha':
+        // Blue ribbon and a gold medal with a star.
+        canvas.drawPath(
+          Path()
+            ..moveTo(40, 58)
+            ..lineTo(50, 68)
+            ..lineTo(60, 58),
+          Paint()
+            ..color = const Color(0xFF4DABF7)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4
+            ..strokeJoin = StrokeJoin.round,
+        );
+        final medal = Rect.fromCircle(center: const Offset(50, 72), radius: 6);
+        canvas.drawOval(
+          medal,
+          _ball(medal, const [Color(0xFFFFF3BF), Color(0xFFE0A100)]),
+        );
+        canvas.drawOval(medal, _line);
+        canvas.drawPath(
+          _star(const Offset(50, 72), 3.6),
+          _fill(const Color(0xFFFFFFFF)),
+        );
+      case 'colar_diamante':
+        for (var i = 0; i < 7; i++) {
+          final a = pi * (0.2 + i * 0.1);
+          canvas.drawCircle(
+            Offset(50 - 18 * cos(a), 58 + 6 * sin(a)),
+            1.4,
+            _fill(const Color(0xFFE9ECEF)),
+          );
+        }
+        final sparkle = 0.6 + 0.4 * sin(t * 2 * pi * 2).abs();
+        final gem = Path()
+          ..moveTo(50, 62)
+          ..lineTo(55, 66)
+          ..lineTo(50, 73)
+          ..lineTo(45, 66)
+          ..close();
+        canvas.drawPath(
+          gem,
+          Paint()
+            ..shader = const LinearGradient(
+              colors: [Color(0xFFE3FAFC), Color(0xFF66D9E8), Color(0xFF1098AD)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(const Rect.fromLTWH(45, 62, 10, 11)),
+        );
+        canvas.drawPath(gem, _line..color = const Color(0x990B7285));
+        _glow(
+          canvas,
+          const Offset(48, 64),
+          4 * sparkle,
+          4 * sparkle,
+          const Color(0xCCFFFFFF),
+        );
       case 'cachecol':
         final band = RRect.fromRectAndRadius(
           const Rect.fromLTWH(26, 56, 48, 10),
@@ -1020,6 +1141,25 @@ class CapiPainter extends CustomPainter {
     const left = Offset(35, 31);
     const right = Offset(65, 31);
     switch (id) {
+      case 'oculos_estrelados':
+        for (final o in [left, right]) {
+          final star = _star(o, 9, 0.5);
+          canvas.drawPath(star, _fill(const Color(0xDDFFD43B)));
+          canvas.drawPath(
+            star,
+            _line
+              ..color = const Color(0xFFE67700)
+              ..strokeWidth = 1.2,
+          );
+          canvas.drawCircle(o, 4.2, _fill(const Color(0x664DABF7)));
+        }
+        canvas.drawLine(
+          const Offset(43, 30),
+          const Offset(57, 30),
+          Paint()
+            ..color = const Color(0xFFE67700)
+            ..strokeWidth = 1.3,
+        );
       case 'oculos_sol':
         for (final o in [left, right]) {
           final lens = RRect.fromRectAndRadius(
@@ -1364,6 +1504,12 @@ class _Coat {
       [Color(0xFFF2C14E), Color(0xFFA0741A)],
       [Color(0xFFE0A830), Color(0xFF9A6A10)],
       [Color(0xFFF7D27A), Color(0xFFD9A23A), Color(0xFFA0741A)],
+    ),
+    'galaxia' => const _Coat(
+      [Color(0xFF9775FA), Color(0xFF4C3FA6), Color(0xFF1B1F4A)],
+      [Color(0xFF5F3DC4), Color(0xFF1B1F4A)],
+      [Color(0xFF4C3FA6), Color(0xFF1B1F4A)],
+      [Color(0xFFB197FC), Color(0xFF7048E8), Color(0xFF3B2A8C)],
     ),
     'arco_iris' => const _Coat(
       [Color(0xFFFFE0F0), Color(0xFFC9B8FF), Color(0xFF7FB8F0)],

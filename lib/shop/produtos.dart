@@ -10,13 +10,13 @@ enum Produto {
     'remover_anuncios',
     'Remover anúncios',
     'Sem anúncios entre fases, para sempre. De presente: a Cartola VIP.',
-    'R\$ 12,90',
+    'R\$ 19,90',
   ),
   pacoteInicial(
     'pacote_inicial',
     'Pacote Inicial',
     'Sem anúncios entre fases + 300 estrelas + o Capacete Fundador.',
-    'R\$ 14,90',
+    'R\$ 24,90',
   ),
   estrelas150('estrelas_150', '150 estrelas', '', 'R\$ 4,90', estrelas: 150),
   estrelas400('estrelas_400', '400 estrelas', '', 'R\$ 9,90', estrelas: 400),
@@ -36,9 +36,53 @@ enum Produto {
   passeCapi(
     'passe_capi',
     'Passe do Capi premium',
-    'Trilha premium da temporada: 4 itens lendários, 140 estrelas e '
-        'ferramentas.',
+    'Trilha premium da temporada: 1 lendário exclusivo, 2 raros exclusivos, '
+        '140 estrelas e ferramentas.',
     'R\$ 9,90',
+  ),
+
+  // Legendary items sold in the Mercado do Capi (one a day, see mercado.dart).
+  lendarioMascara(
+    'lendario_mascara_heroi',
+    'Máscara de Herói',
+    'Item lendário do Capi.',
+    'R\$ 9,90',
+    item: 'mascara_heroi',
+  ),
+  lendarioAsinhas(
+    'lendario_asinhas',
+    'Asinhas de Anjo',
+    'Item lendário do Capi.',
+    'R\$ 9,90',
+    item: 'asinhas',
+  ),
+  lendarioArcoIris(
+    'lendario_arco_iris',
+    'Pelagem Arco-Íris',
+    'Item lendário do Capi.',
+    'R\$ 9,90',
+    item: 'arco_iris',
+  ),
+  lendarioGalaxia(
+    'lendario_galaxia',
+    'Pelagem Galáxia',
+    'Item lendário do Capi.',
+    'R\$ 9,90',
+    item: 'galaxia',
+  ),
+  lendarioColar(
+    'lendario_colar_diamante',
+    'Colar de Diamante',
+    'Item lendário do Capi.',
+    'R\$ 9,90',
+    item: 'colar_diamante',
+  ),
+  lendarioJetpack(
+    'lendario_jetpack',
+    'Mochila a Jato',
+    'Item lendário do Capi.',
+    'R\$ 9,90',
+    item: 'jetpack',
   );
 
   const Produto(
@@ -47,7 +91,18 @@ enum Produto {
     this.descricao,
     this.precoBase, {
     this.estrelas = 0,
+    this.item,
   });
+
+  /// The wardrobe item a legendary product gives.
+  final String? item;
+
+  static Produto? porItem(String itemId) {
+    for (final p in values) {
+      if (p.item == itemId) return p;
+    }
+    return null;
+  }
 
   final String id;
   final String nome;
@@ -98,6 +153,11 @@ abstract final class Entrega {
       return;
     }
     final primeiraVez = !store.owns(produto.id);
+    if (produto.item case final id?) {
+      await store.unlockHat(id);
+      await store.addOwnedProduct(produto.id);
+      return;
+    }
     await store.setAdsRemoved(true);
     switch (produto) {
       case Produto.removerAnuncios:

@@ -21,8 +21,8 @@ void main() {
     }
     expect(Village.next(0)!.id, 'flores');
     expect(Village.next(Village.items.length), isNull);
-    // The whole village costs about 30 levels' worth of stars.
+    // The whole village costs a few weeks of play (docs/economia.md).
     final total = Village.items.fold(0, (sum, i) => sum + i.cost);
-    expect(total, inInclusiveRange(60, 90));
+    expect(total, inInclusiveRange(400, 480));
   });
 }

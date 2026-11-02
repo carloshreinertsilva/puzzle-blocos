@@ -143,6 +143,21 @@ class ProgressStore {
     await _prefs.setInt('passPoints_$t', passPoints(t) + n);
   }
 
+  /// Rewarded videos used today for [what] ('dobrar', 'guardaRoupa').
+  int videosToday(String what, DateTime day) =>
+      _prefs.getInt('videos_${what}_${dayKey(day)}') ?? 0;
+
+  Future<void> addVideoToday(String what, DateTime day) => _prefs.setInt(
+    'videos_${what}_${dayKey(day)}',
+    videosToday(what, day) + 1,
+  );
+
+  /// Videos watched toward an item (see Wardrobe.videosRaro).
+  int itemVideos(String id) => _prefs.getInt('itemVideos_$id') ?? 0;
+
+  Future<void> addItemVideo(String id) =>
+      _prefs.setInt('itemVideos_$id', itemVideos(id) + 1);
+
   // --- Passe do Capi (see core/passe.dart) ---
 
   int passPoints(int temporada) => _prefs.getInt('passPoints_$temporada') ?? 0;
