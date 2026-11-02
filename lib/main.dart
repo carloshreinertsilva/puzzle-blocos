@@ -42,6 +42,12 @@ Future<void> main() async {
 /// Loads the saved progress and sets up sounds and ads.
 Future<AppServices> _iniciar() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    // Edge to edge on every Android, not only 15+ (where it is the default):
+    // what the Play Console recommends. Every screen keeps its content in
+    // the safe area (SafeArea).
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
   final store = await ProgressStore.load();
   if (kTestBridge) {
     TestBridge.instance.wallet = () => store.stars;
