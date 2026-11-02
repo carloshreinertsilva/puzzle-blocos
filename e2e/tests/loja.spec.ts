@@ -28,4 +28,14 @@ test.describe('Loja do Capi', () => {
     await expect(page.getByText(/^Estrelas dobradas/)).toBeVisible({ timeout: 10_000 });
     await expect.poll(async () => (await state(page)).stars).toBe(2 * s.starsGained);
   });
+
+  test('baú bônus do dia: +5 estrelas com um vídeo, uma vez', async ({ page }) => {
+    await openApp(page, { level: 8, stars: 0 });
+    await page.getByRole('button', { name: 'Missões Diárias' }).click();
+    const bau = page.getByRole('button', { name: /^Abrir baú bônus: \+5 estrelas/ });
+    await bau.click();
+    await expect.poll(async () => (await state(page)).stars, { timeout: 10_000 }).toBe(5);
+    // Once a day: the button is gone.
+    await expect(bau).toHaveCount(0);
+  });
 });

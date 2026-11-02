@@ -115,6 +115,7 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
   - Remover anúncios (R$ 12,90, com a Cartola VIP), Pacote Inicial (R$ 14,90, só nos 3 primeiros dias: sem anúncios + 300 estrelas + Capacete Fundador), pacotes de 150/400/1.000 estrelas (R$ 4,90/9,90/19,90) e kit de ferramentas (R$ 4,90);
   - nada é sorteio pago; restaurar compras; compras pendentes entregues depois;
   - "Dobrar estrelas com vídeo" no fim da fase;
+  - baú bônus diário nas Missões: +5 estrelas com um vídeo, uma vez por dia (o conteúdo aparece antes, nada sorteado);
   - o botão Loja entra no lugar de Estatísticas no menu (que vão para as configurações);
   - IDs e passo a passo da Play Console: `docs/loja.md`.
 - **v1.2.0: Duelo que convida** (`docs/duelo.md`): compartilhar pela janela do Android (WhatsApp etc.), link novo `/duelo?s=…&p=…`, convite na web para quem não tem o app (Play Store ou jogar no navegador) e App Links (o link abre o app; falta o `assetlinks.json` com a impressão digital da chave).

@@ -392,4 +392,10 @@ class ProgressStore {
   Future<void> setDailyChestClaimed(DateTime day, bool claimed) async {
     await _prefs.setBool('chest_claimed_${dayKey(day)}', claimed);
   }
+
+  /// The bonus chest (a video for a few stars), once a day.
+  bool isBonusChestClaimed(DateTime day) =>
+      _prefs.getBool('bonus_chest_${dayKey(day)}') ?? false;
+  Future<void> setBonusChestClaimed(DateTime day) =>
+      _prefs.setBool('bonus_chest_${dayKey(day)}', true);
 }
