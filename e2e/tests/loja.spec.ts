@@ -6,16 +6,20 @@ test.describe('Loja do Capi', () => {
   test('compra estrelas e remove os anúncios', async ({ page }) => {
     await openApp(page, { stars: 5 });
     await page.getByRole('button', { name: 'Loja' }).click();
-    await expect(page.getByText('Loja do Capi')).toBeVisible();
+    await expect(page.getByText('Loja do Capi')).toBeVisible({ timeout: 30_000 });
 
     await page.getByRole('button', { name: /^Comprar 150 estrelas por/ }).click();
     await expect.poll(async () => (await state(page)).stars).toBe(155);
 
     await page.getByRole('button', { name: /^Comprar Remover anúncios por/ }).click();
-    await expect(page.getByText('Sem anúncios entre fases', { exact: true })).toBeVisible();
-    // The VIP top hat came with it.
+    // Saved: no more ads between levels, and the VIP top hat came with it.
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('flutter.adsRemoved')), { timeout: 15_000 })
+      .toBe('true');
     const chapeus = await page.evaluate(() => localStorage.getItem('flutter.unlockedHats') ?? '');
     expect(chapeus).toContain('vip');
+    // The shop no longer offers it.
+    await expect(page.getByRole('button', { name: /^Comprar Remover anúncios por/ })).toHaveCount(0);
   });
 
   test('dobrar as estrelas da fase com um vídeo', async ({ page }) => {

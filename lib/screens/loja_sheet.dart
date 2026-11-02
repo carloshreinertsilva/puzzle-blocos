@@ -265,6 +265,7 @@ class _Destaque extends StatelessWidget {
           button: true,
           label: 'Comprar ${produto.nome} por $preco',
           excludeSemantics: true,
+          onTap: comprando ? null : onComprar,
           child: ChunkyButton(
             label: comprando ? 'Abrindo…' : preco,
             icon: Icons.shopping_bag_rounded,
