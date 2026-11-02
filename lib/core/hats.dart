@@ -29,6 +29,14 @@ enum CapiHat {
     'Chapéu de Mago',
     'Místico e estrelado para quem faz mágicas no tabuleiro.',
   ),
+  touca('touca', 'Touca de Inverno', 'Quentinha, com pompom.'),
+  junino('junino', 'Chapéu Caipira', 'Palha com remendo e fita xadrez.'),
+  coroaEstrelas(
+    'coroa_estrelas',
+    'Coroa de Estrelas',
+    'Brilha como o céu da vila à noite.',
+    loja: 'Trilha premium do Passe do Capi',
+  ),
   vip(
     'vip',
     'Cartola VIP',
@@ -48,16 +56,18 @@ enum CapiHat {
   final String label;
   final String description;
 
-  /// Shop-only hats say where they come from; the daily chest never gives
-  /// them.
+  /// Hats outside the daily chest say where they come from (shop, pass).
+  /// The full catalog, with rarity and price, is in wardrobe.dart.
   final String? loja;
   bool get exclusivo => loja != null;
 
-  static CapiHat fromId(String id) {
+  static CapiHat fromId(String id) => fromIdOrNull(id) ?? helmet;
+
+  static CapiHat? fromIdOrNull(String id) {
     for (final h in values) {
       if (h.id == id) return h;
     }
-    return helmet;
+    return null;
   }
 
   bool isUnlocked(ProgressStore store) {

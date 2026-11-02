@@ -1,3 +1,5 @@
+import '../core/wardrobe.dart';
+
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -21,6 +23,9 @@ class VillageModel {
 
   /// Pups saved in the levels; up to [Pups.max] wander on the island.
   int pups = 0;
+
+  /// What Capi is wearing.
+  CapiLook look = const CapiLook();
 
   /// Items (or 'capi', or 'pup3') tapped recently, and when.
   final Map<String, double> pokes = {};
@@ -675,6 +680,8 @@ class VillagePainter extends CustomPainter {
           ? CapiMood.cheer
           : CapiMood.happy,
       t: (t * 0.55) % 1,
+      hat: model.look.hat,
+      look: model.look,
     ).paint(c.canvas, Size.square(size));
     c.canvas.restore();
   }

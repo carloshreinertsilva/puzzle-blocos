@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/hats.dart';
+import '../core/passe.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/progress_store.dart';
@@ -10,6 +11,7 @@ import '../ui/capi.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
+import 'passe_sheet.dart';
 
 /// The shop: the starter pack (first days only), removing ads, star packs
 /// and the tool kit. Payment is all Google Play's; nothing is random.
@@ -143,6 +145,26 @@ class _LojaState extends State<_Loja> {
                   titulo: 'Sem anúncios entre fases',
                   subtitulo: 'Obrigado por apoiar o CapiBlocks!',
                 ),
+              const SizedBox(height: 10),
+              // The pass has its own screen, with every reward shown.
+              Semantics(
+                button: true,
+                label: 'Abrir o Passe do Capi',
+                excludeSemantics: true,
+                onTap: _abrirPasse,
+                child: GestureDetector(
+                  onTap: _abrirPasse,
+                  child: _Linha(
+                    icone: Icons.military_tech_rounded,
+                    cor: Palette.accent,
+                    titulo: 'Passe do Capi',
+                    subtitulo: PasseDoCapi.premium(_store, DateTime.now())
+                        ? 'Premium liberado nesta temporada. Toque para ver.'
+                        : 'Trilha premium da temporada: '
+                              '${_loja.preco(Produto.passeCapi)}. Toque para ver.',
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerLeft,
@@ -189,6 +211,13 @@ class _LojaState extends State<_Loja> {
         ),
       ),
     );
+  }
+
+  void _abrirPasse() {
+    final services = widget.services;
+    final nav = Navigator.of(context);
+    nav.pop();
+    showPasse(nav.context, services);
   }
 
   String _restante(DateTime agora) {

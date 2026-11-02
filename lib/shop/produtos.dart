@@ -1,4 +1,5 @@
 import '../core/hats.dart';
+import '../core/passe.dart';
 import '../services/progress_store.dart';
 
 /// What the shop sells. The ids are the product ids registered in the Play
@@ -31,6 +32,13 @@ enum Produto {
     'Kit de ferramentas',
     '3 martelos, 3 pás e 3 trocas de peças.',
     'R\$ 4,90',
+  ),
+  passeCapi(
+    'passe_capi',
+    'Passe do Capi premium',
+    'Trilha premium da temporada: 4 itens lendários, 140 estrelas e '
+        'ferramentas.',
+    'R\$ 9,90',
   );
 
   const Produto(
@@ -49,9 +57,10 @@ enum Produto {
   /// Stars in a star pack.
   final int estrelas;
 
-  /// Star packs and the tool kit can be bought again and again; the rest
-  /// once, and come back with "Restaurar compras".
-  bool get consumivel => estrelas > 0 || this == kitFerramentas;
+  /// Star packs, the tool kit and the pass (once per season) can be bought
+  /// again; the rest once, and come back with "Restaurar compras".
+  bool get consumivel =>
+      estrelas > 0 || this == kitFerramentas || this == passeCapi;
 
   static Produto? porId(String id) {
     for (final p in values) {
@@ -77,6 +86,9 @@ abstract final class Entrega {
       if (compraId != null && store.purchaseDelivered(compraId)) return;
       if (produto.estrelas > 0) {
         await store.addBoughtStars(produto.estrelas);
+      } else if (produto == Produto.passeCapi) {
+        // The premium track of the season it was bought in.
+        await store.setPassPremium(PasseDoCapi.temporada(DateTime.now()));
       } else {
         await store.addTool(CapiTool.hammer, 3);
         await store.addTool(CapiTool.shovel, 3);

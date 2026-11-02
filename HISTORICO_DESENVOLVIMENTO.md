@@ -177,7 +177,17 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
 
 ---
 
-## 6. Próximos Passos (Pós-Aprovação na Loja)
+## 6. Versões depois do lançamento
+
+- **1.0.2:** correção da tela branca no Android (R8 e shared_preferences). Em produção.
+- **1.1.0:** anúncios do AdMob, estatísticas anônimas (Firebase Analytics), nova tela de abertura, som corrigido e peças da última linha das obras encaixando.
+- **1.2.0:** Loja do Capi (Remover anúncios, Pacote Inicial, estrelas e kit de ferramentas), dobrar estrelas e baú bônus com vídeo, duelo por link (abre o app via App Links) e tela de ponta a ponta.
+- **1.3.0:**
+  - Capi Estilo: Capi novo em 2.5D;
+  - guarda-roupa com 5 posições, 4 raridades, 30 itens e 5 coleções;
+  - Passe do Capi: temporadas de 30 dias com trilha grátis e premium (`docs/passe.md`).
+
+## 7. Próximos Passos (Pós-Aprovação na Loja)
 
 1. **Acompanhar a Aprovação:** Prazo médio da Google de 2 a 5 dias úteis.
 2. **Ativar o Google AdMob:** Com o app ativo na Play Store, seguir `docs/admob.md` (IDs reais, `app-ads.txt`, formulários da Play Console) e publicar a v1.1.0.

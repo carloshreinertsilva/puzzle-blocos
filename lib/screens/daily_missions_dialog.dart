@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../core/daily_missions.dart';
+import '../core/passe.dart';
+import '../core/wardrobe.dart';
 import '../main.dart';
 import '../ads/ad_service.dart';
 import '../services/progress_store.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
+import 'passe_sheet.dart';
 import 'wardrobe_dialog.dart';
 
 /// Modal dialog showing the daily 3 missions, progress tracking, and the daily chest.
@@ -88,7 +91,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                 child: Column(
                   children: [
                     Text(
-                      'NOVO CHAPÉU DESBLOQUEADO!',
+                      'NOVO ITEM DO CAPI!',
                       style: displayText(13, color: const Color(0xFFF59E0B)),
                     ),
                     const SizedBox(height: 6),
@@ -98,7 +101,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      unlockedHat.description,
+                      unlockedHat.descricao,
                       textAlign: TextAlign.center,
                       style: bodyText(13, color: Palette.textDim),
                     ),
@@ -107,7 +110,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
               ),
             ] else ...[
               Text(
-                'Você já possui todos os chapéus da coleção!',
+                'Você já tem todos os itens que o baú pode dar!',
                 textAlign: TextAlign.center,
                 style: bodyText(14, color: Palette.textDim),
               ),
@@ -120,6 +123,51 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
             onTap: () => Navigator.of(ctx).pop(),
           ),
         ],
+      ),
+    );
+  }
+
+  /// One short line, with the full list a tap away.
+  Widget _chestPoolLine(ProgressStore store) {
+    final pool = Wardrobe.chestPool(store);
+    if (pool.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(
+          'Você já tem todos os itens do baú: ele dá 5 estrelas.',
+          textAlign: TextAlign.center,
+          style: bodyText(11, color: Palette.textDim),
+        ),
+      );
+    }
+    return TextButton(
+      onPressed: () => showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1B4B),
+          title: Text(
+            'O que pode sair no baú',
+            style: displayText(17, color: Palette.text),
+          ),
+          content: SingleChildScrollView(
+            child: Text(
+              'Um destes itens que você ainda não tem, escolhido pelo dia. '
+              'O baú é grátis e não se compra.\n\n'
+              '${pool.map((c) => '• ${c.label} (${c.raridade.label})').join('\n')}',
+              style: bodyText(13, color: Palette.textDim),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Ok', style: displayText(14, color: Palette.accent)),
+            ),
+          ],
+        ),
+      ),
+      child: Text(
+        'Pode sair 1 de ${pool.length} itens · Ver lista',
+        style: bodyText(12, color: Palette.accent),
       ),
     );
   }
@@ -209,13 +257,23 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$streak ${streak == 1 ? 'dia' : 'dias'} de sequência',
+                          '$streak ${streak == 1 ? 'dia' : 'dias'}',
+                          semanticsLabel:
+                              '$streak ${streak == 1 ? 'dia' : 'dias'} de sequência',
                           style: displayText(12, color: Colors.white),
                         ),
                       ],
                     ),
                   ),
                   const Spacer(),
+                  _PasseChip(
+                    prontas: PasseDoCapi.prontas(store, DateTime.now()),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      showPasse(context, widget.services);
+                    },
+                  ),
+                  const SizedBox(width: 6),
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pop();
@@ -308,7 +366,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                             )
                           else if (chestAvailable)
                             Text(
-                              'Pronto para abrir! (+5★ e Chapéu)',
+                              'Pronto para abrir! (+5★ e um item)',
                               style: bodyText(
                                 12,
                                 color: const Color(0xFFFDE047),
@@ -357,6 +415,8 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                   ],
                 ),
               ),
+              // No surprises: the chest shows every item it can give.
+              if (!chestClaimed) _chestPoolLine(store),
               if (widget.services.ads.hasVideoAds) ...[
                 const SizedBox(height: 10),
                 _bauBonus(store),
@@ -590,4 +650,58 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
       ),
     );
   }
+}
+
+/// Opens the Passe do Capi; a dot shows rewards waiting.
+class _PasseChip extends StatelessWidget {
+  const _PasseChip({required this.prontas, required this.onTap});
+  final int prontas;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: prontas > 0
+        ? 'Passe do Capi, $prontas prêmios para pegar'
+        : 'Passe do Capi',
+    excludeSemantics: true,
+    onTap: onTap,
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0x33FFC94D),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0x88FFC94D)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.military_tech_rounded,
+              color: Palette.accent,
+              size: 16,
+            ),
+            const SizedBox(width: 4),
+            Text('Passe', style: displayText(12, color: Palette.accent)),
+            if (prontas > 0) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                  color: Palette.danger,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$prontas',
+                  style: displayText(10, color: Colors.white),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
 }

@@ -1,3 +1,6 @@
+import '../core/passe.dart' show PasseDoCapi;
+import '../core/wardrobe.dart' show Slot;
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// The 4 tools of Capi (Step 2).
@@ -135,7 +138,35 @@ class ProgressStore {
     if (n <= 0) return;
     await _prefs.setInt('stars', stars + n);
     await _prefs.setInt('starsEarned', starsEarned + n);
+    // Stars earned by playing are also the Passe do Capi's points.
+    final t = PasseDoCapi.temporada(DateTime.now());
+    await _prefs.setInt('passPoints_$t', passPoints(t) + n);
   }
+
+  // --- Passe do Capi (see core/passe.dart) ---
+
+  int passPoints(int temporada) => _prefs.getInt('passPoints_$temporada') ?? 0;
+
+  bool passPremium(int temporada) =>
+      _prefs.getBool('passPremium_$temporada') ?? false;
+
+  Future<void> setPassPremium(int temporada) =>
+      _prefs.setBool('passPremium_$temporada', true);
+
+  bool passClaimed(int temporada, int nivel, {required bool premium}) =>
+      _prefs.getBool(
+        'passClaim_${temporada}_${nivel}_${premium ? 'p' : 'g'}',
+      ) ??
+      false;
+
+  Future<void> markPassClaimed(
+    int temporada,
+    int nivel, {
+    required bool premium,
+  }) => _prefs.setBool(
+    'passClaim_${temporada}_${nivel}_${premium ? 'p' : 'g'}',
+    true,
+  );
 
   /// Returns false (and spends nothing) when there are not enough stars.
   Future<bool> spendStars(int n) async {
@@ -332,6 +363,14 @@ class ProgressStore {
       await _prefs.setStringList('unlockedHats', [...cur, hatId]);
     }
   }
+
+  /// The item worn in a slot other than the head (see wardrobe.dart), or
+  /// null. Owned items share the `unlockedHats` list, whatever the slot.
+  String? equippedIn(Slot slot) => _prefs.getString('equipped_${slot.name}');
+
+  Future<void> equipIn(Slot slot, String? id) => id == null
+      ? _prefs.remove('equipped_${slot.name}')
+      : _prefs.setString('equipped_${slot.name}', id);
 
   // --- Daily Missions & Chest (Step 5) ---
 

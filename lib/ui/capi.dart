@@ -1,4 +1,5 @@
 import '../core/hats.dart';
+import '../core/wardrobe.dart';
 
 import 'dart:math';
 
@@ -15,10 +16,19 @@ enum CapiMood { happy, cheer, worried, sad, point, carry }
 /// Capi, the builder capybara: the game's mascot, drawn in code to match the
 /// art in `art/capi.vectorcraft`, with a gentle idle bob.
 class Capi extends StatefulWidget {
-  const Capi({super.key, this.size = 80, this.mood = CapiMood.happy, this.hat});
+  const Capi({
+    super.key,
+    this.size = 80,
+    this.mood = CapiMood.happy,
+    this.hat,
+    this.look,
+  });
   final double size;
   final CapiMood mood;
   final CapiHat? hat;
+
+  /// Everything Capi wears; [hat], if given, replaces the look's hat.
+  final CapiLook? look;
 
   @override
   State<Capi> createState() => _CapiState();
@@ -45,7 +55,8 @@ class _CapiState extends State<Capi> with SingleTickerProviderStateMixin {
         painter: CapiPainter(
           mood: widget.mood,
           t: _bob.value,
-          hat: widget.hat ?? CapiHat.helmet,
+          hat: widget.hat ?? widget.look?.hat ?? CapiHat.helmet,
+          look: widget.look,
         ),
       ),
     ),
@@ -53,26 +64,28 @@ class _CapiState extends State<Capi> with SingleTickerProviderStateMixin {
 }
 
 class CapiPainter extends CustomPainter {
-  CapiPainter({required this.mood, required this.t, this.hat = CapiHat.helmet});
+  CapiPainter({
+    required this.mood,
+    required this.t,
+    this.hat = CapiHat.helmet,
+    CapiLook? look,
+  }) : look = look ?? const CapiLook(),
+       _coat = _Coat.of((look ?? const CapiLook()).pelagem);
   final CapiMood mood;
   final double t;
   final CapiHat hat;
 
-  static const _line = Color(0xFF4A2A12);
-  static const _furTop = Color(0xFFD69E66);
-  static const _furBottom = Color(0xFFB07A47);
-  static const _bodyTop = Color(0xFFCF975F);
-  static const _bodyBottom = Color(0xFF9E673A);
-  static const _arm = Color(0xFFA56C3C);
-  static const _dark = Color(0xFF8E5A30);
-  static const _ink = Color(0xFF2A1A0E);
+  /// The other items (face, neck, back, fur); the hat comes from [hat].
+  final CapiLook look;
+  final _Coat _coat;
+
   static const _helmetTop = Color(0xFFFFD95A);
   static const _helmetBottom = Color(0xFFF5B21E);
 
   static final _outline = Paint()
-    ..color = _line
+    ..color = const Color(0xAA4A2A12)
     ..style = PaintingStyle.stroke
-    ..strokeWidth = 1.1
+    ..strokeWidth = 1.0
     ..strokeJoin = StrokeJoin.round;
 
   /// Fills [path] with a top-to-bottom gradient and outlines it.
@@ -90,290 +103,399 @@ class CapiPainter extends CustomPainter {
     canvas.drawPath(path, _outline);
   }
 
-  void _limb(Canvas canvas, Path path) {
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = _line
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 8.2
-        ..strokeCap = StrokeCap.round,
+  // --- The soft, "toy 3D" look: light from the top left, volume from
+  // radial gradients, a thin soft outline instead of a hard one. ---
+
+  static const _furStops = [0.0, 0.55, 1.0];
+  static final _soft = Paint()
+    ..color = const Color(0x667A4422)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 0.9;
+
+  static Paint _ball(
+    Rect r,
+    List<Color> colors, {
+    Alignment at = const Alignment(-0.35, -0.5),
+    List<double>? stops,
+  }) => Paint()
+    ..shader = RadialGradient(
+      center: at,
+      radius: 0.95,
+      colors: colors,
+      stops: stops,
+    ).createShader(r);
+
+  /// A rounded shape with volume.
+  void _blob(
+    Canvas canvas,
+    Rect r, {
+    double radius = 999,
+    List<Color>? colors,
+    List<double>? stops = _furStops,
+    Alignment at = const Alignment(-0.35, -0.5),
+  }) {
+    final rr = RRect.fromRectAndRadius(
+      r,
+      Radius.circular(min(radius, r.shortestSide / 2)),
     );
-    canvas.drawPath(
-      path,
+    canvas.drawRRect(rr, _ball(r, colors ?? _coat.fur, at: at, stops: stops));
+    canvas.drawRRect(rr, _soft);
+  }
+
+  /// A soft glow (shadows, shine, blush), fading to nothing at the edge.
+  void _glow(Canvas canvas, Offset c, double rx, double ry, Color color) {
+    final r = Rect.fromCenter(center: c, width: rx * 2, height: ry * 2);
+    canvas.drawOval(
+      r,
       Paint()
-        ..color = _arm
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 6.2
-        ..strokeCap = StrokeCap.round,
+        ..shader = RadialGradient(colors: [color, color.withValues(alpha: 0)])
+            .createShader(r),
     );
   }
 
-  void _paw(Canvas canvas, Offset c) {
-    final r = Rect.fromCenter(center: c, width: 6.4, height: 6.8);
-    canvas.drawOval(r, Paint()..color = _dark);
-    canvas.drawOval(r, _outline);
+  /// A short chubby arm from [from] to [to], ending in a round paw.
+  void _arm(Canvas canvas, Offset from, Offset to, {Offset? bend}) {
+    final path = Path()..moveTo(from.dx, from.dy);
+    if (bend != null) {
+      path.quadraticBezierTo(bend.dx, bend.dy, to.dx, to.dy);
+    } else {
+      path.lineTo(to.dx, to.dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0x667A4422)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 9.2
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFFC98F58)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7.6
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0x40FFF1DC)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round,
+    );
+    _blob(
+      canvas,
+      Rect.fromCenter(center: to, width: 8.4, height: 8),
+      colors: const [Color(0xFFE6B07A), Color(0xFFA66C3C)],
+      stops: null,
+    );
   }
 
   void _block(Canvas canvas, Rect r) {
-    final rr = RRect.fromRectAndRadius(r, const Radius.circular(2.9));
+    final rr = RRect.fromRectAndRadius(r, const Radius.circular(3.4));
     canvas.drawRRect(
-      rr.shift(const Offset(0, 1)),
+      rr.shift(const Offset(0, 1.2)),
       Paint()..color = const Color(0xFFC9582B),
     );
     canvas.drawRRect(
       rr,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFFFB56B), Color(0xFFFF8A3D)],
-        ).createShader(r),
+      _ball(
+        r,
+        const [Color(0xFFFFC78A), Color(0xFFFF9A4D), Color(0xFFE5732B)],
+        stops: const [0, 0.55, 1],
+      ),
     );
-    canvas.drawRRect(rr, _outline);
+    canvas.drawRRect(rr, _soft);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(r.left + 2.3, r.top + 1.8, r.width - 4.6, 2.9),
+        Rect.fromLTWH(r.left + 2.6, r.top + 2, r.width - 5.2, 3),
         const Radius.circular(1.5),
       ),
-      Paint()..color = const Color(0x73FFFFFF),
+      Paint()..color = const Color(0x80FFFFFF),
     );
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Everything is drawn on a 100x100 grid (the art's 1024 grid / 10.24).
+    // Everything is drawn on a 100x100 grid.
     canvas.scale(size.width / 100);
     final bob = sin(t * 2 * pi) * 1.4;
+    // A slow breath: the body swells a little.
+    final breath = 1 + sin(t * 2 * pi + 1.2) * 0.012;
     final cheer = mood == CapiMood.cheer;
     final worried = mood == CapiMood.worried;
     final sad = mood == CapiMood.sad;
-    final armsUp = cheer || mood == CapiMood.carry;
+    final carry = mood == CapiMood.carry;
     final holdsBlock = mood == CapiMood.happy || worried;
 
-    // Shadow and feet.
-    canvas.drawOval(
-      const Rect.fromLTWH(24.4, 90.3, 51.2, 5.9),
-      Paint()..color = const Color(0x2E000000),
-    );
-    for (final x in [32.2, 53.1]) {
-      final r = Rect.fromLTWH(x, 86, 14.6, 7.8);
-      canvas.drawOval(r, Paint()..color = const Color(0xFF7A4C26));
-      canvas.drawOval(r, _outline);
+    // Ground shadow and feet.
+    _glow(canvas, const Offset(50, 94), 27, 4.6, const Color(0x55000000));
+    for (final x in [39.0, 61.0]) {
+      _blob(
+        canvas,
+        Rect.fromCenter(center: Offset(x, 90), width: 15, height: 8.5),
+        colors: _coat.feet,
+        stops: null,
+      );
     }
 
-    // Body and belly.
-    _shape(
-      canvas,
-      Path()
-        ..moveTo(29.3, 74.2)
-        ..cubicTo(29.3, 58.6, 39.1, 52.7, 50, 52.7)
-        ..cubicTo(60.9, 52.7, 70.7, 58.6, 70.7, 74.2)
-        ..cubicTo(70.7, 85.9, 62.5, 90.8, 50, 90.8)
-        ..cubicTo(37.5, 90.8, 29.3, 85.9, 29.3, 74.2)
-        ..close(),
-      _bodyTop,
-      _bodyBottom,
+    // Back items, behind the body (wings, cape, backpack).
+    _backBehind(canvas, look.costas);
+
+    // Body and belly, breathing from the feet.
+    canvas.save();
+    canvas.translate(50, 94);
+    canvas.scale(breath, breath);
+    canvas.translate(-50, -94);
+    _blob(canvas, const Rect.fromLTWH(28, 56, 44, 38));
+    final belly = Rect.fromCenter(
+      center: const Offset(50, 77),
+      width: 26,
+      height: 22,
     );
     canvas.drawOval(
-      const Rect.fromLTWH(38.3, 62.5, 23.4, 24.4),
-      Paint()..color = const Color(0xFFE8C496),
+      belly,
+      _ball(belly, const [Color(0xFFFFF0D8), Color(0xFFEBC594)]),
     );
+    canvas.restore();
 
-    // Arms (and the block he holds), before the head so the shoulders tuck
-    // under it.
-    if (armsUp) {
-      // Cheering: arms out and up. Carrying: straight up past the helmet,
-      // paws where the load sits (y 4).
-      final up = cheer ? bob : 0.0;
-      final carry = mood == CapiMood.carry;
-      final reach = carry ? 5.0 : 46 + up;
-      final side = carry ? 20.0 : 17.0;
-      _limb(
+    // Back items with a front part (straps, the swim ring).
+    _backFront(canvas, look.costas);
+
+    // Arms (and the block), before the head so the shoulders tuck under it.
+    const leftShoulder = Offset(31, 64);
+    const rightShoulder = Offset(69, 64);
+    if (carry) {
+      // Straight up past the head, paws where the load sits (y 5).
+      _arm(
         canvas,
-        Path()
-          ..moveTo(33, 63)
-          ..quadraticBezierTo(16, 50, side, reach),
+        leftShoulder,
+        const Offset(20, 5),
+        bend: const Offset(17, 40),
       );
-      _limb(
+      _arm(
         canvas,
-        Path()
-          ..moveTo(67, 63)
-          ..quadraticBezierTo(84, 50, 100 - side, reach),
+        rightShoulder,
+        const Offset(80, 5),
+        bend: const Offset(83, 40),
       );
-      _paw(canvas, Offset(side, reach - 1));
-      _paw(canvas, Offset(100 - side, reach - 1));
+    } else if (cheer) {
+      final up = bob;
+      _arm(
+        canvas,
+        leftShoulder,
+        Offset(16, 44 + up),
+        bend: const Offset(19, 58),
+      );
+      _arm(
+        canvas,
+        rightShoulder,
+        Offset(84, 44 + up),
+        bend: const Offset(81, 58),
+      );
     } else if (holdsBlock) {
-      _block(canvas, const Rect.fromLTWH(41.2, 62.5, 17.6, 16.8));
-      _limb(
+      _block(canvas, const Rect.fromLTWH(40.5, 61.5, 19, 17));
+      _arm(
         canvas,
-        Path()
-          ..moveTo(33, 63.5)
-          ..quadraticBezierTo(35.2, 72.3, 42.2, 72.5),
+        leftShoulder,
+        const Offset(41.5, 71),
+        bend: const Offset(33, 72),
       );
-      _limb(
+      _arm(
         canvas,
-        Path()
-          ..moveTo(67, 63.5)
-          ..quadraticBezierTo(64.8, 72.3, 57.8, 72.5),
+        rightShoulder,
+        const Offset(58.5, 71),
+        bend: const Offset(67, 72),
       );
-      _paw(canvas, const Offset(42.7, 72.5));
-      _paw(canvas, const Offset(57.3, 72.5));
     } else if (mood == CapiMood.point) {
-      _limb(
+      _arm(
         canvas,
-        Path()
-          ..moveTo(33, 63.5)
-          ..quadraticBezierTo(30, 72, 31, 80),
+        leftShoulder,
+        const Offset(31, 80),
+        bend: const Offset(28, 72),
       );
-      _limb(
+      _arm(
         canvas,
-        Path()
-          ..moveTo(67, 63)
-          ..quadraticBezierTo(78, 58, 88, 50 + bob),
+        rightShoulder,
+        Offset(88, 50 + bob),
+        bend: const Offset(79, 59),
       );
-      _paw(canvas, const Offset(31, 80));
-      _paw(canvas, Offset(89, 49 + bob));
     } else {
       // Sad: arms hanging down.
-      for (final (a, b) in [
-        (const Offset(33, 63.5), const Offset(31, 81)),
-        (const Offset(67, 63.5), const Offset(69, 81)),
-      ]) {
-        _limb(
-          canvas,
-          Path()
-            ..moveTo(a.dx, a.dy)
-            ..lineTo(b.dx, b.dy),
-        );
-        _paw(canvas, b);
-      }
+      _arm(canvas, leftShoulder, const Offset(30, 81));
+      _arm(canvas, rightShoulder, const Offset(70, 81));
     }
 
     canvas.save();
     canvas.translate(0, bob);
 
-    // Ears, head, snout.
-    for (final x in [21.7, 66.6]) {
-      final r = Rect.fromLTWH(x, 19.1, 11.7, 9.8);
-      canvas.drawOval(r, Paint()..color = _dark);
-      canvas.drawOval(r, _outline);
+    // The head's soft shadow on the body.
+    _glow(canvas, const Offset(50, 61), 22, 4.5, const Color(0x50553011));
+
+    // Neck items, tucked under the head.
+    _neck(canvas, look.pescoco);
+
+    // Ears.
+    for (final x in [25.0, 75.0]) {
+      final ear = Rect.fromCenter(center: Offset(x, 21), width: 12, height: 10);
+      _blob(canvas, ear, colors: _coat.ear, stops: null);
+      final inner = Rect.fromCenter(
+        center: Offset(x, 21.8),
+        width: 6,
+        height: 4.6,
+      );
       canvas.drawOval(
-        Rect.fromLTWH(x + 2.5, 21.7, 6.4, 5.1),
-        Paint()..color = const Color(0xFFE59A8E),
+        inner,
+        _ball(inner, const [Color(0xFFFFB6B0), Color(0xFFD9837A)]),
       );
     }
-    _shape(
-      canvas,
-      Path()..addRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(20.5, 20.5, 59, 40),
-          const Radius.circular(19.5),
-        ),
-      ),
-      _furTop,
-      _furBottom,
-    );
-    _shape(
-      canvas,
-      Path()..addRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(32.2, 40, 35.5, 21.5),
-          const Radius.circular(10.3),
-        ),
-      ),
-      const Color(0xFFA87446),
-      const Color(0xFF8A5A32),
-    );
-    final ink = Paint()..color = const Color(0xFF3A2414);
-    canvas.drawOval(const Rect.fromLTWH(41, 43, 4.9, 3.3), ink);
-    canvas.drawOval(const Rect.fromLTWH(54.1, 43, 4.9, 3.3), ink);
 
-    // Mouth (with the two front teeth when smiling).
+    // Head: big and round, with a rim light and a shine.
+    _blob(canvas, const Rect.fromLTWH(18, 17, 64, 45), radius: 22);
+    canvas.drawArc(
+      const Rect.fromLTWH(20, 19, 60, 41),
+      -0.55,
+      1.05,
+      false,
+      Paint()
+        ..color = const Color(0x55FFF4E0)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..strokeCap = StrokeCap.round,
+    );
+    _glow(canvas, const Offset(38, 24), 12, 5, const Color(0x55FFFFFF));
+
+    // Muzzle: wide, with the nostrils on top.
+    _blob(
+      canvas,
+      const Rect.fromLTWH(32, 39, 36, 21),
+      radius: 10.5,
+      colors: _coat.muzzle,
+      stops: const [0, 0.6, 1],
+      at: const Alignment(-0.2, -0.7),
+    );
+    _glow(canvas, const Offset(47, 42), 9, 2.4, const Color(0x44FFFFFF));
+    final ink = Paint()..color = const Color(0xFF3A2414);
+    for (final s in [-1.0, 1.0]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(50 + s * 6.5, 45.5),
+          width: 4.6,
+          height: 3,
+        ),
+        ink,
+      );
+    }
+
+    // Mouth: the two front teeth when smiling.
     final stroke = Paint()
       ..color = const Color(0xFF3A2414)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
     if (worried) {
-      canvas.drawOval(const Rect.fromLTWH(46.8, 52.5, 6.4, 5.5), ink);
+      canvas.drawOval(const Rect.fromLTWH(47, 50.5, 6, 5.2), ink);
     } else if (sad) {
       canvas.drawPath(
         Path()
-          ..moveTo(44, 57)
-          ..quadraticBezierTo(50, 51.5, 56, 57),
+          ..moveTo(44.5, 56)
+          ..quadraticBezierTo(50, 51, 55.5, 56),
         stroke,
       );
     } else {
-      final open = cheer ? 3.0 : 0.0;
+      final open = cheer ? 2.6 : 0.0;
       canvas.drawPath(
         Path()
-          ..moveTo(43, 52.7)
-          ..quadraticBezierTo(50, 58.6 + open, 57, 52.7),
+          ..moveTo(43.5, 51.5)
+          ..quadraticBezierTo(50, 57 + open, 56.5, 51.5),
         stroke,
       );
-      final teeth = RRect.fromRectAndRadius(
-        Rect.fromLTWH(47.9, 54.4 + open / 2, 4.3, 3.3),
-        const Radius.circular(0.8),
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(47.8, 53.4 + open / 2, 4.4, 3.4),
+          const Radius.circular(1),
+        ),
+        Paint()..color = Colors.white,
       );
-      canvas.drawRRect(teeth, Paint()..color = Colors.white);
     }
 
-    // Eyes.
-    if (cheer) {
-      for (final x in [32.2, 60.9]) {
+    // Eyes: big and glossy (closed arcs when cheering or sad).
+    const eyeY = 31.0;
+    if (cheer || sad) {
+      for (final x in [35.0, 65.0]) {
         canvas.drawPath(
-          Path()
-            ..moveTo(x, 34)
-            ..quadraticBezierTo(x + 3.4, 28, x + 6.8, 34),
-          stroke..strokeWidth = 2,
-        );
-      }
-    } else if (sad) {
-      for (final x in [32.2, 60.9]) {
-        canvas.drawPath(
-          Path()
-            ..moveTo(x, 32)
-            ..quadraticBezierTo(x + 3.4, 36, x + 6.8, 32),
-          stroke..strokeWidth = 2,
+          cheer
+              ? (Path()
+                  ..moveTo(x - 4, eyeY + 2)
+                  ..quadraticBezierTo(x, eyeY - 4, x + 4, eyeY + 2))
+              : (Path()
+                  ..moveTo(x - 4, eyeY - 1)
+                  ..quadraticBezierTo(x, eyeY + 3.5, x + 4, eyeY - 1)),
+          Paint()
+            ..color = const Color(0xFF2A1A0E)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..strokeCap = StrokeCap.round,
         );
       }
     } else {
       if (worried) {
         // Raised, slanted brows and a drop of sweat.
-        canvas.drawLine(const Offset(31, 27), const Offset(39, 25), stroke);
-        canvas.drawLine(const Offset(61, 25), const Offset(69, 27), stroke);
+        canvas.drawLine(const Offset(30, 24), const Offset(39, 22), stroke);
+        canvas.drawLine(const Offset(61, 22), const Offset(70, 24), stroke);
         canvas.drawPath(
           Path()
-            ..moveTo(84, 30)
-            ..quadraticBezierTo(80, 38, 84, 40)
-            ..quadraticBezierTo(88, 38, 84, 30),
+            ..moveTo(85, 28)
+            ..quadraticBezierTo(81, 36, 85, 38)
+            ..quadraticBezierTo(89, 36, 85, 28),
           Paint()..color = const Color(0xFF7FD3FF),
         );
       }
       final blink = t > 0.94;
-      for (final x in [32.2, 60.9]) {
+      for (final x in [35.0, 65.0]) {
+        final o = Offset(x, eyeY);
         if (blink) {
-          canvas.drawLine(Offset(x, 33.3), Offset(x + 6.8, 33.3), stroke);
-        } else {
-          canvas.drawOval(
-            Rect.fromLTWH(x, 29.3, 6.8, 8),
-            Paint()..color = _ink,
-          );
-          canvas.drawCircle(
-            Offset(x + 3.4, 31.7),
-            1.3,
-            Paint()..color = Colors.white,
-          );
+          canvas.drawLine(o.translate(-4.5, 0), o.translate(4.5, 0), stroke);
+          continue;
         }
+        final e = Rect.fromCenter(center: o, width: 9.5, height: 11.5);
+        canvas.drawOval(
+          e,
+          _ball(e, const [
+            Color(0xFF5A3A22),
+            Color(0xFF1A0E06),
+          ], at: const Alignment(0, 0.6)),
+        );
+        canvas.drawCircle(
+          o + const Offset(-1.8, -2.6),
+          2.1,
+          Paint()..color = Colors.white,
+        );
+        canvas.drawCircle(
+          o + const Offset(2, 2.4),
+          0.9,
+          Paint()..color = const Color(0xCCFFFFFF),
+        );
       }
     }
-    final blush = Paint()..color = const Color(0x73FF7A8A);
-    canvas.drawOval(const Rect.fromLTWH(24.4, 39, 7.8, 4.5), blush);
-    canvas.drawOval(const Rect.fromLTWH(67.8, 39, 7.8, 4.5), blush);
+    // Rosy cheeks.
+    for (final x in [24.5, 75.5]) {
+      _glow(canvas, Offset(x, 42), 6.5, 4, const Color(0xB3FF8A9A));
+    }
 
-    // Equipped Hat.
+    // Face items, over the eyes.
+    _face(canvas, look.rosto, closedEyes: cheer || sad);
+
+    // Equipped hat. The hats were drawn for the old, smaller head: stretch
+    // them to the new head's width and lift them onto its top.
+    canvas.save();
+    canvas.translate(50, 17);
+    canvas.scale(64 / 59, 1);
+    canvas.translate(-50, -20.5);
     _drawHat(canvas, hat);
+    canvas.restore();
     canvas.restore();
   }
 
@@ -598,6 +720,9 @@ class CapiPainter extends CustomPainter {
           Paint()..color = const Color(0xFFFDE047),
         );
 
+      case CapiHat.touca || CapiHat.junino || CapiHat.coroaEstrelas:
+        _drawNewHat(canvas, h);
+
       case CapiHat.vip:
         // Black top hat with a gold band.
         final brim = Path()
@@ -653,9 +778,480 @@ class CapiPainter extends CustomPainter {
     }
   }
 
+  // --- Wardrobe items (see core/wardrobe.dart). All on the 100x100 grid. ---
+
+  Paint _fill(Color c) => Paint()..color = c;
+
+  Paint get _line => Paint()
+    ..color = const Color(0x997A4422)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 0.9
+    ..strokeJoin = StrokeJoin.round;
+
+  /// A five-pointed star centered at [c].
+  Path _star(Offset c, double r, [double inner = 0.45]) {
+    final p = Path();
+    for (var i = 0; i < 10; i++) {
+      final rr = i.isEven ? r : r * inner;
+      final a = -pi / 2 + i * pi / 5;
+      final o = Offset(c.dx + rr * cos(a), c.dy + rr * sin(a));
+      i == 0 ? p.moveTo(o.dx, o.dy) : p.lineTo(o.dx, o.dy);
+    }
+    return p..close();
+  }
+
+  void _backBehind(Canvas canvas, String? id) {
+    switch (id) {
+      case 'asinhas':
+        // Two feathered wings, flapping a little.
+        final flap = sin(t * 2 * pi * 2) * 0.08;
+        for (final s in [-1.0, 1.0]) {
+          canvas.save();
+          canvas.translate(50 + s * 18, 66);
+          canvas.rotate(s * (0.25 + flap));
+          for (var i = 0; i < 3; i++) {
+            final f = Rect.fromLTWH(
+              s > 0 ? 2 : -24 + i * 1.5,
+              -14 + i * 7,
+              22 - i * 3.0,
+              10,
+            );
+            final feather = RRect.fromRectAndRadius(
+              f,
+              const Radius.circular(5),
+            );
+            canvas.drawRRect(
+              feather,
+              _ball(f, const [Color(0xFFFFFFFF), Color(0xFFD9E6F5)]),
+            );
+            canvas.drawRRect(feather, _line..color = const Color(0x667A8AA0));
+          }
+          canvas.restore();
+        }
+      case 'capa_real':
+        final cape = Path()
+          ..moveTo(32, 58)
+          ..quadraticBezierTo(18, 76, 20, 94)
+          ..lineTo(80, 94)
+          ..quadraticBezierTo(82, 76, 68, 58)
+          ..close();
+        _shape(canvas, cape, const Color(0xFFE5484D), const Color(0xFF8E1D2C));
+      case 'mochila':
+        final bag = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(22, 60, 56, 28),
+          const Radius.circular(9),
+        );
+        canvas.drawRRect(
+          bag,
+          _ball(bag.outerRect, const [Color(0xFF7BD389), Color(0xFF2F8F4E)]),
+        );
+        canvas.drawRRect(bag, _line);
+    }
+  }
+
+  void _backFront(Canvas canvas, String? id) {
+    switch (id) {
+      case 'mochila':
+        // Straps over the shoulders.
+        for (final s in [-1.0, 1.0]) {
+          canvas.drawPath(
+            Path()
+              ..moveTo(50 + s * 13, 58)
+              ..quadraticBezierTo(50 + s * 14, 70, 50 + s * 18, 84),
+            Paint()
+              ..color = const Color(0xFF2F8F4E)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3.2
+              ..strokeCap = StrokeCap.round,
+          );
+        }
+      case 'boia':
+        // A yellow duck ring around the waist.
+        final ring = Rect.fromCenter(
+          center: const Offset(50, 82),
+          width: 56,
+          height: 16,
+        );
+        canvas.drawOval(
+          ring,
+          Paint()
+            ..shader = const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFFFF08A), Color(0xFFF2B705)],
+            ).createShader(ring),
+        );
+        canvas.drawOval(ring, _line);
+        canvas.drawOval(
+          Rect.fromCenter(center: const Offset(50, 80), width: 38, height: 7),
+          _fill(const Color(0x33FFFFFF)),
+        );
+        // The duck's head on the side.
+        canvas.drawCircle(
+          const Offset(76, 76),
+          5,
+          _fill(const Color(0xFFFFE24A)),
+        );
+        canvas.drawCircle(const Offset(76, 76), 5, _line);
+        canvas.drawCircle(
+          const Offset(77.5, 75),
+          0.9,
+          _fill(const Color(0xFF2A1A0E)),
+        );
+        canvas.drawPath(
+          Path()
+            ..moveTo(80.5, 76)
+            ..lineTo(84, 77)
+            ..lineTo(80.5, 78.2)
+            ..close(),
+          _fill(const Color(0xFFFF8A3D)),
+        );
+      case 'capa_real':
+        // The ermine collar, white with black dots.
+        final collar = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(29, 56, 42, 8),
+          const Radius.circular(4),
+        );
+        canvas.drawRRect(collar, _fill(const Color(0xFFFFFBF2)));
+        canvas.drawRRect(collar, _line);
+        for (final x in [35.0, 43.0, 57.0, 65.0]) {
+          canvas.drawCircle(Offset(x, 60), 0.9, _fill(const Color(0xFF2A1A0E)));
+        }
+    }
+  }
+
+  void _neck(Canvas canvas, String? id) {
+    switch (id) {
+      case 'cachecol':
+        final band = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(26, 56, 48, 10),
+          const Radius.circular(5),
+        );
+        canvas.drawRRect(
+          band,
+          _ball(band.outerRect, const [Color(0xFFFF6B6B), Color(0xFFC92A2A)]),
+        );
+        for (final x in [34.0, 46.0, 58.0, 70.0]) {
+          canvas.drawRect(
+            Rect.fromLTWH(x - 2, 56.5, 3.5, 9),
+            _fill(const Color(0xCCFFFFFF)),
+          );
+        }
+        canvas.drawRRect(band, _line);
+        // The tail hanging down the chest.
+        final tail = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(58, 62, 9, 17),
+          const Radius.circular(3),
+        );
+        canvas.drawRRect(tail, _fill(const Color(0xFFE03131)));
+        canvas.drawRect(
+          const Rect.fromLTWH(58, 69, 9, 3),
+          _fill(const Color(0xCCFFFFFF)),
+        );
+        canvas.drawRRect(tail, _line);
+      case 'gravata':
+        for (final s in [-1.0, 1.0]) {
+          final wing = Path()
+            ..moveTo(50, 64)
+            ..lineTo(50 + s * 10, 58.5)
+            ..quadraticBezierTo(50 + s * 12, 64, 50 + s * 10, 69.5)
+            ..close();
+          _shape(
+            canvas,
+            wing,
+            const Color(0xFFFF5C8A),
+            const Color(0xFFB0124A),
+          );
+        }
+        canvas.drawCircle(
+          const Offset(50, 64),
+          2.6,
+          _fill(const Color(0xFFD6336C)),
+        );
+      case 'lenco':
+        // A checkered kerchief, knotted at the front.
+        final scarf = Path()
+          ..moveTo(30, 58)
+          ..lineTo(70, 58)
+          ..lineTo(50, 76)
+          ..close();
+        canvas.save();
+        canvas.clipPath(scarf);
+        canvas.drawPath(scarf, _fill(const Color(0xFFE03131)));
+        for (var x = 30.0; x < 70; x += 6) {
+          canvas.drawRect(
+            Rect.fromLTWH(x, 56, 3, 22),
+            _fill(const Color(0x55FFFFFF)),
+          );
+        }
+        for (var y = 58.0; y < 78; y += 6) {
+          canvas.drawRect(
+            Rect.fromLTWH(28, y, 44, 3),
+            _fill(const Color(0x55FFFFFF)),
+          );
+        }
+        canvas.restore();
+        canvas.drawPath(scarf, _line);
+      case 'colar_flores':
+        const colors = [
+          Color(0xFFFF6FA8),
+          Color(0xFFFFD43B),
+          Color(0xFF74C0FC),
+          Color(0xFFB57CF7),
+          Color(0xFFFF8A3D),
+        ];
+        for (var i = 0; i < 9; i++) {
+          final a = pi * (0.1 + i * 0.1);
+          final c = Offset(50 - 22 * cos(a), 58 + 9 * sin(a));
+          for (var k = 0; k < 5; k++) {
+            final pa = k * 2 * pi / 5;
+            canvas.drawCircle(
+              c + Offset(cos(pa) * 1.8, sin(pa) * 1.8),
+              1.8,
+              _fill(colors[i % colors.length]),
+            );
+          }
+          canvas.drawCircle(c, 1.2, _fill(const Color(0xFFFFF3BF)));
+        }
+    }
+  }
+
+  void _face(Canvas canvas, String? id, {required bool closedEyes}) {
+    const left = Offset(35, 31);
+    const right = Offset(65, 31);
+    switch (id) {
+      case 'oculos_sol':
+        for (final o in [left, right]) {
+          final lens = RRect.fromRectAndRadius(
+            Rect.fromCenter(center: o, width: 17, height: 12),
+            const Radius.circular(5),
+          );
+          canvas.drawRRect(
+            lens,
+            _ball(lens.outerRect, const [Color(0xFF4A5068), Color(0xFF14161F)]),
+          );
+          canvas.drawRRect(
+            lens,
+            _line
+              ..color = const Color(0xFF14161F)
+              ..strokeWidth = 1.4,
+          );
+          canvas.drawLine(
+            o + const Offset(-5, -3),
+            o + const Offset(-1.5, -4),
+            Paint()
+              ..color = const Color(0x88FFFFFF)
+              ..strokeWidth = 1.4
+              ..strokeCap = StrokeCap.round,
+          );
+        }
+        canvas.drawLine(
+          const Offset(43.5, 30),
+          const Offset(56.5, 30),
+          Paint()
+            ..color = const Color(0xFF14161F)
+            ..strokeWidth = 1.6,
+        );
+      case 'oculos_coracao':
+        for (final o in [left, right]) {
+          final heart = Path()
+            ..moveTo(o.dx, o.dy + 6)
+            ..cubicTo(o.dx - 10, o.dy, o.dx - 6, o.dy - 8, o.dx, o.dy - 3.5)
+            ..cubicTo(o.dx + 6, o.dy - 8, o.dx + 10, o.dy, o.dx, o.dy + 6)
+            ..close();
+          canvas.drawPath(heart, _fill(const Color(0xDDFF4D8D)));
+          canvas.drawPath(
+            heart,
+            _line
+              ..color = const Color(0xFFC2185B)
+              ..strokeWidth = 1.2,
+          );
+          canvas.drawCircle(
+            o + const Offset(-3, -2.5),
+            1.3,
+            _fill(const Color(0xAAFFFFFF)),
+          );
+        }
+        canvas.drawLine(
+          const Offset(42, 29),
+          const Offset(58, 29),
+          Paint()
+            ..color = const Color(0xFFC2185B)
+            ..strokeWidth = 1.3,
+        );
+      case 'monoculo':
+        canvas.drawCircle(
+          right,
+          7.5,
+          Paint()
+            ..color = const Color(0xFFFFC94D)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.6,
+        );
+        canvas.drawCircle(right, 6.8, _fill(const Color(0x22BFE7FF)));
+        canvas.drawPath(
+          Path()
+            ..moveTo(71, 35)
+            ..quadraticBezierTo(80, 48, 74, 58),
+          Paint()
+            ..color = const Color(0xFFE0A100)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 0.8,
+        );
+      case 'bigode':
+        for (final s in [-1.0, 1.0]) {
+          canvas.drawPath(
+            Path()
+              ..moveTo(50, 48.5)
+              ..cubicTo(50 + s * 6, 45, 50 + s * 12, 47, 50 + s * 14, 51)
+              ..cubicTo(50 + s * 16, 53, 50 + s * 18, 50, 50 + s * 16.5, 48)
+              ..cubicTo(50 + s * 15, 53.5, 50 + s * 7, 52, 50, 50.5)
+              ..close(),
+            _fill(const Color(0xFF3A2414)),
+          );
+        }
+      case 'mascara_heroi':
+        final mask = Path()
+          ..moveTo(20, 30)
+          ..quadraticBezierTo(50, 20, 80, 30)
+          ..quadraticBezierTo(82, 38, 76, 40)
+          ..quadraticBezierTo(50, 34, 24, 40)
+          ..quadraticBezierTo(18, 38, 20, 30)
+          ..close();
+        canvas.save();
+        final holes = Path()..fillType = PathFillType.evenOdd;
+        holes.addPath(mask, Offset.zero);
+        for (final o in [left, right]) {
+          holes.addOval(Rect.fromCenter(center: o, width: 10, height: 11));
+        }
+        canvas.drawPath(
+          holes,
+          Paint()
+            ..shader = const LinearGradient(
+              colors: [Color(0xFFE5484D), Color(0xFF9B1C31)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ).createShader(const Rect.fromLTWH(18, 22, 64, 20)),
+        );
+        canvas.restore();
+        canvas.drawPath(mask, _line);
+        // The knot's tails behind the head.
+        for (final s in [-1.0, 1.0]) {
+          canvas.drawPath(
+            Path()
+              ..moveTo(50 + s * 30, 33)
+              ..lineTo(50 + s * 38, 30)
+              ..lineTo(50 + s * 37, 38)
+              ..close(),
+            _fill(const Color(0xFFB0222F)),
+          );
+        }
+    }
+    if (closedEyes) return;
+  }
+
+  void _drawNewHat(Canvas canvas, CapiHat h) {
+    switch (h) {
+      case CapiHat.touca:
+        final cap = Path()
+          ..moveTo(23, 26)
+          ..cubicTo(23, 2, 77, 2, 77, 26)
+          ..close();
+        _shape(canvas, cap, const Color(0xFF66D9E8), const Color(0xFF1C7ED6));
+        // Ribbed cuff.
+        final cuff = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(20, 21, 60, 8),
+          const Radius.circular(4),
+        );
+        canvas.drawRRect(cuff, _fill(const Color(0xFFFFFFFF)));
+        for (var x = 24.0; x < 78; x += 5) {
+          canvas.drawLine(
+            Offset(x, 22),
+            Offset(x, 28),
+            Paint()
+              ..color = const Color(0x33000000)
+              ..strokeWidth = 0.8,
+          );
+        }
+        canvas.drawRRect(cuff, _outline);
+        // Pompom.
+        canvas.drawCircle(
+          const Offset(50, 4),
+          5.5,
+          _ball(
+            Rect.fromCircle(center: const Offset(50, 4), radius: 5.5),
+            const [Color(0xFFFFFFFF), Color(0xFFD0D7E2)],
+          ),
+        );
+      case CapiHat.junino:
+        final brim = Path()
+          ..moveTo(12, 25)
+          ..quadraticBezierTo(50, 19, 88, 25)
+          ..lineTo(85, 29)
+          ..quadraticBezierTo(50, 24, 15, 29)
+          ..close();
+        _shape(canvas, brim, const Color(0xFFFDE68A), const Color(0xFFC98A1E));
+        final crown = Path()
+          ..moveTo(29, 23)
+          ..cubicTo(29, 6, 71, 6, 71, 23)
+          ..close();
+        _shape(canvas, crown, const Color(0xFFFDE68A), const Color(0xFFC98A1E));
+        // Checkered band.
+        canvas.save();
+        canvas.clipRect(const Rect.fromLTWH(28, 18.5, 44, 4.5));
+        for (var x = 28.0; x < 72; x += 3) {
+          canvas.drawRect(
+            Rect.fromLTWH(x, 18.5, 1.5, 4.5),
+            _fill(const Color(0xFFE03131)),
+          );
+          canvas.drawRect(
+            Rect.fromLTWH(x + 1.5, 18.5, 1.5, 4.5),
+            _fill(const Color(0xFFFFFFFF)),
+          );
+        }
+        canvas.restore();
+        // A patch.
+        canvas.drawRect(
+          const Rect.fromLTWH(56, 9, 7, 6),
+          _fill(const Color(0xFFB07A47)),
+        );
+      case CapiHat.coroaEstrelas:
+        // A glowing gold crown topped with stars.
+        _glow(canvas, const Offset(50, 12), 30, 14, const Color(0x55FFE066));
+        final band = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(24, 17, 52, 9),
+          const Radius.circular(3),
+        );
+        canvas.drawRRect(
+          band,
+          _ball(band.outerRect, const [Color(0xFFFFF3BF), Color(0xFFE0A100)]),
+        );
+        canvas.drawRRect(band, _outline);
+        final twinkle = 1 + sin(t * 2 * pi * 2) * 0.12;
+        for (final (x, y, r) in [
+          (30.0, 13.0, 5.0),
+          (50.0, 7.0, 7.5),
+          (70.0, 13.0, 5.0),
+        ]) {
+          final star = _star(Offset(x, y), r * twinkle);
+          canvas.drawPath(star, _fill(const Color(0xFFFFD43B)));
+          canvas.drawPath(star, _line..color = const Color(0xFFB8860B));
+        }
+        for (final x in [36.0, 50.0, 64.0]) {
+          canvas.drawCircle(
+            Offset(x, 21.5),
+            1.8,
+            _fill(const Color(0xFF74C0FC)),
+          );
+        }
+      default:
+        break;
+    }
+  }
+
   @override
   bool shouldRepaint(CapiPainter old) =>
-      old.t != t || old.mood != mood || old.hat != hat;
+      old.t != t || old.mood != mood || old.hat != hat || old.look != look;
 }
 
 /// Capi with a speech bubble beside him.
@@ -740,4 +1336,46 @@ class _BubblePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BubblePainter old) => false;
+}
+
+/// Fur colors for each coat (the "pelagem" slot).
+class _Coat {
+  const _Coat(this.fur, this.ear, this.feet, this.muzzle);
+  final List<Color> fur;
+  final List<Color> ear;
+  final List<Color> feet;
+  final List<Color> muzzle;
+
+  static _Coat of(String id) => switch (id) {
+    'chocolate' => const _Coat(
+      [Color(0xFFC9997A), Color(0xFF8B5A3C), Color(0xFF5A3520)],
+      [Color(0xFF8B5A3C), Color(0xFF4A2A18)],
+      [Color(0xFF7A4A2E), Color(0xFF4A2A18)],
+      [Color(0xFFA8754F), Color(0xFF7E4E30), Color(0xFF5A3520)],
+    ),
+    'neve' => const _Coat(
+      [Color(0xFFFFFFFF), Color(0xFFEEE6DC), Color(0xFFC9BCAE)],
+      [Color(0xFFEEE6DC), Color(0xFFB8A898)],
+      [Color(0xFFE0D4C6), Color(0xFFA89888)],
+      [Color(0xFFF5EDE4), Color(0xFFDCCFC0), Color(0xFFB8A898)],
+    ),
+    'dourado' => const _Coat(
+      [Color(0xFFFFF0B0), Color(0xFFF2C14E), Color(0xFFB8860B)],
+      [Color(0xFFF2C14E), Color(0xFFA0741A)],
+      [Color(0xFFE0A830), Color(0xFF9A6A10)],
+      [Color(0xFFF7D27A), Color(0xFFD9A23A), Color(0xFFA0741A)],
+    ),
+    'arco_iris' => const _Coat(
+      [Color(0xFFFFE0F0), Color(0xFFC9B8FF), Color(0xFF7FB8F0)],
+      [Color(0xFFFFB3D9), Color(0xFFB18CFF)],
+      [Color(0xFF9AD8FF), Color(0xFF6AA8E8)],
+      [Color(0xFFFFE6A8), Color(0xFFFFC27A), Color(0xFFE09A50)],
+    ),
+    _ => const _Coat(
+      [Color(0xFFF6D3A6), Color(0xFFD9A06A), Color(0xFFA66C3C)],
+      [Color(0xFFD9A06A), Color(0xFF8E5A30)],
+      [Color(0xFFC08350), Color(0xFF8E5A30)],
+      [Color(0xFFD7A06A), Color(0xFFB27843), Color(0xFF8C5A30)],
+    ),
+  };
 }

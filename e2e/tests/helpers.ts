@@ -64,6 +64,7 @@ export type GameState = {
     starsGained: number;
   };
   equippedHat?: string;
+  passe?: { nivel: number; premium: boolean };
   unlockedHats?: string[];
   dailyChestAvailable?: boolean;
   dailyChestClaimed?: boolean;

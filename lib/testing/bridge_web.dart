@@ -38,6 +38,9 @@ void installJsBridge(TestBridge bridge) {
     JSBoolean? perfect,
   ) => bridge.placeTower(perfect?.toDart ?? true).toJS).toJS;
   api['missTower'] = (() => bridge.missTower().toJS).toJS;
+  api['earnStars'] = ((
+    JSNumber n,
+  ) => bridge.earnStars(n.toDartInt).then((_) => true.toJS).toJS).toJS;
   api['equipHat'] = ((
     JSString hatId,
   ) => bridge.equipHat(hatId.toDart).then((_) => true.toJS).toJS).toJS;
