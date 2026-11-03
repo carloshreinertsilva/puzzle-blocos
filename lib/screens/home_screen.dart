@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../core/passe.dart';
 import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
@@ -47,11 +49,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // The shop button shows once the store answers (and the starter pack
   // badge as soon as it is on offer).
+  Timer? _abertura;
+
   @override
   void initState() {
     super.initState();
     widget.services.loja.addListener(_lojaMudou);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // Let the menu show first, then the gift (and any update) over it.
+    _abertura = Timer(const Duration(milliseconds: 600), () async {
       await _presenteDoDia();
       if (mounted) {
         await Avisos.verificarAtualizacao(context, widget.services.store);
@@ -70,9 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
         store.giftShownDay == hoje) {
       return;
     }
-    // Let the menu show first, then the gift pops up over it.
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
     await store.setGiftShown(hoje);
     if (!mounted) return;
     await showPresente(context, widget.services);
@@ -82,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     widget.services.loja.removeListener(_lojaMudou);
+    _abertura?.cancel();
     super.dispose();
   }
 
