@@ -65,7 +65,9 @@ class GameSession {
   int get pupsLeft => board.pupCount;
 
   bool get goalsMet {
-    if (level.isEndless) return false;
+    // Endless and Blitz have no goal: they end when the pieces (or, in
+    // Blitz, the time) run out.
+    if (level.isEndless || level.isBlitz) return false;
     if (level.targetScore > 0 && score < level.targetScore) return false;
     if (level.gemsTarget > 0 && gems < level.gemsTarget) return false;
     if (level.hasRockGoal && rocksLeft > 0) return false;
