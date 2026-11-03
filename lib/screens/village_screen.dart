@@ -69,7 +69,8 @@ class _VillageScreenState extends State<VillageScreen>
   void initState() {
     super.initState();
     _model
-      ..built = _built
+      ..built = _built.toSet()
+      ..selected = Village.suggestion(_built)?.id
       ..pups = widget.services.store.pupsSaved
       ..look = CapiLook.of(widget.services.store);
     _ticker = createTicker((elapsed) {
@@ -91,22 +92,40 @@ class _VillageScreenState extends State<VillageScreen>
     super.dispose();
   }
 
-  int get _built => widget.services.store.villageBuilt;
+  List<String> get _built => widget.services.store.villageItems;
+
+  /// The item picked in the market.
+  VillageItem? get _selected {
+    final id = _model.selected;
+    return id == null || _built.contains(id) ? null : Village.byId(id);
+  }
+
+  void _select(VillageItem item) {
+    if (_model.building != null) return;
+    widget.services.feedback.click();
+    setState(() => _model.selected = item.id);
+    _say(_lineFor(item), hold: const Duration(seconds: 4));
+  }
+
+  String _lineFor(VillageItem item) {
+    final missing = item.cost - _stars;
+    return missing > 0
+        ? 'Faltam $missing ${missing == 1 ? 'estrela' : 'estrelas'} para '
+              '${item.name.toLowerCase()}. Bora jogar?'
+        : 'Já dá para construir ${item.name.toLowerCase()}! Toque em '
+              'Construir e monte a obra.';
+  }
+
   int get _stars => widget.services.store.stars;
 
   String _idleLine() {
-    final next = Village.next(_built);
+    final next = _selected ?? Village.suggestion(_built);
     if (next == null) return 'A vila ficou linda! Obrigado, construtor!';
-    if (_built == 0) {
-      return 'Bem-vindo à minha ilha! Com as estrelas das fases a gente '
-          'constrói tudo aqui.';
+    if (_built.isEmpty) {
+      return 'Bem-vindo à minha ilha! Escolha no mercado o que a gente '
+          'constrói primeiro.';
     }
-    final missing = next.cost - _stars;
-    return missing > 0
-        ? 'Faltam $missing ${missing == 1 ? 'estrela' : 'estrelas'} para '
-              '${next.name.toLowerCase()}. Bora jogar?'
-        : 'Já dá para construir ${next.name.toLowerCase()}! Toque em '
-              'Construir e monte a obra.';
+    return _lineFor(next);
   }
 
   /// Shows [line] for a while, then goes back to the idle line.
@@ -138,10 +157,11 @@ class _VillageScreenState extends State<VillageScreen>
       return;
     }
     if (!await store.spendStars(item.cost)) return;
-    await store.setVillageBuilt(_built + 1);
+    await store.addVillageItem(item.id);
     if (!mounted) return;
     _model
-      ..built = _built
+      ..built = _built.toSet()
+      ..selected = Village.suggestion(_built)?.id
       ..building = item.id
       ..buildStart = _clock.value;
     const cheers = [
@@ -181,7 +201,8 @@ class _VillageScreenState extends State<VillageScreen>
 
   @override
   Widget build(BuildContext context) {
-    final next = Village.next(_built);
+    final next = _selected;
+    final left = Village.toBuild(_built);
     return Scaffold(
       body: DecoratedBox(
         decoration: backgroundGradient,
@@ -237,7 +258,7 @@ class _VillageScreenState extends State<VillageScreen>
                   constraints: const BoxConstraints(maxWidth: menuMaxWidth),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-                    child: next == null ? _done() : _nextPanel(next),
+                    child: left.isEmpty ? _done() : _mercado(left, next),
                   ),
                 ),
               ),
@@ -253,7 +274,8 @@ class _VillageScreenState extends State<VillageScreen>
       final size = box.biggest;
       return Semantics(
         label:
-            'Ilha do Capi com $_built de ${Village.items.length} construções',
+            'Ilha do Capi com ${_built.length} de ${Village.items.length} '
+            'construções',
         excludeSemantics: true,
         // Pinch to zoom in on the island and look around.
         child: InteractiveViewer(
@@ -277,65 +299,79 @@ class _VillageScreenState extends State<VillageScreen>
     },
   );
 
-  Widget _nextPanel(VillageItem next) {
-    final canBuild = _stars >= next.cost;
+  /// The village market: everything left to build, cheapest first. The
+  /// player picks one (its spot glows on the island), then builds it.
+  Widget _mercado(List<VillageItem> left, VillageItem? sel) {
+    final canBuild = sel != null && _stars >= sel.cost;
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
       decoration: BoxDecoration(
         color: Palette.panel,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Palette.panelEdge, width: 2),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          VillageItemIcon(item: next),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(next.name, style: displayText(19)),
-                ),
-                const SizedBox(height: 2),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.star_rounded,
-                        color: Palette.accent,
-                        size: 18,
-                      ),
-                      Text(
-                        ' ${next.cost} · ${_built + 1}º de ${Village.items.length}',
-                        style: bodyText(14, color: Palette.textDim),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          Row(
+            children: [
+              const Icon(
+                Icons.storefront_rounded,
+                color: Palette.accent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text('Mercado da vila', style: displayText(17)),
+              const Spacer(),
+              Text(
+                '${_built.length} de ${Village.items.length} prontos',
+                style: bodyText(13, color: Palette.textDim),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 118,
+            // Only a dozen items: all built, so each can be found and read.
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final (i, item) in left.indexed) ...[
+                    if (i > 0) const SizedBox(width: 8),
+                    _ItemCard(
+                      item: item,
+                      selected: item.id == sel?.id,
+                      affordable: _stars >= item.cost,
+                      onTap: () => _select(item),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 128,
-            child: canBuild
-                ? ChunkyButton(
-                    label: 'Construir',
-                    color: Palette.good,
-                    textColor: const Color(0xFF0B3B16),
-                    onTap: _model.building == null ? () => _build(next) : null,
-                  )
-                : ChunkyButton(
-                    label: 'Jogar',
-                    icon: Icons.play_arrow_rounded,
-                    onTap: () => Navigator.of(context).pop(true),
-                  ),
-          ),
+          const SizedBox(height: 10),
+          if (sel == null)
+            Text(
+              'Toque num item para escolher o que construir.',
+              style: bodyText(14, color: Palette.textDim),
+            )
+          else if (canBuild)
+            ChunkyButton(
+              label: 'Construir · ${sel.cost} ★',
+              semanticLabel: 'Construir ${sel.name}',
+              icon: Icons.construction_rounded,
+              color: Palette.good,
+              textColor: const Color(0xFF0B3B16),
+              onTap: _model.building == null ? () => _build(sel) : null,
+            )
+          else
+            ChunkyButton(
+              label: 'Faltam ${sel.cost - _stars} ★ · Jogar',
+              semanticLabel: 'Jogar',
+              icon: Icons.play_arrow_rounded,
+              onTap: () => Navigator.of(context).pop(true),
+            ),
         ],
       ),
     );
@@ -410,6 +446,79 @@ class _Bubble extends StatelessWidget {
         text,
         textAlign: TextAlign.center,
         style: bodyText(15, color: const Color(0xFF2A1458), weight: 600),
+      ),
+    ),
+  );
+}
+
+/// One item in the village market: its picture, name and price.
+class _ItemCard extends StatelessWidget {
+  const _ItemCard({
+    required this.item,
+    required this.selected,
+    required this.affordable,
+    required this.onTap,
+  });
+
+  final VillageItem item;
+  final bool selected;
+  final bool affordable;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    label: '${item.name}, ${item.cost} estrelas',
+    excludeSemantics: true,
+    onTap: onTap,
+    child: GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: 96,
+        padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
+        decoration: BoxDecoration(
+          color: selected
+              ? Palette.accent.withValues(alpha: 0.18)
+              : const Color(0x14FFFFFF),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? Palette.accent : const Color(0x33FFFFFF),
+            width: selected ? 2.5 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(child: VillageItemIcon(item: item, size: 56)),
+            const SizedBox(height: 2),
+            Text(
+              item.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: bodyText(12, color: Palette.text, weight: 700),
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.star_rounded,
+                  size: 15,
+                  color: affordable ? Palette.accent : Palette.textDim,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '${item.cost}',
+                  style: displayText(
+                    14,
+                    color: affordable ? Palette.accent : Palette.textDim,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     ),
   );

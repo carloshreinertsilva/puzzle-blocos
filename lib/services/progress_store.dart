@@ -3,6 +3,8 @@ import '../core/wardrobe.dart' show Slot;
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/village.dart';
+
 /// The 4 tools of Capi (Step 2).
 enum CapiTool {
   hammer,
@@ -218,9 +220,26 @@ class ProgressStore {
     return true;
   }
 
-  /// Village items built so far (they are built in a fixed order).
-  int get villageBuilt => _prefs.getInt('villageBuilt') ?? 0;
-  Future<void> setVillageBuilt(int n) => _prefs.setInt('villageBuilt', n);
+  /// Ids of the village items built so far, in the order they were built.
+  /// The player picks what to build; saves from before that only kept a
+  /// count of items built in a fixed order, so those become the first ones.
+  List<String> get villageItems =>
+      _prefs.getStringList('villageItems') ??
+      [
+        for (final item in Village.items.take(
+          _prefs.getInt('villageBuilt') ?? 0,
+        ))
+          item.id,
+      ];
+
+  /// How many village items are built.
+  int get villageBuilt => villageItems.length;
+
+  Future<void> addVillageItem(String id) async {
+    final items = villageItems;
+    if (items.contains(id)) return;
+    await _prefs.setStringList('villageItems', [...items, id]);
+  }
 
   /// Obras mode: the next obra to build and the best stars of each one.
   int get obraLevel => _prefs.getInt('obraLevel') ?? 1;

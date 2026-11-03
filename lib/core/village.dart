@@ -11,8 +11,9 @@ class VillageItem {
   final Rect spot;
 }
 
-/// The first village (Capi's lagoon, on a floating island), built in this
-/// order. Drawn in code by `lib/village/`.
+/// The first village (Capi's lagoon, on a floating island). The player picks
+/// what to build from the village market, in any order. Drawn in code by
+/// `lib/village/`.
 abstract final class Village {
   /// The island is a square of this many tiles a side.
   static const island = 10.0;
@@ -55,7 +56,22 @@ abstract final class Village {
   /// Where Capi stands when he isn't busy: on the path by the pier.
   static const capiSpot = Offset(6.6, 8.6);
 
-  /// The next item to build after [built] items, or null when complete.
-  static VillageItem? next(int built) =>
-      built < items.length ? items[built] : null;
+  /// The items still to build, cheapest first.
+  static List<VillageItem> toBuild(Iterable<String> built) {
+    final done = built.toSet();
+    return [
+      for (final item in items)
+        if (!done.contains(item.id)) item,
+    ]..sort((a, b) => a.cost.compareTo(b.cost));
+  }
+
+  /// What the market points at first: the cheapest item left (so with
+  /// enough stars for anything, there is something to build). Null when the
+  /// village is complete.
+  static VillageItem? suggestion(Iterable<String> built) {
+    final left = toBuild(built);
+    return left.isEmpty ? null : left.first;
+  }
+
+  static VillageItem byId(String id) => items.firstWhere((i) => i.id == id);
 }
