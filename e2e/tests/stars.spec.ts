@@ -16,7 +16,7 @@ test('estrelas: vencer mostra as estrelas e os desafios; a fase antiga pode ser 
   await page.getByRole('button', { name: 'Próxima fase' }).click();
   await page.getByRole('button', { name: 'Entendi!' }).click();
   await page.getByRole('button', { name: 'Pausar' }).click();
-  await expect(page.getByText('Desafios da fase')).toBeVisible();
+  await expect(page.getByText('Desafios da fase', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Menu' }).click();
   await waitForState(page, (x) => x.screen === 'home', 'menu');
   expect((await state(page)).stars).toBe(s.starsGained);
