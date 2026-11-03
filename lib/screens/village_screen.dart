@@ -55,7 +55,7 @@ class _VillageScreenState extends State<VillageScreen>
   static const _pupLines = [
     'Esse filhote você salvou de um bloco! Olha a alegria dele.',
     'Os filhotes adoram brincar perto da lagoa.',
-    'Cada filhote salvo nas fases vem morar aqui!',
+    'Os filhotes que você salva vêm brincar aqui!',
   ];
 
   static const _capiLines = [
@@ -73,6 +73,9 @@ class _VillageScreenState extends State<VillageScreen>
       ..selected = Village.suggestion(_built)?.id
       ..pups = widget.services.store.pupsSaved
       ..look = CapiLook.of(widget.services.store);
+    VillageSprites.load().then((sprites) {
+      if (mounted) setState(() => _model.sprites = sprites);
+    });
     _ticker = createTicker((elapsed) {
       _clock.value = elapsed.inMicroseconds / 1e6;
     })..start();
@@ -89,6 +92,9 @@ class _VillageScreenState extends State<VillageScreen>
     _ticker.dispose();
     _clock.dispose();
     _cache.dispose();
+    for (final image in _model.sprites.values) {
+      image.dispose();
+    }
     super.dispose();
   }
 

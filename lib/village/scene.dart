@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/village.dart';
 import '../ui/capi.dart';
@@ -24,6 +25,10 @@ class VillageModel {
   /// The item being built and when (clock seconds) it started dropping in.
   String? building;
   double buildStart = -10;
+
+  /// The painted art of the items (see [VillageSprites]); an item without
+  /// one is drawn in code.
+  Map<String, ui.Image> sprites = const {};
 
   /// Pups saved in the levels; up to [Pups.max] wander on the island.
   int pups = 0;
@@ -164,20 +169,15 @@ double _depth(Rect spot) => spot.right + spot.bottom;
 
 /// The pups living on the island: each strolls around its own spot.
 abstract final class Pups {
-  static const max = 12;
+  /// Only a few at a time, so the island and its buildings stay the stars
+  /// (the count of pups saved keeps growing).
+  static const max = 5;
   static const _homes = [
-    (4.4, 8.3),
-    (3.7, 7.0),
     (8.0, 6.3),
-    (5.2, 2.6),
-    (0.9, 6.1),
-    (9.2, 5.9),
-    (6.3, 9.3),
     (2.4, 6.2),
-    (7.4, 2.6),
-    (4.9, 9.4),
-    (3.4, 2.7),
-    (9.4, 4.3),
+    (5.5, 1.6),
+    (4.4, 8.3),
+    (7.8, 9.3),
   ];
 
   /// Where pup [i] is at time [t] (world x, y).
@@ -586,7 +586,10 @@ class VillagePainter extends CustomPainter {
     canvas.translate(base.dx, base.dy - lift * c.iso.zScale);
     canvas.scale(sx, sy);
     canvas.translate(-base.dx, -base.dy);
-    if (art.animated) {
+    final sprite = model.sprites[item.id];
+    if (sprite != null) {
+      VillageSprites.paint(c, item, sprite);
+    } else if (art.animated) {
       art.paint(c, item.spot, t);
     } else {
       canvas.drawPicture(cache.item(item, c.tile));
@@ -1206,8 +1209,95 @@ class VillageItemIcon extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) =>
-      CustomPaint(size: Size.square(size), painter: _IconPainter(item));
+  Widget build(BuildContext context) => Image.asset(
+    VillageSprites.asset(item.id),
+    width: size,
+    height: size,
+    fit: BoxFit.contain,
+    filterQuality: FilterQuality.medium,
+    // Without the picture (not bundled yet), the drawing in code.
+    errorBuilder: (_, _, _) =>
+        CustomPaint(size: Size.square(size), painter: _IconPainter(item)),
+  );
+}
+
+/// The village items' painted art: one picture per item in `assets/vila/`
+/// (the sources are in `art/vila/`, cut out with `tool/vila_recorta.py`).
+abstract final class VillageSprites {
+  static String asset(String id) => 'assets/vila/$id.webp';
+
+  /// How each picture sits on its spot: its width in tiles, how far below
+  /// the spot's front corner its bottom goes (tiles), and in how many
+  /// copies it is laid along the spot (the fence is two short stretches).
+  static const fit = <String, (double, double, int)>{
+    'flores': (1.22, 0.07, 1),
+    'cerca': (1.5, 0.04, 2),
+    'banco': (0.83, 0.04, 1),
+    'arvore': (1.51, 0.11, 1),
+    'barco': (1.12, 0.12, 1),
+    'horta': (1.73, 0.07, 1),
+    'poste': (0.6, 0.08, 1),
+    'pier': (1.15, 0.07, 1),
+    'casinha': (2.05, 0.07, 1),
+    'balanco': (1.15, 0.07, 1),
+    'fonte': (1.44, 0.07, 1),
+    'roda': (1.73, 0.07, 1),
+  };
+
+  /// Loads every picture there is; a missing one is simply left out.
+  static Future<Map<String, ui.Image>> load([AssetBundle? bundle]) async {
+    final out = <String, ui.Image>{};
+    for (final id in fit.keys) {
+      try {
+        final data = await (bundle ?? rootBundle).load(asset(id));
+        final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+        out[id] = (await codec.getNextFrame()).image;
+      } catch (_) {
+        // Not bundled: the item keeps its drawing in code.
+      }
+    }
+    return out;
+  }
+
+  /// Draws [image] standing on [item]'s spot.
+  static void paint(IsoCanvas c, VillageItem item, ui.Image image) {
+    final (width, drop, copies) = fit[item.id] ?? (1.0, 0.0, 1);
+    final spot = item.spot;
+    final long = spot.width >= spot.height;
+    final src = Rect.fromLTWH(
+      0,
+      0,
+      image.width.toDouble(),
+      image.height.toDouble(),
+    );
+    final paint = Paint()..filterQuality = FilterQuality.medium;
+    for (var i = 0; i < copies; i++) {
+      // The spot cut in [copies] equal stretches along its long side.
+      final part = long
+          ? Rect.fromLTWH(
+              spot.left + spot.width * i / copies,
+              spot.top,
+              spot.width / copies,
+              spot.height,
+            )
+          : Rect.fromLTWH(
+              spot.left,
+              spot.top + spot.height * i / copies,
+              spot.width,
+              spot.height / copies,
+            );
+      final w = width * c.tile;
+      final h = w * image.height / image.width;
+      final x = c.p(part.center.dx, part.center.dy).dx;
+      final bottom = c.p(part.right, part.bottom).dy + drop * c.tile;
+      c.canvas.drawImageRect(
+        image,
+        src,
+        Rect.fromLTWH(x - w / 2, bottom - h, w, h),
+        paint,
+      );
+    }
+  }
 }
 
 class _IconPainter extends CustomPainter {
