@@ -241,4 +241,25 @@ void main() {
       controller.dispose();
     });
   });
+
+  test('Blitz goes on after the first piece (it has no goal, only time)', () {
+    final session = GameSession(LevelConfig.blitz(seed: 7), rng: Random(7));
+    var placed = 0;
+    for (var slot = 0; slot < 3 && placed < 3; slot++) {
+      final p = session.tray[slot];
+      if (p == null) continue;
+      search:
+      for (var r = 0; r < 8; r++) {
+        for (var c = 0; c < 8; c++) {
+          if (session.board.canPlace(p.shape, r, c)) {
+            session.place(slot, r, c);
+            placed++;
+            break search;
+          }
+        }
+      }
+      expect(session.status, SessionStatus.playing, reason: 'after $placed');
+    }
+    expect(placed, greaterThan(1));
+  });
 }
