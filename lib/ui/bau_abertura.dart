@@ -368,23 +368,21 @@ class _Bau extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.scale(size.width / 100);
     // Shadow.
-    canvas.drawOval(
-      const Rect.fromLTWH(14, 88, 72, 8),
-      Paint()
-        ..color = const Color(0x66000000)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    _brilho(
+      canvas,
+      const Rect.fromLTWH(10, 86, 80, 12),
+      const Color(0x66000000),
     );
     // Light from inside.
     if (brilho > 0) {
-      canvas.drawOval(
+      _brilho(
+        canvas,
         Rect.fromCenter(
           center: const Offset(50, 48),
-          width: 90 * brilho,
-          height: 30 * brilho,
+          width: 110 * brilho,
+          height: 44 * brilho,
         ),
-        Paint()
-          ..color = cor.withValues(alpha: 0.55 * brilho)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+        cor.withValues(alpha: 0.6 * brilho),
       );
     }
     // Body.
@@ -495,15 +493,22 @@ class _Raios extends CustomPainter {
         paint,
       );
     }
-    canvas.drawCircle(
-      center,
-      60 * forca,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.35 * forca)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30),
+    _brilho(
+      canvas,
+      Rect.fromCircle(center: center, radius: 110 * forca),
+      Colors.white.withValues(alpha: 0.4 * forca),
     );
   }
 
   @override
   bool shouldRepaint(_Raios old) => true;
 }
+
+/// A soft light (or shadow) spot fading to nothing at its edge: a radial
+/// gradient, much cheaper every frame than a blur.
+void _brilho(Canvas canvas, Rect r, Color cor) => canvas.drawOval(
+  r,
+  Paint()
+    ..shader = RadialGradient(colors: [cor, cor.withValues(alpha: 0)])
+        .createShader(r),
+);

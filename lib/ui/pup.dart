@@ -34,12 +34,16 @@ abstract final class PupPainter {
     );
 
   /// A blurred light spot: shine on the fur, blush on the cheeks.
-  static void _glow(Canvas canvas, Rect r, Color color) => canvas.drawOval(
-    r,
-    Paint()
-      ..color = color
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, r.shortestSide * 0.35),
-  );
+  static void _glow(Canvas canvas, Rect r, Color color) {
+    // A radial gradient (cheaper than a blur, drawn often on the board).
+    final big = r.inflate(r.shortestSide * 0.35);
+    canvas.drawOval(
+      big,
+      Paint()
+        ..shader = RadialGradient(colors: [color, color.withValues(alpha: 0)])
+            .createShader(big),
+    );
+  }
 
   static Paint _outline(double w) => Paint()
     ..color = _line
