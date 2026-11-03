@@ -504,9 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             // with a shop, the statistics move to the
                             // settings.
                             if (widget.services.loja.disponivel)
-                              RoundIconButton(
-                                icon: Icons.storefront_rounded,
-                                label: 'Loja',
+                              _LojaBotao(
                                 badge:
                                     Entrega.mostraPacoteInicial(
                                       store,
@@ -675,4 +673,176 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+/// The shop button: glows gold, unlike the others, and now and then Capi's
+/// balloon calls the player to it.
+class _LojaBotao extends StatefulWidget {
+  const _LojaBotao({required this.onTap, this.badge});
+  final VoidCallback onTap;
+  final String? badge;
+
+  @override
+  State<_LojaBotao> createState() => _LojaBotaoState();
+}
+
+class _LojaBotaoState extends State<_LojaBotao>
+    with SingleTickerProviderStateMixin {
+  static const _falas = [
+    'Novidades na loja!',
+    'Olha o Mercado do Capi de hoje!',
+    'Tem oferta na loja!',
+  ];
+
+  late final AnimationController _brilho = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat(reverse: true);
+  Timer? _timer;
+  String? _fala;
+  int _vez = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // The first call comes soon after opening the menu, then every so often.
+    _timer = Timer(const Duration(seconds: 4), _chamar);
+  }
+
+  void _chamar() {
+    if (!mounted) return;
+    setState(() => _fala = _falas[_vez++ % _falas.length]);
+    _timer = Timer(const Duration(seconds: 4), () {
+      if (!mounted) return;
+      setState(() => _fala = null);
+      _timer = Timer(const Duration(seconds: 40), _chamar);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _brilho.dispose();
+    super.dispose();
+  }
+
+  final _link = LayerLink();
+  final _portal = OverlayPortalController();
+
+  @override
+  Widget build(BuildContext context) {
+    // The balloon goes in the overlay, above the logo below the bar.
+    if (_fala != null && !_portal.isShowing) _portal.show();
+    return OverlayPortal(
+      controller: _portal,
+      overlayChildBuilder: (context) => Positioned(
+        left: 0,
+        top: 0,
+        child: CompositedTransformFollower(
+          link: _link,
+          targetAnchor: Alignment.bottomRight,
+          followerAnchor: Alignment.topRight,
+          offset: const Offset(8, 6),
+          child: IgnorePointer(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              transitionBuilder: (child, anim) =>
+                  ScaleTransition(scale: anim, child: child),
+              child: _fala == null
+                  ? const SizedBox.shrink()
+                  : _Balao(key: ValueKey(_fala), texto: _fala!),
+            ),
+          ),
+        ),
+      ),
+      child: CompositedTransformTarget(
+        link: _link,
+        child: AnimatedBuilder(
+          animation: _brilho,
+          builder: (context, child) {
+            final t = Curves.easeInOut.transform(_brilho.value);
+            final borda = BorderRadius.circular(14);
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: borda,
+                boxShadow: [
+                  BoxShadow(
+                    color: Palette.accent.withValues(alpha: 0.3 + 0.45 * t),
+                    blurRadius: 6 + 12 * t,
+                    spreadRadius: 1 + 2.5 * t,
+                  ),
+                ],
+              ),
+              foregroundDecoration: BoxDecoration(
+                borderRadius: borda,
+                border: Border.all(
+                  color: Color.lerp(
+                    Palette.accent.withValues(alpha: 0.6),
+                    const Color(0xFFFFF1B8),
+                    t,
+                  )!,
+                  width: 2,
+                ),
+              ),
+              child: child,
+            );
+          },
+          child: RoundIconButton(
+            icon: Icons.storefront_rounded,
+            label: 'Loja',
+            badge: widget.badge,
+            iconColor: Palette.accent,
+            fill: const Color(0xFF5A3A12),
+            onTap: widget.onTap,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A small balloon pointing up at the shop button.
+class _Balao extends StatelessWidget {
+  const _Balao({super.key, required this.texto});
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(right: 18),
+        child: CustomPaint(size: const Size(12, 7), painter: _PontaBalao()),
+      ),
+      Container(
+        constraints: const BoxConstraints(maxWidth: 170),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [BoxShadow(color: Color(0x55000000), blurRadius: 6)],
+        ),
+        child: Text(
+          texto,
+          textAlign: TextAlign.center,
+          style: displayText(13, color: const Color(0xFF2A1458)),
+        ),
+      ),
+    ],
+  );
+}
+
+class _PontaBalao extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(_PontaBalao old) => false;
 }

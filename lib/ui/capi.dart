@@ -1403,6 +1403,8 @@ class CapiSays extends StatelessWidget {
     this.capiSize = 76,
     this.action,
     this.onAction,
+    this.secondary,
+    this.onSecondary,
   });
 
   final String text;
@@ -1412,6 +1414,10 @@ class CapiSays extends StatelessWidget {
   /// Optional button inside the bubble ("Bora!").
   final String? action;
   final VoidCallback? onAction;
+
+  /// Optional smaller second choice under the button.
+  final String? secondary;
+  final VoidCallback? onSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -1445,6 +1451,14 @@ class CapiSays extends StatelessWidget {
                     const SizedBox(height: 10),
                     ChunkyButton(label: action!, onTap: onAction),
                   ],
+                  if (secondary != null)
+                    TextButton(
+                      onPressed: onSecondary,
+                      child: Text(
+                        secondary!,
+                        style: displayText(15, color: const Color(0xFF5B3FA0)),
+                      ),
+                    ),
                 ],
               ),
             ),

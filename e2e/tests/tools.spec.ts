@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   loadScenario,
   openApp,
+  playMove,
   startLevel,
   state,
   waitForState,
@@ -183,4 +184,23 @@ test.describe('Ferramentas do Capi', () => {
     expect(sAfter.tools?.hammer).toBe(hammerBefore);
     expect(sAfter.activeTool).toBeUndefined();
   });
+});
+
+// Capi's hint when the player stands still: one free per level, then he
+// offers a paid one (stars or video) or the tools.
+test('dica do Capi parado: a primeira é grátis, depois é paga', async ({ page }) => {
+  test.setTimeout(90_000);
+  await openApp(page, { level: 5, stars: 10 });
+  await startLevel(page);
+  const entendi = page.getByRole('button', { name: 'Entendi!' });
+  if (await entendi.isVisible().catch(() => false)) await entendi.click();
+
+  await waitForState(page, (x) => x.hint != null, 'dica grátis', 20_000);
+  await playMove(page);
+
+  await waitForState(page, (x) => x.hintOffer === true && x.hint == null, 'oferta de dica', 20_000);
+  await page.getByRole('button', { name: 'Ver dica' }).click();
+  await page.getByRole('button', { name: 'Usar 5 estrelas na dica' }).click();
+  const s = await waitForState(page, (x) => x.hint != null && x.hintOffer === false, 'dica paga');
+  expect(s.stars).toBe(5);
 });

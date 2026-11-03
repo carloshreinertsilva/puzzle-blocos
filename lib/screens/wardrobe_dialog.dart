@@ -10,6 +10,7 @@ import '../ui/capi.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
+import '../ui/premio.dart';
 
 /// Capi's wardrobe: items by slot, with rarity, prices in stars, a try-on
 /// preview and the collections.
@@ -377,12 +378,16 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
         await Wardrobe.equip(_store, c);
         note = '${c.label} é seu!';
       } else {
+        widget.services.feedback.praise(2);
         note =
             'Vídeo ${Wardrobe.videos(_store, c)} de ${Wardrobe.videosRaro} '
             'para ${c.label}.';
       }
     }
     if (!mounted) return;
+    if (ok && note != null) {
+      mostrarPremio(context, note, icon: Icons.checkroom_rounded);
+    }
     setState(() {
       _vendo = false;
       _note = note;

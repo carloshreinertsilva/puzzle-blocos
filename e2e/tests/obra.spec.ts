@@ -101,6 +101,7 @@ test('obras: a segunda dica custa estrelas ou um vídeo', async ({ page }) => {
   await page.getByRole('button', { name: 'Ver um vídeo pela dica' }).click();
   s = await waitForState(page, (x) => x.obra!.hints === 3 && x.obra!.hint != null, 'dica do vídeo');
   expect(s.stars).toBe(5);
+  await expect(page.getByText('Dica liberada pelo vídeo!').first()).toBeVisible();
 });
 
 // The finger sits below the dragged piece, so on the drawing's bottom row

@@ -138,8 +138,14 @@ class RoundIconButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.badge,
+    this.iconColor = Palette.text,
+    this.fill,
   });
   final IconData icon;
+  final Color iconColor;
+
+  /// Background; the default is the panel color.
+  final Color? fill;
 
   /// Read by screen readers (and by the browser tests).
   final String label;
@@ -153,7 +159,7 @@ class RoundIconButton extends StatelessWidget {
     excludeSemantics: true,
     onTap: onTap,
     child: Material(
-      color: Palette.panel.withValues(alpha: 0.8),
+      color: fill ?? Palette.panel.withValues(alpha: 0.8),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -164,7 +170,7 @@ class RoundIconButton extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, color: Palette.text, size: 24),
+              Icon(icon, color: iconColor, size: 24),
               if (badge != null)
                 Positioned(
                   top: 4,
