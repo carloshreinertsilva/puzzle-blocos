@@ -184,6 +184,7 @@ class TestBridge {
       'praises': praises,
       'stars': wallet?.call(),
       'starBits': c.starBits,
+      'liveStarBits': c.liveStarBits,
       'starsGained': c.starsGained,
       'replay': c.isReplay,
       if (c.tutorial) 'tutorialStep': c.tutorialStep,
