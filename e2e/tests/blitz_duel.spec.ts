@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { dragPiece, openApp, openFresh, state, waitForState } from './helpers';
+import { dragPiece, openApp, openFresh, playMove, state, waitForState } from './helpers';
 
 test.describe('Modo Blitz 60s e Duelo', () => {
   test('modo Blitz abre pelo menu e roda cronômetro', async ({ page }) => {
@@ -35,6 +35,15 @@ test.describe('Modo Blitz 60s e Duelo', () => {
 
     const sAfter = await state(page);
     expect(sAfter.score).toBeGreaterThan(0);
+  });
+
+  test('Blitz continua depois das primeiras peças (só o tempo encerra)', async ({ page }) => {
+    await openApp(page, { level: 10, seen_opened_blitz: true });
+    await page.getByRole('button', { name: /^Blitz 60s/ }).click();
+    await waitForState(page, (s) => s.mode === 'blitz' && s.status === 'playing', 'blitz aberto');
+    expect(await playMove(page)).toBe(true);
+    expect(await playMove(page)).toBe(true);
+    expect((await state(page)).status).toBe('playing');
   });
 
   test('modo Duelo abre por link com semente e meta do rival', async ({ page }) => {
