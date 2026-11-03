@@ -5,4 +5,5 @@
     <color name="capi_fundo_baixo">#2A1650</color>
     <color name="capi_icone_fundo">#1C1A55</color>
     <color name="capi_icone_centro">#2E2878</color>
+    <color name="capi_destaque">#FFC94D</color>
 </resources>

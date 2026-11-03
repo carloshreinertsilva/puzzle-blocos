@@ -12,6 +12,7 @@ import 'screens/game_screen.dart';
 import 'screens/root.dart';
 import 'services/duelo_link.dart';
 import 'services/analytics.dart';
+import 'services/avisos.dart';
 import 'services/feedback.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
@@ -76,6 +77,7 @@ void _depoisDeAbrir(AppServices services) {
   unawaited(services.loja.iniciar());
   unawaited(services.ads.start());
   unawaited(Analytics.start(enabled: services.store.analyticsOn));
+  unawaited(Avisos.iniciar(services.store));
 }
 
 /// Shows the opening screen ([Abertura]) while the game loads, for at least

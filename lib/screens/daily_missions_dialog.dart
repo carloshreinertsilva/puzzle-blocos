@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/daily_missions.dart';
 import '../core/passe.dart';
+import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
 import '../main.dart';
 import '../ads/ad_service.dart';
@@ -10,6 +11,7 @@ import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import 'passe_sheet.dart';
+import 'presente_dialog.dart';
 import 'wardrobe_dialog.dart';
 
 /// Modal dialog showing the daily 3 missions, progress tracking, and the daily chest.
@@ -125,6 +127,13 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
         ],
       ),
     );
+  }
+
+  void _abrirPresente() {
+    final services = widget.services;
+    final nav = Navigator.of(context);
+    nav.pop();
+    showPresente(nav.context, services);
   }
 
   /// One short line, with the full list a tap away.
@@ -311,6 +320,49 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                   ),
                 ],
               ),
+              // The daily gift, if not taken yet today.
+              if (PresenteDiario.disponivel(store, DateTime.now())) ...[
+                const SizedBox(height: 10),
+                Semantics(
+                  button: true,
+                  label: 'Abrir o presente do dia',
+                  excludeSemantics: true,
+                  onTap: _abrirPresente,
+                  child: GestureDetector(
+                    onTap: _abrirPresente,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0x33FFC94D),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Palette.accent),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.card_giftcard_rounded,
+                            color: Palette.accent,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Presente do dia ${PresenteDiario.dia(store, DateTime.now()) + 1} esperando!',
+                              style: displayText(13, color: Palette.text),
+                            ),
+                          ),
+                          Text(
+                            'Abrir',
+                            style: displayText(13, color: Palette.accent),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
 
               // Mission Cards

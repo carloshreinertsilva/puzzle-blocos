@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import '../core/passe.dart';
+import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
 import '../core/daily_missions.dart';
 import 'daily_missions_dialog.dart';
@@ -12,6 +15,7 @@ import '../core/village.dart';
 import '../game/onboarding.dart';
 import '../main.dart';
 import '../services/analytics.dart';
+import '../services/avisos.dart';
 import '../services/progress_store.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
@@ -21,6 +25,7 @@ import '../ui/widgets.dart';
 import '../shop/produtos.dart';
 import 'game_screen.dart';
 import 'loja_sheet.dart';
+import 'presente_dialog.dart';
 import 'obra_screen.dart';
 import 'settings_sheet.dart';
 import 'stats_sheet.dart';
@@ -44,15 +49,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // The shop button shows once the store answers (and the starter pack
   // badge as soon as it is on offer).
+  Timer? _abertura;
+
   @override
   void initState() {
     super.initState();
     widget.services.loja.addListener(_lojaMudou);
+    // Let the menu show first, then the gift (and any update) over it.
+    _abertura = Timer(const Duration(milliseconds: 600), () async {
+      await _presenteDoDia();
+      if (mounted) {
+        await Avisos.verificarAtualizacao(context, widget.services.store);
+      }
+    });
+  }
+
+  /// Once a day, after the first levels, the daily gift opens by itself.
+  Future<void> _presenteDoDia() async {
+    final store = widget.services.store;
+    final agora = DateTime.now();
+    final hoje = ProgressStore.dayKey(agora);
+    // Not over Capi's first words on the menu: the gift waits for them.
+    if (!mounted ||
+        _news.isNotEmpty ||
+        !store.hasSeen('menu') ||
+        !PresenteDiario.disponivel(store, agora) ||
+        store.giftShownDay == hoje) {
+      return;
+    }
+    await store.setGiftShown(hoje);
+    if (!mounted) return;
+    await showPresente(context, widget.services);
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     widget.services.loja.removeListener(_lojaMudou);
+    _abertura?.cancel();
     super.dispose();
   }
 
@@ -67,7 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _waiting(ProgressStore store, DateTime today) =>
       DailyMissionsManager.unclaimedCount(store, today) +
-      PasseDoCapi.prontas(store, today);
+      PasseDoCapi.prontas(store, today) +
+      (PresenteDiario.disponivel(store, today) ? 1 : 0);
 
   void _dismissCapi() {
     widget.services.feedback.click();

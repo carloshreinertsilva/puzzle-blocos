@@ -158,6 +158,34 @@ class ProgressStore {
   Future<void> addItemVideo(String id) =>
       _prefs.setInt('itemVideos_$id', itemVideos(id) + 1);
 
+  // --- Notifications (see services/avisos.dart) ---
+
+  /// Daily reminders: off until the player says yes.
+  bool get remindersOn => _prefs.getBool('remindersOn') ?? false;
+  Future<void> setRemindersOn(bool on) => _prefs.setBool('remindersOn', on);
+
+  /// Whether the player was already asked about reminders.
+  bool get remindersAsked => _prefs.getBool('remindersAsked') ?? false;
+  Future<void> setRemindersAsked() => _prefs.setBool('remindersAsked', true);
+
+  int get updateOfferedDay => _prefs.getInt('updateOffered') ?? 0;
+  Future<void> setUpdateOfferedDay(int day) =>
+      _prefs.setInt('updateOffered', day);
+
+  // --- Daily gift (see core/presente_diario.dart) ---
+
+  int get giftLastDay => _prefs.getInt('giftLastDay') ?? 0;
+  int get giftIndex => _prefs.getInt('giftIndex') ?? 0;
+
+  /// The day the gift last opened by itself (once a day, not more).
+  int get giftShownDay => _prefs.getInt('giftShown') ?? 0;
+  Future<void> setGiftShown(int day) => _prefs.setInt('giftShown', day);
+
+  Future<void> setGift(int day, int index) async {
+    await _prefs.setInt('giftLastDay', day);
+    await _prefs.setInt('giftIndex', index);
+  }
+
   // --- Passe do Capi (see core/passe.dart) ---
 
   int passPoints(int temporada) => _prefs.getInt('passPoints_$temporada') ?? 0;

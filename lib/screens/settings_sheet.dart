@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../services/analytics.dart';
+import '../services/avisos.dart';
 import '../services/web_url.dart';
 import '../ui/palette.dart';
 import '../ui/privacy_dialog.dart';
@@ -80,6 +81,22 @@ class _SettingsState extends State<_Settings> {
                   setState(() {});
                 },
               ),
+              // Daily reminders (Android, opt-in).
+              if (Avisos.suportado)
+                SwitchListTile(
+                  title: Text('Lembretes diários', style: bodyText(17)),
+                  subtitle: Text(
+                    'O presente do dia e as missões, às 19h',
+                    style: bodyText(12, color: Palette.textDim),
+                  ),
+                  secondary: const Icon(Icons.notifications_rounded),
+                  value: store.remindersOn,
+                  onChanged: (v) async {
+                    await store.setRemindersAsked();
+                    await Avisos.lembretes(store, v);
+                    setState(() {});
+                  },
+                ),
               // Anonymous usage statistics (Firebase on Android).
               if (Analytics.active)
                 SwitchListTile(
@@ -152,7 +169,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.3.1 · CHS CONSULTORIA LTDA',
+                'CapiBlocks v1.4.0 · CHS CONSULTORIA LTDA',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],

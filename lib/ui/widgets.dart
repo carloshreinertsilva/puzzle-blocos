@@ -48,7 +48,9 @@ class _ChunkyButtonState extends State<ChunkyButton> {
     final h = widget.big ? 64.0 : 52.0;
     final edge = widget.big ? 6.0 : 5.0;
     final pressed = _down ? edge - 1 : 0.0;
+    // Its own node: never merged with a title or text next to it.
     return Semantics(
+      container: true,
       button: true,
       label: widget.semanticLabel ?? widget.label,
       excludeSemantics: true,
