@@ -9,6 +9,7 @@ import '../ads/ad_service.dart';
 import '../services/progress_store.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
+import '../ui/bau_abertura.dart';
 import '../ui/widgets.dart';
 import 'passe_sheet.dart';
 import 'presente_dialog.dart';
@@ -49,83 +50,17 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
   }
 
   Future<void> _claimChest() async {
-    widget.services.feedback.praise(4);
-    final unlockedHat = await DailyMissionsManager.claimChest(
+    final unlocked = await DailyMissionsManager.claimChest(
       widget.services.store,
       _today,
     );
     if (!mounted) return;
     setState(() {});
-
-    // Show celebratory announcement
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1B4B),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: Color(0xFFFACC15), width: 2),
-        ),
-        title: Center(child: OutlinedTitle('Baú Aberto!')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'art/missions/icone-bau-128.png',
-              width: 80,
-              height: 80,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '+5 Estrelas adicionadas à carteira!',
-              textAlign: TextAlign.center,
-              style: displayText(16, color: const Color(0xFFFDE047)),
-            ),
-            const SizedBox(height: 12),
-            if (unlockedHat != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0x33F59E0B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0x66F59E0B)),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'NOVO ITEM DO CAPI!',
-                      style: displayText(13, color: const Color(0xFFF59E0B)),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      unlockedHat.label,
-                      style: displayText(18, color: Colors.white),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      unlockedHat.descricao,
-                      textAlign: TextAlign.center,
-                      style: bodyText(13, color: Palette.textDim),
-                    ),
-                  ],
-                ),
-              ),
-            ] else ...[
-              Text(
-                'Você já tem todos os itens que o baú pode dar!',
-                textAlign: TextAlign.center,
-                style: bodyText(14, color: Palette.textDim),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          ChunkyButton(
-            label: 'Maravilha!',
-            onTap: () => Navigator.of(ctx).pop(),
-          ),
-        ],
-      ),
+    await showBauAbertura(
+      context,
+      widget.services,
+      item: unlocked,
+      estrelas: DailyMissionsManager.chestStarsReward,
     );
   }
 
