@@ -15,7 +15,11 @@ import 'items.dart';
 /// What the village scene shows right now. The screen changes it; the
 /// painter reads it every frame.
 class VillageModel {
-  int built = 0;
+  /// Ids of the items built.
+  Set<String> built = {};
+
+  /// The item picked in the market: its spot glows on the island.
+  String? selected;
 
   /// The item being built and when (clock seconds) it started dropping in.
   String? building;
@@ -140,7 +144,7 @@ class VillageLayout {
     ).contains(point)) {
       return 'capi';
     }
-    final items = Village.items.take(built).toList()
+    final items = Village.items.where((i) => built.contains(i.id)).toList()
       ..sort((a, b) => _depth(b.spot).compareTo(_depth(a.spot)));
     for (final item in items) {
       final art = itemArt[item.id]!;
@@ -274,16 +278,19 @@ class VillagePainter extends CustomPainter {
     canvas.save();
     canvas.translate(origin.dx, origin.dy);
     final c = IsoCanvas(canvas, Iso(Offset.zero, tile));
-    canvas.drawPicture(cache.base(tile, model.built));
+    canvas.drawPicture(cache.base(tile, model.built.length));
     _paintWater(c, t);
 
-    final next = Village.next(model.built);
+    final sel = model.selected;
+    final next = sel == null || model.built.contains(sel)
+        ? null
+        : Village.byId(sel);
     final showNext = next != null && model.building == null;
     if (showNext) _placeholder(c, next, t);
 
     // Items, decor and Capi, back to front.
     final things = <(double, void Function())>[
-      for (final item in Village.items.take(model.built))
+      for (final item in Village.items.where((i) => model.built.contains(i.id)))
         (_depth(item.spot), () => _paintItem(c, item, t)),
       for (final d in _decor) (d.$1 + d.$2 + 0.4, () => _paintDecor(c, d)),
       (Village.capiSpot.dx + Village.capiSpot.dy + 0.3, () => _paintCapi(c, t)),

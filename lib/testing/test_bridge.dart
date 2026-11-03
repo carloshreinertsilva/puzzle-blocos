@@ -105,6 +105,7 @@ class TestBridge {
         'unlockedHats': hats,
         'dailyChestAvailable': chestAvail,
         'dailyChestClaimed': chestDone,
+        if (sStore != null) 'villageItems': sStore.villageItems,
         if (sStore != null)
           'passe': {
             'nivel': PasseDoCapi.nivel(sStore, DateTime.now()),

@@ -6,6 +6,7 @@ export type Box = { x: number; y: number; w: number; h: number };
 export type GameState = {
   screen: 'home' | 'game' | 'village' | 'obra' | 'tower';
   stars?: number;
+  villageItems?: string[];
   obra?: {
     id: string;
     pieces: number;

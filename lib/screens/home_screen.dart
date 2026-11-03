@@ -371,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _villageCard(ProgressStore store) {
     final built = store.villageBuilt;
-    final next = Village.next(built);
+    final next = Village.suggestion(store.villageItems);
     final canBuild = next != null && store.stars >= next.cost;
     return MenuCard(
       icon: Icons.cottage_rounded,
@@ -711,6 +711,8 @@ class _LojaBotaoState extends State<_LojaBotao>
 
   void _chamar() {
     if (!mounted) return;
+    // The balloon goes in the overlay, above the logo under the bar.
+    if (!_portal.isShowing) _portal.show();
     setState(() => _fala = _falas[_vez++ % _falas.length]);
     _timer = Timer(const Duration(seconds: 4), () {
       if (!mounted) return;
@@ -731,8 +733,6 @@ class _LojaBotaoState extends State<_LojaBotao>
 
   @override
   Widget build(BuildContext context) {
-    // The balloon goes in the overlay, above the logo below the bar.
-    if (_fala != null && !_portal.isShowing) _portal.show();
     return OverlayPortal(
       controller: _portal,
       overlayChildBuilder: (context) => Positioned(
