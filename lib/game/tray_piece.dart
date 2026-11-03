@@ -198,10 +198,11 @@ class TrayPiece extends PositionComponent
     final cell = game.cellSize;
     final topLeft =
         position + _center - Vector2(s.cols * cell / 2, s.rows * cell / 2);
-    final col = ((topLeft.x - game.boardRect.left) / cell).round();
-    final row = ((topLeft.y - game.boardRect.top) / cell).round();
+    final fx = (topLeft.x - game.boardRect.left) / cell;
+    final fy = (topLeft.y - game.boardRect.top) / cell;
     final board = game.controller.session.board;
-    if (board.canPlace(s, row, col)) {
+    final spot = nearestFit(fx, fy, (r, c) => board.canPlace(s, r, c));
+    if (spot case (final row, final col)) {
       _snap = (row, col);
       final (rows, cols) = board.linesCompletedBy(s, row, col);
       final prev = game.boardView.preview;
@@ -213,4 +214,31 @@ class TrayPiece extends PositionComponent
       game.boardView.preview = null;
     }
   }
+}
+
+/// Where a piece whose top-left sits at ([fx], [fy]) (in cells) lands: the
+/// nearest spot that fits, within [reach] cells, so a drop slightly off
+/// still goes in ("magnet"). The exact spot wins whenever it fits.
+(int, int)? nearestFit(
+  double fx,
+  double fy,
+  bool Function(int row, int col) fits, {
+  double reach = 0.75,
+}) {
+  final r0 = fy.round(), c0 = fx.round();
+  if (fits(r0, c0)) return (r0, c0);
+  (int, int)? best;
+  var bestD = double.infinity;
+  for (var dr = -1; dr <= 1; dr++) {
+    for (var dc = -1; dc <= 1; dc++) {
+      if (dr == 0 && dc == 0) continue;
+      final r = r0 + dr, c = c0 + dc;
+      final d = (r - fy) * (r - fy) + (c - fx) * (c - fx);
+      if (d < bestD && d <= reach * reach && fits(r, c)) {
+        bestD = d;
+        best = (r, c);
+      }
+    }
+  }
+  return best;
 }
