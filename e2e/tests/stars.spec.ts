@@ -28,3 +28,15 @@ test('estrelas: vencer mostra as estrelas e os desafios; a fase antiga pode ser 
   await waitForState(page, (x) => x.showOutcome === true, 'vitória de novo');
   await expect(page.getByRole('button', { name: 'Jogar de novo' })).toBeVisible();
 });
+
+test('vitória: dá para voltar ao menu em vez de seguir para a próxima fase', async ({ page }) => {
+  await openApp(page, { level: 2 });
+  await startLevel(page);
+  const entendi = page.getByRole('button', { name: 'Entendi!' });
+  if (await entendi.isVisible().catch(() => false)) await entendi.click();
+  await page.evaluate(() => (window as any).__bb.win());
+  await waitForState(page, (x) => x.showOutcome === true, 'vitória');
+  await expect(page.getByRole('button', { name: 'Próxima fase' })).toBeVisible();
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await waitForState(page, (x) => x.screen === 'home', 'menu');
+});

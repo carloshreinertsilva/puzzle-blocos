@@ -92,16 +92,35 @@ class ObraController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Hints given free in each obra; the next ones are paid (stars or video).
+  static const freeHints = 1;
+
+  /// Stars a paid hint costs.
+  static const hintCost = 5;
+
+  /// Whether pressing "Dica" now costs something: a new piece would be shown
+  /// and the free hints are used up. Repeating the hint on screen, or Capi
+  /// saying the board can't be finished, is always free.
+  bool get nextHintPaid =>
+      !solved &&
+      hint == null &&
+      hints >= freeHints &&
+      Blueprints.hint(blueprint, filled, unplaced) != null;
+
   /// Capi shows where one piece goes; if the board can't be finished from
-  /// here, he says so instead.
+  /// here, he says so instead (that one doesn't count as a hint).
   void showHint() {
     if (solved) return;
+    if (hint != null) {
+      line = 'Essa peça vai aqui, ó!';
+      notifyListeners();
+      return;
+    }
     final move = Blueprints.hint(blueprint, filled, unplaced);
-    hints++;
     if (move == null) {
-      hint = null;
       line = 'Do jeito que está, não fecha. Tire uma peça e eu te mostro!';
     } else {
+      hints++;
       hint = move;
       line = 'Essa peça vai aqui, ó!';
     }
