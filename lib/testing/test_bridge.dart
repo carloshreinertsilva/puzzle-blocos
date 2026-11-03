@@ -91,6 +91,7 @@ class TestBridge {
           'stars': o.stars,
           'undos': o.undos,
           'hints': o.hints,
+          'hint': o.hint?.$1,
         },
       };
     }

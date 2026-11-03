@@ -469,7 +469,7 @@ class _GameScreenState extends State<GameScreen> {
                 replay: controller.isReplay,
                 onNext: _next,
                 onRetry: _retry,
-                onExit: _exit,
+                onExit: _onboarding ? null : _exit,
               );
       }
     } else if (controller.showOutcome && s.status == SessionStatus.lost) {
@@ -1286,7 +1286,9 @@ class _WinCard extends StatelessWidget {
   final bool replay;
   final VoidCallback onNext;
   final VoidCallback onRetry;
-  final VoidCallback onExit;
+
+  /// Back to the menu (not while the first levels are on rails).
+  final VoidCallback? onExit;
 
   @override
   Widget build(BuildContext context) => CardPanel(
@@ -1343,13 +1345,22 @@ class _WinCard extends StatelessWidget {
             onPressed: onExit,
             child: Text('Menu', style: displayText(18, color: Palette.textDim)),
           ),
-        ] else
+        ] else ...[
           ChunkyButton(
             label: 'Próxima fase',
             icon: Icons.arrow_forward_rounded,
             big: true,
             onTap: onNext,
           ),
+          if (onExit != null)
+            TextButton(
+              onPressed: onExit,
+              child: Text(
+                'Menu',
+                style: displayText(18, color: Palette.textDim),
+              ),
+            ),
+        ],
       ],
     ),
   );

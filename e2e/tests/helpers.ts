@@ -14,6 +14,7 @@ export type GameState = {
     stars: number;
     undos: number;
     hints: number;
+    hint: number | null;
   };
   mode?: 'levels' | 'endless' | 'daily' | 'blitz' | 'duel';
   level?: number;

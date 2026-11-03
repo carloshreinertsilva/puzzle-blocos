@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../ads/ad_service.dart';
 import '../core/blueprint.dart';
 import '../core/board.dart';
 import '../core/shapes.dart';
@@ -156,6 +157,37 @@ class _ObraScreenState extends State<ObraScreen>
     };
   }
 
+  /// The first hint of each obra is free; the next ones cost stars or a
+  /// video, so the drawing can't be finished on hints alone.
+  Future<void> _dica() async {
+    widget.services.feedback.click();
+    if (!_obra.nextHintPaid) {
+      _obra.showHint();
+      return;
+    }
+    final store = widget.services.store;
+    final ads = widget.services.ads;
+    final escolha = await showDialog<String>(
+      context: context,
+      builder: (ctx) =>
+          _DicaPaga(estrelas: store.stars, video: ads.hasVideoAds),
+    );
+    if (!mounted || escolha == null) return;
+    var pago = false;
+    if (escolha == 'estrelas') {
+      pago = await store.spendStars(ObraController.hintCost);
+    } else if (escolha == 'video') {
+      pago = await ads.rewarded(context, RewardPlacement.obraHint);
+    }
+    if (!mounted) return;
+    if (!pago) {
+      widget.services.feedback.lose();
+      return;
+    }
+    Analytics.event('obra_dica', {'obra': _number, 'pagamento': escolha});
+    _obra.showHint();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bp = _obra.blueprint;
@@ -193,10 +225,7 @@ class _ObraScreenState extends State<ObraScreen>
                         RoundIconButton(
                           icon: Icons.lightbulb_rounded,
                           label: 'Dica',
-                          onTap: () {
-                            widget.services.feedback.click();
-                            _obra.showHint();
-                          },
+                          onTap: _dica,
                         ),
                         const SizedBox(width: 8),
                         RoundIconButton(
@@ -598,4 +627,74 @@ class _BlueprintPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BlueprintPainter old) => true;
+}
+
+/// Asks how to pay for a hint: stars, a video, or not now.
+class _DicaPaga extends StatelessWidget {
+  const _DicaPaga({required this.estrelas, required this.video});
+
+  final int estrelas;
+  final bool video;
+
+  @override
+  Widget build(BuildContext context) {
+    const custo = ObraController.hintCost;
+    final temEstrelas = estrelas >= custo;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 380),
+        child: CardPanel(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Semantics(
+                container: true,
+                header: true,
+                child: Text(
+                  'Mais uma dica?',
+                  style: displayText(22, color: Palette.text),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'A dica grátis desta obra já foi. As próximas custam '
+                '$custo estrelas${video ? ' ou um vídeo' : ''}.\n'
+                'Você tem $estrelas ★.',
+                textAlign: TextAlign.center,
+                style: bodyText(14, color: Palette.textDim),
+              ),
+              const SizedBox(height: 14),
+              ChunkyButton(
+                label: 'Usar $custo ★',
+                semanticLabel: 'Usar $custo estrelas na dica',
+                icon: Icons.star_rounded,
+                onTap: temEstrelas
+                    ? () => Navigator.of(context).pop('estrelas')
+                    : null,
+              ),
+              if (video) ...[
+                const SizedBox(height: 10),
+                ChunkyButton(
+                  label: 'Ver vídeo',
+                  semanticLabel: 'Ver um vídeo pela dica',
+                  icon: Icons.play_circle_rounded,
+                  onTap: () => Navigator.of(context).pop('video'),
+                ),
+              ],
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  'Agora não',
+                  style: displayText(16, color: Palette.textDim),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
