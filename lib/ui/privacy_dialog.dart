@@ -81,7 +81,7 @@ class _PrivacySheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Desenvolvido por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima atualização: Outubro de 2026',
+                          'Desenvolvido por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima atualização: Novembro de 2026',
                           style: bodyText(12, color: Palette.textDim),
                         ),
                         const SizedBox(height: 14),
@@ -99,7 +99,7 @@ class _PrivacySheet extends StatelessWidget {
                         ),
                         _section(
                           '4. Serviços Opcionais',
-                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo do Google Play; não recebemos dados de cartão. Nada é vendido por sorteio.',
+                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo do Google Play; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Notificações: no Android, lembretes diários (se você aceitar) e avisos de novidades pelo Firebase Cloud Messaging, que usa um identificador do aparelho só para entregar a mensagem. Dá para desligar em Configurações ou no Android.',
                         ),
                         _section(
                           '5. Seus Direitos e Exclusão (LGPD)',

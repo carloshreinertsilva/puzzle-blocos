@@ -97,8 +97,13 @@ const VETERAN: Saved = {
 /** Opens the game on the menu, with optional saved progress
  * (shared_preferences keys) on top of a returning player's. */
 export async function openApp(page: Page, saved: Saved = {}) {
-  await openFresh(page, { ...VETERAN, ...saved });
-  await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
+  // The daily gift already opened by itself today (a test can still open it).
+  const d = new Date();
+  const today = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  await openFresh(page, { ...VETERAN, giftShown: today, ...saved });
+  // With the daily gift opening by itself, the menu waits behind it.
+  const first = saved.giftShown === 0 ? /^Pegar o presente do dia/ : /^Jogar · Fase/;
+  await expect(page.getByRole('button', { name: first })).toBeVisible();
 }
 
 /** Opens the game with only [saved] stored: a new player by default. */

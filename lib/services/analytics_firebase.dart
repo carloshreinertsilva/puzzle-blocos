@@ -1,15 +1,11 @@
-import 'dart:io';
-
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 import 'analytics.dart';
-import 'firebase_config.dart';
+import 'firebase_app.dart';
 
 Future<AnalyticsBackend?> createFirebaseBackend() async {
-  if (!Platform.isAndroid || !FirebaseConfig.ready) return null;
+  if (!await firebasePronto()) return null;
   try {
-    await Firebase.initializeApp(options: FirebaseConfig.android);
     final analytics = FirebaseAnalytics.instance;
     // Statistics only: nothing feeds ad personalization.
     await analytics.setAnalyticsCollectionEnabled(false);
