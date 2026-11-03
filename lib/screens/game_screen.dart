@@ -18,12 +18,14 @@ import '../main.dart';
 import '../testing/test_bridge.dart';
 import '../ui/level_text.dart';
 import '../ui/capi.dart';
+import '../ui/dica_paga.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../core/board.dart';
 import '../services/progress_store.dart';
 import '../ui/tool_painter.dart';
 import '../ui/widgets.dart';
+import '../ui/premio.dart';
 
 /// "Dobrar com vídeo" at most this many times a day, so watching every
 /// video doesn't double the whole star economy.
@@ -134,6 +136,13 @@ class _GameScreenState extends State<GameScreen> {
     await widget.services.store.addVideoToday('dobrar', DateTime.now());
     await widget.services.store.addStars(ganhas);
     widget.services.feedback.praise(3);
+    if (mounted) {
+      mostrarPremio(
+        context,
+        '+$ganhas ★ pelo vídeo!',
+        icon: Icons.star_rounded,
+      );
+    }
     setState(() => _dobrado = true);
   });
 
@@ -156,7 +165,62 @@ class _GameScreenState extends State<GameScreen> {
       context,
       RewardPlacement.revive,
     );
-    if (ok) controller.revive();
+    if (!ok) return;
+    controller.revive();
+    widget.services.feedback.praise(2);
+    if (mounted) {
+      mostrarPremio(
+        context,
+        'Segunda chance liberada!',
+        icon: Icons.favorite_rounded,
+      );
+    }
+  });
+
+  /// Stuck after the free hint: Capi offers a paid hint, or the tools.
+  Widget _hintOffer() {
+    final show =
+        controller.hintOffer &&
+        controller.playing &&
+        !controller.showOutcome &&
+        controller.activeToolMode == null;
+    if (!show) return const SizedBox.shrink();
+    return Positioned(
+      left: 8,
+      right: 8,
+      bottom: MediaQuery.paddingOf(context).bottom + 4,
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: CapiSays(
+            text: 'Travou? Eu te mostro uma jogada.',
+            mood: CapiMood.point,
+            capiSize: 70,
+            action: 'Ver dica',
+            onAction: _dicaPaga,
+            secondary: 'Usar ferramenta',
+            onSecondary: _openToolsSheet,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _dicaPaga() => _guard(() async {
+    widget.services.feedback.click();
+    final pago = await pagarDica(
+      context,
+      widget.services,
+      RewardPlacement.gameHint,
+      motivo: 'A dica grátis desta fase já foi.',
+    );
+    if (pago == null || !mounted) return;
+    Analytics.event('fase_dica', {
+      'level': controller.level.number,
+      'pagamento': pago,
+    });
+    controller.showPaidHint();
   });
 
   void _openToolsSheet() {
@@ -180,8 +244,15 @@ class _GameScreenState extends State<GameScreen> {
           );
           if (ok) {
             await widget.services.store.addTool(tool, 1);
-            widget.services.feedback.click();
-            if (mounted) setState(() {});
+            widget.services.feedback.praise(2);
+            if (mounted) {
+              mostrarPremio(
+                this.context,
+                '+1 ${tool.label} pelo vídeo!',
+                icon: Icons.handyman_rounded,
+              );
+              setState(() {});
+            }
           }
         },
         onBuyTool: (tool) async {
@@ -368,6 +439,10 @@ class _GameScreenState extends State<GameScreen> {
             ListenableBuilder(
               listenable: controller,
               builder: (context, _) => _CapiPopUp(controller: controller),
+            ),
+            ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => _hintOffer(),
             ),
             ListenableBuilder(
               listenable: controller,

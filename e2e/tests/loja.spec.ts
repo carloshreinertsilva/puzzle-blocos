@@ -30,6 +30,8 @@ test.describe('Loja do Capi', () => {
     expect(s.starsGained).toBeGreaterThan(0);
     await page.getByRole('button', { name: /^Dobrar: \+\d com vídeo/ }).click();
     await expect(page.getByText(/^Estrelas dobradas/)).toBeVisible({ timeout: 10_000 });
+    // The video is clearly paid off.
+    await expect(page.getByText(`+${s.starsGained} ★ pelo vídeo!`).first()).toBeVisible();
     await expect.poll(async () => (await state(page)).stars).toBe(2 * s.starsGained);
   });
 
@@ -39,6 +41,7 @@ test.describe('Loja do Capi', () => {
     const bau = page.getByRole('button', { name: /^Abrir baú bônus: \+5 estrelas/ });
     await bau.click();
     await expect.poll(async () => (await state(page)).stars, { timeout: 10_000 }).toBe(5);
+    await expect(page.getByText('+5 ★ do baú extra!').first()).toBeVisible();
     // Once a day: the button is gone.
     await expect(bau).toHaveCount(0);
   });

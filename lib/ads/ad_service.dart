@@ -10,6 +10,7 @@ enum RewardPlacement {
   bonusChest,
   wardrobeItem,
   obraHint,
+  gameHint,
   toolHammer,
   toolRotate,
   toolReroll,

@@ -11,6 +11,7 @@ import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/bau_abertura.dart';
 import '../ui/widgets.dart';
+import '../ui/premio.dart';
 import 'passe_sheet.dart';
 import 'presente_dialog.dart';
 import 'wardrobe_dialog.dart';
@@ -483,7 +484,14 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
       await store.setBonusChestClaimed(_today);
       await store.addStars(bauBonusEstrelas);
       widget.services.feedback.praise(3);
-      if (mounted) setState(() {});
+      if (mounted) {
+        mostrarPremio(
+          context,
+          '+$bauBonusEstrelas ★ do baú extra!',
+          icon: Icons.star_rounded,
+        );
+        setState(() {});
+      }
     } finally {
       _abrindoBonus = false;
     }

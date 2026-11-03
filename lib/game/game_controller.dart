@@ -112,6 +112,14 @@ class GameController extends ChangeNotifier {
   static const idleHintAfter = Duration(seconds: 10);
   Timer? _idleTimer;
   (int, int, int)? _idleHint;
+
+  /// Hints Capi gives on his own in each game; after those, when the player
+  /// is stuck he offers a paid hint (or the tools) instead.
+  static const freeIdleHints = 1;
+  int idleHints = 0;
+
+  /// Capi is offering a paid hint (shown until the player moves).
+  bool hintOffer = false;
   bool _warned = false;
   final _rng = Random();
 
@@ -167,8 +175,9 @@ class GameController extends ChangeNotifier {
   /// the idle clock again.
   void noteActivity() {
     _idleTimer?.cancel();
-    if (_idleHint != null) {
+    if (_idleHint != null || hintOffer) {
       _idleHint = null;
+      hintOffer = false;
       if (capiReaction == CapiReaction.hint) capiReaction = null;
       notifyListeners();
     }
@@ -177,16 +186,37 @@ class GameController extends ChangeNotifier {
       if (!playing) return noteActivity();
       final move = suggestMove(session.board, session.tray);
       if (move == null) return;
-      _idleHint = move;
-      _react(
-        CapiReaction.hint,
-        _pick(const [
-          'Que tal aqui?',
-          'Psiu! Tenta aqui.',
-          'Olha esse cantinho!',
-        ]),
-      );
+      if (idleHints >= freeIdleHints) {
+        hintOffer = true;
+        notifyListeners();
+        return;
+      }
+      _showHint(move);
     });
+  }
+
+  void _showHint((int, int, int) move) {
+    idleHints++;
+    hintOffer = false;
+    _idleHint = move;
+    _react(
+      CapiReaction.hint,
+      _pick(const [
+        'Que tal aqui?',
+        'Psiu! Tenta aqui.',
+        'Olha esse cantinho!',
+      ]),
+    );
+  }
+
+  /// The paid hint was paid: Capi shows a move. False when there is none.
+  bool showPaidHint() {
+    if (!playing) return false;
+    final move = suggestMove(session.board, session.tray);
+    if (move == null) return false;
+    _idleTimer?.cancel();
+    _showHint(move);
+    return true;
   }
 
   String _pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
@@ -237,6 +267,9 @@ class GameController extends ChangeNotifier {
       ..addAll(_introsFor(config));
     _warned = false;
     capiReaction = null;
+    idleHints = 0;
+    hintOffer = false;
+    _idleHint = null;
     if (tutorial) _loadTutorialStep(0);
     noteActivity();
   }

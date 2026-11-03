@@ -101,6 +101,14 @@ void main() {
     // Touching a piece takes the hint away.
     c.noteActivity();
     expect(c.hint, isNull);
+
+    // Only one free hint per game: next time Capi offers a paid one.
+    await tester.pump(GameController.idleHintAfter);
+    expect(c.hint, isNull);
+    expect(c.hintOffer, isTrue);
+    expect(c.showPaidHint(), isTrue);
+    expect(c.hint, isNotNull);
+    expect(c.hintOffer, isFalse);
     c.dispose(); // stops the idle clock before the test ends
   });
 }

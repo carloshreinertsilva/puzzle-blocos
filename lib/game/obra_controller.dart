@@ -95,9 +95,6 @@ class ObraController extends ChangeNotifier {
   /// Hints given free in each obra; the next ones are paid (stars or video).
   static const freeHints = 1;
 
-  /// Stars a paid hint costs.
-  static const hintCost = 5;
-
   /// Whether pressing "Dica" now costs something: a new piece would be shown
   /// and the free hints are used up. Repeating the hint on screen, or Capi
   /// saying the board can't be finished, is always free.

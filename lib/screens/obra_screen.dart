@@ -13,6 +13,7 @@ import '../services/analytics.dart';
 import '../testing/test_bridge.dart';
 import '../ui/block_painter.dart';
 import '../ui/capi.dart';
+import '../ui/dica_paga.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -165,26 +166,14 @@ class _ObraScreenState extends State<ObraScreen>
       _obra.showHint();
       return;
     }
-    final store = widget.services.store;
-    final ads = widget.services.ads;
-    final escolha = await showDialog<String>(
-      context: context,
-      builder: (ctx) =>
-          _DicaPaga(estrelas: store.stars, video: ads.hasVideoAds),
+    final pago = await pagarDica(
+      context,
+      widget.services,
+      RewardPlacement.obraHint,
+      motivo: 'A dica grátis desta obra já foi.',
     );
-    if (!mounted || escolha == null) return;
-    var pago = false;
-    if (escolha == 'estrelas') {
-      pago = await store.spendStars(ObraController.hintCost);
-    } else if (escolha == 'video') {
-      pago = await ads.rewarded(context, RewardPlacement.obraHint);
-    }
-    if (!mounted) return;
-    if (!pago) {
-      widget.services.feedback.lose();
-      return;
-    }
-    Analytics.event('obra_dica', {'obra': _number, 'pagamento': escolha});
+    if (pago == null || !mounted) return;
+    Analytics.event('obra_dica', {'obra': _number, 'pagamento': pago});
     _obra.showHint();
   }
 
@@ -627,74 +616,4 @@ class _BlueprintPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BlueprintPainter old) => true;
-}
-
-/// Asks how to pay for a hint: stars, a video, or not now.
-class _DicaPaga extends StatelessWidget {
-  const _DicaPaga({required this.estrelas, required this.video});
-
-  final int estrelas;
-  final bool video;
-
-  @override
-  Widget build(BuildContext context) {
-    const custo = ObraController.hintCost;
-    final temEstrelas = estrelas >= custo;
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 380),
-        child: CardPanel(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Semantics(
-                container: true,
-                header: true,
-                child: Text(
-                  'Mais uma dica?',
-                  style: displayText(22, color: Palette.text),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'A dica grátis desta obra já foi. As próximas custam '
-                '$custo estrelas${video ? ' ou um vídeo' : ''}.\n'
-                'Você tem $estrelas ★.',
-                textAlign: TextAlign.center,
-                style: bodyText(14, color: Palette.textDim),
-              ),
-              const SizedBox(height: 14),
-              ChunkyButton(
-                label: 'Usar $custo ★',
-                semanticLabel: 'Usar $custo estrelas na dica',
-                icon: Icons.star_rounded,
-                onTap: temEstrelas
-                    ? () => Navigator.of(context).pop('estrelas')
-                    : null,
-              ),
-              if (video) ...[
-                const SizedBox(height: 10),
-                ChunkyButton(
-                  label: 'Ver vídeo',
-                  semanticLabel: 'Ver um vídeo pela dica',
-                  icon: Icons.play_circle_rounded,
-                  onTap: () => Navigator.of(context).pop('video'),
-                ),
-              ],
-              const SizedBox(height: 6),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  'Agora não',
-                  style: displayText(16, color: Palette.textDim),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
