@@ -69,7 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final store = widget.services.store;
     final agora = DateTime.now();
     final hoje = ProgressStore.dayKey(agora);
+    // Not over Capi's first words on the menu: the gift waits for them.
     if (!mounted ||
+        _news.isNotEmpty ||
         !store.hasSeen('menu') ||
         !PresenteDiario.disponivel(store, agora) ||
         store.giftShownDay == hoje) {
