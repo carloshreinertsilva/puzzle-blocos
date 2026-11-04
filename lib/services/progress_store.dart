@@ -176,9 +176,14 @@ class ProgressStore {
   bool get remindersAsked => _prefs.getBool('remindersAsked') ?? false;
   Future<void> setRemindersAsked() => _prefs.setBool('remindersAsked', true);
 
-  int get updateOfferedDay => _prefs.getInt('updateOffered') ?? 0;
-  Future<void> setUpdateOfferedDay(int day) =>
-      _prefs.setInt('updateOffered', day);
+  /// How many times the menu invited the player to sign in to Play Games,
+  /// and the day of the last time (at most twice, on different days).
+  int get playGamesConvites => _prefs.getInt('pgsConvites') ?? 0;
+  int get playGamesConviteDia => _prefs.getInt('pgsConviteDia') ?? 0;
+  Future<void> marcarConvitePlayGames(int dia) async {
+    await _prefs.setInt('pgsConvites', playGamesConvites + 1);
+    await _prefs.setInt('pgsConviteDia', dia);
+  }
 
   // --- Daily gift (see core/presente_diario.dart) ---
 

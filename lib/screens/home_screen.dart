@@ -64,7 +64,70 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         await Avisos.verificarAtualizacao(context, widget.services.store);
       }
+      await _convidarPlayGames();
     });
+  }
+
+  /// After the first levels, twice at most: sign in to Play Games to be on
+  /// the leaderboards.
+  Future<void> _convidarPlayGames() async {
+    final store = widget.services.store;
+    final hoje = ProgressStore.dayKey(DateTime.now());
+    if (!mounted || !await Placares.deveConvidar(store, hoje)) return;
+    if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
+    await store.marcarConvitePlayGames(hoje);
+    if (!mounted) return;
+    final entrar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF141938),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0x33FFFFFF)),
+        ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.leaderboard_rounded,
+              color: Palette.accent,
+              size: 28,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                tr('Placares do Capi'),
+                style: displayText(22, color: Palette.text),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          tr(
+            'Entre no Google Play Games para aparecer nos placares e '
+            'disputar com amigos: recorde do Infinito, Blitz, Torre e '
+            'estrelas.',
+          ),
+          style: bodyText(15, color: Palette.textDim),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              tr('Agora não'),
+              style: displayText(16, color: Palette.textDim),
+            ),
+          ),
+          ChunkyButton(
+            label: tr('Entrar'),
+            icon: Icons.login_rounded,
+            onTap: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (entrar != true) return;
+    Analytics.event('play_games_convite', {'aceitou': 1});
+    await Placares.entrar(store);
   }
 
   /// Once a day, after the first levels, the daily gift opens by itself.

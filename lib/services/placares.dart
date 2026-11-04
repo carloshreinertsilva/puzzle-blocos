@@ -22,11 +22,31 @@ abstract final class Placares {
   static const estrelas = 'CgkInKLAmqYVEAIQBQ';
 
   static bool _entrou = false;
+  static Future<void>? _inicio;
+
+  /// Whether the player is signed in, once the opening check is done.
+  static Future<bool> conectado() async {
+    await _inicio;
+    return _entrou;
+  }
+
+  /// The menu invites the player to sign in, after the first levels: at
+  /// most twice, on different days, and never once signed in.
+  static Future<bool> deveConvidar(ProgressStore store, int hoje) async {
+    if (!ativo || store.level < 6) return false;
+    if (store.playGamesConvites >= 2 || store.playGamesConviteDia == hoje) {
+      return false;
+    }
+    return !await conectado();
+  }
 
   /// At the opening: checks the automatic sign-in and sends the records
   /// kept on the phone, so the boards catch up with what was played
   /// before this version.
-  static Future<void> iniciar(ProgressStore store) async {
+  static Future<void> iniciar(ProgressStore store) =>
+      _inicio ??= _verificar(store);
+
+  static Future<void> _verificar(ProgressStore store) async {
     if (!ativo) return;
     try {
       _entrou = await GameAuth.isSignedIn.timeout(const Duration(seconds: 10));
@@ -57,19 +77,28 @@ abstract final class Placares {
     }
   }
 
+  /// Signs in (Play Games' own screen) and sends the records. False when
+  /// the player could not be signed in.
+  static Future<bool> entrar(ProgressStore store) async {
+    if (!ativo) return false;
+    if (_entrou) return true;
+    try {
+      await GameAuth.signIn();
+      _entrou = await GameAuth.isSignedIn.timeout(const Duration(seconds: 10));
+      if (_entrou) await enviar(store);
+      return _entrou;
+    } catch (e) {
+      debugPrint('Play Games: $e');
+      return false;
+    }
+  }
+
   /// The Ranking button: signs in when needed, then shows all boards.
   /// False when the player could not be signed in.
   static Future<bool> mostrar(ProgressStore store) async {
     if (!ativo) return false;
     try {
-      if (!_entrou) {
-        await GameAuth.signIn();
-        _entrou = await GameAuth.isSignedIn.timeout(
-          const Duration(seconds: 10),
-        );
-        if (!_entrou) return false;
-        await enviar(store);
-      }
+      if (!await entrar(store)) return false;
       await Leaderboards.showLeaderboards();
       return true;
     } catch (e) {
