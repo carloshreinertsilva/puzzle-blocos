@@ -6,20 +6,34 @@ import math
 import struct
 import wave
 
-RATE = 22050
+RATE = 44100
 
 
-def tone(freqs, dur, attack=0.005, decay=6.0, vol=0.5, harmonics=(1.0, 0.3, 0.12)):
+def tone(freqs, dur, attack=0.006, decay=6.0, vol=0.5, harmonics=(1.0, 0.3, 0.12),
+         release=0.02):
+    """A note with a smooth start and a smooth end that reaches exactly zero.
+
+    A sound that starts or stops abruptly (a straight ramp up, or a decay
+    cut off before it is silent) clicks on the speaker: the "estalinho"
+    players heard when placing a piece.
+    """
     n = int(RATE * dur)
+    release = min(release, dur / 3)
     out = []
     for i in range(n):
         t = i / RATE
-        env = min(1.0, t / attack) * math.exp(-decay * t)
+        # Raised-cosine attack and release (no corners in the envelope).
+        a = 0.5 * (1 - math.cos(math.pi * min(1.0, t / attack)))
+        left = dur - t
+        r = 1.0 if left >= release else 0.5 * (1 - math.cos(math.pi * max(0.0, left) / release))
+        env = a * r * math.exp(-decay * t)
         s = 0.0
         for f in freqs:
             for k, h in enumerate(harmonics, start=1):
                 s += h * math.sin(2 * math.pi * f * k * t)
         out.append(s * env * vol / (len(freqs) * sum(harmonics)))
+    out[0] = 0.0
+    out[-1] = 0.0
     return out
 
 
