@@ -45,7 +45,23 @@ const Map<String, String> enMenu = {
   'Guarda-Roupa': 'Wardrobe',
   'Estatísticas': 'Stats',
   'Placares': 'Leaderboards',
-  'Placares do Capi': "Capi's Leaderboards",
+  'Salve seu progresso': 'Save your progress',
+  'Entre no Google Play Games para salvar seu progresso na nuvem e aparecer nos placares com seus amigos.': 'Sign in to Google Play Games to save your progress in the cloud and show up on the leaderboards with your friends.',
+  'Progresso encontrado!': 'Progress found!',
+  'Seu progresso salvo no Google Play Games:':
+      'Your progress saved in Google Play Games:',
+  'Fase {fase} · {estrelas} estrelas': 'Level {fase} · {estrelas} stars',
+  'Neste aparelho: fase {fase} · {estrelas} estrelas.':
+      'On this device: level {fase} · {estrelas} stars.',
+  'Manter este': 'Keep this one',
+  'Carregar': 'Load',
+  'Progresso na nuvem': 'Cloud save',
+  'Salvar ou recuperar pelo Google Play Games':
+      'Save or restore with Google Play Games',
+  'Progresso salvo no Google Play Games.':
+      'Progress saved in Google Play Games.',
+  'Não deu para salvar agora. Tente de novo.':
+      "Couldn't save right now. Try again.",
   'Entre no Google Play Games para aparecer nos placares e disputar com amigos: recorde do Infinito, Blitz, Torre e estrelas.': 'Sign in to Google Play Games to show up on the leaderboards and compete with friends: Endless best, Blitz, Tower and stars.',
   'Entrar': 'Sign in',
   'Atualize o CapiBlocks': 'Update CapiBlocks',
@@ -247,7 +263,23 @@ const Map<String, String> esMenu = {
   'Guarda-Roupa': 'Armario',
   'Estatísticas': 'Estadísticas',
   'Placares': 'Clasificaciones',
-  'Placares do Capi': 'Clasificaciones de Capi',
+  'Salve seu progresso': 'Guarda tu progreso',
+  'Entre no Google Play Games para salvar seu progresso na nuvem e aparecer nos placares com seus amigos.': 'Entra en Google Play Juegos para guardar tu progreso en la nube y aparecer en las clasificaciones con tus amigos.',
+  'Progresso encontrado!': '¡Progreso encontrado!',
+  'Seu progresso salvo no Google Play Games:':
+      'Tu progreso guardado en Google Play Juegos:',
+  'Fase {fase} · {estrelas} estrelas': 'Nivel {fase} · {estrelas} estrellas',
+  'Neste aparelho: fase {fase} · {estrelas} estrelas.':
+      'En este dispositivo: nivel {fase} · {estrelas} estrellas.',
+  'Manter este': 'Mantener este',
+  'Carregar': 'Cargar',
+  'Progresso na nuvem': 'Progreso en la nube',
+  'Salvar ou recuperar pelo Google Play Games':
+      'Guardar o recuperar con Google Play Juegos',
+  'Progresso salvo no Google Play Games.':
+      'Progreso guardado en Google Play Juegos.',
+  'Não deu para salvar agora. Tente de novo.':
+      'No se pudo guardar ahora. Inténtalo de nuevo.',
   'Entre no Google Play Games para aparecer nos placares e disputar com amigos: recorde do Infinito, Blitz, Torre e estrelas.': 'Entra en Google Play Juegos para aparecer en las clasificaciones y competir con amigos: récord Infinito, Blitz, Torre y estrellas.',
   'Entrar': 'Entrar',
   'Atualize o CapiBlocks': 'Actualiza CapiBlocks',

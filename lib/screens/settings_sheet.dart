@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
+import '../services/jogo_salvo.dart';
 import '../services/placares.dart';
 import '../services/web_url.dart';
 import '../ui/palette.dart';
+import '../ui/oferta_nuvem.dart';
 import '../ui/privacy_dialog.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -240,6 +242,54 @@ class _SettingsState extends State<_Settings> {
                   ),
                 ),
 
+              // Progress saved in Google Play Games (Android only).
+              if (Placares.ativo)
+                ListTile(
+                  leading: const Icon(
+                    Icons.cloud_sync_rounded,
+                    color: Palette.accent,
+                  ),
+                  title: Text(tr('Progresso na nuvem'), style: bodyText(16)),
+                  subtitle: Text(
+                    tr('Salvar ou recuperar pelo Google Play Games'),
+                    style: bodyText(13, color: Palette.textDim),
+                  ),
+                  onTap: () async {
+                    widget.services.feedback.click();
+                    final store = widget.services.store;
+                    final avisar = ScaffoldMessenger.of(context);
+                    if (!await Placares.entrar(store)) {
+                      avisar.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            tr('Não deu para entrar no Play Games agora.'),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    final nuvem = await JogoSalvo.verificarDeNovo(store);
+                    if (!context.mounted) return;
+                    if (nuvem != null) {
+                      await oferecerProgressoDaNuvem(context, store, nuvem);
+                      return;
+                    }
+                    final ok = await JogoSalvo.salvarAgora(store);
+                    avisar.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          ok
+                              ? tr('Progresso salvo no Google Play Games.')
+                              : tr('Não deu para salvar agora. Tente de novo.'),
+                        ),
+                      ),
+                    );
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+
               // Language
               ListTile(
                 leading: const Icon(
@@ -276,7 +326,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.5.0 · CHS TECH',
+                'CapiBlocks v1.6.0 · CHS TECH',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],

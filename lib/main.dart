@@ -169,12 +169,19 @@ class App extends StatelessWidget {
   const App({super.key, required this.services});
   final AppServices services;
 
+  /// Bumped to start the game over from the saved progress (after a cloud
+  /// save replaced it).
+  static final reinicio = ValueNotifier(0);
+
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<Idioma>(
     // A new language rebuilds the whole game in it.
     valueListenable: Lingua.atual,
-    builder: (context, idioma, _) =>
-        KeyedSubtree(key: ValueKey(idioma), child: _app(context)),
+    builder: (context, idioma, _) => ValueListenableBuilder<int>(
+      valueListenable: reinicio,
+      builder: (context, n, _) =>
+          KeyedSubtree(key: ValueKey('$idioma/$n'), child: _app(context)),
+    ),
   );
 
   Widget _app(BuildContext context) {
