@@ -90,23 +90,23 @@ class _PrivacySheet extends StatelessWidget {
                         const SizedBox(height: 14),
                         _section(
                           '1. Compromisso e Jogo Offline',
-                          'O CapiBlocks foi desenvolvido com o compromisso absoluto de respeitar sua privacidade. O jogo funciona sem internet, não exige cadastro, criação de conta nem senhas.',
+                          'O CapiBlocks foi feito para respeitar sua privacidade. O jogo funciona sem internet e não pede cadastro, senha nem dados como nome ou e-mail.',
                         ),
                         _section(
                           '2. Dados Pessoais',
                           'Não coletamos, não vendemos e não transmitimos nenhum dado pessoal identificável (como nome, CPF, e-mail ou localização física) para servidores próprios.',
                         ),
                         _section(
-                          '3. Armazenamento Local no Aparelho',
-                          'Todo o seu progresso no jogo (fases concluídas, estrelas conquistadas, itens construídos na Vila do Capi, recordes e preferências de som/vibração) é armazenado exclusivamente no armazenamento interno do seu dispositivo.',
+                          '3. Onde Fica seu Progresso',
+                          'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho. Se você entrar no Google Play Games, uma cópia também fica nos Jogos salvos da sua conta Google, numa pasta oculta do Google Drive que só o CapiBlocks usa, para você recuperar o progresso em outro celular.',
                         ),
                         _section(
                           '4. Serviços Opcionais',
-                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo do Google Play; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Notificações: no Android, lembretes diários (se você aceitar) e avisos de novidades pelo Firebase Cloud Messaging, que usa um identificador do aparelho só para entregar a mensagem. Dá para desligar em Configurações ou no Android.',
+                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo do Google Play; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Notificações: no Android, lembretes diários (se você aceitar) e avisos de novidades pelo Firebase Cloud Messaging, que usa um identificador do aparelho só para entregar a mensagem. Dá para desligar em Configurações ou no Android.\n• Google Play Games: no Android, se você entrar, suas melhores pontuações aparecem nos placares com o nome e o avatar do seu perfil Play Games, e o progresso é salvo na nuvem. Não recebemos seu e-mail nem dados da sua conta Google.',
                         ),
                         _section(
                           '5. Seus Direitos e Exclusão (LGPD)',
-                          'Como todos os dados ficam no seu próprio celular, você tem controle total. Para apagar completamente todos os registros do jogo a qualquer momento, basta limpar os dados do aplicativo nas configurações do aparelho ou simplesmente desinstalar o jogo.',
+                          'Você tem controle total. Para apagar os dados do aparelho, limpe os dados do app nas configurações ou desinstale o jogo. Os placares e o progresso na nuvem podem ser apagados pelo app Google Play Games ou pelo Google Drive. Passo a passo em capiblocks.vercel.app/excluir-dados',
                         ),
                         _section(
                           '6. Contato e Suporte Oficial',
