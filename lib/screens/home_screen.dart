@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:async';
 
 import '../core/passe.dart';
@@ -542,23 +543,55 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         SizedBox(height: isSmall ? 8 : 18),
-                        Logo(
-                          onCapiTap: _tip,
-                          compact: isSmall,
-                          look: CapiLook.of(store),
-                        ),
+                        Logo(compact: isSmall, showCapi: false),
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.symmetric(
                               vertical: isSmall ? 4 : 10,
                             ),
-                            child: LevelPath(
-                              current: store.level,
-                              onPlay: () => _open(GameMode.levels),
-                              starsFor: (n) =>
-                                  Missions.count(store.levelStars(n)),
-                              onReplay: (n) =>
-                                  _open(GameMode.levels, replayLevel: n),
+                            // Capi stands big by the road, in everything
+                            // he wears; the road keeps clear of him.
+                            child: LayoutBuilder(
+                              builder: (context, box) {
+                                final capi = min(
+                                  150.0,
+                                  max(96.0, box.maxHeight * 0.42),
+                                );
+                                return Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: LevelPath(
+                                        current: store.level,
+                                        leftInset: capi * 0.78,
+                                        onPlay: () => _open(GameMode.levels),
+                                        starsFor: (n) =>
+                                            Missions.count(store.levelStars(n)),
+                                        onReplay: (n) => _open(
+                                          GameMode.levels,
+                                          replayLevel: n,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: -capi * 0.1,
+                                      bottom: 0,
+                                      child: Semantics(
+                                        button: true,
+                                        label: 'Capi',
+                                        excludeSemantics: true,
+                                        onTap: _tip,
+                                        child: GestureDetector(
+                                          onTap: _tip,
+                                          child: Capi(
+                                            size: capi,
+                                            look: CapiLook.of(store),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ),

@@ -124,8 +124,12 @@ class StatChip extends StatelessWidget {
   );
 }
 
-/// The road of levels: done ones below, the current one big in the middle,
-/// the next ones above with their goal icons. Hard levels have a red ring.
+/// The road of levels, from level 1 at the bottom up to two levels ahead.
+/// It scrolls: it opens with the current level in the middle, and the
+/// player drags it down to replay old levels for their missing stars. A
+/// level with all 3 stars wears a gold check; one with fewer shows a lighter
+/// disc and its empty stars. Hard levels ahead have a red ring. Only the
+/// part on screen is built, however many levels there are.
 class LevelPath extends StatefulWidget {
   const LevelPath({
     super.key,
@@ -133,13 +137,20 @@ class LevelPath extends StatefulWidget {
     required this.onPlay,
     this.starsFor,
     this.onReplay,
+    this.leftInset = 0,
   });
   final int current;
   final VoidCallback onPlay;
 
+  /// Room kept free on the left (Capi stands there on the menu).
+  final double leftInset;
+
   /// Stars earned on a finished level (0-3), and playing it again.
   final int Function(int level)? starsFor;
   final void Function(int level)? onReplay;
+
+  /// Vertical distance between two levels.
+  static const step = 86.0;
 
   @override
   State<LevelPath> createState() => _LevelPathState();
@@ -151,41 +162,105 @@ class _LevelPathState extends State<LevelPath>
     vsync: this,
     duration: const Duration(milliseconds: 1100),
   )..repeat(reverse: true);
+  final _scroll = ScrollController();
+  double _viewport = 0;
+  bool _centered = false;
+
+  /// Levels on the road: 1 up to two ahead of the current one.
+  int get _last => widget.current + 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
     _pulse.dispose();
+    _scroll.dispose();
     super.dispose();
+  }
+
+  /// Height of the whole road.
+  double get _height => (_last + 0.6) * LevelPath.step;
+
+  /// Where level [n]'s centre sits, from the top of the whole road.
+  Offset _at(int n, double w) {
+    final i = n - 1;
+    final road = w - widget.leftInset;
+    return Offset(
+      widget.leftInset + road / 2 + sin(i * 1.3 + 0.4) * road * 0.3,
+      _height - LevelPath.step * (i + 0.8),
+    );
+  }
+
+  void _center(double viewport) {
+    if (_centered || !_scroll.hasClients) return;
+    _centered = true;
+    final y = _at(widget.current, 1).dy;
+    final max = _scroll.position.maxScrollExtent;
+    // A little above the middle, so the last level played shows below.
+    _scroll.jumpTo((y - viewport * 0.42).clamp(0.0, max));
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, box) {
-        final h = box.maxHeight;
-        // As many levels as fit without the circles touching (3 to 6).
-        final count = (h / 82).floor().clamp(3, 6);
-        final before = count >= 5 ? 2 : 1;
-        final after = count - before - 1;
-        final first = max(1, widget.current - before);
-        final levels = [
-          for (var n = first; n <= widget.current + after; n++) n,
-        ];
         final w = box.maxWidth;
-        final step = h / (levels.length + 0.2);
-        Offset at(int i) =>
-            Offset(w / 2 + sin(i * 1.3 + 0.4) * w * 0.26, h - step * (i + 0.8));
-        final points = [for (var i = 0; i < levels.length; i++) at(i)];
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _RoadPainter(points, levels.indexOf(widget.current)),
+        _viewport = box.maxHeight;
+        if (!_centered) {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _center(_viewport),
+          );
+        }
+        final top = _scroll.hasClients ? _scroll.offset : 0.0;
+        // Only the levels near the screen (plus a margin) are built.
+        final from = max(
+          1,
+          ((_height - top - _viewport) / LevelPath.step).floor() - 1,
+        );
+        final to = min(_last, ((_height - top) / LevelPath.step).ceil() + 1);
+        final levels = [for (var n = from; n <= to; n++) n];
+        final points = [for (final n in levels) _at(n, w)];
+        // The road fades out at the top and bottom edges as it scrolls.
+        return ShaderMask(
+          shaderCallback: (r) => const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0x00FFFFFF),
+              Color(0xFFFFFFFF),
+              Color(0xFFFFFFFF),
+              Color(0x00FFFFFF),
+            ],
+            stops: [0, 0.08, 0.92, 1],
+          ).createShader(r),
+          blendMode: BlendMode.dstIn,
+          child: SingleChildScrollView(
+            controller: _scroll,
+            child: SizedBox(
+              width: w,
+              height: _height,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      // The road is green up to the current level.
+                      painter: _RoadPainter(
+                        points,
+                        (widget.current - from).clamp(0, points.length - 1),
+                      ),
+                    ),
+                  ),
+                  for (var i = 0; i < levels.length; i++)
+                    _node(levels[i], points[i]),
+                ],
               ),
             ),
-            for (var i = 0; i < levels.length; i++) _node(levels[i], points[i]),
-          ],
+          ),
         );
       },
     );
@@ -196,12 +271,18 @@ class _LevelPathState extends State<LevelPath>
     final done = n < widget.current;
     final size = current ? 74.0 : 50.0;
     final config = n > widget.current ? LevelGenerator.build(n) : null;
+    final stars = done && widget.starsFor != null ? widget.starsFor!(n) : 0;
+    final all = stars >= 3;
 
     Widget body;
     if (done) {
       body = _Disc(
         size: size,
-        color: Palette.good,
+        // All stars: the full green. Missing some: a lighter teal, worth
+        // a second visit.
+        color: all || widget.starsFor == null
+            ? Palette.good
+            : const Color(0xFF3FA7C4),
         child: Text('$n', style: displayText(20, color: Colors.white)),
       );
     } else if (current) {
@@ -231,61 +312,90 @@ class _LevelPathState extends State<LevelPath>
     }
 
     final replay = done && widget.onReplay != null;
+    // A level cut by the edge of the scrolling road is only half on screen:
+    // screen readers (and browser tests) skip it until it scrolls in.
+    final top = _scroll.hasClients ? _scroll.offset : 0.0;
+    final whole = p.dy - size / 2 >= top && p.dy + size / 2 <= top + _viewport;
     return Positioned(
       left: p.dx - size / 2,
       top: p.dy - size / 2,
       width: size,
       height: size,
-      child: Semantics(
-        // A finished level is a button (play it again), read with its stars.
-        button: replay,
-        label: done && widget.starsFor != null
-            ? tr('Fase {n}, {estrelas} de 3 estrelas', {
-                'n': n,
-                'estrelas': widget.starsFor!(n),
-              })
-            : null,
-        excludeSemantics: replay,
-        onTap: replay ? () => widget.onReplay!(n) : null,
-        child: GestureDetector(
-          // The current level plays; a finished one can be played again for
-          // its missing stars.
-          onTap: current
-              ? widget.onPlay
-              : done && widget.onReplay != null
-              ? () => widget.onReplay!(n)
+      child: ExcludeSemantics(
+        excluding: !whole,
+        child: Semantics(
+          // A finished level is a button (play it again), read with its stars.
+          button: replay,
+          label: done && widget.starsFor != null
+              ? tr('Fase {n}, {estrelas} de 3 estrelas', {
+                  'n': n,
+                  'estrelas': stars,
+                })
               : null,
-          behavior: HitTestBehavior.opaque,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned.fill(child: body),
-              if (config != null)
-                Positioned(
-                  right: -8,
-                  top: -6,
-                  child: _GoalBadge(config: config),
-                ),
-              if (done && widget.starsFor != null)
-                Positioned(
-                  left: -6,
-                  right: -6,
-                  bottom: -14,
-                  child: Center(
-                    child: StarRow(
-                      filled: [
-                        for (var i = 0; i < 3; i++) i < widget.starsFor!(n),
-                      ],
-                      size: 18,
+          excludeSemantics: replay,
+          onTap: replay ? () => widget.onReplay!(n) : null,
+          child: GestureDetector(
+            // The current level plays; a finished one can be played again for
+            // its missing stars.
+            onTap: current
+                ? widget.onPlay
+                : replay
+                ? () => widget.onReplay!(n)
+                : null,
+            behavior: HitTestBehavior.opaque,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(child: body),
+                if (config != null)
+                  Positioned(
+                    right: -8,
+                    top: -6,
+                    child: _GoalBadge(config: config),
+                  ),
+                if (done && all)
+                  const Positioned(right: -8, top: -8, child: _CheckBadge()),
+                if (done && widget.starsFor != null)
+                  Positioned(
+                    left: -6,
+                    right: -6,
+                    bottom: -14,
+                    child: Center(
+                      child: StarRow(
+                        filled: [for (var i = 0; i < 3; i++) i < stars],
+                        size: 18,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// The gold check on a level won with all 3 stars.
+class _CheckBadge extends StatelessWidget {
+  const _CheckBadge();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 24,
+    height: 24,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFFFFE082), Palette.accent],
+      ),
+      border: Border.all(color: const Color(0xFF8A5A00), width: 2),
+      boxShadow: const [BoxShadow(color: Color(0x66000000), blurRadius: 4)],
+    ),
+    child: const Icon(Icons.check_rounded, size: 16, color: Color(0xFF5A3A00)),
+  );
 }
 
 class _GoalBadge extends StatelessWidget {

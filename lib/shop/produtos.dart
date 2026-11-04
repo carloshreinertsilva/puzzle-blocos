@@ -1,5 +1,6 @@
 import '../core/hats.dart';
 import '../core/passe.dart';
+import '../core/wardrobe.dart';
 import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 
@@ -160,16 +161,16 @@ abstract final class Entrega {
     }
     final primeiraVez = !store.owns(produto.id);
     if (produto.item case final id?) {
-      await store.unlockHat(id);
+      await _vestir(store, id);
       await store.addOwnedProduct(produto.id);
       return;
     }
     await store.setAdsRemoved(true);
     switch (produto) {
       case Produto.removerAnuncios:
-        await store.unlockHat(CapiHat.vip.id);
+        await _vestir(store, CapiHat.vip.id);
       case Produto.pacoteInicial:
-        await store.unlockHat(CapiHat.fundador.id);
+        await _vestir(store, CapiHat.fundador.id);
         if (primeiraVez) await store.addBoughtStars(300);
       default:
         break;
@@ -186,4 +187,14 @@ abstract final class Entrega {
         !store.owns(Produto.pacoteInicial.id) &&
         agora.difference(inicio) < ofertaPacoteInicial;
   }
+}
+
+/// A bought item is given and put on at once: the player paid to see Capi
+/// wearing it (on the menu, in the village, everywhere).
+/// A restored purchase (already owned) keeps what the player wears now.
+Future<void> _vestir(ProgressStore store, String id) async {
+  if (store.unlockedHats.contains(id)) return;
+  await store.unlockHat(id);
+  final item = Wardrobe.byId(id);
+  if (item != null) await Wardrobe.equip(store, item);
 }
