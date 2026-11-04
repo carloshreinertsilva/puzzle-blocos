@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../l10n/idioma.dart';
 import 'board.dart';
 import 'level.dart';
 import 'shapes.dart';
@@ -11,7 +12,7 @@ import 'shapes.dart';
 class Blueprint {
   Blueprint({
     required this.id,
-    required this.name,
+    required this.namePt,
     required this.cells,
     required this.pieces,
     required this.colors,
@@ -20,7 +21,12 @@ class Blueprint {
 
   /// 'casinha', 'obra7'...
   final String id;
-  final String name;
+
+  /// The drawing's name as written in the code (Portuguese; the key).
+  final String namePt;
+
+  /// The drawing's name in the player's language.
+  String get name => tr(namePt);
 
   /// The drawing: cells to fill, as row * 8 + col.
   final Set<int> cells;
@@ -377,7 +383,7 @@ abstract final class Blueprints {
       final offset = rng.nextInt(blockColorCount);
       return Blueprint(
         id: id,
-        name: name,
+        namePt: name,
         cells: cells,
         pieces: [for (final t in tiling) t.$1],
         colors: [

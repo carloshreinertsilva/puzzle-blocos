@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../core/village.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
 import '../ui/palette.dart';
@@ -36,7 +37,8 @@ class _VillageScreenState extends State<VillageScreen>
   late String _line = _idleLine();
   Timer? _lineTimer;
 
-  /// What Capi says when an item is tapped.
+  /// What Capi says when an item is tapped (Portuguese; translated when
+  /// said, like the other lines below).
   static const _remarks = {
     'flores': 'As borboletas não largam essas flores!',
     'cerca': 'Cerquinha branquinha, pintada por mim!',
@@ -116,20 +118,29 @@ class _VillageScreenState extends State<VillageScreen>
   String _lineFor(VillageItem item) {
     final missing = item.cost - _stars;
     return missing > 0
-        ? 'Faltam $missing ${missing == 1 ? 'estrela' : 'estrelas'} para '
-              '${item.name.toLowerCase()}. Bora jogar?'
-        : 'Já dá para construir ${item.name.toLowerCase()}! Toque em '
-              'Construir e monte a obra.';
+        ? trN(
+            missing,
+            'Faltam {n} estrela para {item}. Bora jogar?',
+            'Faltam {n} estrelas para {item}. Bora jogar?',
+            {'item': item.nameInline},
+          )
+        : tr(
+            'Já dá para construir {item}! Toque em '
+            'Construir e monte a obra.',
+            {'item': item.nameInline},
+          );
   }
 
   int get _stars => widget.services.store.stars;
 
   String _idleLine() {
     final next = _selected ?? Village.suggestion(_built);
-    if (next == null) return 'A vila ficou linda! Obrigado, construtor!';
+    if (next == null) return tr('A vila ficou linda! Obrigado, construtor!');
     if (_built.isEmpty) {
-      return 'Bem-vindo à minha ilha! Escolha no mercado o que a gente '
-          'constrói primeiro.';
+      return tr(
+        'Bem-vindo à minha ilha! Escolha no mercado o que a gente '
+        'constrói primeiro.',
+      );
     }
     return _lineFor(next);
   }
@@ -176,11 +187,9 @@ class _VillageScreenState extends State<VillageScreen>
       'Que obra caprichada!',
       'Valeu, parceiro de obra!',
     ];
-    _say(
-      '${cheers[_rng.nextInt(cheers.length)]} Agora a vila tem: '
-      '${item.name.toLowerCase()}.',
-      hold: const Duration(milliseconds: 5000),
-    );
+    final cheer = tr(cheers[_rng.nextInt(cheers.length)]);
+    final now = tr('Agora a vila tem: {item}.', {'item': item.nameInline});
+    _say('$cheer $now', hold: const Duration(milliseconds: 5000));
     // It lands with a thud, then the fanfare.
     await Future<void>.delayed(const Duration(milliseconds: 560));
     widget.services.feedback.place();
@@ -197,11 +206,13 @@ class _VillageScreenState extends State<VillageScreen>
     widget.services.feedback.pick();
     if (_model.building != null) return;
     _say(
-      id == 'capi'
-          ? _capiLines[_rng.nextInt(_capiLines.length)]
-          : id.startsWith('pup')
-          ? _pupLines[_rng.nextInt(_pupLines.length)]
-          : _remarks[id] ?? '',
+      tr(
+        id == 'capi'
+            ? _capiLines[_rng.nextInt(_capiLines.length)]
+            : id.startsWith('pup')
+            ? _pupLines[_rng.nextInt(_pupLines.length)]
+            : _remarks[id] ?? '',
+      ),
     );
   }
 
@@ -221,12 +232,12 @@ class _VillageScreenState extends State<VillageScreen>
                   children: [
                     RoundIconButton(
                       icon: Icons.arrow_back_rounded,
-                      label: 'Voltar',
+                      label: tr('Voltar'),
                       onTap: () => Navigator.of(context).pop(false),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Center(
-                        child: OutlinedTitle('Vila do Capi', size: 28),
+                        child: OutlinedTitle(tr('Vila do Capi'), size: 28),
                       ),
                     ),
                     _StarCount(stars: _stars),
@@ -279,9 +290,10 @@ class _VillageScreenState extends State<VillageScreen>
     builder: (context, box) {
       final size = box.biggest;
       return Semantics(
-        label:
-            'Ilha do Capi com ${_built.length} de ${Village.items.length} '
-            'construções',
+        label: tr('Ilha do Capi com {n} de {total} construções', {
+          'n': _built.length,
+          'total': Village.items.length,
+        }),
         excludeSemantics: true,
         // Pinch to zoom in on the island and look around.
         child: InteractiveViewer(
@@ -327,10 +339,13 @@ class _VillageScreenState extends State<VillageScreen>
                 size: 20,
               ),
               const SizedBox(width: 6),
-              Text('Mercado da vila', style: displayText(17)),
+              Text(tr('Mercado da vila'), style: displayText(17)),
               const Spacer(),
               Text(
-                '${_built.length} de ${Village.items.length} prontos',
+                tr('{n} de {total} prontos', {
+                  'n': _built.length,
+                  'total': Village.items.length,
+                }),
                 style: bodyText(13, color: Palette.textDim),
               ),
             ],
@@ -359,13 +374,13 @@ class _VillageScreenState extends State<VillageScreen>
           const SizedBox(height: 10),
           if (sel == null)
             Text(
-              'Toque num item para escolher o que construir.',
+              tr('Toque num item para escolher o que construir.'),
               style: bodyText(14, color: Palette.textDim),
             )
           else if (canBuild)
             ChunkyButton(
-              label: 'Construir · ${sel.cost} ★',
-              semanticLabel: 'Construir ${sel.name}',
+              label: tr('Construir · {n} ★', {'n': sel.cost}),
+              semanticLabel: tr('Construir {item}', {'item': sel.name}),
               icon: Icons.construction_rounded,
               color: Palette.good,
               textColor: const Color(0xFF0B3B16),
@@ -373,8 +388,8 @@ class _VillageScreenState extends State<VillageScreen>
             )
           else
             ChunkyButton(
-              label: 'Faltam ${sel.cost - _stars} ★ · Jogar',
-              semanticLabel: 'Jogar',
+              label: tr('Faltam {n} ★ · Jogar', {'n': sel.cost - _stars}),
+              semanticLabel: tr('Jogar'),
               icon: Icons.play_arrow_rounded,
               onTap: () => Navigator.of(context).pop(true),
             ),
@@ -385,7 +400,7 @@ class _VillageScreenState extends State<VillageScreen>
 
   Widget _done() => CardPanel(
     child: Text(
-      'Vila completa! Novas áreas chegam em breve.',
+      tr('Vila completa! Novas áreas chegam em breve.'),
       textAlign: TextAlign.center,
       style: displayText(18, color: Palette.accent),
     ),
@@ -398,7 +413,7 @@ class _StarCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: '$stars estrelas',
+    label: tr('{n} estrelas', {'n': stars}),
     excludeSemantics: true,
     child: Container(
       height: 44,
@@ -475,7 +490,7 @@ class _ItemCard extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     selected: selected,
-    label: '${item.name}, ${item.cost} estrelas',
+    label: tr('{item}, {n} estrelas', {'item': item.name, 'n': item.cost}),
     excludeSemantics: true,
     onTap: onTap,
     child: GestureDetector(

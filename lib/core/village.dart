@@ -1,12 +1,27 @@
 import 'dart:ui';
 
+import '../l10n/idioma.dart';
+
 /// One thing Capi can build in his village: its price in stars and its
 /// footprint on the island's ground, in tiles (x runs to the lower right of
 /// the screen, y to the lower left; see `lib/village/iso.dart`).
 class VillageItem {
-  const VillageItem(this.id, this.name, this.cost, this.spot);
+  const VillageItem(this.id, this.namePt, this.cost, this.spot);
   final String id;
-  final String name;
+
+  /// The name as written in the code (Portuguese): also its translation key.
+  final String namePt;
+
+  /// The name in the player's language.
+  String get name => tr(namePt);
+
+  /// The name inside a sentence: lower case (as Portuguese always did), but
+  /// Capi keeps his capital letter in the other languages.
+  String get nameInline {
+    final s = name.toLowerCase();
+    return Lingua.idioma == Idioma.pt ? s : s.replaceAll('capi', 'Capi');
+  }
+
   final int cost;
   final Rect spot;
 }

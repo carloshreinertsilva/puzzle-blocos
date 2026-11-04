@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/blueprint.dart';
 import '../core/board.dart';
+import '../l10n/idioma.dart';
 
 /// One attempt at a construction puzzle: which pieces sit where, how much
 /// help was used, and whether the drawing is complete.
@@ -20,9 +21,10 @@ class ObraController extends ChangeNotifier {
   (int, int, int)? hint;
 
   /// Capi's line under the board.
-  String line =
-      'Arraste as peças para dentro do desenho. Tem que caber '
-      'todas, sem sobrar buraco!';
+  String line = tr(
+    'Arraste as peças para dentro do desenho. Tem que caber '
+    'todas, sem sobrar buraco!',
+  );
 
   bool get solved => placed.every((p) => p != null);
   int get stars => blueprintStars(undos: undos, hints: hints);
@@ -69,14 +71,14 @@ class ObraController extends ChangeNotifier {
     placed[piece] = (r, c);
     if (hint?.$1 == piece) hint = null;
     if (solved) {
-      line = 'Obra pronta! Ficou perfeita!';
+      line = tr('Obra pronta! Ficou perfeita!');
     } else if (Blueprints.hint(blueprint, filled, unplaced) == null) {
-      line = 'Hmm, assim não fecha... Toque numa peça para tirá-la.';
+      line = tr('Hmm, assim não fecha... Toque numa peça para tirá-la.');
     } else {
-      line = const [
-        'Isso! Segue o desenho.',
-        'Encaixou direitinho!',
-        'Boa, falta pouco!',
+      line = [
+        tr('Isso! Segue o desenho.'),
+        tr('Encaixou direitinho!'),
+        tr('Boa, falta pouco!'),
       ][unplaced.length % 3];
     }
     notifyListeners();
@@ -88,7 +90,7 @@ class ObraController extends ChangeNotifier {
     if (solved || placed[piece] == null) return;
     placed[piece] = null;
     undos++;
-    line = 'Sem problema, tenta de outro jeito.';
+    line = tr('Sem problema, tenta de outro jeito.');
     notifyListeners();
   }
 
@@ -109,17 +111,17 @@ class ObraController extends ChangeNotifier {
   void showHint() {
     if (solved) return;
     if (hint != null) {
-      line = 'Essa peça vai aqui, ó!';
+      line = tr('Essa peça vai aqui, ó!');
       notifyListeners();
       return;
     }
     final move = Blueprints.hint(blueprint, filled, unplaced);
     if (move == null) {
-      line = 'Do jeito que está, não fecha. Tire uma peça e eu te mostro!';
+      line = tr('Do jeito que está, não fecha. Tire uma peça e eu te mostro!');
     } else {
       hints++;
       hint = move;
-      line = 'Essa peça vai aqui, ó!';
+      line = tr('Essa peça vai aqui, ó!');
     }
     notifyListeners();
   }
@@ -131,7 +133,7 @@ class ObraController extends ChangeNotifier {
       placed[i] = null;
     }
     hint = null;
-    line = 'Do zero! Arraste as peças para o desenho.';
+    line = tr('Do zero! Arraste as peças para o desenho.');
     notifyListeners();
   }
 
@@ -140,7 +142,7 @@ class ObraController extends ChangeNotifier {
     for (var i = 0; i < placed.length; i++) {
       placed[i] = blueprint.solution[i];
     }
-    line = 'Obra pronta! Ficou perfeita!';
+    line = tr('Obra pronta! Ficou perfeita!');
     notifyListeners();
   }
 }
