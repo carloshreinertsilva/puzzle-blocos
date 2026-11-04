@@ -228,12 +228,9 @@ class _SettingsState extends State<_Settings> {
                     widget.services.feedback.click();
                     final ok = await Placares.mostrar(widget.services.store);
                     if (!ok && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            tr('Não deu para entrar no Play Games agora.'),
-                          ),
-                        ),
+                      await _aviso(
+                        context,
+                        tr('Não deu para entrar no Play Games agora.'),
                       );
                     }
                   },
@@ -257,33 +254,32 @@ class _SettingsState extends State<_Settings> {
                   onTap: () async {
                     widget.services.feedback.click();
                     final store = widget.services.store;
-                    final avisar = ScaffoldMessenger.of(context);
+                    // Google can take a while: say so, above this sheet.
+                    final fechar = _esperando(
+                      context,
+                      tr('Falando com o Google Play Games…'),
+                    );
+                    String? resultado;
+                    Progresso? nuvem;
                     if (!await Placares.entrar(store)) {
-                      avisar.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            tr('Não deu para entrar no Play Games agora.'),
-                          ),
-                        ),
+                      resultado = tr(
+                        'Não deu para entrar no Play Games agora.',
                       );
-                      return;
+                    } else {
+                      nuvem = await JogoSalvo.verificarDeNovo(store);
+                      if (nuvem == null) {
+                        resultado = await JogoSalvo.salvarAgora(store)
+                            ? tr('Progresso salvo no Google Play Games.')
+                            : tr('Não deu para salvar agora. Tente de novo.');
+                      }
                     }
-                    final nuvem = await JogoSalvo.verificarDeNovo(store);
+                    fechar();
                     if (!context.mounted) return;
                     if (nuvem != null) {
                       await oferecerProgressoDaNuvem(context, store, nuvem);
-                      return;
+                    } else if (resultado != null) {
+                      await _aviso(context, resultado);
                     }
-                    final ok = await JogoSalvo.salvarAgora(store);
-                    avisar.showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          ok
-                              ? tr('Progresso salvo no Google Play Games.')
-                              : tr('Não deu para salvar agora. Tente de novo.'),
-                        ),
-                      ),
-                    );
                   },
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -326,7 +322,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.6.1 · CHS TECH',
+                'CapiBlocks v1.6.2 · CHS TECH',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],
@@ -335,4 +331,49 @@ class _SettingsState extends State<_Settings> {
       ),
     );
   }
+}
+
+/// A message above the settings sheet (a SnackBar would hide behind it).
+Future<void> _aviso(BuildContext context, String texto) => showDialog<void>(
+  context: context,
+  builder: (ctx) => AlertDialog(
+    backgroundColor: const Color(0xFF141938),
+    content: Text(texto, style: bodyText(16)),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.of(ctx).pop(),
+        child: Text(tr('Ok'), style: displayText(16, color: Palette.accent)),
+      ),
+    ],
+  ),
+);
+
+/// A "please wait" above the sheet; returns what closes it.
+VoidCallback _esperando(BuildContext context, String texto) {
+  final nav = Navigator.of(context, rootNavigator: true);
+  var aberto = true;
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => PopScope(
+      canPop: false,
+      child: AlertDialog(
+        backgroundColor: const Color(0xFF141938),
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: Text(texto, style: bodyText(15))),
+          ],
+        ),
+      ),
+    ),
+  ).whenComplete(() => aberto = false);
+  return () {
+    if (aberto) nav.pop();
+  };
 }
