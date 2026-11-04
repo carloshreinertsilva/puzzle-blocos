@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -156,20 +158,84 @@ Future<bool> lembretes(ProgressStore store, bool ligar) async {
   }
 }
 
+/// Offered once per opening of the game.
+bool _oferecida = false;
+
 Future<void> verificarAtualizacao(
   BuildContext context,
   ProgressStore store,
 ) async {
-  if (!suportado) return;
-  final hoje = ProgressStore.dayKey(DateTime.now());
-  if (store.updateOfferedDay == hoje) return;
+  if (!suportado || _oferecida) return;
+  _oferecida = true;
   try {
     final info = await InAppUpdate.checkForUpdate();
     if (info.updateAvailability != UpdateAvailability.updateAvailable) return;
-    await store.setUpdateOfferedDay(hoje);
     // Google Play's own screen: "update now", with the progress.
-    await InAppUpdate.performImmediateUpdate();
+    final r = await InAppUpdate.performImmediateUpdate();
+    if (r == AppUpdateResult.success || !context.mounted) return;
+    // Declined: fine, unless this version is too old to play
+    // (Firebase Remote Config `versao_minima`, a build number).
+    if (!await _obrigatoria()) return;
+    if (!context.mounted) return;
+    await _exigirAtualizacao(context);
   } catch (_) {
     // Not installed from Google Play (tests, sideloaded APK): nothing to do.
+  }
+}
+
+/// Whether the installed build is below the minimum set in Firebase
+/// Remote Config (`versao_minima`; 0 or missing: none is required).
+Future<bool> _obrigatoria() async {
+  try {
+    if (!await firebasePronto()) return false;
+    final rc = FirebaseRemoteConfig.instance;
+    await rc.setConfigSettings(
+      RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 5),
+        minimumFetchInterval: const Duration(hours: 1),
+      ),
+    );
+    await rc.setDefaults(const {'versao_minima': 0});
+    await rc.fetchAndActivate();
+    final minima = rc.getInt('versao_minima');
+    final atual = int.tryParse((await PackageInfo.fromPlatform()).buildNumber);
+    return atual != null && atual < minima;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// A version too old to play: the game waits until it is updated.
+Future<void> _exigirAtualizacao(BuildContext context) async {
+  while (true) {
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text(tr('Atualize o CapiBlocks')),
+          content: Text(
+            tr(
+              'Esta versão do jogo é antiga demais. Atualize pela Play Store '
+              'para continuar jogando — seu progresso continua salvo.',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(tr('Atualizar agora')),
+            ),
+          ],
+        ),
+      ),
+    );
+    try {
+      final r = await InAppUpdate.performImmediateUpdate();
+      if (r == AppUpdateResult.success) return;
+    } catch (_) {
+      return;
+    }
   }
 }

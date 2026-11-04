@@ -21,7 +21,8 @@ abstract final class Avisos {
   static Future<bool> lembretes(ProgressStore store, bool ligar) =>
       impl.lembretes(store, ligar);
 
-  /// Offers a new version from Google Play, at most once a day.
+  /// Offers a new version from Google Play each time the game opens; a
+  /// version below the minimum set in Firebase must be updated to play.
   static Future<void> verificarAtualizacao(
     BuildContext context,
     ProgressStore store,
