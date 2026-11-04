@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/idioma.dart';
 import 'capi.dart';
 import 'palette.dart';
 import 'typography.dart';
@@ -47,7 +48,7 @@ class Abertura extends StatelessWidget {
                     _Erro(onTentarDeNovo: onTentarDeNovo)
                   else
                     Semantics(
-                      label: 'Carregando',
+                      label: tr('Carregando'),
                       child: const _BlocosPulando(),
                     ),
                 ],
@@ -172,14 +173,14 @@ class _Erro extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Ops! O jogo não conseguiu abrir.',
+          tr('Ops! O jogo não conseguiu abrir.'),
           textAlign: TextAlign.center,
           style: bodyText(18),
         ),
         const SizedBox(height: 16),
         Semantics(
           button: true,
-          label: 'Tentar de novo',
+          label: tr('Tentar de novo'),
           child: GestureDetector(
             onTap: onTentarDeNovo,
             child: Container(
@@ -190,7 +191,7 @@ class _Erro extends StatelessWidget {
               ),
               child: ExcludeSemantics(
                 child: Text(
-                  'Tentar de novo',
+                  tr('Tentar de novo'),
                   style: displayText(20, color: Palette.panel),
                 ),
               ),

@@ -4,6 +4,7 @@ import '../core/daily_missions.dart';
 import '../core/passe.dart';
 import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../ads/ad_service.dart';
 import '../services/progress_store.dart';
@@ -79,7 +80,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
       return Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          'Você já tem todos os itens do baú: ele dá 5 estrelas.',
+          tr('Você já tem todos os itens do baú: ele dá 5 estrelas.'),
           textAlign: TextAlign.center,
           style: bodyText(11, color: Palette.textDim),
         ),
@@ -91,13 +92,13 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1E1B4B),
           title: Text(
-            'O que pode sair no baú',
+            tr('O que pode sair no baú'),
             style: displayText(17, color: Palette.text),
           ),
           content: SingleChildScrollView(
             child: Text(
-              'Um destes itens que você ainda não tem, escolhido pelo dia. '
-              'O baú é grátis e não se compra.\n\n'
+              '${tr('Um destes itens que você ainda não tem, escolhido pelo dia. '
+              'O baú é grátis e não se compra.')}\n\n'
               '${pool.map((c) => '• ${c.label} (${c.raridade.label})').join('\n')}',
               style: bodyText(13, color: Palette.textDim),
             ),
@@ -105,13 +106,16 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text('Ok', style: displayText(14, color: Palette.accent)),
+              child: Text(
+                tr('Ok'),
+                style: displayText(14, color: Palette.accent),
+              ),
             ),
           ],
         ),
       ),
       child: Text(
-        'Pode sair 1 de ${pool.length} itens · Ver lista',
+        tr('Pode sair 1 de {n} itens · Ver lista', {'n': pool.length}),
         style: bodyText(12, color: Palette.accent),
       ),
     );
@@ -157,16 +161,16 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                   const SizedBox(width: 8),
                   Semantics(
                     header: true,
-                    label: 'Missões Diárias',
+                    label: tr('Missões Diárias'),
                     child: Text(
-                      'Missões Diárias',
+                      tr('Missões Diárias'),
                       style: displayText(20, color: Palette.text),
                     ),
                   ),
                   const Spacer(),
                   Semantics(
                     button: true,
-                    label: 'Fechar',
+                    label: tr('Fechar'),
                     // No tooltip: it would read "Fechar" a second time.
                     child: IconButton(
                       icon: const Icon(
@@ -202,9 +206,12 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$streak ${streak == 1 ? 'dia' : 'dias'}',
-                          semanticsLabel:
-                              '$streak ${streak == 1 ? 'dia' : 'dias'} de sequência',
+                          trN(streak, '{n} dia', '{n} dias'),
+                          semanticsLabel: trN(
+                            streak,
+                            '{n} dia de sequência',
+                            '{n} dias de sequência',
+                          ),
                           style: displayText(12, color: Colors.white),
                         ),
                       ],
@@ -244,7 +251,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Guarda-Roupa',
+                            tr('Guarda-Roupa'),
                             style: displayText(
                               12,
                               color: const Color(0xFFF59E0B),
@@ -261,7 +268,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                 const SizedBox(height: 10),
                 Semantics(
                   button: true,
-                  label: 'Abrir o presente do dia',
+                  label: tr('Abrir o presente do dia'),
                   excludeSemantics: true,
                   onTap: _abrirPresente,
                   child: GestureDetector(
@@ -285,12 +292,16 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Presente do dia ${PresenteDiario.dia(store, DateTime.now()) + 1} esperando!',
+                              tr('Presente do dia {n} esperando!', {
+                                'n':
+                                    PresenteDiario.dia(store, DateTime.now()) +
+                                    1,
+                              }),
                               style: displayText(13, color: Palette.text),
                             ),
                           ),
                           Text(
-                            'Abrir',
+                            tr('Abrir'),
                             style: displayText(13, color: Palette.accent),
                           ),
                         ],
@@ -337,16 +348,16 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Semantics(
-                            label: 'Baú do Capi',
+                            label: tr('Baú do Capi'),
                             child: Text(
-                              'Baú do Capi',
+                              tr('Baú do Capi'),
                               style: displayText(16, color: Colors.white),
                             ),
                           ),
                           const SizedBox(height: 2),
                           if (chestClaimed)
                             Text(
-                              'Aberto! Volte amanhã',
+                              tr('Aberto! Volte amanhã'),
                               style: bodyText(
                                 12,
                                 color: const Color(0xFF34D399),
@@ -354,7 +365,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                             )
                           else if (chestAvailable)
                             Text(
-                              'Pronto para abrir! (+5★ e um item)',
+                              tr('Pronto para abrir! (+5★ e um item)'),
                               style: bodyText(
                                 12,
                                 color: const Color(0xFFFDE047),
@@ -362,7 +373,9 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                             )
                           else
                             Text(
-                              'Complete as 3 missões ($completedCount/3)',
+                              tr('Complete as 3 missões ({n}/3)', {
+                                'n': completedCount,
+                              }),
                               style: bodyText(12, color: Palette.textDim),
                             ),
                         ],
@@ -371,7 +384,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                     if (chestAvailable)
                       Semantics(
                         button: true,
-                        label: 'Abrir Baú do Capi',
+                        label: tr('Abrir Baú do Capi'),
                         child: ElevatedButton(
                           onPressed: _claimChest,
                           style: ElevatedButton.styleFrom(
@@ -386,7 +399,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                             ),
                           ),
                           child: Text(
-                            'Abrir!',
+                            tr('Abrir!'),
                             style: displayText(
                               14,
                               color: const Color(0xFF3A1D0D),
@@ -423,8 +436,10 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
     return Semantics(
       button: !aberto,
       label: aberto
-          ? 'Baú bônus aberto. Volte amanhã'
-          : 'Abrir baú bônus: +$bauBonusEstrelas estrelas com vídeo',
+          ? tr('Baú bônus aberto. Volte amanhã')
+          : tr('Abrir baú bônus: +{n} estrelas com vídeo', {
+              'n': bauBonusEstrelas,
+            }),
       excludeSemantics: true,
       onTap: aberto ? null : _abrirBauBonus,
       child: Material(
@@ -446,8 +461,10 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                 Expanded(
                   child: Text(
                     aberto
-                        ? 'Baú bônus aberto! Volte amanhã'
-                        : 'Baú bônus: +$bauBonusEstrelas★ com um vídeo',
+                        ? tr('Baú bônus aberto! Volte amanhã')
+                        : tr('Baú bônus: +{n}★ com um vídeo', {
+                            'n': bauBonusEstrelas,
+                          }),
                     style: displayText(14, color: Colors.white),
                   ),
                 ),
@@ -487,7 +504,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
       if (mounted) {
         mostrarPremio(
           context,
-          '+$bauBonusEstrelas ★ do baú extra!',
+          tr('+{n} ★ do baú extra!', {'n': bauBonusEstrelas}),
           icon: Icons.star_rounded,
         );
         setState(() {});
@@ -526,7 +543,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
               const SizedBox(width: 8),
               if (isClaimed)
                 Semantics(
-                  label: 'Concluída',
+                  label: tr('Concluída'),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -546,7 +563,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Concluída',
+                          tr('Concluída'),
                           style: displayText(
                             11,
                             color: const Color(0xFF34D399),
@@ -559,7 +576,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
               else if (isDone)
                 Semantics(
                   button: true,
-                  label: 'Resgatar ${m.rewardStars} estrelas',
+                  label: tr('Resgatar {n} estrelas', {'n': m.rewardStars}),
                   child: ElevatedButton(
                     onPressed: () => _claimMission(m),
                     style: ElevatedButton.styleFrom(
@@ -576,7 +593,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                       ),
                     ),
                     child: Text(
-                      '+${m.rewardStars}★ Resgatar',
+                      tr('+{n}★ Resgatar', {'n': m.rewardStars}),
                       style: displayText(12, color: Colors.white),
                     ),
                   ),
@@ -629,7 +646,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                m.type.shortTitle,
+                tr(m.type.shortTitle),
                 style: bodyText(11, color: Palette.textDim),
               ),
               Text(
@@ -657,8 +674,8 @@ class _PasseChip extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     label: prontas > 0
-        ? 'Passe do Capi, $prontas prêmios para pegar'
-        : 'Passe do Capi',
+        ? tr('Passe do Capi, {n} prêmios para pegar', {'n': prontas})
+        : tr('Passe do Capi'),
     excludeSemantics: true,
     onTap: onTap,
     child: GestureDetector(
@@ -679,7 +696,7 @@ class _PasseChip extends StatelessWidget {
               size: 16,
             ),
             const SizedBox(width: 4),
-            Text('Passe', style: displayText(12, color: Palette.accent)),
+            Text(tr('Passe'), style: displayText(12, color: Palette.accent)),
             if (prontas > 0) ...[
               const SizedBox(width: 4),
               Container(

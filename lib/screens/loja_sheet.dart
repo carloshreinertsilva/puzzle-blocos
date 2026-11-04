@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/hats.dart';
 import '../core/mercado.dart';
 import '../core/passe.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/progress_store.dart';
@@ -68,12 +69,16 @@ class _LojaState extends State<_Loja> {
     if (!mounted) return;
     setState(() => _comprando = null);
     final aviso = switch (resultado) {
-      ResultadoCompra.ok => 'Pronto! ${produto.nome} é seu.',
-      ResultadoCompra.pendente =>
+      ResultadoCompra.ok => tr('Pronto! {produto} é seu.', {
+        'produto': produto.nome,
+      }),
+      ResultadoCompra.pendente => tr(
         'Pagamento pendente. Assim que for aprovado, entregamos na hora.',
-      ResultadoCompra.erro => 'Não deu certo agora. Tente de novo.',
-      ResultadoCompra.indisponivel =>
+      ),
+      ResultadoCompra.erro => tr('Não deu certo agora. Tente de novo.'),
+      ResultadoCompra.indisponivel => tr(
         'A loja não está disponível agora. Tente mais tarde.',
+      ),
       ResultadoCompra.cancelada => null,
     };
     if (resultado == ResultadoCompra.ok) widget.services.feedback.praise(3);
@@ -88,7 +93,7 @@ class _LojaState extends State<_Loja> {
     await _loja.restaurar();
     if (!mounted) return;
     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      const SnackBar(content: Text('Pronto! Suas compras foram verificadas.')),
+      SnackBar(content: Text(tr('Pronto! Suas compras foram verificadas.'))),
     );
   }
 
@@ -107,7 +112,7 @@ class _LojaState extends State<_Loja> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const OutlinedTitle('Loja do Capi', size: 28),
+              OutlinedTitle(tr('Loja do Capi'), size: 28),
               const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -115,7 +120,7 @@ class _LojaState extends State<_Loja> {
                   const Icon(Icons.star_rounded, color: Palette.accent),
                   const SizedBox(width: 4),
                   Text(
-                    'Você tem ${formatInt(_store.stars)} estrelas',
+                    tr('Você tem {n} estrelas', {'n': formatInt(_store.stars)}),
                     style: bodyText(14, color: Palette.textDim),
                   ),
                 ],
@@ -144,14 +149,14 @@ class _LojaState extends State<_Loja> {
                 _Linha(
                   icone: Icons.check_circle_rounded,
                   cor: Palette.good,
-                  titulo: 'Sem anúncios entre fases',
-                  subtitulo: 'Obrigado por apoiar o CapiBlocks!',
+                  titulo: tr('Sem anúncios entre fases'),
+                  subtitulo: tr('Obrigado por apoiar o CapiBlocks!'),
                 ),
               const SizedBox(height: 10),
               // The pass has its own screen, with every reward shown.
               Semantics(
                 button: true,
-                label: 'Abrir o Passe do Capi',
+                label: tr('Abrir o Passe do Capi'),
                 excludeSemantics: true,
                 onTap: _abrirPasse,
                 child: GestureDetector(
@@ -159,18 +164,23 @@ class _LojaState extends State<_Loja> {
                   child: _Linha(
                     icone: Icons.military_tech_rounded,
                     cor: Palette.accent,
-                    titulo: 'Passe do Capi',
+                    titulo: tr('Passe do Capi'),
                     subtitulo: PasseDoCapi.premium(_store, DateTime.now())
-                        ? 'Premium liberado nesta temporada. Toque para ver.'
-                        : 'Trilha premium da temporada: '
-                              '${_loja.preco(Produto.passeCapi)}. Toque para ver.',
+                        ? tr(
+                            'Premium liberado nesta temporada. Toque para ver.',
+                          )
+                        : tr(
+                            'Trilha premium da temporada: {preco}. '
+                            'Toque para ver.',
+                            {'preco': _loja.preco(Produto.passeCapi)},
+                          ),
                   ),
                 ),
               ),
               const SizedBox(height: 8),
               Semantics(
                 button: true,
-                label: 'Abrir o Mercado do Capi',
+                label: tr('Abrir o Mercado do Capi'),
                 excludeSemantics: true,
                 onTap: _abrirMercado,
                 child: GestureDetector(
@@ -178,17 +188,18 @@ class _LojaState extends State<_Loja> {
                   child: _Linha(
                     icone: Icons.storefront_rounded,
                     cor: const Color(0xFFFFC94D),
-                    titulo: 'Mercado do Capi',
-                    subtitulo:
-                        'Hoje: ${Mercado.lendarioDoDia(DateTime.now()).label} '
-                        '(lendário). Ofertas novas todo dia.',
+                    titulo: tr('Mercado do Capi'),
+                    subtitulo: tr(
+                      'Hoje: {item} (lendário). Ofertas novas todo dia.',
+                      {'item': Mercado.lendarioDoDia(DateTime.now()).label},
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Estrelas', style: displayText(20)),
+                child: Text(tr('Estrelas'), style: displayText(20)),
               ),
               const SizedBox(height: 8),
               for (final p in [
@@ -216,13 +227,15 @@ class _LojaState extends State<_Loja> {
               TextButton(
                 onPressed: _restaurar,
                 child: Text(
-                  'Restaurar compras',
+                  tr('Restaurar compras'),
                   style: displayText(16, color: Palette.textDim),
                 ),
               ),
               Text(
-                'O pagamento é feito pelo Google Play. Nada aqui é sorteio: '
-                'você sempre sabe o que está comprando.',
+                tr(
+                  'O pagamento é feito pelo Google Play. Nada aqui é sorteio: '
+                  'você sempre sabe o que está comprando.',
+                ),
                 textAlign: TextAlign.center,
                 style: bodyText(12, color: Palette.textDim),
               ),
@@ -252,8 +265,12 @@ class _LojaState extends State<_Loja> {
     final falta = inicio.add(ofertaPacoteInicial).difference(agora);
     final horas = falta.inHours;
     return horas >= 24
-        ? 'Oferta de boas-vindas: acaba em ${(horas / 24).ceil()} dias'
-        : 'Oferta de boas-vindas: acaba em ${horas < 1 ? 1 : horas} h';
+        ? tr('Oferta de boas-vindas: acaba em {n} dias', {
+            'n': (horas / 24).ceil(),
+          })
+        : tr('Oferta de boas-vindas: acaba em {n} h', {
+            'n': horas < 1 ? 1 : horas,
+          });
   }
 }
 
@@ -319,11 +336,14 @@ class _Destaque extends StatelessWidget {
         const SizedBox(height: 10),
         Semantics(
           button: true,
-          label: 'Comprar ${produto.nome} por $preco',
+          label: tr('Comprar {item} por {preco}', {
+            'item': produto.nome,
+            'preco': preco,
+          }),
           excludeSemantics: true,
           onTap: comprando ? null : onComprar,
           child: ChunkyButton(
-            label: comprando ? 'Abrindo…' : preco,
+            label: comprando ? tr('Abrindo…') : preco,
             icon: Icons.shopping_bag_rounded,
             onTap: comprando ? null : onComprar,
           ),
@@ -356,7 +376,10 @@ class _Item extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: Semantics(
       button: true,
-      label: 'Comprar ${produto.nome} por $preco',
+      label: tr('Comprar {item} por {preco}', {
+        'item': produto.nome,
+        'preco': preco,
+      }),
       excludeSemantics: true,
       onTap: comprando ? null : onComprar,
       child: Material(

@@ -9,6 +9,7 @@ import '../ui/privacy_dialog.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import 'stats_sheet.dart';
+import '../l10n/idioma.dart';
 
 Future<void> showSettings(BuildContext context, AppServices services) {
   return showModalBottomSheet(
@@ -39,6 +40,61 @@ class _Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<_Settings> {
+  static String _nomeIdioma(String code) => code == 'auto'
+      ? tr('Automático')
+      : Idioma.values.firstWhere((i) => i.name == code).nome;
+
+  Future<void> _escolherIdioma() async {
+    widget.services.feedback.click();
+    final store = widget.services.store;
+    final escolha = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        backgroundColor: Palette.panel,
+        title: Text(tr('Idioma'), style: displayText(20, color: Palette.text)),
+        children: [
+          for (final code in ['auto', ...Idioma.values.map((i) => i.name)])
+            Semantics(
+              button: true,
+              label: code == 'auto'
+                  ? tr('Automático (idioma do celular)')
+                  : _nomeIdioma(code),
+              excludeSemantics: true,
+              child: SimpleDialogOption(
+                onPressed: () => Navigator.of(ctx).pop(code),
+                child: Row(
+                  children: [
+                    Icon(
+                      store.idioma == code
+                          ? Icons.radio_button_checked_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: Palette.accent,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        code == 'auto'
+                            ? tr('Automático (idioma do celular)')
+                            : _nomeIdioma(code),
+                        style: bodyText(16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (escolha == null || escolha == store.idioma) return;
+    await store.setIdioma(escolha);
+    if (!mounted) return;
+    // The whole game rebuilds in the new language.
+    Navigator.of(context).pop();
+    Lingua.atual.value = escolherIdioma(escolha);
+  }
+
   void _openPrivacy() {
     widget.services.feedback.click();
     showPrivacyDialog(
@@ -59,12 +115,12 @@ class _SettingsState extends State<_Settings> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const OutlinedTitle('Configurações', size: 28),
+              OutlinedTitle(tr('Configurações'), size: 28),
               const SizedBox(height: 12),
 
               // Audio & Haptics
               SwitchListTile(
-                title: Text('Sons', style: bodyText(17)),
+                title: Text(tr('Sons'), style: bodyText(17)),
                 secondary: const Icon(Icons.volume_up_rounded),
                 value: store.soundOn,
                 onChanged: (v) async {
@@ -73,7 +129,7 @@ class _SettingsState extends State<_Settings> {
                 },
               ),
               SwitchListTile(
-                title: Text('Vibração', style: bodyText(17)),
+                title: Text(tr('Vibração'), style: bodyText(17)),
                 secondary: const Icon(Icons.vibration_rounded),
                 value: store.hapticsOn,
                 onChanged: (v) async {
@@ -84,9 +140,9 @@ class _SettingsState extends State<_Settings> {
               // Daily reminders (Android, opt-in).
               if (Avisos.suportado)
                 SwitchListTile(
-                  title: Text('Lembretes diários', style: bodyText(17)),
+                  title: Text(tr('Lembretes diários'), style: bodyText(17)),
                   subtitle: Text(
-                    'O presente do dia e as missões, às 19h',
+                    tr('O presente do dia e as missões, às 19h'),
                     style: bodyText(12, color: Palette.textDim),
                   ),
                   secondary: const Icon(Icons.notifications_rounded),
@@ -100,9 +156,9 @@ class _SettingsState extends State<_Settings> {
               // Anonymous usage statistics (Firebase on Android).
               if (Analytics.active)
                 SwitchListTile(
-                  title: Text('Estatísticas de uso', style: bodyText(17)),
+                  title: Text(tr('Estatísticas de uso'), style: bodyText(17)),
                   subtitle: Text(
-                    'Anônimas, para melhorar o jogo',
+                    tr('Anônimas, para melhorar o jogo'),
                     style: bodyText(12, color: Palette.textDim),
                   ),
                   secondary: const Icon(Icons.insights_rounded),
@@ -124,7 +180,10 @@ class _SettingsState extends State<_Settings> {
                     Icons.tune_rounded,
                     color: Palette.accent,
                   ),
-                  title: Text('Privacidade dos anúncios', style: bodyText(16)),
+                  title: Text(
+                    tr('Privacidade dos anúncios'),
+                    style: bodyText(16),
+                  ),
                   onTap: () {
                     widget.services.feedback.click();
                     widget.services.ads.showPrivacyOptions();
@@ -140,7 +199,7 @@ class _SettingsState extends State<_Settings> {
                     Icons.bar_chart_rounded,
                     color: Palette.accent,
                   ),
-                  title: Text('Estatísticas', style: bodyText(16)),
+                  title: Text(tr('Estatísticas'), style: bodyText(16)),
                   onTap: () {
                     widget.services.feedback.click();
                     widget.onStats();
@@ -150,13 +209,30 @@ class _SettingsState extends State<_Settings> {
                   ),
                 ),
 
+              // Language
+              ListTile(
+                leading: const Icon(
+                  Icons.translate_rounded,
+                  color: Palette.accent,
+                ),
+                title: Text(tr('Idioma'), style: bodyText(16)),
+                trailing: Text(
+                  _nomeIdioma(widget.services.store.idioma),
+                  style: bodyText(14, color: Palette.textDim),
+                ),
+                onTap: _escolherIdioma,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+
               // Privacy Policy
               ListTile(
                 leading: const Icon(
                   Icons.privacy_tip_rounded,
                   color: Palette.accent,
                 ),
-                title: Text('Política de Privacidade', style: bodyText(16)),
+                title: Text(tr('Política de Privacidade'), style: bodyText(16)),
                 trailing: const Icon(
                   Icons.open_in_new_rounded,
                   size: 18,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../ads/ad_service.dart';
 import '../core/mercado.dart';
 import '../core/wardrobe.dart';
+import '../l10n/idioma.dart';
 import '../shop/loja_service.dart';
 import '../main.dart';
 import '../services/progress_store.dart';
@@ -94,9 +95,10 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     final prizes = await Wardrobe.awardCollections(_store);
     setState(() {
       _note = prizes.isEmpty
-          ? '${c.label} é seu!'
-          : 'Coleção completa! Você ganhou: '
-                '${prizes.map((p) => p.label).join(', ')}.';
+          ? tr('{item} é seu!', {'item': c.label})
+          : tr('Coleção completa! Você ganhou: {itens}.', {
+              'itens': prizes.map((p) => p.label).join(', '),
+            });
     });
   }
 
@@ -121,7 +123,9 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
               // The preview: what Capi wears, with the selected item on.
               Semantics(
                 button: true,
-                label: 'Capi com a roupa escolhida. Toque para trocar o humor',
+                label: tr(
+                  'Capi com a roupa escolhida. Toque para trocar o humor',
+                ),
                 excludeSemantics: true,
                 onTap: _cycleMood,
                 child: GestureDetector(
@@ -173,14 +177,14 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
         child: Semantics(
           header: true,
           child: Text(
-            'Guarda-Roupa',
-            semanticsLabel: 'Guarda-Roupa do Capi',
+            tr('Guarda-Roupa'),
+            semanticsLabel: tr('Guarda-Roupa do Capi'),
             style: displayText(18, color: Palette.text),
           ),
         ),
       ),
       Semantics(
-        label: '${_store.stars} estrelas',
+        label: tr('{n} estrelas', {'n': _store.stars}),
         excludeSemantics: true,
         child: Row(
           children: [
@@ -195,7 +199,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
       ),
       Semantics(
         button: true,
-        label: 'Fechar',
+        label: tr('Fechar'),
         excludeSemantics: true,
         onTap: () => Navigator.of(context).pop(),
         child: IconButton(
@@ -209,7 +213,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
   Widget _details(Cosmetic? c) {
     if (c == null) {
       return Text(
-        _note ?? 'Toque num item para provar no Capi.',
+        _note ?? tr('Toque num item para provar no Capi.'),
         textAlign: TextAlign.center,
         style: bodyText(
           13,
@@ -226,34 +230,37 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     Widget action;
     if (owned && !equipped) {
       action = ChunkyButton(
-        label: 'Equipar',
-        semanticLabel: 'Equipar ${c.label}',
+        label: tr('Equipar'),
+        semanticLabel: tr('Equipar {item}', {'item': c.label}),
         icon: Icons.check_circle_rounded,
         onTap: () => _equip(c),
       );
     } else if (canTakeOff) {
       action = ChunkyButton(
-        label: 'Tirar',
-        semanticLabel: 'Tirar ${c.label}',
+        label: tr('Tirar'),
+        semanticLabel: tr('Tirar {item}', {'item': c.label}),
         icon: Icons.remove_circle_outline_rounded,
         color: Palette.panelEdge,
         onTap: () => _takeOff(c),
       );
     } else if (equipped) {
       action = Text(
-        'Em uso',
+        tr('Em uso'),
         style: displayText(14, color: const Color(0xFF38BDF8)),
       );
     } else if (preco != null && _store.stars >= preco) {
       action = ChunkyButton(
-        label: 'Comprar por $preco',
-        semanticLabel: 'Comprar ${c.label} por $preco estrelas',
+        label: tr('Comprar por {preco}', {'preco': preco}),
+        semanticLabel: tr('Comprar {item} por {preco} estrelas', {
+          'item': c.label,
+          'preco': preco,
+        }),
         icon: Icons.star_rounded,
         onTap: () => _buy(c),
       );
     } else if (preco != null) {
       action = _says(
-        'Faltam ${preco - _store.stars} estrelas para comprar.',
+        tr('Faltam {n} estrelas para comprar.', {'n': preco - _store.stars}),
         textAlign: TextAlign.center,
         style: bodyText(13, color: Palette.textDim),
       );
@@ -315,14 +322,22 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     scrollDirection: Axis.horizontal,
     child: Row(
       children: [
-        _chip('Mercado', _aba == _Aba.mercado, () => _openTab(_Aba.mercado)),
+        _chip(
+          tr('Mercado'),
+          _aba == _Aba.mercado,
+          () => _openTab(_Aba.mercado),
+        ),
         for (final slot in Slot.values)
           _chip(
             slot.label,
             _aba == _Aba.slot && _tab == slot,
             () => _openTab(_Aba.slot, slot),
           ),
-        _chip('Coleções', _aba == _Aba.colecoes, () => _openTab(_Aba.colecoes)),
+        _chip(
+          tr('Coleções'),
+          _aba == _Aba.colecoes,
+          () => _openTab(_Aba.colecoes),
+        ),
       ],
     ),
   );
@@ -332,7 +347,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     child: Semantics(
       button: true,
       selected: selected,
-      label: 'Aba $label',
+      label: tr('Aba {aba}', {'aba': label}),
       excludeSemantics: true,
       onTap: onTap,
       child: ChoiceChip(
@@ -376,12 +391,14 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
       if (ganhou) {
         widget.services.feedback.praise(3);
         await Wardrobe.equip(_store, c);
-        note = '${c.label} é seu!';
+        note = tr('{item} é seu!', {'item': c.label});
       } else {
         widget.services.feedback.praise(2);
-        note =
-            'Vídeo ${Wardrobe.videos(_store, c)} de ${Wardrobe.videosRaro} '
-            'para ${c.label}.';
+        note = tr('Vídeo {feitos} de {total} para {item}.', {
+          'feitos': Wardrobe.videos(_store, c),
+          'total': Wardrobe.videosRaro,
+          'item': c.label,
+        });
       }
     }
     if (!mounted) return;
@@ -405,8 +422,11 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     final feitos = Wardrobe.videos(_store, c);
     if (!Wardrobe.podeVerVideo(_store, c, DateTime.now())) {
       return _says(
-        'Ou com vídeos: $feitos de ${Wardrobe.videosRaro}. '
-        'Volte amanhã para assistir mais.',
+        tr(
+          'Ou com vídeos: {feitos} de {total}. '
+          'Volte amanhã para assistir mais.',
+          {'feitos': feitos, 'total': Wardrobe.videosRaro},
+        ),
         textAlign: TextAlign.center,
         style: bodyText(12, color: Palette.textDim),
       );
@@ -415,10 +435,14 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
       onPressed: _vendo ? null : () => _video(c),
       icon: const Icon(Icons.play_circle_rounded, color: Palette.accent),
       label: Text(
-        'Ou ganhe com vídeos: $feitos/${Wardrobe.videosRaro}',
-        semanticsLabel:
-            'Ver vídeo para ganhar ${c.label}: $feitos de '
-            '${Wardrobe.videosRaro}',
+        tr('Ou ganhe com vídeos: {feitos}/{total}', {
+          'feitos': feitos,
+          'total': Wardrobe.videosRaro,
+        }),
+        semanticsLabel: tr(
+          'Ver vídeo para ganhar {item}: {feitos} de {total}',
+          {'item': c.label, 'feitos': feitos, 'total': Wardrobe.videosRaro},
+        ),
         style: bodyText(13, color: Palette.accent),
       ),
     );
@@ -439,11 +463,12 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     setState(() {
       _vendo = false;
       _note = switch (r) {
-        ResultadoCompra.ok => '${c.label} é seu!',
-        ResultadoCompra.pendente =>
+        ResultadoCompra.ok => tr('{item} é seu!', {'item': c.label}),
+        ResultadoCompra.pendente => tr(
           'Pagamento pendente: o item chega quando ele for aprovado.',
+        ),
         ResultadoCompra.cancelada => null,
-        _ => 'Não deu para comprar agora. Tente de novo mais tarde.',
+        _ => tr('Não deu para comprar agora. Tente de novo mais tarde.'),
       };
     });
   }
@@ -456,9 +481,10 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     if (!mounted) return;
     setState(() {
       _note = prizes.isEmpty
-          ? '${c.label} é seu!'
-          : 'Coleção completa! Você ganhou: '
-                '${prizes.map((p) => p.label).join(', ')}.';
+          ? tr('{item} é seu!', {'item': c.label})
+          : tr('Coleção completa! Você ganhou: {itens}.', {
+              'itens': prizes.map((p) => p.label).join(', '),
+            });
     });
   }
 
@@ -470,8 +496,10 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     return Column(
       children: [
         _says(
-          'Ofertas de hoje · mudam em ${falta.inHours} h '
-          '${falta.inMinutes % 60} min',
+          tr('Ofertas de hoje · mudam em {h} h {min} min', {
+            'h': falta.inHours,
+            'min': falta.inMinutes % 60,
+          }),
           textAlign: TextAlign.center,
           style: bodyText(12, color: Palette.textDim),
         ),
@@ -481,21 +509,24 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
           preco: loja.disponivel
               ? loja.preco(Mercado.produtoDe(lendario))
               : null,
-          rotulo: loja.disponivel ? null : 'À venda no app Android',
+          rotulo: loja.disponivel ? null : tr('À venda no app Android'),
           onComprar: loja.disponivel ? () => _comprarLendario(lendario) : null,
         ),
         for (final c in [Mercado.comumDoDia(agora), Mercado.raroDoDia(agora)])
           _oferta(
             c,
-            preco: '${Mercado.precoComDesconto(c)} estrelas',
-            rotulo: 'de ${c.preco}',
+            preco: tr('{n} estrelas', {'n': Mercado.precoComDesconto(c)}),
+            rotulo: tr('de {preco}', {'preco': c.preco}),
+            riscado: true,
             onComprar: _store.stars >= Mercado.precoComDesconto(c)
                 ? () => _comprarOferta(c)
                 : null,
           ),
         Text(
-          'Todo dia tem ofertas novas, na mesma ordem para todos: '
-          'nada é sorteado.',
+          tr(
+            'Todo dia tem ofertas novas, na mesma ordem para todos: '
+            'nada é sorteado.',
+          ),
           textAlign: TextAlign.center,
           style: bodyText(11, color: Palette.textDim),
         ),
@@ -507,6 +538,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     Cosmetic c, {
     String? preco,
     String? rotulo,
+    bool riscado = false,
     VoidCallback? onComprar,
   }) {
     final owned = Wardrobe.owns(_store, c);
@@ -553,7 +585,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
                             rotulo,
                             style: bodyText(11, color: Palette.textDim)
                                 .copyWith(
-                                  decoration: rotulo.startsWith('de ')
+                                  decoration: riscado
                                       ? TextDecoration.lineThrough
                                       : null,
                                 ),
@@ -566,11 +598,14 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
               ),
             ),
             if (owned)
-              Text('Seu', style: displayText(13, color: Palette.good))
+              Text(tr('Seu'), style: displayText(13, color: Palette.good))
             else if (preco != null)
               Semantics(
                 button: true,
-                label: 'Comprar ${c.label} por $preco',
+                label: tr('Comprar {item} por {preco}', {
+                  'item': c.label,
+                  'preco': preco,
+                }),
                 excludeSemantics: true,
                 onTap: onComprar,
                 child: FilledButton(
@@ -615,7 +650,7 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
   Widget _collections() => Column(
     children: [
       Text(
-        'Junte todos os itens de uma coleção e ganhe o prêmio dela.',
+        tr('Junte todos os itens de uma coleção e ganhe o prêmio dela.'),
         textAlign: TextAlign.center,
         style: bodyText(12, color: Palette.textDim),
       ),
@@ -629,9 +664,19 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
     final done = have == col.itens.length;
     final premio = Wardrobe.byId(col.premio)!;
     return Semantics(
-      label:
-          'Coleção ${col.nome}: $have de ${col.itens.length}. '
-          'Prêmio: ${premio.label}${done ? ', ganho' : ''}',
+      label: done
+          ? tr('Coleção {nome}: {tem} de {total}. Prêmio: {premio}, ganho', {
+              'nome': col.nome,
+              'tem': have,
+              'total': col.itens.length,
+              'premio': premio.label,
+            })
+          : tr('Coleção {nome}: {tem} de {total}. Prêmio: {premio}', {
+              'nome': col.nome,
+              'tem': have,
+              'total': col.itens.length,
+              'premio': premio.label,
+            }),
       excludeSemantics: true,
       child: Container(
         margin: const EdgeInsets.only(bottom: 6),
@@ -676,7 +721,10 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
                     style: bodyText(11, color: Palette.textDim),
                   ),
                   Text(
-                    'Prêmio: ${premio.label} (${premio.raridade.label})',
+                    tr('Prêmio: {premio} ({raridade})', {
+                      'premio': premio.label,
+                      'raridade': premio.raridade.label,
+                    }),
                     style: bodyText(11, color: premio.raridade.color),
                   ),
                 ],
@@ -728,12 +776,12 @@ class _ItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = item.raridade;
     final status = equipped
-        ? 'em uso'
+        ? tr('em uso')
         : owned
-        ? 'seu'
+        ? tr('seu')
         : item.preco != null
-        ? '${item.preco} estrelas'
-        : 'bloqueado';
+        ? tr('{n} estrelas', {'n': item.preco})
+        : tr('bloqueado');
     return Semantics(
       button: true,
       selected: selected,
@@ -823,7 +871,7 @@ class _ItemTile extends StatelessWidget {
                     ),
                   ] else
                     Text(
-                      equipped ? 'EM USO' : (owned ? 'Seu' : r.label),
+                      equipped ? tr('EM USO') : (owned ? tr('Seu') : r.label),
                       style: bodyText(
                         10,
                         color: equipped ? const Color(0xFF38BDF8) : r.color,

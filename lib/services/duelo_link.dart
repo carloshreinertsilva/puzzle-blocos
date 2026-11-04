@@ -1,3 +1,5 @@
+import '../l10n/idioma.dart';
+
 /// A challenge link: the same board (seed) and the score to beat.
 ///
 /// New links are `https://capiblocks.vercel.app/duelo?s=<seed>&p=<points>`
@@ -23,9 +25,11 @@ class DueloConvite {
   });
 
   /// What goes into WhatsApp & co.
-  String get mensagem =>
-      'Te desafio no CapiBlocks! Fiz $meta pontos neste tabuleiro. '
-      'Consegue passar? $link';
+  String get mensagem => tr(
+    'Te desafio no CapiBlocks! Fiz {meta} pontos neste tabuleiro. '
+    'Consegue passar? {link}',
+    {'meta': meta, 'link': link},
+  );
 
   /// Reads a challenge from a page address or an Android link; null when
   /// [uri] is not one.

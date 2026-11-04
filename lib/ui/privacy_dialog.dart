@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/idioma.dart';
 import 'palette.dart';
 import 'typography.dart';
 import 'widgets.dart';
@@ -52,7 +53,7 @@ class _PrivacySheet extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const OutlinedTitle('Privacidade', size: 26),
+                  OutlinedTitle(tr('Privacidade'), size: 26),
                   IconButton(
                     icon: const Icon(
                       Icons.close_rounded,
@@ -76,12 +77,14 @@ class _PrivacySheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CapiBlocks: Blocos e Capivaras',
+                          tr('CapiBlocks: Blocos e Capivaras'),
                           style: displayText(18, color: Palette.accent),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Desenvolvido por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima atualização: Novembro de 2026',
+                          tr(
+                            'Desenvolvido por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima atualização: Novembro de 2026',
+                          ),
                           style: bodyText(12, color: Palette.textDim),
                         ),
                         const SizedBox(height: 14),
@@ -120,7 +123,7 @@ class _PrivacySheet extends StatelessWidget {
                   if (onOpenWeb != null) ...[
                     Expanded(
                       child: ChunkyButton(
-                        label: 'Ver na Web',
+                        label: tr('Ver na Web'),
                         color: Palette.panelEdge,
                         textColor: Palette.text,
                         onTap: onOpenWeb,
@@ -130,7 +133,7 @@ class _PrivacySheet extends StatelessWidget {
                   ],
                   Expanded(
                     child: ChunkyButton(
-                      label: 'Entendido',
+                      label: tr('Entendido'),
                       color: Palette.good,
                       textColor: const Color(0xFF0B3B16),
                       onTap: () => Navigator.of(context).pop(),
@@ -151,10 +154,10 @@ class _PrivacySheet extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: displayText(15, color: Palette.text)),
+          Text(tr(title), style: displayText(15, color: Palette.text)),
           const SizedBox(height: 4),
           Text(
-            content,
+            tr(content),
             style: bodyText(13, color: Palette.textDim, weight: 400),
           ),
         ],

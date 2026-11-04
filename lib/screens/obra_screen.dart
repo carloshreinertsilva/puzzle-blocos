@@ -8,6 +8,7 @@ import '../core/board.dart';
 import '../core/shapes.dart';
 import '../core/village.dart';
 import '../game/obra_controller.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../testing/test_bridge.dart';
@@ -71,7 +72,7 @@ class _ObraScreenState extends State<ObraScreen>
     final item = widget.item;
     final bp = item == null
         ? Blueprints.level(_number)
-        : Blueprints.forItem(item.id, item.name, Village.items.indexOf(item));
+        : Blueprints.forItem(item.id, item.namePt, Village.items.indexOf(item));
     _obra = ObraController(bp)..addListener(_changed);
     _pieceKeys.clear();
     _showCard = false;
@@ -170,7 +171,7 @@ class _ObraScreenState extends State<ObraScreen>
       context,
       widget.services,
       RewardPlacement.obraHint,
-      motivo: 'A dica grátis desta obra já foi.',
+      motivo: tr('A dica grátis desta obra já foi.'),
     );
     if (pago == null || !mounted) return;
     Analytics.event('obra_dica', {'obra': _number, 'pagamento': pago});
@@ -194,14 +195,16 @@ class _ObraScreenState extends State<ObraScreen>
                       children: [
                         RoundIconButton(
                           icon: Icons.arrow_back_rounded,
-                          label: 'Voltar',
+                          label: tr('Voltar'),
                           onTap: () => Navigator.of(context).pop(false),
                         ),
                         Expanded(
                           child: Column(
                             children: [
                               Text(
-                                _village ? 'Obra da vila' : 'Obra $_number',
+                                _village
+                                    ? tr('Obra da vila')
+                                    : tr('Obra {n}', {'n': _number}),
                                 style: displayText(15, color: Palette.textDim),
                               ),
                               FittedBox(
@@ -213,13 +216,13 @@ class _ObraScreenState extends State<ObraScreen>
                         ),
                         RoundIconButton(
                           icon: Icons.lightbulb_rounded,
-                          label: 'Dica',
+                          label: tr('Dica'),
                           onTap: _dica,
                         ),
                         const SizedBox(width: 8),
                         RoundIconButton(
                           icon: Icons.refresh_rounded,
-                          label: 'Recomeçar',
+                          label: tr('Recomeçar'),
                           onTap: () {
                             widget.services.feedback.click();
                             _obra.restart();
@@ -314,7 +317,9 @@ class _ObraScreenState extends State<ObraScreen>
 
   Widget _board(double side) => Builder(
     builder: (context) => Semantics(
-      label: 'Planta da obra: ${_obra.unplaced.length} peças para encaixar',
+      label: tr('Planta da obra: {n} peças para encaixar', {
+        'n': _obra.unplaced.length,
+      }),
       child: GestureDetector(
         onTapUp: (d) {
           final r = (d.localPosition.dy / _boardCell).floor();
@@ -363,7 +368,7 @@ class _ObraScreenState extends State<ObraScreen>
       onDragUpdate: (d) => _movePreview(i, d.globalPosition - _anchor(s)),
       onDragEnd: (d) => _drop(i, d.offset),
       child: Semantics(
-        label: 'Peça ${i + 1}',
+        label: tr('Peça {n}', {'n': i + 1}),
         child: _slot(view(cell), hinted),
       ),
     );
@@ -400,7 +405,9 @@ class _ObraScreenState extends State<ObraScreen>
           else
             const Capi(size: 84, mood: CapiMood.cheer),
           OutlinedTitle(
-            item != null ? 'Obra pronta!' : 'Obra $_number concluída!',
+            item != null
+                ? tr('Obra pronta!')
+                : tr('Obra {n} concluída!', {'n': _number}),
             size: 30,
           ),
           const SizedBox(height: 10),
@@ -412,16 +419,16 @@ class _ObraScreenState extends State<ObraScreen>
             const SizedBox(height: 8),
             Text(
               _starsGained > 0
-                  ? '+$_starsGained ${_starsGained == 1 ? 'estrela' : 'estrelas'}'
+                  ? trN(_starsGained, '+{n} estrela', '+{n} estrelas')
                   : _obra.stars < 3
-                  ? 'Sem desfazer nem dica vale 3 estrelas!'
-                  : 'Perfeita de novo!',
+                  ? tr('Sem desfazer nem dica vale 3 estrelas!')
+                  : tr('Perfeita de novo!'),
               style: bodyText(16, color: Palette.textDim, weight: 500),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
             ChunkyButton(
-              label: 'Próxima obra',
+              label: tr('Próxima obra'),
               icon: Icons.arrow_forward_rounded,
               big: true,
               onTap: _next,
@@ -429,19 +436,21 @@ class _ObraScreenState extends State<ObraScreen>
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
-                'Menu',
+                tr('Menu'),
                 style: displayText(18, color: Palette.textDim),
               ),
             ),
           ] else ...[
             Text(
-              'Agora é só levantar ${item.name.toLowerCase()} na vila.',
+              tr('Agora é só levantar {item} na vila.', {
+                'item': item.nameInline,
+              }),
               style: bodyText(16, color: Palette.textDim, weight: 500),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
             ChunkyButton(
-              label: 'Construir na vila',
+              label: tr('Construir na vila'),
               icon: Icons.construction_rounded,
               color: Palette.good,
               textColor: const Color(0xFF0B3B16),

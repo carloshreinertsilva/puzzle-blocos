@@ -23,6 +23,10 @@ o `README.md`.
   um botão novo, dê um rótulo a ele.
 - Mudou a dificuldade (`lib/core/level.dart`)? Rode
   `dart run tool/simulate.dart 1 90 40` e compare com os números do README.
+- O jogo fala português, inglês e espanhol. Todo texto que o jogador vê
+  passa por `tr('texto em português')` (ou `trN` para plural), com a tradução
+  em `lib/l10n/textos/`. O teste `test/traducoes_test.dart` falha se faltar
+  inglês ou espanhol. Os testes do navegador rodam em português.
 - Anúncios seguem `lib/ads/ad_policy.dart`: sem banner, nada durante a
   partida, interstitial só entre fases com intervalo longo.
 

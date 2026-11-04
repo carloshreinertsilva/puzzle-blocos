@@ -1,5 +1,6 @@
 import '../core/hats.dart';
 import '../core/passe.dart';
+import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 
 /// What the shop sells. The ids are the product ids registered in the Play
@@ -87,8 +88,8 @@ enum Produto {
 
   const Produto(
     this.id,
-    this.nome,
-    this.descricao,
+    this._nome,
+    this._descricao,
     this.precoBase, {
     this.estrelas = 0,
     this.item,
@@ -105,9 +106,14 @@ enum Produto {
   }
 
   final String id;
-  final String nome;
-  final String descricao;
   final String precoBase;
+
+  /// Name and description in Portuguese (the translation keys), shown in
+  /// the current language.
+  final String _nome;
+  final String _descricao;
+  String get nome => tr(_nome);
+  String get descricao => _descricao.isEmpty ? '' : tr(_descricao);
 
   /// Stars in a star pack.
   final int estrelas;

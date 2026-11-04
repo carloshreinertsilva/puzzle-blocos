@@ -13,6 +13,7 @@ import '../game/game_controller.dart';
 import '../core/missions.dart';
 import '../core/village.dart';
 import '../game/onboarding.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
@@ -126,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _tip() {
     widget.services.feedback.click();
-    setState(() => _hint = _tips[_tipIndex++ % _tips.length]);
+    setState(() => _hint = tr(_tips[_tipIndex++ % _tips.length]));
   }
 
   Future<void> _openWardrobe() async {
@@ -146,7 +147,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void _locked(String mode, int level) {
     widget.services.feedback.click();
     setState(
-      () => _hint = 'Chegue na fase $level que eu libero o $mode pra você!',
+      () => _hint = tr('Chegue na fase {n} que eu libero o {modo} pra você!', {
+        'n': level,
+        'modo': tr(mode),
+      }),
     );
   }
 
@@ -219,8 +223,8 @@ class _HomeScreenState extends State<HomeScreen> {
         compact: true,
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
-        title: 'Torre do Capi',
-        subtitle: 'Libera na fase ${Onboarding.towerAt}',
+        title: tr('Torre do Capi'),
+        subtitle: tr('Libera na fase {n}', {'n': Onboarding.towerAt}),
         onTap: () => _locked('Torre do Capi', Onboarding.towerAt),
       );
     }
@@ -228,11 +232,11 @@ class _HomeScreenState extends State<HomeScreen> {
       compact: true,
       icon: Icons.layers_rounded,
       color: const Color(0xFF0284C7),
-      title: 'Torre do Capi',
+      title: tr('Torre do Capi'),
       subtitle: store.towerBestHeight > 0
-          ? 'Recorde ${store.towerBestHeight} andares'
-          : 'Suba em 2.5D',
-      badge: store.hasSeen('opened_tower') ? null : 'NOVO',
+          ? tr('Recorde {n} andares', {'n': store.towerBestHeight})
+          : tr('Suba em 2.5D'),
+      badge: store.hasSeen('opened_tower') ? null : tr('NOVO'),
       onTap: _openTower,
     );
   }
@@ -243,8 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
         compact: true,
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
-        title: 'Blitz 60s',
-        subtitle: 'Libera na fase ${Onboarding.blitzAt}',
+        title: tr('Blitz 60s'),
+        subtitle: tr('Libera na fase {n}', {'n': Onboarding.blitzAt}),
         onTap: () => _locked('Blitz 60s', Onboarding.blitzAt),
       );
     }
@@ -252,11 +256,11 @@ class _HomeScreenState extends State<HomeScreen> {
       compact: true,
       icon: Icons.bolt_rounded,
       color: const Color(0xFFFA5252),
-      title: 'Blitz 60s',
+      title: tr('Blitz 60s'),
       subtitle: store.blitzBestScore > 0
-          ? 'Recorde ${formatInt(store.blitzBestScore)}'
-          : 'Corrida de 60s',
-      badge: store.hasSeen('opened_blitz') ? null : 'NOVO',
+          ? tr('Recorde {n}', {'n': formatInt(store.blitzBestScore)})
+          : tr('Corrida de 60s'),
+      badge: store.hasSeen('opened_blitz') ? null : tr('NOVO'),
       onTap: () {
         store.markSeen('opened_blitz');
         _open(GameMode.blitz);
@@ -270,8 +274,8 @@ class _HomeScreenState extends State<HomeScreen> {
         compact: true,
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
-        title: 'Duelo',
-        subtitle: 'Libera na fase ${Onboarding.duelAt}',
+        title: tr('Duelo'),
+        subtitle: tr('Libera na fase {n}', {'n': Onboarding.duelAt}),
         onTap: () => _locked('Duelo', Onboarding.duelAt),
       );
     }
@@ -279,11 +283,11 @@ class _HomeScreenState extends State<HomeScreen> {
       compact: true,
       icon: Icons.sports_kabaddi_rounded,
       color: const Color(0xFF228BE6),
-      title: 'Duelo',
+      title: tr('Duelo'),
       subtitle: store.duelsWon > 0
-          ? '${store.duelsWon} vitórias'
-          : 'Desafie amigos',
-      badge: store.hasSeen('opened_duel') ? null : 'NOVO',
+          ? tr('{n} vitórias', {'n': store.duelsWon})
+          : tr('Desafie amigos'),
+      badge: store.hasSeen('opened_duel') ? null : tr('NOVO'),
       onTap: () {
         store.markSeen('opened_duel');
         _openDuelDialog();
@@ -310,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
               size: 28,
             ),
             const SizedBox(width: 10),
-            Text('Modo Duelo', style: displayText(22, color: Palette.text)),
+            Text(tr('Modo Duelo'), style: displayText(22, color: Palette.text)),
           ],
         ),
         content: Column(
@@ -318,7 +322,9 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!',
+              tr(
+                'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!',
+              ),
               style: bodyText(15, color: Palette.textDim),
             ),
             const SizedBox(height: 16),
@@ -338,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Semente da partida: #$seed',
+                    tr('Semente da partida: #{seed}', {'seed': seed}),
                     style: displayText(14, color: Colors.white),
                   ),
                 ],
@@ -350,12 +356,12 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
-              'Fechar',
+              tr('Fechar'),
               style: displayText(16, color: Palette.textDim),
             ),
           ),
           ChunkyButton(
-            label: 'Começar Duelo',
+            label: tr('Começar Duelo'),
             icon: Icons.play_arrow_rounded,
             color: const Color(0xFF228BE6),
             textColor: Colors.white,
@@ -376,11 +382,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return MenuCard(
       icon: Icons.cottage_rounded,
       color: Palette.blocks[3],
-      title: 'Vila do Capi',
+      title: tr('Vila do Capi'),
       subtitle: next == null
-          ? 'Vila completa!'
-          : '$built de ${Village.items.length} prontos',
-      badge: canBuild ? 'CONSTRUIR!' : null,
+          ? tr('Vila completa!')
+          : tr('{n} de {total} prontos', {
+              'n': built,
+              'total': Village.items.length,
+            }),
+      badge: canBuild ? tr('CONSTRUIR!') : null,
       onTap: _openVillage,
     );
   }
@@ -390,17 +399,17 @@ class _HomeScreenState extends State<HomeScreen> {
       return MenuCard(
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
-        title: 'Obras',
-        subtitle: 'Libera na fase ${Onboarding.obrasAt}',
+        title: tr('Obras'),
+        subtitle: tr('Libera na fase {n}', {'n': Onboarding.obrasAt}),
         onTap: () => _locked('Obras', Onboarding.obrasAt),
       );
     }
     return MenuCard(
       icon: Icons.architecture_rounded,
       color: Palette.blocks[6],
-      title: 'Obras',
-      subtitle: 'Obra ${store.obraLevel}',
-      badge: store.hasSeen('opened_obras') ? null : 'NOVO',
+      title: tr('Obras'),
+      subtitle: tr('Obra {n}', {'n': store.obraLevel}),
+      badge: store.hasSeen('opened_obras') ? null : tr('NOVO'),
       onTap: _openObras,
     );
   }
@@ -459,7 +468,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Semantics(
                               button: true,
-                              label: '${store.stars} estrelas, abrir a vila',
+                              label: tr('{n} estrelas, abrir a vila', {
+                                'n': store.stars,
+                              }),
                               excludeSemantics: true,
                               onTap: _openVillage,
                               child: GestureDetector(
@@ -486,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Spacer(),
                             RoundIconButton(
                               icon: Icons.assignment_turned_in_rounded,
-                              label: 'Missões Diárias',
+                              label: tr('Missões Diárias'),
                               // Missions, chest and Passe rewards waiting.
                               badge: _waiting(store, today) > 0
                                   ? '${_waiting(store, today)}'
@@ -496,7 +507,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.checkroom_rounded,
-                              label: 'Guarda-Roupa',
+                              label: tr('Guarda-Roupa'),
                               onTap: _openWardrobe,
                             ),
                             SizedBox(width: buttonGap),
@@ -517,14 +528,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             else
                               RoundIconButton(
                                 icon: Icons.bar_chart_rounded,
-                                label: 'Estatísticas',
+                                label: tr('Estatísticas'),
                                 onTap: () =>
                                     showStats(context, widget.services),
                               ),
                             SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.settings_rounded,
-                              label: 'Configurações',
+                              label: tr('Configurações'),
                               onTap: () =>
                                   showSettings(context, widget.services),
                             ),
@@ -554,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ChunkyButton(
                           big: true,
                           icon: Icons.play_arrow_rounded,
-                          label: 'Jogar · Fase ${store.level}',
+                          label: tr('Jogar · Fase {n}', {'n': store.level}),
                           onTap: () => _open(GameMode.levels),
                         ),
                         SizedBox(height: isSmall ? 10 : 22),
@@ -575,21 +586,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ? Icons.check_circle_rounded
                                           : Icons.calendar_today_rounded,
                                       color: Palette.blocks[0],
-                                      title: 'Desafio diário',
+                                      title: tr('Desafio diário'),
                                       subtitle: dailyDone
-                                          ? 'Feito! Volte amanhã'
+                                          ? tr('Feito! Volte amanhã')
                                           : streak > 0
-                                          ? 'Sequência: $streak dias'
-                                          : 'Um novo a cada dia',
-                                      badge: dailyDone ? null : 'NOVO',
+                                          ? tr('Sequência: {n} dias', {
+                                              'n': streak,
+                                            })
+                                          : tr('Um novo a cada dia'),
+                                      badge: dailyDone ? null : tr('NOVO'),
                                       onTap: () => _open(GameMode.daily),
                                     )
                                   : MenuCard(
                                       icon: Icons.lock_rounded,
                                       color: Palette.panelEdge,
-                                      title: 'Desafio diário',
-                                      subtitle:
-                                          'Libera na fase ${Onboarding.dailyAt}',
+                                      title: tr('Desafio diário'),
+                                      subtitle: tr('Libera na fase {n}', {
+                                        'n': Onboarding.dailyAt,
+                                      }),
                                       onTap: () => _locked(
                                         'Desafio diário',
                                         Onboarding.dailyAt,
@@ -602,21 +616,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ? MenuCard(
                                       icon: Icons.all_inclusive_rounded,
                                       color: Palette.blocks[5],
-                                      title: 'Infinito',
+                                      title: tr('Infinito'),
                                       subtitle: store.bestScore > 0
-                                          ? 'Recorde ${formatInt(store.bestScore)}'
-                                          : 'Sem metas, sem fim',
+                                          ? tr('Recorde {n}', {
+                                              'n': formatInt(store.bestScore),
+                                            })
+                                          : tr('Sem metas, sem fim'),
                                       badge: store.hasSeen('opened_endless')
                                           ? null
-                                          : 'NOVO',
+                                          : tr('NOVO'),
                                       onTap: () => _open(GameMode.endless),
                                     )
                                   : MenuCard(
                                       icon: Icons.lock_rounded,
                                       color: Palette.panelEdge,
-                                      title: 'Infinito',
-                                      subtitle:
-                                          'Libera na fase ${Onboarding.endlessAt}',
+                                      title: tr('Infinito'),
+                                      subtitle: tr('Libera na fase {n}', {
+                                        'n': Onboarding.endlessAt,
+                                      }),
                                       onTap: () => _locked(
                                         'Infinito',
                                         Onboarding.endlessAt,
@@ -662,7 +679,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: CapiSays(
                       text: capiLine,
                       capiSize: 96,
-                      action: _news.isNotEmpty ? 'Bora!' : 'Beleza!',
+                      action: _news.isNotEmpty ? tr('Bora!') : tr('Beleza!'),
                       onAction: _dismissCapi,
                     ),
                   ),
@@ -713,7 +730,7 @@ class _LojaBotaoState extends State<_LojaBotao>
     if (!mounted) return;
     // The balloon goes in the overlay, above the logo under the bar.
     if (!_portal.isShowing) _portal.show();
-    setState(() => _fala = _falas[_vez++ % _falas.length]);
+    setState(() => _fala = tr(_falas[_vez++ % _falas.length]));
     _timer = Timer(const Duration(seconds: 4), () {
       if (!mounted) return;
       setState(() => _fala = null);
@@ -789,7 +806,7 @@ class _LojaBotaoState extends State<_LojaBotao>
           },
           child: RoundIconButton(
             icon: Icons.storefront_rounded,
-            label: 'Loja',
+            label: tr('Loja'),
             badge: widget.badge,
             iconColor: Palette.accent,
             fill: const Color(0xFF5A3A12),

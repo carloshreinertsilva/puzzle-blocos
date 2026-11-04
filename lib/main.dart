@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'ads/ad_service.dart';
 import 'ads/admob.dart';
 import 'game/game_controller.dart';
+import 'l10n/idioma.dart';
 import 'screens/game_screen.dart';
 import 'screens/root.dart';
 import 'services/duelo_link.dart';
@@ -23,6 +24,9 @@ import 'ui/typography.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // The phone's language until the saved choice is read (the opening
+  // screen shows before that).
+  Lingua.atual.value = escolherIdioma('auto');
   if (kTestBridge) {
     // Browser tests find buttons through the accessibility tree.
     SemanticsBinding.instance.ensureSemantics();
@@ -50,6 +54,7 @@ Future<AppServices> _iniciar() async {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
   final store = await ProgressStore.load();
+  Lingua.atual.value = escolherIdioma(store.idioma);
   if (kTestBridge) {
     TestBridge.instance.wallet = () => store.stars;
     TestBridge.instance.store = store;
@@ -71,6 +76,20 @@ Future<AppServices> _iniciar() async {
       : LojaService.play(store) ??
             (kDebugMode ? LojaSimulada(store) : SemLoja(store));
   return AppServices(store, feedback, ads, loja: loja);
+}
+
+/// The game's language: the one picked in the settings, else the phone's.
+/// Browser tests run in Portuguese unless a language was picked (or the
+/// address asks for one: `?lang=en`, `?lang=es`).
+Idioma escolherIdioma(String salvo) {
+  for (final i in Idioma.values) {
+    if (i.name == salvo) return i;
+  }
+  if (kTestBridge) {
+    final pedido = Uri.base.queryParameters['lang'];
+    return pedido == null ? Idioma.pt : Idioma.doCelular(pedido);
+  }
+  return Idioma.doCelular(PlatformDispatcher.instance.locale.languageCode);
 }
 
 void _depoisDeAbrir(AppServices services) {
@@ -148,7 +167,14 @@ class App extends StatelessWidget {
   final AppServices services;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<Idioma>(
+    // A new language rebuilds the whole game in it.
+    valueListenable: Lingua.atual,
+    builder: (context, idioma, _) =>
+        KeyedSubtree(key: ValueKey(idioma), child: _app(context)),
+  );
+
+  Widget _app(BuildContext context) {
     return MaterialApp(
       title: appTitle,
       debugShowCheckedModeBanner: false,
@@ -176,7 +202,7 @@ class App extends StatelessWidget {
             mode: convite.blitz ? GameMode.blitz : GameMode.duel,
             duelSeed: convite.semente,
             duelTargetScore: convite.meta,
-            duelRivalName: 'Amigo',
+            duelRivalName: tr('Amigo'),
           ),
         );
       },

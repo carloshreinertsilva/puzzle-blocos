@@ -1,3 +1,4 @@
+import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 
 /// The collectible hats that Capi can wear.
@@ -50,16 +51,22 @@ enum CapiHat {
     loja: 'Vem com o Pacote Inicial',
   );
 
-  const CapiHat(this.id, this.label, this.description, {this.loja});
+  const CapiHat(this.id, this._label, this._description, {this._loja});
 
   final String id;
-  final String label;
-  final String description;
+
+  /// Names and texts are kept in Portuguese (the translation keys) and
+  /// shown in the current language.
+  final String _label;
+  final String _description;
+  String get label => tr(_label);
+  String get description => tr(_description);
 
   /// Hats outside the daily chest say where they come from (shop, pass).
   /// The full catalog, with rarity and price, is in wardrobe.dart.
-  final String? loja;
-  bool get exclusivo => loja != null;
+  final String? _loja;
+  String? get loja => _loja == null ? null : tr(_loja);
+  bool get exclusivo => _loja != null;
 
   static CapiHat fromId(String id) => fromIdOrNull(id) ?? helmet;
 

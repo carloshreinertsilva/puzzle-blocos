@@ -3,6 +3,7 @@ import '../core/hats.dart';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/idioma.dart';
 import 'block_painter.dart';
 import 'capi.dart';
 import 'palette.dart';
@@ -456,7 +457,10 @@ class _StarRowState extends State<StarRow> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     final n = widget.filled.length;
     return Semantics(
-      label: '${widget.filled.where((f) => f).length} de $n estrelas',
+      label: tr('{feitas} de {n} estrelas', {
+        'feitas': widget.filled.where((f) => f).length,
+        'n': n,
+      }),
       excludeSemantics: true,
       child: AnimatedBuilder(
         animation: _c,

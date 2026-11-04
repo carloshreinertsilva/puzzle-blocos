@@ -1,5 +1,6 @@
 import '../core/passe.dart' show PasseDoCapi;
 import '../core/wardrobe.dart' show Slot;
+import '../l10n/idioma.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,17 +14,17 @@ enum CapiTool {
   shovel;
 
   String get label => switch (this) {
-    CapiTool.hammer => 'Martelo',
-    CapiTool.rotate => 'Girar',
-    CapiTool.reroll => 'Trocar',
-    CapiTool.shovel => 'Pá 3x3',
+    CapiTool.hammer => tr('Martelo'),
+    CapiTool.rotate => tr('Girar'),
+    CapiTool.reroll => tr('Trocar'),
+    CapiTool.shovel => tr('Pá 3x3'),
   };
 
   String get description => switch (this) {
-    CapiTool.hammer => 'Quebra 1 bloco ou pedra',
-    CapiTool.rotate => 'Gira uma peça da bandeja',
-    CapiTool.reroll => 'Troca as 3 peças da bandeja',
-    CapiTool.shovel => 'Limpa uma área 3x3',
+    CapiTool.hammer => tr('Quebra 1 bloco ou pedra'),
+    CapiTool.rotate => tr('Gira uma peça da bandeja'),
+    CapiTool.reroll => tr('Troca as 3 peças da bandeja'),
+    CapiTool.shovel => tr('Limpa uma área 3x3'),
   };
 
   int get starCost => switch (this) {
@@ -34,10 +35,10 @@ enum CapiTool {
   };
 
   String get actionPrompt => switch (this) {
-    CapiTool.hammer => 'Toque em um bloco para quebrar',
-    CapiTool.rotate => 'Toque na peça para girar',
+    CapiTool.hammer => tr('Toque em um bloco para quebrar'),
+    CapiTool.rotate => tr('Toque na peça para girar'),
     CapiTool.reroll => '',
-    CapiTool.shovel => 'Toque onde quer abrir espaço 3x3',
+    CapiTool.shovel => tr('Toque onde quer abrir espaço 3x3'),
   };
 }
 
@@ -163,6 +164,11 @@ class ProgressStore {
   // --- Notifications (see services/avisos.dart) ---
 
   /// Daily reminders: off until the player says yes.
+  /// The language picked in the settings: 'auto' (the phone's), 'pt',
+  /// 'en' or 'es'.
+  String get idioma => _prefs.getString('idioma') ?? 'auto';
+  Future<void> setIdioma(String code) => _prefs.setString('idioma', code);
+
   bool get remindersOn => _prefs.getBool('remindersOn') ?? false;
   Future<void> setRemindersOn(bool on) => _prefs.setBool('remindersOn', on);
 

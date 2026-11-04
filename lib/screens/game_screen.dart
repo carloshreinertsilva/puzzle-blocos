@@ -13,6 +13,7 @@ import '../core/game_session.dart';
 import '../services/analytics.dart';
 import '../services/duelo_link.dart';
 import '../core/missions.dart';
+import '../l10n/idioma.dart';
 import '../game/game_controller.dart';
 import '../game/onboarding.dart';
 import '../game/puzzle_game.dart';
@@ -106,7 +107,7 @@ class _GameScreenState extends State<GameScreen> {
     _desafiosDe = controller.session;
     // After the level's title has played ("Fase 12 / Quebre as pedras").
     _desafiosTimer?.cancel();
-    _desafiosTimer = Timer(const Duration(milliseconds: 1800), _verDesafios);
+    _desafiosTimer = Timer(const Duration(milliseconds: 2400), _verDesafios);
   }
 
   void _verDesafios() {
@@ -171,7 +172,7 @@ class _GameScreenState extends State<GameScreen> {
     if (mounted) {
       mostrarPremio(
         context,
-        '+$ganhas ★ pelo vídeo!',
+        tr('+{n} ★ pelo vídeo!', {'n': ganhas}),
         icon: Icons.star_rounded,
       );
     }
@@ -203,7 +204,7 @@ class _GameScreenState extends State<GameScreen> {
     if (mounted) {
       mostrarPremio(
         context,
-        'Segunda chance liberada!',
+        tr('Segunda chance liberada!'),
         icon: Icons.favorite_rounded,
       );
     }
@@ -226,12 +227,12 @@ class _GameScreenState extends State<GameScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 320),
           child: CapiSays(
-            text: 'Travou? Eu te mostro uma jogada.',
+            text: tr('Travou? Eu te mostro uma jogada.'),
             mood: CapiMood.point,
             capiSize: 70,
-            action: 'Ver dica',
+            action: tr('Ver dica'),
             onAction: _dicaPaga,
-            secondary: 'Usar ferramenta',
+            secondary: tr('Usar ferramenta'),
             onSecondary: _openToolsSheet,
           ),
         ),
@@ -245,7 +246,7 @@ class _GameScreenState extends State<GameScreen> {
       context,
       widget.services,
       RewardPlacement.gameHint,
-      motivo: 'A dica grátis desta fase já foi.',
+      motivo: tr('A dica grátis desta fase já foi.'),
     );
     if (pago == null || !mounted) return;
     Analytics.event('fase_dica', {
@@ -278,9 +279,11 @@ class _GameScreenState extends State<GameScreen> {
                   child: Semantics(
                     container: true,
                     liveRegion: true,
-                    label:
-                        'Desafios da fase: '
-                        '${[for (final m in Mission.values) Missions.text(m, n)].join(', ')}',
+                    label: tr('Desafios da fase: {lista}', {
+                      'lista': [
+                        for (final m in Mission.values) Missions.text(m, n),
+                      ].join(', '),
+                    }),
                     excludeSemantics: true,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 340),
@@ -298,7 +301,7 @@ class _GameScreenState extends State<GameScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '3 estrelas nesta fase',
+                              tr('3 estrelas nesta fase'),
                               style: displayText(17, color: Palette.accent),
                             ),
                             const SizedBox(height: 4),
@@ -344,7 +347,7 @@ class _GameScreenState extends State<GameScreen> {
             if (mounted) {
               mostrarPremio(
                 this.context,
-                '+1 ${tool.label} pelo vídeo!',
+                tr('+1 {ferramenta} pelo vídeo!', {'ferramenta': tool.label}),
                 icon: Icons.handyman_rounded,
               );
               setState(() {});
@@ -403,8 +406,8 @@ class _GameScreenState extends State<GameScreen> {
                   child: Semantics(
                     button: true,
                     label: mode == CapiTool.hammer
-                        ? 'Quebrar célula $r $c'
-                        : 'Limpar área 3x3 $r $c',
+                        ? tr('Quebrar célula {r} {c}', {'r': r, 'c': c})
+                        : tr('Limpar área 3x3 {r} {c}', {'r': r, 'c': c}),
                     child: Container(
                       decoration: BoxDecoration(
                         border: Border.all(
@@ -435,7 +438,7 @@ class _GameScreenState extends State<GameScreen> {
                   onTap: () => controller.executeRotate(i),
                   child: Semantics(
                     button: true,
-                    label: 'Girar peça $i',
+                    label: tr('Girar peça {n}', {'n': i}),
                     child: const SizedBox.expand(),
                   ),
                 ),
@@ -479,7 +482,10 @@ class _GameScreenState extends State<GameScreen> {
     if (!kIsWeb) {
       try {
         await SharePlus.instance.share(
-          ShareParams(text: convite.mensagem, subject: 'Desafio no CapiBlocks'),
+          ShareParams(
+            text: convite.mensagem,
+            subject: tr('Desafio no CapiBlocks'),
+          ),
         );
         return;
       } catch (_) {
@@ -489,8 +495,8 @@ class _GameScreenState extends State<GameScreen> {
     await Clipboard.setData(ClipboardData(text: convite.mensagem));
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Desafio copiado! Cole no WhatsApp para um amigo.'),
+      SnackBar(
+        content: Text(tr('Desafio copiado! Cole no WhatsApp para um amigo.')),
         duration: Duration(seconds: 2),
       ),
     );
@@ -568,7 +574,7 @@ class _GameScreenState extends State<GameScreen> {
             text: controller.capiLine,
             mood: CapiMood.cheer,
             capiSize: 110,
-            action: 'Bora!',
+            action: tr('Bora!'),
             onAction: widget.onDone,
           ),
         ),
@@ -611,7 +617,7 @@ class _GameScreenState extends State<GameScreen> {
           won: controller.duelWon,
           score: s.score,
           rivalScore: controller.duelTargetScore ?? 1000,
-          rivalName: controller.duelRivalName ?? 'Rival',
+          rivalName: controller.duelRivalName ?? tr('Rival'),
           starsGained: controller.starsGained,
           onRetry: _retry,
           onExit: _exit,
@@ -654,7 +660,7 @@ class _GameScreenState extends State<GameScreen> {
           won: controller.duelWon,
           score: s.score,
           rivalScore: controller.duelTargetScore ?? 1000,
-          rivalName: controller.duelRivalName ?? 'Rival',
+          rivalName: controller.duelRivalName ?? tr('Rival'),
           starsGained: controller.starsGained,
           onRetry: _retry,
           onExit: _exit,
@@ -779,13 +785,13 @@ class _TutorialBar extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: Semantics(
                       button: true,
-                      label: 'Pular tutorial',
+                      label: tr('Pular tutorial'),
                       excludeSemantics: true,
                       onTap: onSkip,
                       child: GestureDetector(
                         onTap: onSkip,
                         child: Text(
-                          'Pular',
+                          tr('Pular'),
                           style: displayText(16, color: Palette.textDim),
                         ),
                       ),
@@ -839,7 +845,7 @@ class _Hud extends StatelessWidget {
             children: [
               RoundIconButton(
                 icon: Icons.pause_rounded,
-                label: 'Pausar',
+                label: tr('Pausar'),
                 onTap: onPause,
               ),
               Expanded(
@@ -854,7 +860,7 @@ class _Hud extends StatelessWidget {
                         ),
                         if (level.isHard) ...[
                           const SizedBox(width: 8),
-                          const _Tag('DIFÍCIL', Palette.danger),
+                          _Tag(tr('DIFÍCIL'), Palette.danger),
                         ],
                       ],
                     ),
@@ -882,7 +888,7 @@ class _Hud extends StatelessWidget {
               ),
               RoundIconButton(
                 icon: Icons.construction_rounded,
-                label: 'Ferramentas',
+                label: tr('Ferramentas'),
                 onTap: onTools,
               ),
             ],
@@ -895,7 +901,7 @@ class _Hud extends StatelessWidget {
             _DuelTargetChip(
               score: s.score,
               target: controller.duelTargetScore ?? 1000,
-              rivalName: controller.duelRivalName ?? 'Rival',
+              rivalName: controller.duelRivalName ?? tr('Rival'),
               won: controller.duelWon,
             ),
           ] else if (!level.isEndless) ...[
@@ -950,7 +956,7 @@ class _ActiveToolBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Semantics(
             button: true,
-            label: 'Cancelar',
+            label: tr('Cancelar'),
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: onCancel,
@@ -964,7 +970,7 @@ class _ActiveToolBanner extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  'Cancelar',
+                  tr('Cancelar'),
                   style: displayText(13, color: Colors.white70),
                 ),
               ),
@@ -1030,7 +1036,7 @@ class _ToolsSheetState extends State<_ToolsSheet> {
                 const ToolboxIcon(size: 32),
                 const SizedBox(width: 10),
                 Text(
-                  'Ferramentas do Capi',
+                  tr('Ferramentas do Capi'),
                   style: displayText(20, color: Palette.text),
                 ),
                 const Spacer(),
@@ -1063,7 +1069,7 @@ class _ToolsSheetState extends State<_ToolsSheet> {
                 const SizedBox(width: 8),
                 Semantics(
                   button: true,
-                  label: 'Fechar',
+                  label: tr('Fechar'),
                   child: IconButton(
                     icon: const Icon(
                       Icons.close_rounded,
@@ -1142,7 +1148,7 @@ class _ToolsSheetState extends State<_ToolsSheet> {
           if (count > 0)
             Semantics(
               button: true,
-              label: 'Usar ${tool.label}',
+              label: tr('Usar {ferramenta}', {'ferramenta': tool.label}),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Palette.accent,
@@ -1156,7 +1162,7 @@ class _ToolsSheetState extends State<_ToolsSheet> {
                   ),
                 ),
                 onPressed: () => widget.onUseTool(tool),
-                child: Text('USAR', style: displayText(14)),
+                child: Text(tr('USAR'), style: displayText(14)),
               ),
             )
           else
@@ -1166,7 +1172,9 @@ class _ToolsSheetState extends State<_ToolsSheet> {
                 if (widget.videoRewards) ...[
                   Semantics(
                     button: true,
-                    label: 'Ganhar ${tool.label} com anúncio',
+                    label: tr('Ganhar {ferramenta} com anúncio', {
+                      'ferramenta': tool.label,
+                    }),
                     child: InkWell(
                       onTap: () async {
                         widget.onRewardTool(tool);
@@ -1183,17 +1191,17 @@ class _ToolsSheetState extends State<_ToolsSheet> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: const Color(0x6622B8CF)),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.play_arrow_rounded,
                               color: Color(0xFF22B8CF),
                               size: 16,
                             ),
-                            SizedBox(width: 2),
+                            const SizedBox(width: 2),
                             Text(
-                              'Grátis',
-                              style: TextStyle(
+                              tr('Grátis'),
+                              style: const TextStyle(
                                 color: Color(0xFF22B8CF),
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -1208,7 +1216,7 @@ class _ToolsSheetState extends State<_ToolsSheet> {
                 ],
                 Semantics(
                   button: true,
-                  label: 'Comprar ${tool.label}',
+                  label: tr('Comprar {ferramenta}', {'ferramenta': tool.label}),
                   child: InkWell(
                     onTap: () async {
                       widget.onBuyTool(tool);
@@ -1399,40 +1407,50 @@ class _IntroCard extends StatelessWidget {
     final (Widget icon, String title, String text) = switch (intro) {
       Intro.rocks => (
         const MiniGlyph(MiniIcon.rock, size: 56),
-        'Pedras',
-        'Complete a linha ou a coluna de uma pedra para quebrá-la. '
-            'Quebre todas para vencer a fase.',
+        tr('Pedras'),
+        tr(
+          'Complete a linha ou a coluna de uma pedra para quebrá-la. '
+          'Quebre todas para vencer a fase.',
+        ),
       ),
       Intro.toughRocks => (
         const MiniGlyph(MiniIcon.toughRock, size: 56),
-        'Pedras reforçadas',
-        'As pedras com rebites precisam de duas limpezas: '
-            'a primeira só racha.',
+        tr('Pedras reforçadas'),
+        tr(
+          'As pedras com rebites precisam de duas limpezas: '
+          'a primeira só racha.',
+        ),
       ),
       Intro.gems => (
         const MiniGlyph(MiniIcon.gem, size: 56),
-        'Gemas',
-        'Algumas peças trazem gemas. Limpe a linha onde elas estão '
-            'para coletar.',
+        tr('Gemas'),
+        tr(
+          'Algumas peças trazem gemas. Limpe a linha onde elas estão '
+          'para coletar.',
+        ),
       ),
       Intro.pups => (
         const MiniGlyph(MiniIcon.pup, size: 60),
-        'Filhotes!',
-        'Uns filhotes de capivara ficaram presos nos blocos! Limpe a linha '
-            'ou a coluna de cada um para soltar. Eles vão morar na vila.',
+        tr('Filhotes!'),
+        tr(
+          'Uns filhotes de capivara ficaram presos nos blocos! Limpe a linha '
+          'ou a coluna de cada um para soltar. Eles vão morar na vila.',
+        ),
       ),
       Intro.doubleGoal => (
         const Icon(Icons.flag_rounded, color: Palette.accent, size: 56),
-        'Duas metas',
-        'Agora algumas fases pedem duas coisas ao mesmo tempo. '
-            'Fique de olho nas metas no topo da tela.',
+        tr('Duas metas'),
+        tr(
+          'Agora algumas fases pedem duas coisas ao mesmo tempo. '
+          'Fique de olho nas metas no topo da tela.',
+        ),
       ),
     };
     return CardPanel(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('NOVIDADE!', style: displayText(16, color: Palette.accent)),
+          Text(tr('NOVIDADE!'), style: displayText(16, color: Palette.accent)),
           const SizedBox(height: 12),
           icon,
           const SizedBox(height: 12),
@@ -1440,7 +1458,7 @@ class _IntroCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(text, style: _bodyStyle, textAlign: TextAlign.center),
           const SizedBox(height: 22),
-          ChunkyButton(label: 'Entendi!', big: true, onTap: onOk),
+          ChunkyButton(label: tr('Entendi!'), big: true, onTap: onOk),
         ],
       ),
     );
@@ -1487,7 +1505,7 @@ class _WinCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const Capi(size: 84, mood: CapiMood.cheer),
-        OutlinedTitle('Fase $level concluída!', size: 30),
+        OutlinedTitle(tr('Fase {n} concluída!', {'n': level}), size: 30),
         const SizedBox(height: 10),
         StarRow(
           filled: [for (var i = 0; i < 3; i++) i < Missions.count(starBits)],
@@ -1503,21 +1521,25 @@ class _WinCard extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           starsGained > 0
-              ? '+$starsGained ${starsGained == 1 ? 'estrela' : 'estrelas'} · '
-                    '${formatInt(score)} pontos'
-              : '${formatInt(score)} pontos',
+              ? trN(
+                  starsGained,
+                  '+{n} estrela · {pontos} pontos',
+                  '+{n} estrelas · {pontos} pontos',
+                  {'pontos': formatInt(score)},
+                )
+              : tr('{pontos} pontos', {'pontos': formatInt(score)}),
           style: _bodyStyle,
         ),
         if (onDobrar != null) ...[
           const SizedBox(height: 10),
           if (dobrado)
             Text(
-              'Estrelas dobradas: +$starsGained!',
+              tr('Estrelas dobradas: +{n}!', {'n': starsGained}),
               style: displayText(16, color: Palette.accent),
             )
           else
             ChunkyButton(
-              label: 'Dobrar: +$starsGained com vídeo',
+              label: tr('Dobrar: +{n} com vídeo', {'n': starsGained}),
               icon: Icons.smart_display_rounded,
               color: Palette.good,
               textColor: const Color(0xFF0B3D1A),
@@ -1527,18 +1549,21 @@ class _WinCard extends StatelessWidget {
         const SizedBox(height: 18),
         if (replay) ...[
           ChunkyButton(
-            label: 'Jogar de novo',
+            label: tr('Jogar de novo'),
             icon: Icons.refresh_rounded,
             big: true,
             onTap: onRetry,
           ),
           TextButton(
             onPressed: onExit,
-            child: Text('Menu', style: displayText(18, color: Palette.textDim)),
+            child: Text(
+              tr('Menu'),
+              style: displayText(18, color: Palette.textDim),
+            ),
           ),
         ] else ...[
           ChunkyButton(
-            label: 'Próxima fase',
+            label: tr('Próxima fase'),
             icon: Icons.arrow_forward_rounded,
             big: true,
             onTap: onNext,
@@ -1547,7 +1572,7 @@ class _WinCard extends StatelessWidget {
             TextButton(
               onPressed: onExit,
               child: Text(
-                'Menu',
+                tr('Menu'),
                 style: displayText(18, color: Palette.textDim),
               ),
             ),
@@ -1599,7 +1624,7 @@ class _MissionLine extends StatelessWidget {
             ),
           ),
         ),
-        if (isNew) const _Tag('NOVA', Palette.accentDeep),
+        if (isNew) _Tag(tr('NOVA'), Palette.accentDeep),
       ],
     ),
   );
@@ -1627,10 +1652,12 @@ class _DailyWinCard extends StatelessWidget {
           color: Palette.accentDeep,
           size: 72,
         ),
-        const OutlinedTitle('Desafio do dia\nconcluído!', size: 32),
+        OutlinedTitle(tr('Desafio do dia\nconcluído!'), size: 32),
         const SizedBox(height: 8),
         Text(
-          streak > 1 ? '$streak dias seguidos!' : 'Volte amanhã para outro!',
+          streak > 1
+              ? tr('{n} dias seguidos!', {'n': streak})
+              : tr('Volte amanhã para outro!'),
           style: displayText(20, color: Palette.accent),
         ),
         const SizedBox(height: 4),
@@ -1638,14 +1665,20 @@ class _DailyWinCard extends StatelessWidget {
           StarRow(filled: const [true, true, true], size: 34, animate: true),
           const SizedBox(height: 4),
           Text(
-            '+$starsGained estrelas · ${formatInt(score)} pontos',
+            tr('+{n} estrelas · {pontos} pontos', {
+              'n': starsGained,
+              'pontos': formatInt(score),
+            }),
             style: _bodyStyle,
           ),
         ] else
-          Text('${formatInt(score)} pontos', style: _bodyStyle),
+          Text(
+            tr('{pontos} pontos', {'pontos': formatInt(score)}),
+            style: _bodyStyle,
+          ),
         const SizedBox(height: 24),
         ChunkyButton(
-          label: 'Voltar ao menu',
+          label: tr('Voltar ao menu'),
           icon: Icons.home_rounded,
           big: true,
           onTap: onExit,
@@ -1691,7 +1724,7 @@ class _LoseCard extends StatelessWidget {
       children: [
         Capi(size: 84, mood: newBest ? CapiMood.cheer : CapiMood.sad),
         OutlinedTitle(
-          newBest ? 'Novo recorde!' : 'Sem espaço!',
+          newBest ? tr('Novo recorde!') : tr('Sem espaço!'),
           size: 36,
           colors: newBest
               ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
@@ -1715,15 +1748,18 @@ class _LoseCard extends StatelessWidget {
           ),
         Text(
           endless
-              ? '${formatInt(score)} pontos · recorde ${formatInt(best)}'
-              : 'Quase lá! Quer mais uma chance?',
+              ? tr('{pontos} pontos · recorde {recorde}', {
+                  'pontos': formatInt(score),
+                  'recorde': formatInt(best),
+                })
+              : tr('Quase lá! Quer mais uma chance?'),
           style: _bodyStyle,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
         if (canRevive) ...[
           ChunkyButton(
-            label: 'Continuar',
+            label: tr('Continuar'),
             icon: videoRevive
                 ? Icons.smart_display_rounded
                 : Icons.play_arrow_rounded,
@@ -1736,14 +1772,14 @@ class _LoseCard extends StatelessWidget {
             padding: const EdgeInsets.only(top: 6, bottom: 14),
             child: Text(
               videoRevive
-                  ? 'Assista a um vídeo curto'
-                  : 'Uma chance extra por partida',
+                  ? tr('Assista a um vídeo curto')
+                  : tr('Uma chance extra por partida'),
               style: bodyText(13, color: Palette.textDim, weight: 500),
             ),
           ),
         ],
         ChunkyButton(
-          label: 'Jogar de novo',
+          label: tr('Jogar de novo'),
           icon: Icons.refresh_rounded,
           color: canRevive ? Palette.panelEdge : Palette.accent,
           textColor: canRevive ? Palette.text : const Color(0xFF3A2200),
@@ -1752,7 +1788,10 @@ class _LoseCard extends StatelessWidget {
         if (onExit != null)
           TextButton(
             onPressed: onExit,
-            child: Text('Menu', style: displayText(18, color: Palette.textDim)),
+            child: Text(
+              tr('Menu'),
+              style: displayText(18, color: Palette.textDim),
+            ),
           ),
       ],
     ),
@@ -1780,11 +1819,11 @@ class _PauseCard extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const OutlinedTitle('Pausa', size: 38),
+        OutlinedTitle(tr('Pausa'), size: 38),
         if (level case final n?) ...[
           const SizedBox(height: 12),
           Text(
-            'Desafios da fase',
+            tr('Desafios da fase'),
             style: displayText(17, color: Palette.accent),
           ),
           const SizedBox(height: 4),
@@ -1796,14 +1835,14 @@ class _PauseCard extends StatelessWidget {
         ],
         const SizedBox(height: 24),
         ChunkyButton(
-          label: 'Continuar',
+          label: tr('Continuar'),
           icon: Icons.play_arrow_rounded,
           big: true,
           onTap: onResume,
         ),
         const SizedBox(height: 12),
         ChunkyButton(
-          label: 'Reiniciar',
+          label: tr('Reiniciar'),
           icon: Icons.refresh_rounded,
           color: Palette.panelEdge,
           textColor: Palette.text,
@@ -1812,7 +1851,10 @@ class _PauseCard extends StatelessWidget {
         if (onExit != null)
           TextButton(
             onPressed: onExit,
-            child: Text('Menu', style: displayText(18, color: Palette.textDim)),
+            child: Text(
+              tr('Menu'),
+              style: displayText(18, color: Palette.textDim),
+            ),
           ),
       ],
     ),
@@ -1885,8 +1927,11 @@ class _DuelTargetChip extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             won
-                ? 'SUPEROU ${rivalName.toUpperCase()}!'
-                : 'Meta do $rivalName: ${formatInt(target)}',
+                ? tr('SUPEROU {rival}!', {'rival': rivalName.toUpperCase()})
+                : tr('Meta do {rival}: {meta}', {
+                    'rival': rivalName,
+                    'meta': formatInt(target),
+                  }),
             style: displayText(
               14,
               color: won ? const Color(0xFF8CE99A) : Colors.white,
@@ -1931,12 +1976,12 @@ class _BlitzWinCard extends StatelessWidget {
           const BlitzIcon(size: 72),
           const SizedBox(height: 8),
           OutlinedTitle(
-            newBest ? 'Novo Recorde Blitz!' : 'Fim do Blitz!',
+            newBest ? tr('Novo Recorde Blitz!') : tr('Fim do Blitz!'),
             size: 30,
           ),
           const SizedBox(height: 8),
           Text(
-            '${formatInt(score)} pontos',
+            tr('{pontos} pontos', {'pontos': formatInt(score)}),
             style: displayText(26, color: Palette.accent),
           ),
           if (newBest) ...[
@@ -1949,14 +1994,14 @@ class _BlitzWinCard extends StatelessWidget {
                 border: Border.all(color: Palette.accent),
               ),
               child: Text(
-                'MELHOR PLACAR BLITZ!',
+                tr('MELHOR PLACAR BLITZ!'),
                 style: displayText(12, color: Palette.accent),
               ),
             ),
           ] else ...[
             const SizedBox(height: 4),
             Text(
-              'Recorde: ${formatInt(best)} pontos',
+              tr('Recorde: {pontos} pontos', {'pontos': formatInt(best)}),
               style: bodyText(14, color: Palette.textDim),
             ),
           ],
@@ -1968,7 +2013,7 @@ class _BlitzWinCard extends StatelessWidget {
                 const Icon(Icons.star_rounded, color: Palette.accent, size: 22),
                 const SizedBox(width: 4),
                 Text(
-                  '+$starsGained estrelas',
+                  tr('+{n} estrelas', {'n': starsGained}),
                   style: displayText(16, color: Palette.accent),
                 ),
               ],
@@ -1976,14 +2021,14 @@ class _BlitzWinCard extends StatelessWidget {
           ],
           const SizedBox(height: 20),
           ChunkyButton(
-            label: 'Jogar de novo',
+            label: tr('Jogar de novo'),
             icon: Icons.refresh_rounded,
             big: true,
             onTap: onRetry,
           ),
           const SizedBox(height: 10),
           ChunkyButton(
-            label: 'Desafiar Amigo',
+            label: tr('Desafiar Amigo'),
             icon: Icons.share_rounded,
             color: const Color(0xFF339AF0),
             textColor: Colors.white,
@@ -1992,7 +2037,10 @@ class _BlitzWinCard extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: onExit,
-            child: Text('Menu', style: displayText(16, color: Palette.textDim)),
+            child: Text(
+              tr('Menu'),
+              style: displayText(16, color: Palette.textDim),
+            ),
           ),
         ],
       ),
@@ -2030,7 +2078,7 @@ class _DuelOutcomeCard extends StatelessWidget {
           const DuelIcon(size: 72),
           const SizedBox(height: 8),
           OutlinedTitle(
-            won ? 'Você Venceu o Duelo!' : 'Quase lá!',
+            won ? tr('Você Venceu o Duelo!') : tr('Quase lá!'),
             size: 28,
             colors: won
                 ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
@@ -2039,8 +2087,16 @@ class _DuelOutcomeCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             won
-                ? 'Você fez ${formatInt(score)} pts e bateu os ${formatInt(rivalScore)} de $rivalName!'
-                : 'Você fez ${formatInt(score)} pts. A meta de $rivalName era ${formatInt(rivalScore)}.',
+                ? tr('Você fez {pontos} pts e bateu os {meta} de {rival}!', {
+                    'pontos': formatInt(score),
+                    'meta': formatInt(rivalScore),
+                    'rival': rivalName,
+                  })
+                : tr('Você fez {pontos} pts. A meta de {rival} era {meta}.', {
+                    'pontos': formatInt(score),
+                    'meta': formatInt(rivalScore),
+                    'rival': rivalName,
+                  }),
             style: bodyText(15, color: Palette.textDim),
             textAlign: TextAlign.center,
           ),
@@ -2052,7 +2108,7 @@ class _DuelOutcomeCard extends StatelessWidget {
                 const Icon(Icons.star_rounded, color: Palette.accent, size: 24),
                 const SizedBox(width: 4),
                 Text(
-                  '+$starsGained estrelas',
+                  tr('+{n} estrelas', {'n': starsGained}),
                   style: displayText(18, color: Palette.accent),
                 ),
               ],
@@ -2060,14 +2116,14 @@ class _DuelOutcomeCard extends StatelessWidget {
           ],
           const SizedBox(height: 20),
           ChunkyButton(
-            label: won ? 'Jogar Novamente' : 'Tentar de novo',
+            label: won ? tr('Jogar Novamente') : tr('Tentar de novo'),
             icon: Icons.refresh_rounded,
             big: true,
             onTap: onRetry,
           ),
           const SizedBox(height: 10),
           ChunkyButton(
-            label: 'Compartilhar Duelo',
+            label: tr('Compartilhar Duelo'),
             icon: Icons.share_rounded,
             color: const Color(0xFF339AF0),
             textColor: Colors.white,
@@ -2076,7 +2132,10 @@ class _DuelOutcomeCard extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: onExit,
-            child: Text('Menu', style: displayText(16, color: Palette.textDim)),
+            child: Text(
+              tr('Menu'),
+              style: displayText(16, color: Palette.textDim),
+            ),
           ),
         ],
       ),
@@ -2095,9 +2154,10 @@ class _StarStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label:
-        'Estrelas da fase: ${Missions.count(bits)} de '
-        '${Mission.values.length}, ver os desafios',
+    label: tr('Estrelas da fase: {n} de {total}, ver os desafios', {
+      'n': Missions.count(bits),
+      'total': Mission.values.length,
+    }),
     excludeSemantics: true,
     onTap: onTap,
     child: GestureDetector(

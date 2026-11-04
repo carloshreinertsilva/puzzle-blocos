@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 import 'hats.dart';
 
@@ -11,8 +12,9 @@ enum Slot {
   costas('Costas'),
   pelagem('Pelagem');
 
-  const Slot(this.label);
-  final String label;
+  const Slot(this._label);
+  final String _label;
+  String get label => tr(_label);
 }
 
 /// How rare an item is: sets its frame color and how it is earned.
@@ -22,9 +24,10 @@ enum Raridade {
   epico('Épico', Color(0xFFB57CF7)),
   lendario('Lendário', Color(0xFFFFC94D));
 
-  const Raridade(this.label, this.color);
-  final String label;
+  const Raridade(this._label, this.color);
+  final String _label;
   final Color color;
+  String get label => tr(_label);
 }
 
 /// How an item is earned. Nothing is ever a paid random draw (ECA Digital,
@@ -48,13 +51,16 @@ class Estrelas extends Fonte {
 /// The prize for completing a collection.
 class PremioColecao extends Fonte {
   const PremioColecao(this.colecao);
+
+  /// The collection's name in Portuguese, as in [Colecao] (not translated).
   final String colecao;
 }
 
 /// Comes with a purchase in the shop (Remover anúncios, Pacote Inicial).
 class Loja extends Fonte {
-  const Loja(this.texto);
-  final String texto;
+  const Loja(this._texto);
+  final String _texto;
+  String get texto => tr(_texto);
 }
 
 /// A reward on the Passe do Capi's track (exclusive to it).
@@ -72,19 +78,24 @@ class NoMercado extends Fonte {
 class Cosmetic {
   const Cosmetic(
     this.id,
-    this.label,
+    this._label,
     this.slot,
     this.raridade,
     this.fonte, {
-    this.descricao = '',
+    this._descricao = '',
   });
 
   final String id;
-  final String label;
   final Slot slot;
   final Raridade raridade;
   final Fonte fonte;
-  final String descricao;
+
+  /// Kept in Portuguese (the translation keys), shown in the current
+  /// language.
+  final String _label;
+  final String _descricao;
+  String get label => tr(_label);
+  String get descricao => _descricao.isEmpty ? '' : tr(_descricao);
 
   int? get preco => switch (fonte) {
     Estrelas(:final preco) => preco,
@@ -93,12 +104,14 @@ class Cosmetic {
 
   /// How to get it, for a locked item.
   String get comoGanhar => switch (fonte) {
-    Gratis() => 'Grátis',
-    Estrelas(:final preco) => '$preco estrelas',
-    PremioColecao(:final colecao) => 'Complete a coleção $colecao',
+    Gratis() => tr('Grátis'),
+    Estrelas(:final preco) => tr('{n} estrelas', {'n': preco}),
+    PremioColecao(:final colecao) => tr('Complete a coleção {colecao}', {
+      'colecao': tr(colecao),
+    }),
     Loja(:final texto) => texto,
-    Passe() => 'Trilha premium do Passe do Capi',
-    NoMercado() => 'Aparece à venda no Mercado do Capi',
+    Passe() => tr('Trilha premium do Passe do Capi'),
+    NoMercado() => tr('Aparece à venda no Mercado do Capi'),
   };
 
   /// The hat this item is, for the head slot.
@@ -107,10 +120,13 @@ class Cosmetic {
 
 /// A themed set: owning every item gives the prize.
 class Colecao {
-  const Colecao(this.nome, this.itens, this.premio);
-  final String nome;
+  const Colecao(this._nome, this.itens, this.premio);
+
+  /// The name in Portuguese (also what [PremioColecao] refers to).
+  final String _nome;
   final List<String> itens;
   final String premio;
+  String get nome => tr(_nome);
 }
 
 /// What Capi is wearing, one item id per slot (null: nothing there).

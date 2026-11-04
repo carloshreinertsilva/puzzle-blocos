@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
@@ -8,14 +9,30 @@ import '../ui/widgets.dart';
 Future<void> showStats(BuildContext context, AppServices services) {
   final store = services.store;
   final tiles = [
-    (Icons.flag_rounded, 'Fase atual', '${store.level}'),
-    (Icons.emoji_events_rounded, 'Recorde', formatInt(store.bestScore)),
-    (Icons.check_circle_rounded, 'Fases vencidas', formatInt(store.levelsWon)),
-    (Icons.sports_esports_rounded, 'Partidas', formatInt(store.gamesPlayed)),
-    (Icons.view_week_rounded, 'Linhas limpas', formatInt(store.linesCleared)),
-    (Icons.bolt_rounded, 'Maior combo', 'x${store.bestCombo}'),
-    (Icons.diamond_rounded, 'Gemas', formatInt(store.gemsCollected)),
-    (Icons.landscape_rounded, 'Pedras quebradas', formatInt(store.rocksBroken)),
+    (Icons.flag_rounded, tr('Fase atual'), '${store.level}'),
+    (Icons.emoji_events_rounded, tr('Recorde'), formatInt(store.bestScore)),
+    (
+      Icons.check_circle_rounded,
+      tr('Fases vencidas'),
+      formatInt(store.levelsWon),
+    ),
+    (
+      Icons.sports_esports_rounded,
+      tr('Partidas'),
+      formatInt(store.gamesPlayed),
+    ),
+    (
+      Icons.view_week_rounded,
+      tr('Linhas limpas'),
+      formatInt(store.linesCleared),
+    ),
+    (Icons.bolt_rounded, tr('Maior combo'), 'x${store.bestCombo}'),
+    (Icons.diamond_rounded, tr('Gemas'), formatInt(store.gemsCollected)),
+    (
+      Icons.landscape_rounded,
+      tr('Pedras quebradas'),
+      formatInt(store.rocksBroken),
+    ),
   ];
   return showModalBottomSheet(
     context: context,
@@ -29,7 +46,7 @@ Future<void> showStats(BuildContext context, AppServices services) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const OutlinedTitle('Estatísticas', size: 28),
+            OutlinedTitle(tr('Estatísticas'), size: 28),
             const SizedBox(height: 16),
             GridView.count(
               crossAxisCount: 2,

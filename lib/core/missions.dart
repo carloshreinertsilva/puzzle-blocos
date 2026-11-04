@@ -1,3 +1,5 @@
+import '../l10n/idioma.dart';
+
 /// The three stars of a level: win it, pull off a big move, and win without
 /// the second chance. Kept per level as a bitmask, so replaying a level can
 /// add the stars still missing.
@@ -8,12 +10,12 @@ abstract final class Missions {
   static const doubleClearUntil = 10;
 
   static String text(Mission m, int level) => switch (m) {
-    Mission.win => 'Vencer a fase',
+    Mission.win => tr('Vencer a fase'),
     Mission.bigMove =>
       level <= doubleClearUntil
-          ? 'Limpar 2 linhas de uma vez'
-          : 'Fazer um combo x3',
-    Mission.noRevive => 'Sem usar o "Continuar"',
+          ? tr('Limpar 2 linhas de uma vez')
+          : tr('Fazer um combo x3'),
+    Mission.noRevive => tr('Sem usar o "Continuar"'),
   };
 
   /// Which missions a won attempt completed, as a bitmask.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../ads/ad_service.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import 'palette.dart';
 import 'typography.dart';
@@ -43,7 +44,7 @@ Future<String?> pagarDica(
   if (escolha == 'video' && context.mounted) {
     mostrarPremio(
       context,
-      'Dica liberada pelo vídeo!',
+      tr('Dica liberada pelo vídeo!'),
       icon: Icons.lightbulb_rounded,
     );
   }
@@ -79,22 +80,30 @@ class _DicaPaga extends StatelessWidget {
                 container: true,
                 header: true,
                 child: Text(
-                  'Mais uma dica?',
+                  tr('Mais uma dica?'),
                   style: displayText(22, color: Palette.text),
                 ),
               ),
               const SizedBox(height: 6),
               Text(
-                '$motivo As próximas custam '
-                '$custo estrelas${video ? ' ou um vídeo' : ''}.\n'
-                'Você tem $estrelas ★.',
+                video
+                    ? tr(
+                        '{motivo} As próximas custam {custo} estrelas '
+                        'ou um vídeo.\nVocê tem {n} ★.',
+                        {'motivo': motivo, 'custo': custo, 'n': estrelas},
+                      )
+                    : tr(
+                        '{motivo} As próximas custam {custo} estrelas.\n'
+                        'Você tem {n} ★.',
+                        {'motivo': motivo, 'custo': custo, 'n': estrelas},
+                      ),
                 textAlign: TextAlign.center,
                 style: bodyText(14, color: Palette.textDim),
               ),
               const SizedBox(height: 14),
               ChunkyButton(
-                label: 'Usar $custo ★',
-                semanticLabel: 'Usar $custo estrelas na dica',
+                label: tr('Usar {n} ★', {'n': custo}),
+                semanticLabel: tr('Usar {n} estrelas na dica', {'n': custo}),
                 icon: Icons.star_rounded,
                 onTap: temEstrelas
                     ? () => Navigator.of(context).pop('estrelas')
@@ -103,8 +112,8 @@ class _DicaPaga extends StatelessWidget {
               if (video) ...[
                 const SizedBox(height: 10),
                 ChunkyButton(
-                  label: 'Ver vídeo',
-                  semanticLabel: 'Ver um vídeo pela dica',
+                  label: tr('Ver vídeo'),
+                  semanticLabel: tr('Ver um vídeo pela dica'),
                   icon: Icons.play_circle_rounded,
                   onTap: () => Navigator.of(context).pop('video'),
                 ),
@@ -113,7 +122,7 @@ class _DicaPaga extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(
-                  'Agora não',
+                  tr('Agora não'),
                   style: displayText(16, color: Palette.textDim),
                 ),
               ),

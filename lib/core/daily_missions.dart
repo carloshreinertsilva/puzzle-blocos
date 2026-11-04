@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../game/onboarding.dart';
+import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 import 'wardrobe.dart';
 
@@ -36,7 +37,7 @@ class DailyMission {
   final int target;
   final int rewardStars;
 
-  String get description => type.template.replaceAll('{n}', '$target');
+  String get description => tr(type.template, {'n': target});
 }
 
 abstract final class DailyMissionsManager {

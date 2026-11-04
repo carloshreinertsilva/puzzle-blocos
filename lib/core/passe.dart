@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 import 'wardrobe.dart';
 
@@ -18,26 +19,15 @@ class Recompensa {
 
   String get texto {
     if (item != null) return Wardrobe.byId(item!)!.label;
-    final f = ferramenta;
-    if (f != null) {
-      return quantidade == 1 ? '1 ${_nome(f)}' : '$quantidade ${_plural(f)}';
-    }
-    return '$quantidade estrelas';
+    final n = quantidade;
+    return switch (ferramenta) {
+      CapiTool.hammer => trN(n, '{n} martelo', '{n} martelos'),
+      CapiTool.shovel => trN(n, '{n} pá', '{n} pás'),
+      CapiTool.reroll => trN(n, '{n} troca de peças', '{n} trocas de peças'),
+      CapiTool.rotate => trN(n, '{n} giro', '{n} giros'),
+      null => trN(n, '{n} estrela', '{n} estrelas'),
+    };
   }
-
-  static String _nome(CapiTool f) => switch (f) {
-    CapiTool.hammer => 'martelo',
-    CapiTool.shovel => 'pá',
-    CapiTool.reroll => 'troca de peças',
-    CapiTool.rotate => 'giro',
-  };
-
-  static String _plural(CapiTool f) => switch (f) {
-    CapiTool.hammer => 'martelos',
-    CapiTool.shovel => 'pás',
-    CapiTool.reroll => 'trocas de peças',
-    CapiTool.rotate => 'giros',
-  };
 }
 
 /// One level of the track: a free reward for everyone and a premium one.

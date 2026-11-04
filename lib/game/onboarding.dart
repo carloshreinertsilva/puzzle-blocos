@@ -1,3 +1,4 @@
+import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 
 /// How a new player is brought in: a guided tutorial with Capi, then the
@@ -78,7 +79,10 @@ enum MenuNews {
     'Novo jogo: Torre do Capi! Toque para empilhar blocos em 2.5D e subir o mais alto que puder.',
   );
 
-  const MenuNews(this.key, this.text);
+  const MenuNews(this.key, this._texto);
   final String key;
-  final String text;
+
+  /// Capi's line, in Portuguese as written (translated by [text]).
+  final String _texto;
+  String get text => tr(_texto);
 }

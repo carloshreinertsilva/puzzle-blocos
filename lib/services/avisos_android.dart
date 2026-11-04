@@ -8,6 +8,7 @@ import 'package:in_app_update/in_app_update.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../l10n/idioma.dart';
 import 'avisos.dart';
 import 'firebase_app.dart';
 import 'progress_store.dart';
@@ -17,16 +18,17 @@ bool get suportado => Platform.isAndroid;
 final _plugin = FlutterLocalNotificationsPlugin();
 bool _pronto = false;
 
-const _canalLembretes = AndroidNotificationChannel(
+// Getters, so the names follow the game's language.
+AndroidNotificationChannel get _canalLembretes => AndroidNotificationChannel(
   'lembretes',
-  'Lembretes do Capi',
-  description: 'O presente do dia e as missões, uma vez por dia.',
+  tr('Lembretes do Capi'),
+  description: tr('O presente do dia e as missões, uma vez por dia.'),
 );
 
-const _canalNovidades = AndroidNotificationChannel(
+AndroidNotificationChannel get _canalNovidades => AndroidNotificationChannel(
   'novidades',
-  'Novidades',
-  description: 'Versões novas e eventos do CapiBlocks.',
+  tr('Novidades'),
+  description: tr('Versões novas e eventos do CapiBlocks.'),
   importance: Importance.high,
 );
 
@@ -113,8 +115,8 @@ Future<void> _agendar(ProgressStore store) async {
     );
     await _plugin.zonedSchedule(
       id: 100 + i,
-      title: titulo,
-      body: texto,
+      title: tr(titulo),
+      body: tr(texto),
       scheduledDate: quando,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       notificationDetails: NotificationDetails(

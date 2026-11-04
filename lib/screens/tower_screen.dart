@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
 import '../tower/tower_controller.dart';
@@ -91,7 +92,7 @@ class _TowerScreenState extends State<TowerScreen>
                 Positioned.fill(
                   child: Semantics(
                     button: true,
-                    label: 'Colocar Bloco',
+                    label: tr('Colocar Bloco'),
                     onTap: _onTap,
                     child: GestureDetector(
                       onTap: _onTap,
@@ -112,7 +113,7 @@ class _TowerScreenState extends State<TowerScreen>
                     children: [
                       RoundIconButton(
                         icon: Icons.arrow_back_rounded,
-                        label: 'Voltar',
+                        label: tr('Voltar'),
                         onTap: _exit,
                       ),
                       const SizedBox(width: 12),
@@ -163,7 +164,7 @@ class _TowerScreenState extends State<TowerScreen>
                           ],
                         ),
                         child: Text(
-                          'Perfeito! x${_controller.combo}',
+                          tr('Perfeito! x{n}', {'n': _controller.combo}),
                           style: displayText(18, color: Colors.white),
                         ),
                       ),
@@ -185,10 +186,14 @@ class _TowerScreenState extends State<TowerScreen>
                               children: [
                                 const TowerIcon(size: 72),
                                 const SizedBox(height: 12),
-                                OutlinedTitle('Fim da Subida!'),
+                                OutlinedTitle(tr('Fim da Subida!')),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Você construiu $currentFloors ${currentFloors == 1 ? 'andar' : 'andares'}!',
+                                  trN(
+                                    currentFloors,
+                                    'Você construiu {n} andar!',
+                                    'Você construiu {n} andares!',
+                                  ),
                                   style: bodyText(18, color: Colors.white),
                                 ),
                                 if (_controller.isNewBest) ...[
@@ -203,7 +208,7 @@ class _TowerScreenState extends State<TowerScreen>
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      'NOVO RECORDE!',
+                                      tr('NOVO RECORDE!'),
                                       style: displayText(
                                         14,
                                         color: const Color(0xFF3A2200),
@@ -214,7 +219,11 @@ class _TowerScreenState extends State<TowerScreen>
                                 if (_controller.starsGained > 0) ...[
                                   const SizedBox(height: 12),
                                   Text(
-                                    '+${_controller.starsGained} ${_controller.starsGained == 1 ? 'estrela' : 'estrelas'}!',
+                                    trN(
+                                      _controller.starsGained,
+                                      '+{n} estrela!',
+                                      '+{n} estrelas!',
+                                    ),
                                     style: displayText(
                                       16,
                                       color: const Color(0xFFFDE047),
@@ -223,13 +232,13 @@ class _TowerScreenState extends State<TowerScreen>
                                 ],
                                 const SizedBox(height: 24),
                                 ChunkyButton(
-                                  label: 'Subir de Novo',
+                                  label: tr('Subir de Novo'),
                                   icon: Icons.refresh_rounded,
                                   onTap: _retry,
                                 ),
                                 const SizedBox(height: 12),
                                 ChunkyButton(
-                                  label: 'Voltar ao Menu',
+                                  label: tr('Voltar ao Menu'),
                                   icon: Icons.home_rounded,
                                   onTap: _exit,
                                 ),
