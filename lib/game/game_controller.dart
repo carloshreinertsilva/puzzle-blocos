@@ -59,6 +59,22 @@ class GameController extends ChangeNotifier {
   /// After a win: the missions this attempt completed, what the level had
   /// before, and the stars added to the wallet (levels, daily and endless).
   int starBits = 0;
+
+  /// The level's star challenges as they stand right now: the big move once
+  /// done, "no second chance" until it is used, the win once won.
+  int get liveStarBits {
+    final s = session;
+    final bits = Missions.earned(
+      level: level.number,
+      bestLines: s.bestLines,
+      bestCombo: s.bestCombo,
+      revived: s.revived,
+    );
+    return s.status == SessionStatus.won
+        ? bits
+        : bits & ~Missions.bit(Mission.win);
+  }
+
   int previousStarBits = 0;
   int starsGained = 0;
   int _endlessStarsGiven = 0;

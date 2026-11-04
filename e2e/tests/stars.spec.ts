@@ -16,7 +16,7 @@ test('estrelas: vencer mostra as estrelas e os desafios; a fase antiga pode ser 
   await page.getByRole('button', { name: 'Próxima fase' }).click();
   await page.getByRole('button', { name: 'Entendi!' }).click();
   await page.getByRole('button', { name: 'Pausar' }).click();
-  await expect(page.getByText('Desafios da fase')).toBeVisible();
+  await expect(page.getByText('Desafios da fase', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Menu' }).click();
   await waitForState(page, (x) => x.screen === 'home', 'menu');
   expect((await state(page)).stars).toBe(s.starsGained);
@@ -39,4 +39,22 @@ test('vitória: dá para voltar ao menu em vez de seguir para a próxima fase', 
   await expect(page.getByRole('button', { name: 'Próxima fase' })).toBeVisible();
   await page.getByRole('button', { name: 'Menu' }).click();
   await waitForState(page, (x) => x.screen === 'home', 'menu');
+});
+
+// The three stars are no surprise: the level shows them as it starts, and
+// they stay at the top, lighting up as each challenge is met.
+test('estrelas: os desafios aparecem no começo e ficam no topo da fase', async ({ page }) => {
+  await openApp(page, { level: 2 });
+  await startLevel(page);
+  const entendi = page.getByRole('button', { name: 'Entendi!' });
+  if (await entendi.isVisible().catch(() => false)) await entendi.click();
+  await expect(page.getByText(/^Desafios da fase: Vencer a fase/).first()).toBeVisible();
+  const strip = page.getByRole('button', { name: /^Estrelas da fase: 1 de 3/ });
+  await expect(strip).toBeVisible();
+  // Nothing done yet but keeping the second chance unused.
+  expect((await state(page)).liveStarBits).toBe(4);
+  // It goes away by itself, and a tap on the stars brings it back.
+  await expect(page.getByText(/^Desafios da fase: Vencer a fase/)).toHaveCount(0, { timeout: 8000 });
+  await strip.click();
+  await expect(page.getByText(/^Desafios da fase: Vencer a fase/).first()).toBeVisible();
 });

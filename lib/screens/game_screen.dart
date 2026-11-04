@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -90,9 +92,37 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  /// The level's three star challenges, shown for a moment when it starts
+  /// (and again on a tap on the stars at the top).
+  bool _desafios = false;
+  Timer? _desafiosTimer;
+  GameSession? _desafiosDe;
+
+  bool get _comDesafios => widget.mode == GameMode.levels && !_onboarding;
+
+  void _aoMudar() {
+    if (!_comDesafios || !controller.playing) return;
+    if (identical(_desafiosDe, controller.session)) return;
+    _desafiosDe = controller.session;
+    // After the level's title has played ("Fase 12 / Quebre as pedras").
+    _desafiosTimer?.cancel();
+    _desafiosTimer = Timer(const Duration(milliseconds: 1800), _verDesafios);
+  }
+
+  void _verDesafios() {
+    if (!mounted) return;
+    _desafiosTimer?.cancel();
+    setState(() => _desafios = true);
+    _desafiosTimer = Timer(const Duration(milliseconds: 4500), () {
+      if (mounted) setState(() => _desafios = false);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    controller.addListener(_aoMudar);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _aoMudar());
     if (kTestBridge) {
       TestBridge.instance
         ..screen = 'game'
@@ -103,6 +133,8 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
+    _desafiosTimer?.cancel();
+    controller.removeListener(_aoMudar);
     if (kTestBridge && TestBridge.instance.controller == controller) {
       TestBridge.instance
         ..screen = 'home'
@@ -222,6 +254,70 @@ class _GameScreenState extends State<GameScreen> {
     });
     controller.showPaidHint();
   });
+
+  /// The level's star challenges, for a moment at the start: they never
+  /// block a touch.
+  Widget _desafiosCard() {
+    final show =
+        _desafios &&
+        controller.playing &&
+        !controller.showOutcome &&
+        controller.intros.isEmpty;
+    final n = controller.level.number;
+    final bits = controller.liveStarBits;
+    return Positioned(
+      left: 16,
+      right: 16,
+      top: MediaQuery.paddingOf(context).top + hudHeight + 6,
+      child: IgnorePointer(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: !show
+              ? const SizedBox.shrink()
+              : Center(
+                  child: Semantics(
+                    container: true,
+                    liveRegion: true,
+                    label:
+                        'Desafios da fase: '
+                        '${[for (final m in Mission.values) Missions.text(m, n)].join(', ')}',
+                    excludeSemantics: true,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 340),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                        decoration: BoxDecoration(
+                          color: Palette.panel.withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Palette.accent, width: 2),
+                          boxShadow: const [
+                            BoxShadow(color: Color(0x66000000), blurRadius: 10),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '3 estrelas nesta fase',
+                              style: displayText(17, color: Palette.accent),
+                            ),
+                            const SizedBox(height: 4),
+                            for (final m in Mission.values)
+                              _MissionLine(
+                                text: Missions.text(m, n),
+                                done: Missions.has(bits, m),
+                                star: true,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
 
   void _openToolsSheet() {
     widget.services.feedback.click();
@@ -431,6 +527,7 @@ class _GameScreenState extends State<GameScreen> {
                             controller: controller,
                             onPause: () => controller.setPaused(true),
                             onTools: _openToolsSheet,
+                            onDesafios: _comDesafios ? _verDesafios : null,
                           ),
                   ),
                 ),
@@ -443,6 +540,10 @@ class _GameScreenState extends State<GameScreen> {
             ListenableBuilder(
               listenable: controller,
               builder: (context, _) => _hintOffer(),
+            ),
+            ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => _desafiosCard(),
             ),
             ListenableBuilder(
               listenable: controller,
@@ -717,10 +818,14 @@ class _Hud extends StatelessWidget {
     required this.controller,
     required this.onPause,
     required this.onTools,
+    this.onDesafios,
   });
   final GameController controller;
   final VoidCallback onPause;
   final VoidCallback onTools;
+
+  /// Levels mode: the three star challenges sit by the goals.
+  final VoidCallback? onDesafios;
 
   @override
   Widget build(BuildContext context) {
@@ -795,7 +900,15 @@ class _Hud extends StatelessWidget {
             ),
           ] else if (!level.isEndless) ...[
             const SizedBox(height: 6),
-            _Goals(session: s),
+            _Goals(
+              session: s,
+              stars: onDesafios == null
+                  ? null
+                  : _StarStrip(
+                      bits: controller.liveStarBits,
+                      onTap: onDesafios!,
+                    ),
+            ),
           ],
         ],
       ),
@@ -1174,8 +1287,9 @@ class _AnimatedScore extends StatelessWidget {
 }
 
 class _Goals extends StatelessWidget {
-  const _Goals({required this.session});
+  const _Goals({required this.session, this.stars});
   final GameSession session;
+  final Widget? stars;
 
   @override
   Widget build(BuildContext context) {
@@ -1212,6 +1326,8 @@ class _Goals extends StatelessWidget {
       children: [
         for (final c in chips)
           Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: c),
+        if (stars case final st?)
+          Padding(padding: const EdgeInsets.only(left: 6), child: st),
       ],
     );
   }
@@ -1447,10 +1563,14 @@ class _MissionLine extends StatelessWidget {
     required this.text,
     required this.done,
     this.isNew = false,
+    this.star = false,
   });
   final String text;
   final bool done;
   final bool isNew;
+
+  /// Shows a star instead of a check (before the challenge is won).
+  final bool star;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -1458,9 +1578,15 @@ class _MissionLine extends StatelessWidget {
     child: Row(
       children: [
         Icon(
-          done ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+          star
+              ? (done ? Icons.star_rounded : Icons.star_outline_rounded)
+              : done
+              ? Icons.check_circle_rounded
+              : Icons.radio_button_unchecked,
           size: 20,
-          color: done ? Palette.good : Palette.textDim,
+          color: done
+              ? (star ? Palette.accent : Palette.good)
+              : Palette.textDim,
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -1956,4 +2082,48 @@ class _DuelOutcomeCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The level's three stars at the top: lit as each challenge is met (the
+/// "no second chance" one stays lit until the second chance is used). A tap
+/// shows what each one asks.
+class _StarStrip extends StatelessWidget {
+  const _StarStrip({required this.bits, required this.onTap});
+  final int bits;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label:
+        'Estrelas da fase: ${Missions.count(bits)} de '
+        '${Mission.values.length}, ver os desafios',
+    excludeSemantics: true,
+    onTap: onTap,
+    child: GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0x442A3356),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0x66FFD43B), width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final m in Mission.values)
+              Icon(
+                Missions.has(bits, m)
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
+                size: 20,
+                color: Missions.has(bits, m) ? Palette.accent : Palette.textDim,
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

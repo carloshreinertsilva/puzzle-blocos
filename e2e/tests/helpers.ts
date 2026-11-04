@@ -30,6 +30,7 @@ export type GameState = {
   intros?: string[];
   score?: number;
   revived?: boolean;
+  liveStarBits?: number;
   goals?: {
     targetScore: number;
     gemsTarget: number;
