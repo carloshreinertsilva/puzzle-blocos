@@ -25,7 +25,8 @@ test.describe('Política de Privacidade', () => {
     expect(res?.status()).toBe(200);
     await expect(page).toHaveTitle(/Excluir seus dados — CapiBlocks/);
     await expect(page.getByRole('heading', { level: 1, name: 'Excluir seus dados' })).toBeVisible();
-    await expect(page.getByText(/CHS CONSULTORIA LTDA/).first()).toBeVisible();
+    // The developer name shown on Google Play.
+    await expect(page.getByText(/CHS TECNOLOGIA/).first()).toBeVisible();
     await expect(page.getByText(/Excluir dados ocultos do app/)).toBeVisible();
     await expect(page.getByRole('heading', { name: /O que é mantido/ })).toBeVisible();
     await expect(page.getByRole('link', { name: 'contato@chstech.dev.br' }).first()).toBeVisible();
