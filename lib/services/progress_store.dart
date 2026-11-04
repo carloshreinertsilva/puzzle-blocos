@@ -59,6 +59,7 @@ class ProgressStore {
     'analyticsOn',
     'hapticsOn',
     'soundOn',
+    'musicOn',
     'idioma',
     'remindersAsked',
     'remindersOn',
@@ -120,6 +121,10 @@ class ProgressStore {
   }
 
   bool get soundOn => _prefs.getBool('soundOn') ?? true;
+
+  /// Background music (Settings → Música), apart from the game sounds.
+  bool get musicOn => _prefs.getBool('musicOn') ?? true;
+  Future<void> setMusicOn(bool v) => _prefs.setBool('musicOn', v);
   Future<void> setSoundOn(bool v) => _prefs.setBool('soundOn', v);
 
   bool get hapticsOn => _prefs.getBool('hapticsOn') ?? true;

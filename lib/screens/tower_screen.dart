@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../services/musica.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
@@ -34,6 +35,7 @@ class _TowerScreenState extends State<TowerScreen>
   void initState() {
     super.initState();
     TestBridge.instance.screen = 'tower';
+    widget.services.feedback.musica.entrarNoJogo(Trilha.fases);
     TestBridge.instance.tower = _controller;
 
     _ticker = createTicker((elapsed) {
@@ -49,6 +51,7 @@ class _TowerScreenState extends State<TowerScreen>
 
   @override
   void dispose() {
+    widget.services.feedback.musica.sairDoJogo();
     _ticker.dispose();
     if (TestBridge.instance.tower == _controller) {
       TestBridge.instance.tower = null;

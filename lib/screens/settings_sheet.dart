@@ -132,6 +132,15 @@ class _SettingsState extends State<_Settings> {
                 },
               ),
               SwitchListTile(
+                title: Text(tr('Música'), style: bodyText(17)),
+                secondary: const Icon(Icons.music_note_rounded),
+                value: store.musicOn,
+                onChanged: (v) async {
+                  await widget.services.feedback.musica.ligar(v);
+                  setState(() {});
+                },
+              ),
+              SwitchListTile(
                 title: Text(tr('Vibração'), style: bodyText(17)),
                 secondary: const Icon(Icons.vibration_rounded),
                 value: store.hapticsOn,
@@ -322,7 +331,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.6.2 · CHS TECH',
+                'CapiBlocks v1.7.0 · CHS TECH',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],

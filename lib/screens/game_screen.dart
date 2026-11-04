@@ -10,6 +10,7 @@ import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
+import '../services/musica.dart';
 import '../services/analytics.dart';
 import '../services/duelo_link.dart';
 import '../core/missions.dart';
@@ -124,6 +125,9 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     controller.addListener(_aoMudar);
     WidgetsBinding.instance.addPostFrameCallback((_) => _aoMudar());
+    widget.services.feedback.musica.entrarNoJogo(
+      controller.isBlitz ? Trilha.blitz : Trilha.fases,
+    );
     if (kTestBridge) {
       TestBridge.instance
         ..screen = 'game'
@@ -134,6 +138,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
+    widget.services.feedback.musica.sairDoJogo();
     _desafiosTimer?.cancel();
     controller.removeListener(_aoMudar);
     if (kTestBridge && TestBridge.instance.controller == controller) {
