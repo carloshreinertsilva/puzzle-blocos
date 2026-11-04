@@ -11,7 +11,7 @@ test.describe('Política de Privacidade', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Política de Privacidade' })).toBeVisible();
 
     // Confere dados da empresa responsável e e-mails
-    await expect(page.getByText(/CHS CONSULTORIA LTDA/i).first()).toBeVisible();
+    await expect(page.getByText(/CHS TECNOLOGIA/i).first()).toBeVisible();
     await expect(page.getByText(/contato@chstech.dev.br/i).first()).toBeVisible();
 
     // Confere link de retorno ao jogo

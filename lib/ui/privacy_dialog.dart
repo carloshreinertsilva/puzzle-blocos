@@ -83,7 +83,7 @@ class _PrivacySheet extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           tr(
-                            'Desenvolvido por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima atualização: Novembro de 2026',
+                            'Desenvolvido por CHS TECNOLOGIA\nÚltima atualização: Novembro de 2026',
                           ),
                           style: bodyText(12, color: Palette.textDim),
                         ),
