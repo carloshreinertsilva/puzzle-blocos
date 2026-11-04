@@ -114,7 +114,8 @@ const Map<String, String> enMenu = {
   'Toque onde quer abrir espaço 3x3': 'Tap where you want to clear a 3x3 space',
   'Privacidade': 'Privacy',
   'CapiBlocks: Blocos e Capivaras': 'CapiBlocks: Blocks and Capybaras',
-  'Desenvolvido por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima atualização: Novembro de 2026': 'Developed by CHS CONSULTORIA LTDA (CHS TECH)\nLast updated: November 2026',
+  'Desenvolvido por CHS TECNOLOGIA\nÚltima atualização: Novembro de 2026':
+      'Developed by CHS TECNOLOGIA\nLast updated: November 2026',
   '1. Compromisso e Jogo Offline': '1. Our Commitment and Offline Play',
   'O CapiBlocks foi desenvolvido com o compromisso absoluto de respeitar sua privacidade. O jogo funciona sem internet, não exige cadastro, criação de conta nem senhas.': 'CapiBlocks was built with an absolute commitment to respecting your privacy. The game works without internet and requires no sign-up, account creation or passwords.',
   '2. Dados Pessoais': '2. Personal Data',
@@ -333,7 +334,7 @@ const Map<String, String> esMenu = {
       'Toca donde quieras abrir un espacio de 3x3',
   'Privacidade': 'Privacidad',
   'CapiBlocks: Blocos e Capivaras': 'CapiBlocks: Bloques y Capibaras',
-  'Desenvolvido por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima atualização: Novembro de 2026': 'Desarrollado por CHS CONSULTORIA LTDA (CHS TECH)\nÚltima actualización: noviembre de 2026',
+  'Desenvolvido por CHS TECNOLOGIA\nÚltima atualização: Novembro de 2026': 'Desarrollado por CHS TECNOLOGIA\nÚltima actualización: noviembre de 2026',
   '1. Compromisso e Jogo Offline': '1. Compromiso y juego sin conexión',
   'O CapiBlocks foi desenvolvido com o compromisso absoluto de respeitar sua privacidade. O jogo funciona sem internet, não exige cadastro, criação de conta nem senhas.': 'CapiBlocks fue desarrollado con el compromiso absoluto de respetar tu privacidad. El juego funciona sin internet y no exige registro, creación de cuenta ni contraseñas.',
   '2. Dados Pessoais': '2. Datos personales',
