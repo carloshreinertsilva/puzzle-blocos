@@ -163,6 +163,11 @@ class ProgressStore {
   // --- Notifications (see services/avisos.dart) ---
 
   /// Daily reminders: off until the player says yes.
+  /// The language picked in the settings: 'auto' (the phone's), 'pt',
+  /// 'en' or 'es'.
+  String get idioma => _prefs.getString('idioma') ?? 'auto';
+  Future<void> setIdioma(String code) => _prefs.setString('idioma', code);
+
   bool get remindersOn => _prefs.getBool('remindersOn') ?? false;
   Future<void> setRemindersOn(bool on) => _prefs.setBool('remindersOn', on);
 
