@@ -274,8 +274,12 @@ class Logo extends StatelessWidget {
     this.compact = false,
     this.hat,
     this.look,
+    this.showCapi = true,
   });
   final VoidCallback? onCapiTap;
+
+  /// Off where Capi stands big elsewhere (the menu, by the road).
+  final bool showCapi;
 
   /// Short screens: the title with Capi beside it, no row of blocks.
   final bool compact;
@@ -300,8 +304,7 @@ class Logo extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const OutlinedTitle(appTitle, size: 40),
-          const SizedBox(width: 6),
-          _capi(60),
+          if (showCapi) ...[const SizedBox(width: 6), _capi(60)],
         ],
       );
     }
@@ -324,8 +327,7 @@ class Logo extends StatelessWidget {
                     ),
                   ),
                 ),
-              const SizedBox(width: 4),
-              _capi(72),
+              if (showCapi) ...[const SizedBox(width: 4), _capi(72)],
             ],
           ),
         ),

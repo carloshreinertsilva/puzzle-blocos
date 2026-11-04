@@ -42,6 +42,22 @@ void main() {
   });
 
   test(
+    'a bought item is put on at once, and a restore keeps the look',
+    () async {
+      final store = await _store();
+      await Entrega.aplicar(store, Produto.lendarioJetpack, compraId: 'j');
+      expect(store.equippedIn(Slot.costas), 'jetpack');
+      // The player changes back; restoring the purchase changes nothing.
+      await store.equipIn(Slot.costas, null);
+      await Entrega.aplicar(store, Produto.lendarioJetpack, compraId: 'j');
+      expect(store.equippedIn(Slot.costas), isNull);
+
+      await Entrega.aplicar(store, Produto.removerAnuncios, compraId: 'v');
+      expect(store.equippedHat, 'vip');
+    },
+  );
+
+  test(
     'the starter pack pays its 300 stars once, even when restored',
     () async {
       final store = await _store({'stars': 10});
