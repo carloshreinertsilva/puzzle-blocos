@@ -27,7 +27,11 @@ const Map<String, String> enMenu = {
   'Desafie amigos': 'Challenge friends',
   'Modo Duelo': 'Duel Mode',
   'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!': 'In a Duel, two players get the exact same sequence of pieces to see who scores more!',
-  'Semente da partida: #{seed}': 'Match seed: #{seed}',
+  'Jogue e faça a sua pontuação.': 'Play and set your score.',
+  'No fim, toque em Desafiar Amigo e mande o link.':
+      'At the end, tap Challenge a Friend and send the link.',
+  'Seu amigo joga as mesmas peças e tenta passar você.':
+      'Your friend gets the same pieces and tries to beat you.',
   'Fechar': 'Close',
   'Começar Duelo': 'Start Duel',
   'Vila do Capi': "Capi's Village",
@@ -219,7 +223,11 @@ const Map<String, String> esMenu = {
   'Desafie amigos': 'Reta a tus amigos',
   'Modo Duelo': 'Modo Duelo',
   'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!': '¡En el Duelo, dos jugadores juegan exactamente la misma secuencia de piezas para ver quién suma más puntos!',
-  'Semente da partida: #{seed}': 'Semilla de la partida: #{seed}',
+  'Jogue e faça a sua pontuação.': 'Juega y haz tu puntuación.',
+  'No fim, toque em Desafiar Amigo e mande o link.':
+      'Al final, toca Retar a un amigo y envía el enlace.',
+  'Seu amigo joga as mesmas peças e tenta passar você.':
+      'Tu amigo juega las mismas piezas e intenta superarte.',
   'Fechar': 'Cerrar',
   'Começar Duelo': 'Empezar Duelo',
   'Vila do Capi': 'Aldea de Capi',

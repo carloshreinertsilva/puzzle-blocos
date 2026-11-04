@@ -420,9 +420,7 @@ class GameController extends ChangeNotifier {
       final bonus = out.lines >= 2 ? 3 : (result.combo >= 2 ? 2 : 1);
       blitzSecondsLeft = min(75, blitzSecondsLeft + bonus);
     }
-    if ((isDuel || isChallenge) &&
-        !duelWon &&
-        session.score >= (duelTargetScore ?? 1000)) {
+    if (isChallenge && !duelWon && session.score >= (duelTargetScore ?? 1000)) {
       duelWon = true;
       _react(CapiReaction.cheer, tr('Passou o rival!'));
     }
@@ -649,7 +647,7 @@ class GameController extends ChangeNotifier {
   /// Test scenarios only: wins the attempt as if the goals were met.
   void debugWin() {
     if (tutorial || session.status != SessionStatus.playing) return;
-    if (isDuel) {
+    if (isChallenge) {
       final target = duelTargetScore ?? 1000;
       if (session.score < target) {
         session.score = target + 50;
@@ -687,8 +685,9 @@ class GameController extends ChangeNotifier {
   }
 
   /// A friend's challenge beaten for the first time pays its stars. Duels
-  /// started from the menu are practice for setting a score to send.
+  /// started from the menu have no one to beat: they set the score to send.
   void _payChallenge() {
+    if (!isChallenge) return;
     final target = duelTargetScore ?? 1000;
     if (session.score < target) return;
     duelWon = true;

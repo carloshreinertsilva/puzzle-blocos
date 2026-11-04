@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { dragPiece, openApp, openFresh, playMove, state, waitForState } from './helpers';
+import { dragPiece, loadScenario, openApp, playMove, state, waitForState } from './helpers';
+
+const CHECKER = Array.from({ length: 8 }, (_, r) => (r % 2 ? '.b.b.b.b' : 'b.b.b.b.'));
 
 test.describe('Modo Blitz 60s e Duelo', () => {
   test('modo Blitz abre pelo menu e roda cronômetro', async ({ page }) => {
@@ -70,8 +72,8 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await page.evaluate(() => (window as any).__bb.win());
 
     // Confere cartão final de desfecho do Duelo
-    await expect(page.getByText(/Você Venceu o Duelo!/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Compartilhar Duelo' })).toBeVisible();
+    await expect(page.getByText('Você venceu!', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Devolver o Desafio' })).toBeVisible();
     expect((await state(page)).stars, 'desafio vencido vale 3 estrelas').toBe(3);
   });
 
@@ -90,5 +92,43 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
     await expect(page.getByRole('button', { name: /^Jogar · Fase 10/ })).toBeVisible();
     expect((await state(page)).screen).toBe('home');
+  });
+
+  test('duelo pelo menu: explica o desafio, sem meta falsa, e no fim manda a marca', async ({ page }) => {
+    await openApp(page, { level: 10, seen_opened_duel: true });
+    await page.getByRole('button', { name: /^Duelo/ }).click();
+    await expect(page.getByText('No fim, toque em Desafiar Amigo e mande o link.')).toBeVisible();
+    await expect(page.getByText(/Semente/)).toHaveCount(0);
+    await page.getByRole('button', { name: 'Começar Duelo' }).click();
+
+    const s = await waitForState(page, (x) => x.mode === 'duel' && x.status === 'playing', 'duelo aberto');
+    expect(s.duelTargetScore, 'sem rival, sem meta').toBeNull();
+    expect(s.duelRivalName).toBeNull();
+    await expect(page.getByText('Faça sua marca e desafie um amigo no fim')).toBeVisible();
+    await expect(page.getByText(/Meta do/)).toHaveCount(0);
+
+    await loadScenario(page, { board: CHECKER, tray: ['o20', 'o20', 'o20'] });
+    await waitForState(page, (x) => x.status === 'lost' && x.showOutcome === true, 'fim do duelo');
+    await expect(page.getByText('Sua marca', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Desafiar Amigo' })).toBeVisible();
+    await expect(page.getByText(/Quase!|Você venceu!/)).toHaveCount(0);
+  });
+
+  test('desafio de amigo perdido: mostra o placar e a Revanche joga o mesmo tabuleiro', async ({ page }) => {
+    await page.goto('/duelo?s=7777&p=5000');
+    await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
+    await waitForState(page, (s) => s.mode === 'duel' && s.status === 'playing', 'entrou no desafio');
+
+    await loadScenario(page, { board: CHECKER, tray: ['o20', 'o20', 'o20'] });
+    await waitForState(page, (x) => x.status === 'lost' && x.showOutcome === true, 'perdeu o desafio');
+    await expect(page.getByText('Quase!', { exact: true })).toBeVisible();
+    await expect(page.getByText('5.000', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Faltaram 5\.000 pontos/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Desafiar Amigo' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Revanche' }).click();
+    const s = await waitForState(page, (x) => x.status === 'playing' && x.score === 0, 'revanche');
+    expect(s.duelSeed).toBe(7777);
+    expect(s.duelTargetScore).toBe(5000);
   });
 });
