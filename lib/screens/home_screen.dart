@@ -18,6 +18,7 @@ import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
+import '../services/placares.dart';
 import '../services/progress_store.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
@@ -199,6 +200,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     // Level, record and streak may have changed, and modes may unlock.
+    unawaited(Placares.enviar(widget.services.store));
+    if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
   }
 
@@ -214,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
             FadeTransition(opacity: anim, child: child),
       ),
     );
+    unawaited(Placares.enviar(widget.services.store));
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
   }

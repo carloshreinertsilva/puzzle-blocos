@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
+import '../services/placares.dart';
 import '../services/web_url.dart';
 import '../ui/palette.dart';
 import '../ui/privacy_dialog.dart';
@@ -203,6 +204,36 @@ class _SettingsState extends State<_Settings> {
                   onTap: () {
                     widget.services.feedback.click();
                     widget.onStats();
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+
+              // Google Play Games leaderboards (Android only).
+              if (Placares.ativo)
+                ListTile(
+                  leading: const Icon(
+                    Icons.leaderboard_rounded,
+                    color: Palette.accent,
+                  ),
+                  title: Text(tr('Placares'), style: bodyText(16)),
+                  subtitle: Text(
+                    tr('Google Play Games'),
+                    style: bodyText(13, color: Palette.textDim),
+                  ),
+                  onTap: () async {
+                    widget.services.feedback.click();
+                    final ok = await Placares.mostrar(widget.services.store);
+                    if (!ok && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            tr('Não deu para entrar no Play Games agora.'),
+                          ),
+                        ),
+                      );
+                    }
                   },
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
