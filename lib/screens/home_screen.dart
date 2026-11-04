@@ -18,10 +18,12 @@ import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
+import '../services/jogo_salvo.dart';
 import '../services/placares.dart';
 import '../services/progress_store.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
+import '../ui/oferta_nuvem.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -65,6 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
         await Avisos.verificarAtualizacao(context, widget.services.store);
       }
       await _convidarPlayGames();
+      if (!mounted) return;
+      final nuvem = await JogoSalvo.verificar(widget.services.store);
+      if (!mounted) return;
+      await oferecerProgressoDaNuvem(context, widget.services.store, nuvem);
     });
   }
 
@@ -95,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                tr('Placares do Capi'),
+                tr('Salve seu progresso'),
                 style: displayText(22, color: Palette.text),
               ),
             ),
@@ -103,9 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         content: Text(
           tr(
-            'Entre no Google Play Games para aparecer nos placares e '
-            'disputar com amigos: recorde do Infinito, Blitz, Torre e '
-            'estrelas.',
+            'Entre no Google Play Games para salvar seu progresso na nuvem '
+            'e aparecer nos placares com seus amigos.',
           ),
           style: bodyText(15, color: Palette.textDim),
         ),
@@ -127,7 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (entrar != true) return;
     Analytics.event('play_games_convite', {'aceitou': 1});
-    await Placares.entrar(store);
+    if (!await Placares.entrar(store)) return;
+    final nuvem = await JogoSalvo.verificarDeNovo(store);
+    if (!mounted) return;
+    await oferecerProgressoDaNuvem(context, store, nuvem);
   }
 
   /// Once a day, after the first levels, the daily gift opens by itself.
@@ -264,6 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Level, record and streak may have changed, and modes may unlock.
     unawaited(Placares.enviar(widget.services.store));
+    unawaited(JogoSalvo.salvar(widget.services.store));
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
   }
@@ -281,6 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     unawaited(Placares.enviar(widget.services.store));
+    unawaited(JogoSalvo.salvar(widget.services.store));
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
   }

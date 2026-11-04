@@ -51,6 +51,60 @@ class ProgressStore {
 
   final SharedPreferences _prefs;
 
+  // --- Cloud save (see services/jogo_salvo.dart) ---
+
+  /// Settings and notices of this phone, which a save from another phone
+  /// does not carry or replace.
+  static const _soDoAparelho = {
+    'analyticsOn',
+    'hapticsOn',
+    'soundOn',
+    'idioma',
+    'remindersAsked',
+    'remindersOn',
+    'lastFullscreenAt',
+    'pgsConvites',
+    'pgsConviteDia',
+    'updateOffered',
+    'nuvemRecusada',
+  };
+
+  static bool _daNuvem(String key) => !_soDoAparelho.contains(key);
+
+  /// The whole progress as plain values, for the cloud save.
+  Map<String, Object> exportar() => {
+    for (final key in _prefs.getKeys().where(_daNuvem))
+      if (_prefs.get(key) case final Object v) key: v,
+  };
+
+  /// Replaces the progress with a cloud save (this phone's settings stay).
+  Future<void> importar(Map<String, dynamic> dados) async {
+    for (final key in _prefs.getKeys().where(_daNuvem).toList()) {
+      await _prefs.remove(key);
+    }
+    for (final MapEntry(:key, :value) in dados.entries) {
+      if (!_daNuvem(key)) continue;
+      switch (value) {
+        case bool v:
+          await _prefs.setBool(key, v);
+        case int v:
+          await _prefs.setInt(key, v);
+        case double v:
+          await _prefs.setDouble(key, v);
+        case String v:
+          await _prefs.setString(key, v);
+        case List v:
+          await _prefs.setStringList(key, [for (final x in v) '$x']);
+      }
+    }
+  }
+
+  /// The cloud save the player chose not to load (its time), so the same
+  /// one is not offered again.
+  int get nuvemRecusada => _prefs.getInt('nuvemRecusada') ?? 0;
+  Future<void> setNuvemRecusada(int salvoEm) =>
+      _prefs.setInt('nuvemRecusada', salvoEm);
+
   int get level => _prefs.getInt('level') ?? 1;
   Future<void> setLevel(int v) => _prefs.setInt('level', v);
 
