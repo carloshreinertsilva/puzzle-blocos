@@ -112,13 +112,19 @@ export async function openApp(page: Page, saved: Saved = {}) {
 
 /** Opens the game with only [saved] stored: a new player by default. */
 export async function openFresh(page: Page, saved: Saved = {}) {
-  await page.goto('/');
   if (Object.keys(saved).length > 0) {
+    // O progresso é gravado numa página estática da mesma origem, sem o jogo
+    // rodando, e só depois o jogo abre. Antes ele era gravado com o jogo já
+    // carregando (goto('/') + reload): às vezes esse primeiro jogo lia o
+    // progresso recém-gravado e, antes do reload, já abria o presente do dia
+    // e marcava giftShown com a data de hoje; o jogo recarregado então não
+    // abria mais o presente sozinho.
+    await page.goto('/favicon.png');
     await page.evaluate((s) => {
       for (const [k, v] of Object.entries(s)) localStorage.setItem(`flutter.${k}`, String(v));
     }, saved);
-    await page.reload();
   }
+  await page.goto('/');
   await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
 }
 
