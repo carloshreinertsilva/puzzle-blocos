@@ -107,7 +107,7 @@ class _GameScreenState extends State<GameScreen> {
     _desafiosDe = controller.session;
     // After the level's title has played ("Fase 12 / Quebre as pedras").
     _desafiosTimer?.cancel();
-    _desafiosTimer = Timer(const Duration(milliseconds: 1800), _verDesafios);
+    _desafiosTimer = Timer(const Duration(milliseconds: 2400), _verDesafios);
   }
 
   void _verDesafios() {
