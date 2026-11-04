@@ -502,6 +502,29 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  /// The end of a duel: against a friend's score when it came from a
+  /// challenge link, else the score just set, ready to send.
+  Widget _duelCard(int score) {
+    if (!controller.isChallenge) {
+      return _DuelMarkCard(
+        score: score,
+        onShareDuel: () => _shareDuelLink(score),
+        onRetry: _retry,
+        onExit: _exit,
+      );
+    }
+    return _DuelOutcomeCard(
+      won: controller.duelWon,
+      score: score,
+      rivalScore: controller.duelTargetScore ?? 1000,
+      rivalName: controller.duelRivalName ?? tr('Rival'),
+      starsGained: controller.starsGained,
+      onRetry: _retry,
+      onExit: _exit,
+      onShareDuel: () => _shareDuelLink(score),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -602,22 +625,13 @@ class _GameScreenState extends State<GameScreen> {
         onExit: _onboarding ? null : _exit,
       );
     } else if (controller.showOutcome && s.status == SessionStatus.won) {
-      if (controller.isBlitz) {
+      if (controller.isChallenge || controller.isDuel) {
+        card = _duelCard(s.score);
+      } else if (controller.isBlitz) {
         card = _BlitzWinCard(
           score: s.score,
           best: controller.bestScore,
           newBest: controller.newBest,
-          starsGained: controller.starsGained,
-          onRetry: _retry,
-          onExit: _exit,
-          onShareDuel: () => _shareDuelLink(s.score),
-        );
-      } else if (controller.isDuel) {
-        card = _DuelOutcomeCard(
-          won: controller.duelWon,
-          score: s.score,
-          rivalScore: controller.duelTargetScore ?? 1000,
-          rivalName: controller.duelRivalName ?? tr('Rival'),
           starsGained: controller.starsGained,
           onRetry: _retry,
           onExit: _exit,
@@ -655,17 +669,8 @@ class _GameScreenState extends State<GameScreen> {
               );
       }
     } else if (controller.showOutcome && s.status == SessionStatus.lost) {
-      if (controller.isDuel) {
-        card = _DuelOutcomeCard(
-          won: controller.duelWon,
-          score: s.score,
-          rivalScore: controller.duelTargetScore ?? 1000,
-          rivalName: controller.duelRivalName ?? tr('Rival'),
-          starsGained: controller.starsGained,
-          onRetry: _retry,
-          onExit: _exit,
-          onShareDuel: () => _shareDuelLink(s.score),
-        );
+      if (controller.isChallenge || controller.isDuel) {
+        card = _duelCard(s.score);
       } else if (controller.isBlitz) {
         card = _BlitzWinCard(
           score: s.score,
@@ -896,7 +901,8 @@ class _Hud extends StatelessWidget {
           if (controller.isBlitz) ...[
             const SizedBox(height: 4),
             _BlitzTimerChip(secondsLeft: controller.blitzSecondsLeft),
-          ] else if (controller.isDuel) ...[
+          ],
+          if (controller.isChallenge) ...[
             const SizedBox(height: 4),
             _DuelTargetChip(
               score: s.score,
@@ -904,7 +910,10 @@ class _Hud extends StatelessWidget {
               rivalName: controller.duelRivalName ?? tr('Rival'),
               won: controller.duelWon,
             ),
-          ] else if (!level.isEndless) ...[
+          ] else if (controller.isDuel) ...[
+            const SizedBox(height: 4),
+            const _DuelHowChip(),
+          ] else if (!level.isEndless && !controller.isBlitz) ...[
             const SizedBox(height: 6),
             _Goals(
               session: s,
@@ -2048,6 +2057,106 @@ class _BlitzWinCard extends StatelessWidget {
   }
 }
 
+/// Under the score in a duel started from the menu: there is no one to beat
+/// yet, so it says what the match is for.
+class _DuelHowChip extends StatelessWidget {
+  const _DuelHowChip();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    decoration: BoxDecoration(
+      color: const Color(0x442A3356),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: const Color(0x66339AF0), width: 1.5),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const DuelIcon(size: 20),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            tr('Faça sua marca e desafie um amigo no fim'),
+            style: displayText(13, color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// The end of a duel started from the menu: the score just set, and the
+/// button that sends this board to a friend.
+class _DuelMarkCard extends StatelessWidget {
+  const _DuelMarkCard({
+    required this.score,
+    required this.onShareDuel,
+    required this.onRetry,
+    required this.onExit,
+  });
+
+  final int score;
+  final VoidCallback onShareDuel;
+  final VoidCallback onRetry;
+  final VoidCallback onExit;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardPanel(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const DuelIcon(size: 72),
+          const SizedBox(height: 8),
+          OutlinedTitle(tr('Sua marca'), size: 30),
+          const SizedBox(height: 4),
+          Text(
+            tr('{pontos} pontos', {'pontos': formatInt(score)}),
+            style: displayText(26, color: Palette.accent),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            tr(
+              'Mande este tabuleiro para um amigo: ele joga as mesmas peças '
+              'e tenta passar você.',
+            ),
+            style: bodyText(15, color: Palette.textDim),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          ChunkyButton(
+            label: tr('Desafiar Amigo'),
+            icon: Icons.share_rounded,
+            big: true,
+            color: const Color(0xFF339AF0),
+            textColor: Colors.white,
+            onTap: onShareDuel,
+          ),
+          const SizedBox(height: 10),
+          ChunkyButton(
+            label: tr('Jogar de novo'),
+            icon: Icons.refresh_rounded,
+            onTap: onRetry,
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: onExit,
+            child: Text(
+              tr('Menu'),
+              style: displayText(16, color: Palette.textDim),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The end of a friend's challenge: both scores side by side, who won, and
+/// the way back at them (send the challenge back, or a rematch on the same
+/// board).
 class _DuelOutcomeCard extends StatelessWidget {
   const _DuelOutcomeCard({
     required this.won,
@@ -2069,34 +2178,74 @@ class _DuelOutcomeCard extends StatelessWidget {
   final VoidCallback onExit;
   final VoidCallback onShareDuel;
 
+  Widget _placar(String quem, int pontos, bool vencedor) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      decoration: BoxDecoration(
+        color: vencedor ? const Color(0x3351CF66) : const Color(0x332A3356),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: vencedor ? const Color(0xFF51CF66) : const Color(0x55FFFFFF),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            quem,
+            style: bodyText(13, color: Palette.textDim),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            formatInt(pontos),
+            style: displayText(
+              22,
+              color: vencedor ? const Color(0xFF8CE99A) : Colors.white,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return CardPanel(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const DuelIcon(size: 72),
+          const DuelIcon(size: 64),
           const SizedBox(height: 8),
           OutlinedTitle(
-            won ? tr('Você Venceu o Duelo!') : tr('Quase lá!'),
-            size: 28,
+            won ? tr('Você venceu!') : tr('Quase!'),
+            size: 30,
             colors: won
                 ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
                 : const [Color(0xFFFFFFFF), Color(0xFFFFB3B3)],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _placar(tr('Você'), score, won),
+              const SizedBox(width: 8),
+              Text('×', style: displayText(20, color: Palette.textDim)),
+              const SizedBox(width: 8),
+              _placar(rivalName, rivalScore, !won),
+            ],
+          ),
+          const SizedBox(height: 10),
           Text(
             won
-                ? tr('Você fez {pontos} pts e bateu os {meta} de {rival}!', {
-                    'pontos': formatInt(score),
-                    'meta': formatInt(rivalScore),
-                    'rival': rivalName,
-                  })
-                : tr('Você fez {pontos} pts. A meta de {rival} era {meta}.', {
-                    'pontos': formatInt(score),
-                    'meta': formatInt(rivalScore),
-                    'rival': rivalName,
-                  }),
+                ? tr(
+                    'Devolva o desafio: agora é a vez de {rival} passar você.',
+                    {'rival': rivalName},
+                  )
+                : tr(
+                    'Faltaram {n} pontos. Mesmo tabuleiro, mais uma tentativa?',
+                    {'n': formatInt(rivalScore - score)},
+                  ),
             style: bodyText(15, color: Palette.textDim),
             textAlign: TextAlign.center,
           ),
@@ -2115,20 +2264,37 @@ class _DuelOutcomeCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          ChunkyButton(
-            label: won ? tr('Jogar Novamente') : tr('Tentar de novo'),
-            icon: Icons.refresh_rounded,
-            big: true,
-            onTap: onRetry,
-          ),
-          const SizedBox(height: 10),
-          ChunkyButton(
-            label: tr('Compartilhar Duelo'),
-            icon: Icons.share_rounded,
-            color: const Color(0xFF339AF0),
-            textColor: Colors.white,
-            onTap: onShareDuel,
-          ),
+          if (won) ...[
+            ChunkyButton(
+              label: tr('Devolver o Desafio'),
+              icon: Icons.share_rounded,
+              big: true,
+              color: const Color(0xFF339AF0),
+              textColor: Colors.white,
+              onTap: onShareDuel,
+            ),
+            const SizedBox(height: 10),
+            ChunkyButton(
+              label: tr('Jogar de novo'),
+              icon: Icons.refresh_rounded,
+              onTap: onRetry,
+            ),
+          ] else ...[
+            ChunkyButton(
+              label: tr('Revanche'),
+              icon: Icons.refresh_rounded,
+              big: true,
+              onTap: onRetry,
+            ),
+            const SizedBox(height: 10),
+            ChunkyButton(
+              label: tr('Desafiar Amigo'),
+              icon: Icons.share_rounded,
+              color: const Color(0xFF339AF0),
+              textColor: Colors.white,
+              onTap: onShareDuel,
+            ),
+          ],
           const SizedBox(height: 8),
           TextButton(
             onPressed: onExit,

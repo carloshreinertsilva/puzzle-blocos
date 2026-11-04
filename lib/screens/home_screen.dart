@@ -329,28 +329,39 @@ class _HomeScreenState extends State<HomeScreen> {
               style: bodyText(15, color: Palette.textDim),
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0x33228BE6),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0x66228BE6)),
+            for (final (i, passo) in [
+              tr('Jogue e faça a sua pontuação.'),
+              tr('No fim, toque em Desafiar Amigo e mande o link.'),
+              tr('Seu amigo joga as mesmas peças e tenta passar você.'),
+            ].indexed)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF228BE6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${i + 1}',
+                        style: displayText(13, color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        passo,
+                        style: bodyText(15, color: Palette.text),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.vpn_key_rounded,
-                    color: Color(0xFF339AF0),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    tr('Semente da partida: #{seed}', {'seed': seed}),
-                    style: displayText(14, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
         actions: [
@@ -368,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
             textColor: Colors.white,
             onTap: () {
               Navigator.of(ctx).pop();
-              _open(GameMode.duel, duelSeed: seed, duelTargetScore: 1000);
+              _open(GameMode.duel, duelSeed: seed);
             },
           ),
         ],

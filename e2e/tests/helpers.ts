@@ -22,7 +22,8 @@ export type GameState = {
   kind?: 'level' | 'endless' | 'daily' | 'blitz' | 'duel';
   blitzSecondsLeft?: number;
   duelSeed?: number;
-  duelTargetScore?: number;
+  duelTargetScore?: number | null;
+  duelRivalName?: string | null;
   duelWon?: boolean;
   status?: 'playing' | 'won' | 'lost';
   showOutcome?: boolean;

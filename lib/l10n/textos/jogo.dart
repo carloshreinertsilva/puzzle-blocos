@@ -96,15 +96,20 @@ const Map<String, String> enJogo = {
   'Recorde: {pontos} pontos': 'Best: {pontos} points',
   '+{n} estrelas': '+{n} stars',
   'Desafiar Amigo': 'Challenge a Friend',
-  'Você Venceu o Duelo!': 'You Won the Duel!',
-  'Quase lá!': 'So close!',
-  'Você fez {pontos} pts e bateu os {meta} de {rival}!':
-      "You scored {pontos} pts and beat {rival}'s {meta}!",
-  'Você fez {pontos} pts. A meta de {rival} era {meta}.':
-      "You scored {pontos} pts. {rival}'s goal was {meta}.",
-  'Jogar Novamente': 'Play Again',
+  'Faça sua marca e desafie um amigo no fim':
+      'Set your score and challenge a friend at the end',
+  'Sua marca': 'Your score',
+  'Mande este tabuleiro para um amigo: ele joga as mesmas peças e tenta passar você.': 'Send this board to a friend: they get the same pieces and try to beat you.',
+  'Você venceu!': 'You won!',
+  'Quase!': 'So close!',
+  'Você': 'You',
+  'Devolva o desafio: agora é a vez de {rival} passar você.':
+      "Send the challenge back: now it's {rival}'s turn to beat you.",
+  'Faltaram {n} pontos. Mesmo tabuleiro, mais uma tentativa?':
+      'Just {n} points short. Same board, one more try?',
+  'Devolver o Desafio': 'Send It Back',
+  'Revanche': 'Rematch',
   'Tentar de novo': 'Try again',
-  'Compartilhar Duelo': 'Share Duel',
   'Estrelas da fase: {n} de {total}, ver os desafios':
       'Level stars: {n} of {total}, see the challenges',
   'Te desafio no CapiBlocks! Fiz {meta} pontos neste tabuleiro. '
@@ -332,15 +337,20 @@ const Map<String, String> esJogo = {
   'Recorde: {pontos} pontos': 'Récord: {pontos} puntos',
   '+{n} estrelas': '+{n} estrellas',
   'Desafiar Amigo': 'Retar a un amigo',
-  'Você Venceu o Duelo!': '¡Ganaste el Duelo!',
-  'Quase lá!': '¡Casi!',
-  'Você fez {pontos} pts e bateu os {meta} de {rival}!':
-      '¡Hiciste {pontos} pts y superaste los {meta} de {rival}!',
-  'Você fez {pontos} pts. A meta de {rival} era {meta}.':
-      'Hiciste {pontos} pts. La meta de {rival} era {meta}.',
-  'Jogar Novamente': 'Jugar de nuevo',
+  'Faça sua marca e desafie um amigo no fim':
+      'Haz tu marca y reta a un amigo al final',
+  'Sua marca': 'Tu marca',
+  'Mande este tabuleiro para um amigo: ele joga as mesmas peças e tenta passar você.': 'Envía este tablero a un amigo: juega las mismas piezas e intenta superarte.',
+  'Você venceu!': '¡Ganaste!',
+  'Quase!': '¡Casi!',
+  'Você': 'Tú',
+  'Devolva o desafio: agora é a vez de {rival} passar você.':
+      'Devuelve el reto: ahora le toca a {rival} superarte.',
+  'Faltaram {n} pontos. Mesmo tabuleiro, mais uma tentativa?':
+      'Faltaron {n} puntos. Mismo tablero, ¿otro intento?',
+  'Devolver o Desafio': 'Devolver el Reto',
+  'Revanche': 'Revancha',
   'Tentar de novo': 'Intentar otra vez',
-  'Compartilhar Duelo': 'Compartir Duelo',
   'Estrelas da fase: {n} de {total}, ver os desafios':
       'Estrellas del nivel: {n} de {total}, ver los retos',
   'Te desafio no CapiBlocks! Fiz {meta} pontos neste tabuleiro. '
