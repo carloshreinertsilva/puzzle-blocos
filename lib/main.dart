@@ -15,6 +15,8 @@ import 'services/duelo_link.dart';
 import 'services/analytics.dart';
 import 'services/avisos.dart';
 import 'services/feedback.dart';
+import 'services/musica.dart';
+import 'services/sound/music_player.dart';
 import 'services/placares.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
@@ -61,7 +63,11 @@ Future<AppServices> _iniciar() async {
     TestBridge.instance.wallet = () => store.stars;
     TestBridge.instance.store = store;
   }
-  final feedback = GameFeedback(store);
+  final feedback = GameFeedback(
+    store,
+    // Browser tests run without music (less to load, nothing to wait on).
+    musica: Musica(store, player: kTestBridge ? null : MusicPlayer()),
+  );
   feedback.preload();
   // AdMob on Android (test ads in debug); browser tests and web debug get
   // the placeholder; anything else shows no ads at all.

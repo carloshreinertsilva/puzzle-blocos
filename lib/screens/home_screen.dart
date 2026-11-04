@@ -19,6 +19,7 @@ import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
 import '../services/jogo_salvo.dart';
+import '../services/musica.dart';
 import '../services/placares.dart';
 import '../services/progress_store.dart';
 import '../ui/capi.dart';
@@ -60,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     widget.services.loja.addListener(_lojaMudou);
+    widget.services.feedback.musica.tocar(Trilha.menu);
     // Let the menu show first, then the gift (and any update) over it.
     _abertura = Timer(const Duration(milliseconds: 600), () async {
       await _presenteDoDia();

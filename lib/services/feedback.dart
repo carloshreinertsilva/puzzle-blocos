@@ -1,13 +1,17 @@
 import 'package:flutter/services.dart';
 
+import 'musica.dart';
 import 'progress_store.dart';
 import 'sound/sound_player.dart';
 
 /// Sound effects and vibration, both switchable in settings.
 class GameFeedback {
-  GameFeedback(this.store);
+  GameFeedback(this.store, {Musica? musica}) : musica = musica ?? Musica(store);
 
   final ProgressStore store;
+
+  /// The background music (silent in tests).
+  final Musica musica;
   final _sound = SoundPlayer();
 
   static const _files = [
@@ -69,8 +73,16 @@ class GameFeedback {
     }
   }
 
-  void win() => _play('win.wav');
-  void lose() => _play('lose.wav', volume: 0.6);
+  void win() {
+    musica.abaixar();
+    _play('win.wav');
+  }
+
+  void lose() {
+    musica.abaixar();
+    _play('lose.wav', volume: 0.6);
+  }
+
   void revive() => _play('revive.wav');
   void click() => _play('click.wav', volume: 0.5);
 }
