@@ -58,3 +58,21 @@ test('estrelas: os desafios aparecem no começo e ficam no topo da fase', async 
   await strip.click();
   await expect(page.getByText(/^Desafios da fase: Vencer a fase/).first()).toBeVisible();
 });
+
+// The road scrolls back to every level played: an old level with stars
+// missing can be found and played again.
+test('estrada: rolar até uma fase antiga e buscar as estrelas que faltaram', async ({ page }) => {
+  await openApp(page, { level: 12, stars_3: 3 });
+  const old = page.getByRole('button', { name: 'Fase 3, 2 de 3 estrelas' });
+  await expect(old).toHaveCount(0); // far below, off screen
+  const vp = page.viewportSize()!;
+  await page.mouse.move(vp.width * 0.65, vp.height * 0.3);
+  for (let i = 0; i < 20 && !(await old.isVisible().catch(() => false)); i++) {
+    await page.mouse.wheel(0, 150);
+    await page.waitForTimeout(120);
+  }
+  await page.waitForTimeout(500); // the road settles
+  const b = (await old.boundingBox())!;
+  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await waitForState(page, (x) => x.screen === 'game' && x.level === 3 && x.replay === true, 'fase 3 de novo');
+});

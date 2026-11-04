@@ -312,56 +312,63 @@ class _LevelPathState extends State<LevelPath>
     }
 
     final replay = done && widget.onReplay != null;
+    // A level cut by the edge of the scrolling road is only half on screen:
+    // screen readers (and browser tests) skip it until it scrolls in.
+    final top = _scroll.hasClients ? _scroll.offset : 0.0;
+    final whole = p.dy - size / 2 >= top && p.dy + size / 2 <= top + _viewport;
     return Positioned(
       left: p.dx - size / 2,
       top: p.dy - size / 2,
       width: size,
       height: size,
-      child: Semantics(
-        // A finished level is a button (play it again), read with its stars.
-        button: replay,
-        label: done && widget.starsFor != null
-            ? tr('Fase {n}, {estrelas} de 3 estrelas', {
-                'n': n,
-                'estrelas': stars,
-              })
-            : null,
-        excludeSemantics: replay,
-        onTap: replay ? () => widget.onReplay!(n) : null,
-        child: GestureDetector(
-          // The current level plays; a finished one can be played again for
-          // its missing stars.
-          onTap: current
-              ? widget.onPlay
-              : replay
-              ? () => widget.onReplay!(n)
+      child: ExcludeSemantics(
+        excluding: !whole,
+        child: Semantics(
+          // A finished level is a button (play it again), read with its stars.
+          button: replay,
+          label: done && widget.starsFor != null
+              ? tr('Fase {n}, {estrelas} de 3 estrelas', {
+                  'n': n,
+                  'estrelas': stars,
+                })
               : null,
-          behavior: HitTestBehavior.opaque,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned.fill(child: body),
-              if (config != null)
-                Positioned(
-                  right: -8,
-                  top: -6,
-                  child: _GoalBadge(config: config),
-                ),
-              if (done && all)
-                const Positioned(right: -8, top: -8, child: _CheckBadge()),
-              if (done && widget.starsFor != null)
-                Positioned(
-                  left: -6,
-                  right: -6,
-                  bottom: -14,
-                  child: Center(
-                    child: StarRow(
-                      filled: [for (var i = 0; i < 3; i++) i < stars],
-                      size: 18,
+          excludeSemantics: replay,
+          onTap: replay ? () => widget.onReplay!(n) : null,
+          child: GestureDetector(
+            // The current level plays; a finished one can be played again for
+            // its missing stars.
+            onTap: current
+                ? widget.onPlay
+                : replay
+                ? () => widget.onReplay!(n)
+                : null,
+            behavior: HitTestBehavior.opaque,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(child: body),
+                if (config != null)
+                  Positioned(
+                    right: -8,
+                    top: -6,
+                    child: _GoalBadge(config: config),
+                  ),
+                if (done && all)
+                  const Positioned(right: -8, top: -8, child: _CheckBadge()),
+                if (done && widget.starsFor != null)
+                  Positioned(
+                    left: -6,
+                    right: -6,
+                    bottom: -14,
+                    child: Center(
+                      child: StarRow(
+                        filled: [for (var i = 0; i < 3; i++) i < stars],
+                        size: 18,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
