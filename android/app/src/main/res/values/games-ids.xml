@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Google Play Games Services (Play Console → Play Games Services). -->
+<resources>
+    <string name="game_services_project_id" translatable="false">731810631964</string>
+    <string name="leaderboard_recorde_do_infinito" translatable="false">CgkInKLAmqYVEAIQAg</string>
+    <string name="leaderboard_blitz_60s" translatable="false">CgkInKLAmqYVEAIQAw</string>
+    <string name="leaderboard_torre_do_capi" translatable="false">CgkInKLAmqYVEAIQBA</string>
+    <string name="leaderboard_estrelas" translatable="false">CgkInKLAmqYVEAIQBQ</string>
+</resources>

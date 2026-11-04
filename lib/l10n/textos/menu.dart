@@ -40,6 +40,10 @@ const Map<String, String> enMenu = {
   'Missões Diárias': 'Daily Missions',
   'Guarda-Roupa': 'Wardrobe',
   'Estatísticas': 'Stats',
+  'Placares': 'Leaderboards',
+  'Google Play Games': 'Google Play Games',
+  'Não deu para entrar no Play Games agora.':
+      "Couldn't sign in to Play Games right now.",
   'Configurações': 'Settings',
   'Jogar · Fase {n}': 'Play · Level {n}',
   'Desafio diário': 'Daily Challenge',
@@ -228,6 +232,10 @@ const Map<String, String> esMenu = {
   'Missões Diárias': 'Misiones diarias',
   'Guarda-Roupa': 'Armario',
   'Estatísticas': 'Estadísticas',
+  'Placares': 'Clasificaciones',
+  'Google Play Games': 'Google Play Juegos',
+  'Não deu para entrar no Play Games agora.':
+      'No se pudo entrar en Play Juegos ahora.',
   'Configurações': 'Ajustes',
   'Jogar · Fase {n}': 'Jugar · Nivel {n}',
   'Desafio diário': 'Desafío diario',

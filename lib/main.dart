@@ -15,6 +15,7 @@ import 'services/duelo_link.dart';
 import 'services/analytics.dart';
 import 'services/avisos.dart';
 import 'services/feedback.dart';
+import 'services/placares.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
 import 'shop/loja_service.dart';
@@ -32,6 +33,7 @@ Future<void> main() async {
     SemanticsBinding.instance.ensureSemantics();
     TestBridge.instance.install();
   }
+  Placares.ativo = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
   if (kIsWeb) {
     // The page's own loading screen (web/index.html) covers the start.
     final services = await _iniciar();
@@ -97,6 +99,7 @@ void _depoisDeAbrir(AppServices services) {
   unawaited(services.ads.start());
   unawaited(Analytics.start(enabled: services.store.analyticsOn));
   unawaited(Avisos.iniciar(services.store));
+  unawaited(Placares.iniciar(services.store));
 }
 
 /// Shows the opening screen ([Abertura]) while the game loads, for at least

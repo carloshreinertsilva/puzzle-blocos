@@ -44,6 +44,12 @@
                 android:value="true" />
         </activity>
 
+        <!-- Google Play Games Services (leaderboards): project ID from the
+             Play Console, in res/values/games-ids.xml. -->
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/game_services_project_id"/>
+
         <!-- Google AdMob app ID. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
