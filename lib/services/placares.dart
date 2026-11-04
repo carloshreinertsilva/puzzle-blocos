@@ -83,7 +83,7 @@ abstract final class Placares {
     if (!ativo) return false;
     if (_entrou) return true;
     try {
-      await GameAuth.signIn();
+      await GameAuth.signIn().timeout(const Duration(minutes: 1));
       _entrou = await GameAuth.isSignedIn.timeout(const Duration(seconds: 10));
       if (_entrou) await enviar(store);
       return _entrou;

@@ -65,6 +65,10 @@ class Progresso {
 abstract final class JogoSalvo {
   static const nome = 'capiblocks';
 
+  /// Google can be slow (or not answer at all while Saved Games is still
+  /// being switched on): never wait forever.
+  static const _limite = Duration(seconds: 20);
+
   static DateTime? _ultimoEnvio;
   static Future<Progresso?>? _verificacao;
 
@@ -92,11 +96,11 @@ abstract final class JogoSalvo {
       final salvos = await SaveGame.getSavedGames(
         forceRefresh: true,
         ignoreImages: true,
-      );
+      ).timeout(_limite);
       if (salvos == null) throw StateError('sem resposta');
       final existe = salvos.any((s) => s.name == nome);
       final nuvem = existe
-          ? Progresso.ler(await SaveGame.loadGame(name: nome))
+          ? Progresso.ler(await SaveGame.loadGame(name: nome).timeout(_limite))
           : null;
       if (existe && nuvem == null) throw StateError('cópia ilegível');
       final aqui = Progresso.doAparelho(store);
@@ -133,7 +137,10 @@ abstract final class JogoSalvo {
   /// an answer. True when it was sent.
   static Future<bool> salvarAgora(ProgressStore store) async {
     if (!Placares.ativo || !await Placares.conectado()) return false;
-    await verificar(store);
+    // Right after verificarDeNovo: a failed check is not tried again here.
+    final v = _verificacao;
+    if (v == null) return false;
+    await v;
     if (_pendente != null || _verificacao == null) return false;
     return _enviar(store);
   }
@@ -147,7 +154,7 @@ abstract final class JogoSalvo {
         data: p.json,
         name: nome,
         description: 'Fase ${p.fase} · ${p.estrelas} ★',
-      );
+      ).timeout(_limite);
       return true;
     } catch (e) {
       debugPrint('Jogos salvos: $e');

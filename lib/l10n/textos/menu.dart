@@ -56,6 +56,7 @@ const Map<String, String> enMenu = {
   'Manter este': 'Keep this one',
   'Carregar': 'Load',
   'Progresso na nuvem': 'Cloud save',
+  'Falando com o Google Play Games…': 'Talking to Google Play Games…',
   'Salvar ou recuperar pelo Google Play Games':
       'Save or restore with Google Play Games',
   'Progresso salvo no Google Play Games.':
@@ -275,6 +276,7 @@ const Map<String, String> esMenu = {
   'Manter este': 'Mantener este',
   'Carregar': 'Cargar',
   'Progresso na nuvem': 'Progreso en la nube',
+  'Falando com o Google Play Games…': 'Conectando con Google Play Juegos…',
   'Salvar ou recuperar pelo Google Play Games':
       'Guardar o recuperar con Google Play Juegos',
   'Progresso salvo no Google Play Games.':
