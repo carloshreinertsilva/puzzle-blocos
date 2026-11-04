@@ -24,6 +24,9 @@ import 'ui/typography.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // The phone's language until the saved choice is read (the opening
+  // screen shows before that).
+  Lingua.atual.value = escolherIdioma('auto');
   if (kTestBridge) {
     // Browser tests find buttons through the accessibility tree.
     SemanticsBinding.instance.ensureSemantics();
@@ -199,7 +202,7 @@ class App extends StatelessWidget {
             mode: convite.blitz ? GameMode.blitz : GameMode.duel,
             duelSeed: convite.semente,
             duelTargetScore: convite.meta,
-            duelRivalName: 'Amigo',
+            duelRivalName: tr('Amigo'),
           ),
         );
       },

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../l10n/idioma.dart';
 import 'ad_config.dart';
 import 'ad_service.dart';
 
@@ -147,9 +148,9 @@ class AdMobService implements AdService {
     if (ad == null) {
       if (context.mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Nenhum vídeo disponível agora. Tente de novo daqui a pouco.',
+              tr('Nenhum vídeo disponível agora. Tente de novo daqui a pouco.'),
             ),
           ),
         );
@@ -183,7 +184,7 @@ class AdMobService implements AdService {
         barrierDismissible: false,
         builder: (_) => Center(
           child: Semantics(
-            label: 'Carregando vídeo',
+            label: tr('Carregando vídeo'),
             child: const CircularProgressIndicator(),
           ),
         ),

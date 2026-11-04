@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/passe.dart';
 import '../core/wardrobe.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/progress_store.dart';
@@ -70,7 +71,7 @@ class _PasseState extends State<_Passe> {
     final r = premium
         ? PasseDoCapi.trilha[n - 1].premium
         : PasseDoCapi.trilha[n - 1].gratis;
-    setState(() => _aviso = 'Você ganhou: ${r.texto}!');
+    setState(() => _aviso = tr('Você ganhou: {premio}!', {'premio': r.texto}));
   }
 
   Future<void> _comprar() async {
@@ -81,11 +82,14 @@ class _PasseState extends State<_Passe> {
     setState(() {
       _comprando = false;
       _aviso = switch (r) {
-        ResultadoCompra.ok => 'Trilha premium liberada! Pegue seus prêmios.',
-        ResultadoCompra.pendente =>
+        ResultadoCompra.ok => tr(
+          'Trilha premium liberada! Pegue seus prêmios.',
+        ),
+        ResultadoCompra.pendente => tr(
           'Pagamento pendente: a trilha libera quando ele for aprovado.',
+        ),
         ResultadoCompra.cancelada => null,
-        _ => 'Não deu para comprar agora. Tente de novo mais tarde.',
+        _ => tr('Não deu para comprar agora. Tente de novo mais tarde.'),
       };
     });
   }
@@ -124,14 +128,14 @@ class _PasseState extends State<_Passe> {
                     child: Semantics(
                       header: true,
                       child: Text(
-                        'Passe do Capi',
+                        tr('Passe do Capi'),
                         style: displayText(22, color: Palette.text),
                       ),
                     ),
                   ),
                   Semantics(
                     button: true,
-                    label: 'Fechar',
+                    label: tr('Fechar'),
                     excludeSemantics: true,
                     onTap: () => Navigator.of(context).pop(),
                     child: IconButton(
@@ -145,14 +149,21 @@ class _PasseState extends State<_Passe> {
                 ],
               ),
               _texto(
-                'Temporada $temporada · termina em $dias '
-                '${dias == 1 ? 'dia' : 'dias'}',
+                trN(
+                  dias,
+                  'Temporada {t} · termina em {n} dia',
+                  'Temporada {t} · termina em {n} dias',
+                  {'t': temporada},
+                ),
                 bodyText(13, color: Palette.textDim),
               ),
               const SizedBox(height: 8),
               // Progress: level and points toward the next one.
               _texto(
-                'Nível $nivel de ${PasseDoCapi.niveis}',
+                tr('Nível {n} de {total}', {
+                  'n': nivel,
+                  'total': PasseDoCapi.niveis,
+                }),
                 displayText(16, color: Palette.accent),
               ),
               const SizedBox(height: 4),
@@ -168,10 +179,12 @@ class _PasseState extends State<_Passe> {
               const SizedBox(height: 4),
               Text(
                 nivel >= PasseDoCapi.niveis
-                    ? 'Passe completo nesta temporada!'
-                    : 'Cada estrela ganha jogando vale 1 ponto: '
-                          '$dentro/${PasseDoCapi.pontosPorNivel} para o '
-                          'próximo nível.',
+                    ? tr('Passe completo nesta temporada!')
+                    : tr(
+                        'Cada estrela ganha jogando vale 1 ponto: '
+                        '{feitos}/{total} para o próximo nível.',
+                        {'feitos': dentro, 'total': PasseDoCapi.pontosPorNivel},
+                      ),
                 textAlign: TextAlign.center,
                 style: bodyText(12, color: Palette.textDim),
               ),
@@ -187,7 +200,7 @@ class _PasseState extends State<_Passe> {
                   const SizedBox(width: 40),
                   Expanded(
                     child: Text(
-                      'Grátis',
+                      tr('Grátis'),
                       textAlign: TextAlign.center,
                       style: displayText(13, color: Palette.text),
                     ),
@@ -195,7 +208,7 @@ class _PasseState extends State<_Passe> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Premium',
+                      tr('Premium'),
                       textAlign: TextAlign.center,
                       style: displayText(13, color: Palette.accent),
                     ),
@@ -228,7 +241,7 @@ class _PasseState extends State<_Passe> {
   Widget _premiumCta() {
     if (!_loja.disponivel) {
       return Text(
-        'A trilha premium sai no app Android (Google Play).',
+        tr('A trilha premium sai no app Android (Google Play).'),
         textAlign: TextAlign.center,
         style: bodyText(12, color: Palette.textDim),
       );
@@ -237,19 +250,23 @@ class _PasseState extends State<_Passe> {
     return Column(
       children: [
         Text(
-          'Premium: 1 lendário exclusivo, 2 raros exclusivos, 140 estrelas e '
-          'ferramentas. Você vê tudo antes de comprar.',
+          tr(
+            'Premium: 1 lendário exclusivo, 2 raros exclusivos, 140 estrelas e '
+            'ferramentas. Você vê tudo antes de comprar.',
+          ),
           textAlign: TextAlign.center,
           style: bodyText(12, color: Palette.text),
         ),
         const SizedBox(height: 6),
         ChunkyButton(
           label: _comprando
-              ? 'Abrindo…'
+              ? tr('Abrindo…')
               : PasseDoCapi.precoLancamento(DateTime.now())
-              ? 'Premium · $preco (lançamento)'
-              : 'Liberar premium · $preco',
-          semanticLabel: 'Liberar a trilha premium do Passe por $preco',
+              ? tr('Premium · {preco} (lançamento)', {'preco': preco})
+              : tr('Liberar premium · {preco}', {'preco': preco}),
+          semanticLabel: tr('Liberar a trilha premium do Passe por {preco}', {
+            'preco': preco,
+          }),
           icon: Icons.workspace_premium_rounded,
           onTap: _comprando ? null : _comprar,
         ),
@@ -313,14 +330,13 @@ class _PasseState extends State<_Passe> {
       trilhaPremium: premium,
     );
     final item = r.item == null ? null : Wardrobe.byId(r.item!);
-    final trilha = premium ? 'premium' : 'grátis';
     final estado = pegou
-        ? 'já pego'
+        ? tr('já pego')
         : pode
-        ? 'pegar'
+        ? tr('pegar')
         : !aberta
-        ? 'bloqueado'
-        : 'nível $n';
+        ? tr('bloqueado')
+        : tr('nível {n}', {'n': n});
     final borda =
         item?.raridade.color ??
         (premium
@@ -383,7 +399,17 @@ class _PasseState extends State<_Passe> {
 
     return Semantics(
       button: pode,
-      label: 'Nível $n $trilha: ${r.texto}, $estado',
+      label: premium
+          ? tr('Nível {n} premium: {premio}, {estado}', {
+              'n': n,
+              'premio': r.texto,
+              'estado': estado,
+            })
+          : tr('Nível {n} grátis: {premio}, {estado}', {
+              'n': n,
+              'premio': r.texto,
+              'estado': estado,
+            }),
       excludeSemantics: true,
       onTap: pode ? () => _pegar(n, premium: premium) : null,
       child: GestureDetector(

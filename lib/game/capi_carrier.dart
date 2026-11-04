@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/painting.dart';
 
 import '../core/board.dart';
+import '../l10n/idioma.dart';
 import '../ui/capi.dart';
 import '../ui/typography.dart';
 import 'effects.dart';
@@ -143,7 +144,7 @@ class CapiCarrier extends Component with HasGameReference<PuzzleGame> {
 
   void _drawBubble(Canvas canvas, Offset anchor, double cell) {
     final text = game.controller.capiSays.isEmpty
-        ? 'Aqui!'
+        ? tr('Aqui!')
         : game.controller.capiSays;
     if (_bubble == null || text != _bubbleText) {
       _bubbleText = text;

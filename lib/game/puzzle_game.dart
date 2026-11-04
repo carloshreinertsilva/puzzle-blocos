@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import '../core/board.dart';
 import '../core/game_session.dart';
+import '../l10n/idioma.dart';
 import '../ui/block_painter.dart';
 import '../ui/level_text.dart';
 import '../ui/palette.dart';
@@ -277,7 +278,9 @@ class PuzzleGame extends FlameGame {
         praise,
         position: at,
         cellSize: cellSize,
-        subtitle: result.combo >= 2 ? 'Combo x${result.combo}' : null,
+        subtitle: result.combo >= 2
+            ? tr('Combo x{n}', {'n': result.combo})
+            : null,
         maxWidth: boardRect.width,
       )..priority = 40,
     );
@@ -366,7 +369,7 @@ class PuzzleGame extends FlameGame {
         );
         stage.add(
           PopText(
-            'Salvo!',
+            tr('Salvo!'),
             position: Vector2(dst.center.dx, dst.center.dy - cellSize),
             fontSize: cellSize * 0.5,
             color: const Color(0xFFFF9EC7),

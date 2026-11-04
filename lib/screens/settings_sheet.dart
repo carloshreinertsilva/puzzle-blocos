@@ -115,12 +115,12 @@ class _SettingsState extends State<_Settings> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const OutlinedTitle('Configurações', size: 28),
+              OutlinedTitle(tr('Configurações'), size: 28),
               const SizedBox(height: 12),
 
               // Audio & Haptics
               SwitchListTile(
-                title: Text('Sons', style: bodyText(17)),
+                title: Text(tr('Sons'), style: bodyText(17)),
                 secondary: const Icon(Icons.volume_up_rounded),
                 value: store.soundOn,
                 onChanged: (v) async {
@@ -129,7 +129,7 @@ class _SettingsState extends State<_Settings> {
                 },
               ),
               SwitchListTile(
-                title: Text('Vibração', style: bodyText(17)),
+                title: Text(tr('Vibração'), style: bodyText(17)),
                 secondary: const Icon(Icons.vibration_rounded),
                 value: store.hapticsOn,
                 onChanged: (v) async {
@@ -140,9 +140,9 @@ class _SettingsState extends State<_Settings> {
               // Daily reminders (Android, opt-in).
               if (Avisos.suportado)
                 SwitchListTile(
-                  title: Text('Lembretes diários', style: bodyText(17)),
+                  title: Text(tr('Lembretes diários'), style: bodyText(17)),
                   subtitle: Text(
-                    'O presente do dia e as missões, às 19h',
+                    tr('O presente do dia e as missões, às 19h'),
                     style: bodyText(12, color: Palette.textDim),
                   ),
                   secondary: const Icon(Icons.notifications_rounded),
@@ -156,9 +156,9 @@ class _SettingsState extends State<_Settings> {
               // Anonymous usage statistics (Firebase on Android).
               if (Analytics.active)
                 SwitchListTile(
-                  title: Text('Estatísticas de uso', style: bodyText(17)),
+                  title: Text(tr('Estatísticas de uso'), style: bodyText(17)),
                   subtitle: Text(
-                    'Anônimas, para melhorar o jogo',
+                    tr('Anônimas, para melhorar o jogo'),
                     style: bodyText(12, color: Palette.textDim),
                   ),
                   secondary: const Icon(Icons.insights_rounded),
@@ -180,7 +180,10 @@ class _SettingsState extends State<_Settings> {
                     Icons.tune_rounded,
                     color: Palette.accent,
                   ),
-                  title: Text('Privacidade dos anúncios', style: bodyText(16)),
+                  title: Text(
+                    tr('Privacidade dos anúncios'),
+                    style: bodyText(16),
+                  ),
                   onTap: () {
                     widget.services.feedback.click();
                     widget.services.ads.showPrivacyOptions();
@@ -196,7 +199,7 @@ class _SettingsState extends State<_Settings> {
                     Icons.bar_chart_rounded,
                     color: Palette.accent,
                   ),
-                  title: Text('Estatísticas', style: bodyText(16)),
+                  title: Text(tr('Estatísticas'), style: bodyText(16)),
                   onTap: () {
                     widget.services.feedback.click();
                     widget.onStats();
@@ -229,7 +232,7 @@ class _SettingsState extends State<_Settings> {
                   Icons.privacy_tip_rounded,
                   color: Palette.accent,
                 ),
-                title: Text('Política de Privacidade', style: bodyText(16)),
+                title: Text(tr('Política de Privacidade'), style: bodyText(16)),
                 trailing: const Icon(
                   Icons.open_in_new_rounded,
                   size: 18,

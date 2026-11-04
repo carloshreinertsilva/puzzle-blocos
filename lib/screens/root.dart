@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../game/game_controller.dart';
 import '../game/onboarding.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/duelo_link.dart';
 import '../services/web_url.dart';
@@ -48,7 +49,7 @@ class _RootState extends State<Root> {
             mode: mode,
             duelSeed: seed,
             duelTargetScore: target,
-            duelRivalName: 'Amigo',
+            duelRivalName: tr('Amigo'),
           ),
         ),
       );

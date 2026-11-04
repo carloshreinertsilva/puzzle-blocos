@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../core/level.dart';
+import '../l10n/idioma.dart';
 import 'block_painter.dart';
 import 'palette.dart';
 import 'typography.dart';
@@ -239,7 +240,10 @@ class _LevelPathState extends State<LevelPath>
         // A finished level is a button (play it again), read with its stars.
         button: replay,
         label: done && widget.starsFor != null
-            ? 'Fase $n, ${widget.starsFor!(n)} de 3 estrelas'
+            ? tr('Fase {n}, {estrelas} de 3 estrelas', {
+                'n': n,
+                'estrelas': widget.starsFor!(n),
+              })
             : null,
         excludeSemantics: replay,
         onTap: replay ? () => widget.onReplay!(n) : null,

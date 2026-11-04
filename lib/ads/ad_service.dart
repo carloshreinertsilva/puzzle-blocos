@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/idioma.dart';
 import '../services/analytics.dart';
 import '../services/progress_store.dart';
 import 'ad_policy.dart';
@@ -89,11 +90,11 @@ class DebugAdService implements AdService {
 
   @override
   Future<bool> showRewarded(BuildContext context, RewardPlacement placement) =>
-      _show(context, 'Anúncio com recompensa (teste)');
+      _show(context, tr('Anúncio com recompensa (teste)'));
 
   @override
   Future<bool> showInterstitial(BuildContext context) =>
-      _show(context, 'Anúncio entre fases (teste)');
+      _show(context, tr('Anúncio entre fases (teste)'));
 
   Future<bool> _show(BuildContext context, String label) async {
     final result = await showGeneralDialog<bool>(

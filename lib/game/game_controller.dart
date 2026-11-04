@@ -11,6 +11,7 @@ import '../core/hint.dart';
 import '../core/level.dart';
 import '../core/missions.dart';
 import '../core/shapes.dart';
+import '../l10n/idioma.dart';
 import '../services/analytics.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
@@ -217,10 +218,10 @@ class GameController extends ChangeNotifier {
     _idleHint = move;
     _react(
       CapiReaction.hint,
-      _pick(const [
-        'Que tal aqui?',
-        'Psiu! Tenta aqui.',
-        'Olha esse cantinho!',
+      _pick([
+        tr('Que tal aqui?'),
+        tr('Psiu! Tenta aqui.'),
+        tr('Olha esse cantinho!'),
       ]),
     );
   }
@@ -248,7 +249,7 @@ class GameController extends ChangeNotifier {
       GameMode.duel => LevelConfig.duel(
         seed: duelSeed ?? 12345,
         targetScore: duelTargetScore ?? 1000,
-        rivalName: duelRivalName ?? 'Rival',
+        rivalName: duelRivalName ?? tr('Rival'),
       ),
       GameMode.daily => LevelGenerator.daily(today),
       GameMode.levels => LevelGenerator.build(replayLevel ?? store.level),
@@ -330,12 +331,17 @@ class GameController extends ChangeNotifier {
     if (lines >= 2 || (lines > 0 && result.combo >= 3)) {
       _react(
         CapiReaction.cheer,
-        _pick(const ['Uhul!', 'Mandou bem!', 'Que construção!', 'Isso aí!']),
+        _pick([
+          tr('Uhul!'),
+          tr('Mandou bem!'),
+          tr('Que construção!'),
+          tr('Isso aí!'),
+        ]),
       );
     } else if (!_warned &&
         session.board.filledCount >= Board.size * Board.size * 0.6) {
       _warned = true;
-      _react(CapiReaction.worried, 'Eita, tá enchendo! Limpa uma linha.');
+      _react(CapiReaction.worried, tr('Eita, tá enchendo! Limpa uma linha.'));
     }
   }
 
@@ -418,7 +424,7 @@ class GameController extends ChangeNotifier {
         !duelWon &&
         session.score >= (duelTargetScore ?? 1000)) {
       duelWon = true;
-      _react(CapiReaction.cheer, 'Passou o rival!');
+      _react(CapiReaction.cheer, tr('Passou o rival!'));
     }
 
     if (tutorial) {
@@ -558,7 +564,7 @@ class GameController extends ChangeNotifier {
       if (!ok) return false;
       session.useReroll();
       feedback.pick();
-      _react(CapiReaction.cheer, 'Peças novinhas na mão!');
+      _react(CapiReaction.cheer, tr('Peças novinhas na mão!'));
       onTrayRerolled?.call();
       noteActivity();
       notifyListeners();
@@ -582,7 +588,7 @@ class GameController extends ChangeNotifier {
     final cleared = session.useHammer(r, c);
     if (cleared == null) return false;
     feedback.clear(0, 1);
-    _react(CapiReaction.cheer, 'Quebrou!');
+    _react(CapiReaction.cheer, tr('Quebrou!'));
     onToolUsed?.call(CapiTool.hammer, [cleared]);
     if (session.status != SessionStatus.playing) {
       _finish();
@@ -599,7 +605,7 @@ class GameController extends ChangeNotifier {
     activeToolMode = null;
     final cleared = session.useShovel(r, c);
     feedback.clear(1, 2);
-    _react(CapiReaction.cheer, 'Limpou geral!');
+    _react(CapiReaction.cheer, tr('Limpou geral!'));
     onToolUsed?.call(CapiTool.shovel, cleared);
     if (session.status != SessionStatus.playing) {
       _finish();
@@ -621,7 +627,7 @@ class GameController extends ChangeNotifier {
     final piece = session.useRotate(slot);
     if (piece == null) return false;
     feedback.pick();
-    _react(CapiReaction.cheer, 'Girou!');
+    _react(CapiReaction.cheer, tr('Girou!'));
     onPieceRotated?.call(slot);
     if (session.status != SessionStatus.playing) {
       _finish();
@@ -703,7 +709,7 @@ class GameController extends ChangeNotifier {
         blitzSecondsLeft--;
         if (blitzSecondsLeft == 10) {
           feedback.click();
-          _react(CapiReaction.worried, '10 segundos!');
+          _react(CapiReaction.worried, tr('10 segundos!'));
         } else if (blitzSecondsLeft <= 3 && blitzSecondsLeft > 0) {
           feedback.click();
         } else if (blitzSecondsLeft == 0) {

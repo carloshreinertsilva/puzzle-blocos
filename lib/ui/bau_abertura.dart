@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../core/wardrobe.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import 'capi.dart';
 import 'palette.dart';
@@ -93,7 +94,7 @@ class _BauAberturaState extends State<_BauAbertura>
       child: SafeArea(
         child: Semantics(
           button: !_aberto,
-          label: _aberto ? null : 'Abrir o baú',
+          label: _aberto ? null : tr('Abrir o baú'),
           onTap: _aberto ? null : _abrir,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -239,7 +240,9 @@ class _BauAberturaState extends State<_BauAbertura>
                                 right: 16,
                                 top: box.maxHeight * 0.08,
                                 child: Text(
-                                  _aberto ? 'Baú aberto!' : 'Baú do Capi',
+                                  _aberto
+                                      ? tr('Baú aberto!')
+                                      : tr('Baú do Capi'),
                                   textAlign: TextAlign.center,
                                   style: displayText(30, color: Palette.text),
                                 ),
@@ -250,7 +253,7 @@ class _BauAberturaState extends State<_BauAbertura>
                                   right: 16,
                                   bottom: box.maxHeight * 0.1,
                                   child: Text(
-                                    'Toque para abrir!',
+                                    tr('Toque para abrir!'),
                                     textAlign: TextAlign.center,
                                     style: bodyText(15, color: Palette.textDim),
                                   ),
@@ -305,8 +308,14 @@ class _Resultado extends StatelessWidget {
   Widget build(BuildContext context) {
     final it = item;
     final texto = it == null
-        ? '+$estrelas estrelas! Você já tem todos os itens do baú.'
-        : 'Novo item: ${it.label} (${it.raridade.label}) e +$estrelas estrelas!';
+        ? tr('+{n} estrelas! Você já tem todos os itens do baú.', {
+            'n': estrelas,
+          })
+        : tr('Novo item: {item} ({raridade}) e +{n} estrelas!', {
+            'item': it.label,
+            'raridade': it.raridade.label,
+            'n': estrelas,
+          });
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -342,14 +351,14 @@ class _Resultado extends StatelessWidget {
                 const SizedBox(height: 6),
               ],
               Text(
-                '+$estrelas estrelas',
+                tr('+{n} estrelas', {'n': estrelas}),
                 style: displayText(18, color: Palette.accent),
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
-        ChunkyButton(label: 'Maravilha!', onTap: onOk),
+        ChunkyButton(label: tr('Maravilha!'), onTap: onOk),
       ],
     );
   }

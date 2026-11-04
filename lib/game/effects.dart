@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/idioma.dart';
 import '../ui/block_painter.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
@@ -291,10 +292,14 @@ class Praise {
     var tier = lines.clamp(1, 4);
     if (combo >= 4) tier = min(4, tier + 1);
     if (boardCleared) {
-      return Praise(4, 'Tabuleiro limpo!', _colors[3]);
+      return Praise(4, tr('Tabuleiro limpo!'), _colors[3]);
     }
     final words = _words[tier - 1];
-    return Praise(tier, words[rng.nextInt(words.length)], _colors[tier - 1]);
+    return Praise(
+      tier,
+      tr(words[rng.nextInt(words.length)]),
+      _colors[tier - 1],
+    );
   }
 }
 

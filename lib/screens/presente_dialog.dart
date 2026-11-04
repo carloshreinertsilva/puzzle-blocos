@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/passe.dart';
 import '../core/presente_diario.dart';
+import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
@@ -51,23 +52,25 @@ class _PresenteState extends State<_Presente> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Palette.panel,
         title: Text(
-          'Quer um lembrete?',
+          tr('Quer um lembrete?'),
           style: displayText(20, color: Palette.text),
         ),
         content: Text(
-          'O Capi te avisa uma vez por dia, às 19h, quando o próximo '
-          'presente estiver pronto. Dá para desligar nas Configurações.',
+          tr(
+            'O Capi te avisa uma vez por dia, às 19h, quando o próximo '
+            'presente estiver pronto. Dá para desligar nas Configurações.',
+          ),
           style: bodyText(14, color: Palette.textDim),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Agora não', style: bodyText(15)),
+            child: Text(tr('Agora não'), style: bodyText(15)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
-              'Quero!',
+              tr('Quero!'),
               style: displayText(15, color: Palette.accent),
             ),
           ),
@@ -102,14 +105,16 @@ class _PresenteState extends State<_Presente> {
                   container: true,
                   header: true,
                   child: Text(
-                    'Presente do dia',
+                    tr('Presente do dia'),
                     style: displayText(22, color: Palette.text),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Volte todo dia: o presente melhora até o dia 7. '
-                  'Se pular um dia, começa de novo.',
+                  tr(
+                    'Volte todo dia: o presente melhora até o dia 7. '
+                    'Se pular um dia, começa de novo.',
+                  ),
                   textAlign: TextAlign.center,
                   style: bodyText(12, color: Palette.textDim),
                 ),
@@ -133,36 +138,40 @@ class _PresenteState extends State<_Presente> {
                   Semantics(
                     container: true,
                     liveRegion: true,
-                    label:
-                        'Você ganhou ${_ganhou!.texto}! Amanhã: '
-                        '${PresenteDiario.premios[amanha].texto}.',
+                    label: tr('Você ganhou {premio}! Amanhã: {amanha}.', {
+                      'premio': _ganhou!.texto,
+                      'amanha': PresenteDiario.premios[amanha].texto,
+                    }),
                     excludeSemantics: true,
                     child: Text(
-                      'Você ganhou ${_ganhou!.texto}!\n'
-                      'Amanhã: ${PresenteDiario.premios[amanha].texto}.',
+                      tr('Você ganhou {premio}!\nAmanhã: {amanha}.', {
+                        'premio': _ganhou!.texto,
+                        'amanha': PresenteDiario.premios[amanha].texto,
+                      }),
                       textAlign: TextAlign.center,
                       style: displayText(15, color: Palette.accent),
                     ),
                   )
                 else if (!pegou)
                   ChunkyButton(
-                    label: 'Pegar presente',
-                    semanticLabel:
-                        'Pegar o presente do dia ${hoje + 1}: '
-                        '${PresenteDiario.premios[hoje].texto}',
+                    label: tr('Pegar presente'),
+                    semanticLabel: tr('Pegar o presente do dia {n}: {premio}', {
+                      'n': hoje + 1,
+                      'premio': PresenteDiario.premios[hoje].texto,
+                    }),
                     icon: Icons.card_giftcard_rounded,
                     onTap: _pegar,
                   )
                 else
                   Text(
-                    'Presente de hoje já pego. Volte amanhã!',
+                    tr('Presente de hoje já pego. Volte amanhã!'),
                     style: bodyText(14, color: Palette.textDim),
                   ),
                 const SizedBox(height: 6),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
-                    _ganhou != null || pegou ? 'Fechar' : 'Depois',
+                    _ganhou != null || pegou ? tr('Fechar') : tr('Depois'),
                     style: displayText(16, color: Palette.textDim),
                   ),
                 ),
@@ -205,7 +214,7 @@ class _Dia extends StatelessWidget {
     child: Column(
       children: [
         Text(
-          'Dia $numero',
+          tr('Dia {n}', {'n': numero}),
           style: displayText(12, color: hoje ? Palette.accent : Palette.text),
         ),
         const SizedBox(height: 4),
