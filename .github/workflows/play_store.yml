@@ -1,0 +1,105 @@
+# Envia o app Android à Google Play: Actions → "Android: Play Store" → Run
+# workflow, escolhendo a faixa.
+#
+# Usa a conta de serviço play-publicador (secret PLAY_SERVICE_ACCOUNT_JSON) e
+# a chave de envio do .aab (secrets CAPI_KEYSTORE_*). As notas da versão vêm
+# de distribution/whatsnew/. Produção só com a confirmação do Carlos (veja o
+# CLAUDE.md). "Só verificar a chave" não envia nada.
+name: 'Android: Play Store'
+
+on:
+  workflow_dispatch:
+    inputs:
+      faixa:
+        description: 'Faixa da Play Store'
+        type: choice
+        options: [verificar, internal, alpha, beta, production]
+        default: verificar
+      situacao:
+        description: 'completed = publica; draft = rascunho na Play Console'
+        type: choice
+        options: [completed, draft]
+        default: completed
+      porcentagem:
+        description: 'Produção: parte dos jogadores que recebe (0.1 = 10%; 1 = todos)'
+        type: string
+        default: '1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: play-store
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: 3.47.7
+
+jobs:
+  verificar:
+    name: Verifica a chave da Play Store
+    if: ${{ inputs.faixa == 'verificar' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --quiet google-auth requests
+      - env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: python3 tool/play_verificar.py
+
+  enviar:
+    name: Compila e envia à Play Store
+    if: ${{ inputs.faixa != 'verificar' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      KEYSTORE_BASE64: ${{ secrets.CAPI_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Memória do Gradle
+        run: |
+          mkdir -p ~/.gradle
+          cat >> ~/.gradle/gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError
+          kotlin.daemon.jvmargs=-Xmx1g
+          PROPS
+      - name: Chave de envio
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo "::error::Falta o secret CAPI_KEYSTORE_BASE64"; exit 1; }
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+          echo "CAPI_KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+      - name: Pacote da Play Store
+        env:
+          CAPI_KEYSTORE_PASSWORD: ${{ secrets.CAPI_KEYSTORE_PASSWORD }}
+          CAPI_KEY_ALIAS: ${{ secrets.CAPI_KEY_ALIAS }}
+          CAPI_KEY_PASSWORD: ${{ secrets.CAPI_KEY_PASSWORD }}
+        run: flutter build appbundle --release
+      - name: Envia à Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.capiblocks.app
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: ${{ inputs.faixa }}
+          status: ${{ (inputs.situacao == 'completed' && inputs.porcentagem != '1') && 'inProgress' || inputs.situacao }}
+          userFraction: ${{ (inputs.situacao == 'completed' && inputs.porcentagem != '1') && inputs.porcentagem || '' }}
+          whatsNewDirectory: distribution/whatsnew
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capiblocks-aab-play
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+      - name: Apaga a chave de envio
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"

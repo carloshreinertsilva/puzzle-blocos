@@ -14,6 +14,12 @@ o `README.md`.
   nos 4 tamanhos de tela). A `main` publica sozinha na Vercel
   (https://capiblocks.vercel.app), então `main` precisa estar sempre boa.
 - Textos para o usuário e mensagens de commit/PR em português.
+- **Lojas:** o envio é pelos workflows `iOS: TestFlight` e `Android: Play
+  Store` (Actions → Run workflow). Teste interno e TestFlight podem ser
+  enviados sem perguntar. **Produção na Google Play só depois de o Carlos
+  confirmar no chat, a cada versão** (e as notas em `distribution/whatsnew/`
+  revisadas). Cada envio precisa de um número de build novo no `pubspec.yaml`
+  (o do TestFlight é o número da execução do workflow).
 
 ## Pontos de atenção
 
