@@ -226,9 +226,10 @@ jobs:
     if: >-
       ${{ (github.event_name == 'workflow_dispatch' || needs.mudancas.outputs.ios == 'true')
       && (github.event_name != 'pull_request' || !github.event.pull_request.draft) }}
-    # macOS 26 (Xcode 26): o Firebase 13 pede Swift 6.2, e a App Store só
-    # aceita apps feitos com o SDK do iOS 26.
-    runs-on: macos-26
+    # O Firebase 13 pede Swift 6.2 (Xcode 26), e a App Store só aceita apps
+    # feitos com o SDK do iOS 26. A máquina macos-26 ficou na fila sem
+    # aparecer; a macos-15 traz o Xcode 26 instalado (escolhido abaixo).
+    runs-on: macos-15
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -237,6 +238,11 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+      - name: Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
       - run: flutter pub get
       - name: App iOS (sem assinatura)
         run: flutter build ios --release --no-codesign
