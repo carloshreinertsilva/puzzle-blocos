@@ -69,7 +69,7 @@ Future<AppServices> _iniciar() async {
     musica: Musica(store, player: kTestBridge ? null : MusicPlayer()),
   );
   feedback.preload();
-  // AdMob on Android (test ads in debug); browser tests and web debug get
+  // AdMob on Android and iOS (test ads in debug); browser tests and web debug get
   // the placeholder; anything else shows no ads at all.
   final ads = AdCoordinator(
     kTestBridge
