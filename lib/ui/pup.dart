@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'capi_arte.dart';
+
 /// Capybara pups: trapped in blocks on the board, then free in Capi's
 /// village. Same fur colors as Capi, rounder and smaller.
 abstract final class PupPainter {
@@ -23,6 +25,17 @@ abstract final class PupPainter {
     Color(0xFFB57CF7),
     Color(0xFFFF8A3D),
   ];
+
+  /// The painted pup (capi_arte.dart), waddling, once its image is loaded.
+  static bool _pintado(Canvas canvas, Size size, double t) {
+    canvas.save();
+    canvas.translate(size.width / 2, size.height);
+    canvas.rotate(sin(t * 2 * pi) * 0.06);
+    canvas.translate(-size.width / 2, -size.height);
+    final ok = pintarFilhoteArte(canvas, size);
+    canvas.restore();
+    return ok;
+  }
 
   /// Fur lit from the top left, so each shape reads as a soft ball.
   static Paint _fur(Rect r) => Paint()
@@ -190,6 +203,7 @@ abstract final class PupPainter {
   /// A whole pup standing, feet at the bottom center of [size]. [t] (0..1)
   /// drives a little waddle.
   static void body(Canvas canvas, Size size, {double t = 0, Color? bow}) {
+    if (_pintado(canvas, size, t)) return;
     final s = size.width;
     final waddle = sin(t * 2 * pi) * 0.06;
     canvas.save();
@@ -280,7 +294,7 @@ class Pup extends StatelessWidget {
 }
 
 class _PupPainter extends CustomPainter {
-  _PupPainter(this.bow);
+  _PupPainter(this.bow) : super(repaint: CapiArte.versao);
   final Color? bow;
 
   @override

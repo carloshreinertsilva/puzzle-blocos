@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'ads/ad_service.dart';
 import 'ads/admob.dart';
 import 'game/game_controller.dart';
+import 'core/wardrobe.dart';
 import 'l10n/idioma.dart';
 import 'screens/game_screen.dart';
 import 'screens/root.dart';
@@ -22,6 +23,7 @@ import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
 import 'shop/loja_service.dart';
 import 'ui/abertura.dart';
+import 'ui/capi_arte.dart';
 import 'ui/palette.dart';
 import 'ui/typography.dart';
 
@@ -36,6 +38,7 @@ Future<void> main() async {
     TestBridge.instance.install();
   }
   Placares.ativo = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  CapiArte.ativa = true;
   if (kIsWeb) {
     // The page's own loading screen (web/index.html) covers the start.
     final services = await _iniciar();
@@ -63,6 +66,15 @@ Future<AppServices> _iniciar() async {
     TestBridge.instance.wallet = () => store.stars;
     TestBridge.instance.store = store;
   }
+  final look = CapiLook.of(store);
+  unawaited(
+    CapiArte.preparar(look.pelagem, [
+      look.hat.id,
+      look.rosto,
+      look.pescoco,
+      look.costas,
+    ]),
+  );
   final feedback = GameFeedback(
     store,
     // Browser tests run without music (less to load, nothing to wait on).

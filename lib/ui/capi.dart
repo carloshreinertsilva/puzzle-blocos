@@ -1,5 +1,6 @@
 import '../core/hats.dart';
 import '../core/wardrobe.dart';
+import 'capi_arte.dart';
 
 import 'dart:math';
 
@@ -70,7 +71,8 @@ class CapiPainter extends CustomPainter {
     this.hat = CapiHat.helmet,
     CapiLook? look,
   }) : look = look ?? const CapiLook(),
-       _coat = _Coat.of((look ?? const CapiLook()).pelagem);
+       _coat = _Coat.of((look ?? const CapiLook()).pelagem),
+       super(repaint: CapiArte.versao);
   final CapiMood mood;
   final double t;
   final CapiHat hat;
@@ -221,6 +223,18 @@ class CapiPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Everything is drawn on a 100x100 grid.
     canvas.scale(size.width / 100);
+    // The painted Capi (capi_arte.dart) once its images are loaded.
+    canvas.save();
+    final pintado = pintarCapiArte(
+      canvas,
+      mood: mood,
+      t: t,
+      hat: hat,
+      pelagem: look.pelagem,
+      outros: [look.rosto, look.pescoco, look.costas],
+    );
+    canvas.restore();
+    if (pintado) return;
     final bob = sin(t * 2 * pi) * 1.4;
     // A slow breath: the body swells a little.
     final breath = 1 + sin(t * 2 * pi + 1.2) * 0.012;
