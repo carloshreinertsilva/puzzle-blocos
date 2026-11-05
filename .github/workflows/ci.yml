@@ -61,7 +61,9 @@ jobs:
   e2e:
     name: Playwright
     needs: flutter
-    runs-on: ubuntu-latest
+    # Fixo no 24.04: o ubuntu-latest virou 26.04, que o Playwright 1.56
+    # ainda não suporta ("does not support chromium on ubuntu26.04").
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     defaults:
       run:
@@ -224,7 +226,9 @@ jobs:
     if: >-
       ${{ (github.event_name == 'workflow_dispatch' || needs.mudancas.outputs.ios == 'true')
       && (github.event_name != 'pull_request' || !github.event.pull_request.draft) }}
-    runs-on: macos-15
+    # macOS 26 (Xcode 26): o Firebase 13 pede Swift 6.2, e a App Store só
+    # aceita apps feitos com o SDK do iOS 26.
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
