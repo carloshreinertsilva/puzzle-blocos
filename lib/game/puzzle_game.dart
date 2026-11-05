@@ -127,7 +127,10 @@ class PuzzleGame extends FlameGame {
     cellSize = side / Board.size;
     trayCellSize = min(cellSize * 0.52, (side / 3) / 5.4);
     final freeY = usable - side * 1.45;
-    final top = topInset + max(8, freeY * 0.35);
+    // A little more of the spare height above the board than below it (the
+    // bottom keeps room for Capi's speech bubble), so tall phones don't end
+    // in an empty strip.
+    final top = topInset + max(8, freeY * 0.45);
     boardRect = Rect.fromLTWH((w - side) / 2, top, side, side);
 
     final trayTop = boardRect.bottom + cellSize * 0.55;
