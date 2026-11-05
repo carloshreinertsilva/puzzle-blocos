@@ -13,9 +13,8 @@ abstract final class FirebaseConfig {
   static const _androidApiKey = 'AIzaSyB7HOQ_WL6Lv66YooFWmX2ls2jNhpZLe7M';
   static const _androidAppId = '1:731810631964:android:64bfa0dded5ad8eb4e6ad9';
 
-  // The iOS app (empty until it is added in the Firebase console).
-  static const _iosApiKey = '';
-  static const _iosAppId = '';
+  static const _iosApiKey = 'AIzaSyApIIYuMQPDxJLcnqcBZCMH4Vcoi5kGi4E';
+  static const _iosAppId = '1:731810631964:ios:289078f5983e2ad44e6ad9';
   static const _iosBundleId = 'com.capiblocks.app';
 
   static const android = FirebaseOptions(

@@ -1,0 +1,79 @@
+# Envia o app iOS ao TestFlight: Actions → "iOS: TestFlight" → Run workflow.
+#
+# Assina sem certificados no repositório: o Xcode usa a chave da API do App
+# Store Connect (secrets ASC_ISSUER_ID, ASC_KEY_ID e ASC_KEY_P8, função
+# Admin) e a Apple cuida dos certificados. Só roda à mão: a máquina macOS
+# conta 10x os minutos do GitHub Actions.
+name: 'iOS: TestFlight'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: 3.47.7
+
+jobs:
+  testflight:
+    name: Compila, assina e envia ao TestFlight
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Chave da API do App Store Connect
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          test -n "$ASC_ISSUER_ID" && test -n "$ASC_KEY_ID" && test -n "$ASC_KEY_P8" \
+            || { echo "::error::Faltam os secrets ASC_ISSUER_ID, ASC_KEY_ID ou ASC_KEY_P8"; exit 1; }
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+          echo "ASC_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+      # The version comes from pubspec.yaml; the build number must grow with
+      # every upload, so it is this workflow's run number.
+      - name: Flutter (iOS, release)
+        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
+      - name: Arquivo do Xcode (assinado)
+        run: |
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ios/Runner.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+      - name: Envia ao App Store Connect
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportOptionsPlist ios/ExportOptions.plist \
+            -exportPath build/ios/ipa \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+      - name: Apaga a chave
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
