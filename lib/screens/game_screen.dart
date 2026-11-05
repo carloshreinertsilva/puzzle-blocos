@@ -91,6 +91,7 @@ class _GameScreenState extends State<GameScreen> {
     game ??= PuzzleGame(
       controller: controller,
       topInset: MediaQuery.paddingOf(context).top + hudHeight,
+      bottomInset: MediaQuery.paddingOf(context).bottom,
     );
   }
 

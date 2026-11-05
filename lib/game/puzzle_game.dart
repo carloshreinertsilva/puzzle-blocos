@@ -24,12 +24,20 @@ import 'tray_piece.dart';
 /// The play area: board, tray and effects. Menus and the HUD are Flutter
 /// widgets layered on top; this scene only draws the game itself.
 class PuzzleGame extends FlameGame {
-  PuzzleGame({required this.controller, required this.topInset});
+  PuzzleGame({
+    required this.controller,
+    required this.topInset,
+    this.bottomInset = 0,
+  });
 
   final GameController controller;
 
   /// Height reserved at the top for the HUD.
   final double topInset;
+
+  /// The phone's own bar at the bottom (iPhone home indicator, Android
+  /// gesture bar): nothing to drag sits under it.
+  final double bottomInset;
 
   BlockSprites? sprites;
   Rect boardRect = Rect.zero;
@@ -125,16 +133,18 @@ class PuzzleGame extends FlameGame {
     final usable = h - topInset;
     final side = min(w - 36, usable / 1.5);
     cellSize = side / Board.size;
-    trayCellSize = min(cellSize * 0.52, (side / 3) / 5.4);
-    final freeY = usable - side * 1.45;
-    // A little more of the spare height above the board than below it (the
-    // bottom keeps room for Capi's speech bubble), so tall phones don't end
-    // in an empty strip.
-    final top = topInset + max(8, freeY * 0.45);
-    boardRect = Rect.fromLTWH((w - side) / 2, top, side, side);
-
-    final trayTop = boardRect.bottom + cellSize * 0.55;
+    // As big as a five-cell piece still fits in its third of the width.
+    trayCellSize = min(cellSize * 0.56, ((w - 16) / 3) / 5.4);
+    // The spare height is shared out: above the board, between it and the
+    // pieces (at most a little over a cell, so they stay together) and
+    // under the pieces. Tall phones then don't end in an empty strip.
     final trayH = cellSize * 3.2;
+    final content = side + cellSize * 0.55 + trayH;
+    final free = max(0.0, usable - bottomInset - content);
+    final gap = min(free / 3, cellSize * 1.2);
+    final top = topInset + max(8, (free - gap) / 2);
+    boardRect = Rect.fromLTWH((w - side) / 2, top, side, side);
+    final trayTop = boardRect.bottom + cellSize * 0.55 + gap;
     final slotW = (w - 16) / 3;
     for (var i = 0; i < 3; i++) {
       trays[i].layout(Rect.fromLTWH(8 + slotW * i, trayTop, slotW, trayH));
