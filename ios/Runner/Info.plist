@@ -22,11 +22,10 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- Google's test app ID until the iOS app exists in AdMob: the ads SDK
-	     stops the app at launch without one. The ad units are in
-	     lib/ads/ad_config.dart. -->
+	<!-- The iOS app in AdMob (the ads SDK stops the app at launch without
+	     one). The ad units are in lib/ads/ad_config.dart. -->
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-2477171262502738~1751659738</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Isso deixa os anúncios mais relevantes para você e ajuda a manter o CapiBlocks gratuito.</string>
 	<key>SKAdNetworkItems</key>
