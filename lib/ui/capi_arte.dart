@@ -60,27 +60,27 @@ abstract final class CapiArte {
   static const filhoteDormindo = 'assets/capi/filhote_dormindo.webp';
 }
 
-/// A pose painting and where Capi's head is in it (source pixels: head
-/// centre x, eye line y, head width; the image's full size). Must match
-/// POSES in tool/capi_arte.py.
+/// A pose painting and where Capi's eyes are in it (source pixels: the
+/// midpoint of the pupils and the distance between them; the image's full
+/// size). Items and the body scale are measured from the eyes.
 class PoseArte {
-  const PoseArte(this.nome, this.cx, this.ey, this.hw, this.w, this.h);
+  const PoseArte(this.nome, this.ex, this.ey, this.d, this.w, this.h);
   final String nome;
-  final double cx;
+  final double ex;
   final double ey;
-  final double hw;
+  final double d;
   final double w;
   final double h;
 
-  static const _feliz = PoseArte('feliz', 590, 270, 780, 1172, 1515);
-  static const _comemora = PoseArte('comemora', 644, 300, 818, 1282, 1517);
+  static const _feliz = PoseArte('feliz', 597, 249.5, 456, 1172, 1515);
+  static const _comemora = PoseArte('comemora', 646, 289.5, 452, 1282, 1517);
 
   static const todas = {
     CapiMood.happy: _feliz,
     CapiMood.cheer: _comemora,
-    CapiMood.worried: PoseArte('preocupado', 477, 274, 785, 959, 1516),
-    CapiMood.sad: PoseArte('triste', 587, 229, 779, 1170, 1476),
-    CapiMood.point: PoseArte('aponta', 589, 270, 788, 1354, 1517),
+    CapiMood.worried: PoseArte('preocupado', 491, 251.5, 452, 959, 1516),
+    CapiMood.sad: PoseArte('triste', 605, 221.5, 434, 1170, 1476),
+    CapiMood.point: PoseArte('aponta', 607.5, 250, 445, 1354, 1517),
     // Arms up, the piece he carries over his head.
     CapiMood.carry: _comemora,
   };
@@ -101,9 +101,10 @@ class PoseArte {
   }
 }
 
-/// Where a wardrobe item sits on Capi, in head widths from the head centre
-/// (x) and the eye line (y), and which point of the item goes there
-/// ([fx], [fy], fractions of its size). Measured on the "feliz" pose.
+/// Where a wardrobe item sits on Capi, in eye distances from the midpoint
+/// of his eyes, and which point of the item goes there ([fx], [fy],
+/// fractions of its size). Hats rest on the head between the ears, like
+/// the helmet in the Gemini painting of Capi wearing it.
 class ItemArte {
   const ItemArte(
     this.largura,
@@ -114,7 +115,7 @@ class ItemArte {
     this.atras = false,
   });
 
-  /// Width, in head widths.
+  /// Width, in eye distances.
   final double largura;
   final double dx;
   final double dy;
@@ -127,35 +128,35 @@ class ItemArte {
   static String asset(String id) => 'assets/capi/itens/$id.webp';
 
   static const todos = {
-    // Hats (ids as in CapiHat).
-    'helmet': ItemArte(0.80, 0, -0.100, fy: 0.80),
-    'fundador': ItemArte(0.80, 0, -0.100, fy: 0.80),
-    'straw': ItemArte(1.05, 0, -0.126, fy: 0.72),
-    'party': ItemArte(0.42, 0.154, -0.190, fy: 0.92),
-    'touca': ItemArte(0.80, 0, -0.068, fy: 0.88),
-    'chef': ItemArte(0.60, 0, -0.138, fy: 0.92),
-    'pirate': ItemArte(0.95, 0, -0.126, fy: 0.82),
-    'junino': ItemArte(1.05, 0, -0.126, fy: 0.72),
-    'wizard': ItemArte(0.80, 0, -0.126, fy: 0.85),
-    'crown': ItemArte(0.62, 0, -0.151, fy: 0.85),
-    'vip': ItemArte(0.70, 0, -0.138, fy: 0.88),
-    'coroa_estrelas': ItemArte(0.65, 0, -0.151, fy: 0.85),
+    // Hats (ids as in CapiHat): the bottom of the hat on the head.
+    'helmet': ItemArte(1.06, 0, -0.05, fy: 1),
+    'fundador': ItemArte(1.06, 0, -0.05, fy: 1),
+    'straw': ItemArte(1.40, 0, -0.02, fy: 1),
+    'junino': ItemArte(1.40, 0, -0.02, fy: 1),
+    'pirate': ItemArte(1.30, 0, -0.06, fy: 1),
+    'touca': ItemArte(1.08, 0, 0.02, fy: 1),
+    'chef': ItemArte(0.85, 0, -0.12, fy: 1),
+    'wizard': ItemArte(1.10, 0, -0.06, fy: 1),
+    'vip': ItemArte(0.95, 0, -0.12, fy: 1),
+    'crown': ItemArte(0.85, 0, -0.30, fy: 1),
+    'coroa_estrelas': ItemArte(0.90, 0, -0.30, fy: 1),
+    'party': ItemArte(0.55, 0.20, -0.32, fy: 1),
     // Face.
-    'oculos_sol': ItemArte(0.80, 0.015, 0, fy: 0.45),
-    'oculos_coracao': ItemArte(0.80, 0.015, 0, fy: 0.42),
-    'mascara_heroi': ItemArte(0.80, 0.015, 0, fy: 0.45),
-    'monoculo': ItemArte(0.32, 0.288, -0.004, fy: 0.30),
-    'bigode': ItemArte(0.55, 0, 0.323, fy: 0.40),
+    'oculos_sol': ItemArte(1.25, 0.01, 0.04, fy: 0.45),
+    'oculos_coracao': ItemArte(1.25, 0.01, 0.04, fy: 0.42),
+    'mascara_heroi': ItemArte(1.25, 0.01, 0.04, fy: 0.45),
+    'monoculo': ItemArte(0.55, 0.478, 0.034, fy: 0.30),
+    'bigode': ItemArte(0.94, -0.015, 0.593, fy: 0.40),
     // Neck.
-    'cachecol': ItemArte(0.85, 0, 0.605, fy: 0.12),
-    'gravata': ItemArte(0.36, 0, 0.656),
-    'lenco': ItemArte(0.62, 0, 0.592, fy: 0.10),
-    'colar_flores': ItemArte(0.85, 0, 0.541, fy: 0.12),
+    'cachecol': ItemArte(1.40, -0.015, 0.96, fy: 0.12),
+    'gravata': ItemArte(0.62, -0.015, 1.08),
+    'lenco': ItemArte(1.06, -0.015, 0.95, fy: 0.10),
+    'colar_flores': ItemArte(1.45, -0.015, 0.88, fy: 0.12),
     // Back (and the swim ring around the waist).
-    'asinhas': ItemArte(1.70, 0, 0.631, atras: true),
-    'capa_real': ItemArte(1.25, 0, 0.426, fy: 0.05, atras: true),
-    'mochila': ItemArte(1.05, 0, 0.477, fy: 0.10, atras: true),
-    'boia': ItemArte(1.30, 0, 1.092),
+    'asinhas': ItemArte(2.9, -0.015, 1.12, atras: true),
+    'capa_real': ItemArte(2.4, -0.015, 0.45, fy: 0, atras: true),
+    'mochila': ItemArte(1.75, -0.015, 0.40, fy: 0, atras: true),
+    'boia': ItemArte(2.22, -0.015, 1.909),
   };
 }
 
@@ -173,9 +174,10 @@ bool pintarCapiArte(
   final corpo = CapiArte.imagem(pose.asset(pelagem));
   if (corpo == null) return false;
 
-  // Units per source pixel: the head is 46 units wide.
-  final s = 46 / pose.hw;
-  final left = 50 - pose.cx * s;
+  // Units per source pixel: the eyes are 26.9 units apart (the head about
+  // 46 units wide), centred on x 50.
+  final s = 26.9 / pose.d;
+  final left = 50 - pose.ex * s;
   final top = 96 - pose.h * s;
   final bob = _seno(t) * 1.2;
   final breath = 1 + _seno(t + 0.19) * 0.012;
@@ -202,10 +204,10 @@ bool pintarCapiArte(
       if (arte == null || arte.atras != atras) continue;
       final img = CapiArte.imagem(ItemArte.asset(id));
       if (img == null) continue;
-      final w = arte.largura * pose.hw * s;
+      final w = arte.largura * pose.d * s;
       final h = w * img.height / img.width;
-      final ax = left + (pose.cx + arte.dx * pose.hw) * s;
-      final ay = top + (pose.ey + arte.dy * pose.hw) * s;
+      final ax = left + (pose.ex + arte.dx * pose.d) * s;
+      final ay = top + (pose.ey + arte.dy * pose.d) * s;
       _desenhar(
         canvas,
         img,
@@ -216,9 +218,51 @@ bool pintarCapiArte(
 
   itens(true);
   _desenhar(canvas, corpo, Rect.fromLTWH(left, top, pose.w * s, pose.h * s));
+  if (outros.contains('mochila')) {
+    // Seen from the front, the backpack hides behind him: its straps show.
+    _alcas(canvas, Offset(left + pose.ex * s, top + pose.ey * s), pose.d * s);
+  }
   itens(false);
   canvas.restore();
   return true;
+}
+
+/// The backpack's straps over the shoulders, from the eyes' midpoint
+/// [olhos] and the eye distance [d] (grid units).
+void _alcas(Canvas canvas, Offset olhos, double d) {
+  for (final lado in [-1.0, 1.0]) {
+    final de = olhos + Offset(lado * 0.64 * d, 1.0 * d);
+    final ate = olhos + Offset(lado * 0.44 * d, 1.75 * d);
+    final meio = Offset.lerp(de, ate, 0.5)! + Offset(lado * 0.05 * d, 0);
+    final alca = Path()
+      ..moveTo(de.dx, de.dy)
+      ..quadraticBezierTo(meio.dx, meio.dy, ate.dx, ate.dy);
+    canvas.drawPath(
+      alca,
+      Paint()
+        ..color = const Color(0xFF1F4A2A)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 0.11 * d,
+    );
+    canvas.drawPath(
+      alca,
+      Paint()
+        ..color = const Color(0xFF3F8A50)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 0.07 * d,
+    );
+    // The buckle.
+    final fivela = Offset.lerp(de, ate, 0.62)!;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: fivela, width: 0.13 * d, height: 0.08 * d),
+        Radius.circular(0.02 * d),
+      ),
+      Paint()..color = const Color(0xFF2B2B2B),
+    );
+  }
 }
 
 /// A pup, standing (or curled up asleep), feet at the bottom of [size].
