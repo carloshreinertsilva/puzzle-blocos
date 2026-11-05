@@ -49,25 +49,16 @@ jobs:
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
           echo "ASC_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
       # The version comes from pubspec.yaml; the build number must grow with
-      # every upload, so it is this workflow's run number.
-      - name: Flutter (iOS, release)
-        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
-      - name: Arquivo do Xcode (assinado)
-        run: |
-          xcodebuild archive \
-            -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/ios/Runner.xcarchive \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+      # every upload, so it is this workflow's run number. The archive is
+      # built unsigned: signing it here would need a development profile,
+      # which Apple only makes for a team with a registered iPhone. The
+      # export below signs it for the App Store instead.
+      - name: Arquivo do Xcode (sem assinatura)
+        run: flutter build ipa --release --no-codesign --build-number=${{ github.run_number }}
       - name: Envia ao App Store Connect
         run: |
           xcodebuild -exportArchive \
-            -archivePath build/ios/Runner.xcarchive \
+            -archivePath build/ios/archive/Runner.xcarchive \
             -exportOptionsPlist ios/ExportOptions.plist \
             -exportPath build/ios/ipa \
             -allowProvisioningUpdates \
