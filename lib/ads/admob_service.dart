@@ -9,7 +9,9 @@ import 'ad_config.dart';
 import 'ad_service.dart';
 
 AdService? createAdMobService() =>
-    Platform.isAndroid && AdConfig.enabled ? AdMobService() : null;
+    (Platform.isAndroid || Platform.isIOS) && AdConfig.enabled
+    ? AdMobService()
+    : null;
 
 /// Real ads through Google AdMob. First asks for consent where the law
 /// requires it (Google's consent message), then keeps one rewarded video and

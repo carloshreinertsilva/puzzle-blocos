@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_blocos/ads/ad_config.dart';
@@ -59,7 +60,18 @@ void main() {
     expect(AdConfig.interstitial, startsWith('ca-app-pub-3940256099942544/'));
   });
 
-  test('AdMob only runs on Android', () {
+  test('iOS gets its own test ad units', () {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    try {
+      expect(AdConfig.rewarded, AdConfig.testRewardedIos);
+      expect(AdConfig.interstitial, AdConfig.testInterstitialIos);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+    expect(AdConfig.rewarded, AdConfig.testRewardedAndroid);
+  });
+
+  test('AdMob only runs on the phones', () {
     // Tests run on the desktop VM: no AdMob, the app picks another service.
     expect(createAdMobService(), isNull);
   });

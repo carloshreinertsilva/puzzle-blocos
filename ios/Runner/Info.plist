@@ -14,6 +14,28 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>pt</string>
+		<string>en</string>
+		<string>es</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Google's test app ID until the iOS app exists in AdMob: the ads SDK
+	     stops the app at launch without one. The ad units are in
+	     lib/ads/ad_config.dart. -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Isso deixa os anúncios mais relevantes para você e ajuda a manter o CapiBlocks gratuito.</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
 	<key>CFBundleName</key>
 	<string>CapiBlocks</string>
 	<key>CFBundlePackageType</key>
@@ -53,18 +75,15 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 </dict>
 </plist>

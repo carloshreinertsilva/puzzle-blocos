@@ -5,6 +5,8 @@
 # 4. Android: o pacote da Play Store e o jogo abrindo num emulador. É o job
 #    mais caro, então não roda em PRs de rascunho (os minutos do GitHub
 #    Actions são contados num repositório privado).
+# 5. iOS: o app compila (sem assinatura). Máquina macOS conta 10x os
+#    minutos, então só roda quando muda algo do iOS ou das dependências.
 name: CI
 
 on:
@@ -59,7 +61,9 @@ jobs:
   e2e:
     name: Playwright
     needs: flutter
-    runs-on: ubuntu-latest
+    # Fixo no 24.04: o ubuntu-latest virou 26.04, que o Playwright 1.56
+    # ainda não suporta ("does not support chromium on ubuntu26.04").
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     defaults:
       run:
@@ -192,3 +196,55 @@ jobs:
           name: capiblocks-apk-teste
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+  # Decide se o iOS precisa compilar de novo: o código Dart já é checado no
+  # job do Flutter; o que só o Xcode pega são o projeto nativo e os plugins.
+  mudancas:
+    name: Mudanças
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      ios: ${{ steps.filtro.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filtro
+        with:
+          filters: |
+            ios:
+              - 'ios/**'
+              - 'pubspec.yaml'
+              - 'pubspec.lock'
+              - '.github/workflows/ci.yml'
+
+  ios:
+    name: iOS (compila)
+    needs: mudancas
+    if: >-
+      ${{ (github.event_name == 'workflow_dispatch' || needs.mudancas.outputs.ios == 'true')
+      && (github.event_name != 'pull_request' || !github.event.pull_request.draft) }}
+    # O Firebase 13 pede Swift 6.2 (Xcode 26), e a App Store só aceita apps
+    # feitos com o SDK do iOS 26. A máquina macos-26 ficou na fila sem
+    # aparecer; a macos-15 traz o Xcode 26 instalado (escolhido abaixo).
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - name: Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - run: flutter pub get
+      - name: App iOS (sem assinatura)
+        run: flutter build ios --release --no-codesign
+      - name: Tamanho do app
+        run: du -sh build/ios/iphoneos/Runner.app
