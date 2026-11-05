@@ -113,6 +113,7 @@ class ItemArte {
     this.fx = 0.5,
     this.fy = 0.5,
     this.atras = false,
+    this.volta,
   });
 
   /// Width, in eye distances.
@@ -124,6 +125,12 @@ class ItemArte {
 
   /// Behind the body (wings, cape, backpack).
   final bool atras;
+
+  /// For what goes around the neck (scarf, lei): the part of the image, as
+  /// fractions of its size, that passes behind the neck. The whole item is
+  /// drawn behind the body (its sides show), then again in front without
+  /// that part.
+  final Rect? volta;
 
   static String asset(String id) => 'assets/capi/itens/$id.webp';
 
@@ -148,10 +155,22 @@ class ItemArte {
     'monoculo': ItemArte(0.55, 0.478, 0.034, fy: 0.30),
     'bigode': ItemArte(0.94, -0.015, 0.593, fy: 0.40),
     // Neck.
-    'cachecol': ItemArte(1.40, -0.015, 0.96, fy: 0.12),
+    'cachecol': ItemArte(
+      1.40,
+      -0.015,
+      0.96,
+      fy: 0.12,
+      volta: Rect.fromLTRB(0.25, 0, 0.75, 0.33),
+    ),
     'gravata': ItemArte(0.62, -0.015, 1.08),
     'lenco': ItemArte(1.06, -0.015, 0.95, fy: 0.10),
-    'colar_flores': ItemArte(1.45, -0.015, 0.88, fy: 0.12),
+    'colar_flores': ItemArte(
+      1.45,
+      -0.015,
+      0.88,
+      fy: 0.12,
+      volta: Rect.fromLTRB(0.22, 0, 0.75, 0.48),
+    ),
     // Back (and the swim ring around the waist).
     'asinhas': ItemArte(2.9, -0.015, 1.12, atras: true),
     'capa_real': ItemArte(2.4, -0.015, 0.45, fy: 0, atras: true),
@@ -201,18 +220,37 @@ bool pintarCapiArte(
     for (final id in ids) {
       if (id == null) continue;
       final arte = ItemArte.todos[id];
-      if (arte == null || arte.atras != atras) continue;
+      if (arte == null) continue;
+      final volta = arte.volta;
+      if (arte.atras != atras && !(volta != null && atras)) continue;
       final img = CapiArte.imagem(ItemArte.asset(id));
       if (img == null) continue;
       final w = arte.largura * pose.d * s;
       final h = w * img.height / img.width;
       final ax = left + (pose.ex + arte.dx * pose.d) * s;
       final ay = top + (pose.ey + arte.dy * pose.d) * s;
-      _desenhar(
-        canvas,
-        img,
-        Rect.fromLTWH(ax - arte.fx * w, ay - arte.fy * h, w, h),
-      );
+      final onde = Rect.fromLTWH(ax - arte.fx * w, ay - arte.fy * h, w, h);
+      if (volta != null && !atras) {
+        // In front: all but the part that goes behind the neck.
+        final escondida = Rect.fromLTRB(
+          onde.left + volta.left * w,
+          onde.top + volta.top * h,
+          onde.left + volta.right * w,
+          onde.top + volta.bottom * h,
+        );
+        canvas.save();
+        canvas.clipPath(
+          Path.combine(
+            PathOperation.difference,
+            Path()..addRect(onde),
+            Path()..addRect(escondida),
+          ),
+        );
+        _desenhar(canvas, img, onde);
+        canvas.restore();
+      } else {
+        _desenhar(canvas, img, onde);
+      }
     }
   }
 
