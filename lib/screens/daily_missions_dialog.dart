@@ -142,287 +142,294 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: CardPanel(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Image.asset(
-                    'art/missions/icone-missoes-128.png',
-                    width: 28,
-                    height: 28,
-                    errorBuilder: (_, _, _) => const Icon(
-                      Icons.assignment_turned_in_rounded,
-                      color: Color(0xFF818CF8),
-                      size: 26,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Semantics(
-                    header: true,
-                    label: tr('Missões Diárias'),
-                    child: Text(
-                      tr('Missões Diárias'),
-                      style: displayText(20, color: Palette.text),
-                    ),
-                  ),
-                  const Spacer(),
-                  Semantics(
-                    button: true,
-                    label: tr('Fechar'),
-                    // No tooltip: it would read "Fechar" a second time.
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Palette.textDim,
+          // Scrolls on short phones (360x640): the bonus chest at the
+          // bottom was cut off when a mission's text took two lines.
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Image.asset(
+                      'art/missions/icone-missoes-128.png',
+                      width: 28,
+                      height: 28,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.assignment_turned_in_rounded,
+                        color: Color(0xFF818CF8),
+                        size: 26,
                       ),
-                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
+                    const SizedBox(width: 8),
+                    Semantics(
+                      header: true,
+                      label: tr('Missões Diárias'),
+                      child: Text(
+                        tr('Missões Diárias'),
+                        style: displayText(20, color: Palette.text),
+                      ),
+                    ),
+                    const Spacer(),
+                    Semantics(
+                      button: true,
+                      label: tr('Fechar'),
+                      // No tooltip: it would read "Fechar" a second time.
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Palette.textDim,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
 
-              // Streak indicator & Wardrobe shortcut
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0x33EF4444),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.local_fire_department_rounded,
-                          color: Color(0xFFEF4444),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          trN(streak, '{n} dia', '{n} dias'),
-                          semanticsLabel: trN(
-                            streak,
-                            '{n} dia de sequência',
-                            '{n} dias de sequência',
-                          ),
-                          style: displayText(12, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  _PasseChip(
-                    prontas: PasseDoCapi.prontas(store, DateTime.now()),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      showPasse(context, widget.services);
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      WardrobeDialog.show(context, widget.services);
-                    },
-                    child: Container(
+                // Streak indicator & Wardrobe shortcut
+                Row(
+                  children: [
+                    Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0x33F59E0B),
+                        color: const Color(0x33EF4444),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0x55F59E0B)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.checkroom_rounded,
-                            color: Color(0xFFF59E0B),
+                            Icons.local_fire_department_rounded,
+                            color: Color(0xFFEF4444),
                             size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            tr('Guarda-Roupa'),
-                            style: displayText(
-                              12,
-                              color: const Color(0xFFF59E0B),
+                            trN(streak, '{n} dia', '{n} dias'),
+                            semanticsLabel: trN(
+                              streak,
+                              '{n} dia de sequência',
+                              '{n} dias de sequência',
                             ),
+                            style: displayText(12, color: Colors.white),
                           ),
                         ],
+                      ),
+                    ),
+                    const Spacer(),
+                    _PasseChip(
+                      prontas: PasseDoCapi.prontas(store, DateTime.now()),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        showPasse(context, widget.services);
+                      },
+                    ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        WardrobeDialog.show(context, widget.services);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0x33F59E0B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0x55F59E0B)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.checkroom_rounded,
+                              color: Color(0xFFF59E0B),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              tr('Guarda-Roupa'),
+                              style: displayText(
+                                12,
+                                color: const Color(0xFFF59E0B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // The daily gift, if not taken yet today.
+                if (PresenteDiario.disponivel(store, DateTime.now())) ...[
+                  const SizedBox(height: 10),
+                  Semantics(
+                    button: true,
+                    label: tr('Abrir o presente do dia'),
+                    excludeSemantics: true,
+                    onTap: _abrirPresente,
+                    child: GestureDetector(
+                      onTap: _abrirPresente,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0x33FFC94D),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Palette.accent),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.card_giftcard_rounded,
+                              color: Palette.accent,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                tr('Presente do dia {n} esperando!', {
+                                  'n':
+                                      PresenteDiario.dia(
+                                        store,
+                                        DateTime.now(),
+                                      ) +
+                                      1,
+                                }),
+                                style: displayText(13, color: Palette.text),
+                              ),
+                            ),
+                            Text(
+                              tr('Abrir'),
+                              style: displayText(13, color: Palette.accent),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ],
-              ),
-              // The daily gift, if not taken yet today.
-              if (PresenteDiario.disponivel(store, DateTime.now())) ...[
+                const SizedBox(height: 14),
+
+                // Mission Cards
+                for (final m in missions) ...[
+                  _buildMissionCard(m, store),
+                  const SizedBox(height: 8),
+                ],
+
                 const SizedBox(height: 10),
-                Semantics(
-                  button: true,
-                  label: tr('Abrir o presente do dia'),
-                  excludeSemantics: true,
-                  onTap: _abrirPresente,
-                  child: GestureDetector(
-                    onTap: _abrirPresente,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0x33FFC94D),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Palette.accent),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.card_giftcard_rounded,
-                            color: Palette.accent,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              tr('Presente do dia {n} esperando!', {
-                                'n':
-                                    PresenteDiario.dia(store, DateTime.now()) +
-                                    1,
-                              }),
-                              style: displayText(13, color: Palette.text),
-                            ),
-                          ),
-                          Text(
-                            tr('Abrir'),
-                            style: displayText(13, color: Palette.accent),
-                          ),
-                        ],
-                      ),
+
+                // Daily Chest Section
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0x331E3A8A), Color(0x330F172A)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: chestAvailable
+                          ? const Color(0xFFFACC15)
+                          : const Color(0x3338BDF8),
+                      width: chestAvailable ? 2 : 1,
                     ),
                   ),
-                ),
-              ],
-              const SizedBox(height: 14),
-
-              // Mission Cards
-              for (final m in missions) ...[
-                _buildMissionCard(m, store),
-                const SizedBox(height: 8),
-              ],
-
-              const SizedBox(height: 10),
-
-              // Daily Chest Section
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0x331E3A8A), Color(0x330F172A)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: chestAvailable
-                        ? const Color(0xFFFACC15)
-                        : const Color(0x3338BDF8),
-                    width: chestAvailable ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'art/missions/icone-bau-128.png',
-                      width: 56,
-                      height: 56,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Semantics(
-                            label: tr('Baú do Capi'),
-                            child: Text(
-                              tr('Baú do Capi'),
-                              style: displayText(16, color: Colors.white),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          if (chestClaimed)
-                            Text(
-                              tr('Aberto! Volte amanhã'),
-                              style: bodyText(
-                                12,
-                                color: const Color(0xFF34D399),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'art/missions/icone-bau-128.png',
+                        width: 56,
+                        height: 56,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Semantics(
+                              label: tr('Baú do Capi'),
+                              child: Text(
+                                tr('Baú do Capi'),
+                                style: displayText(16, color: Colors.white),
                               ),
-                            )
-                          else if (chestAvailable)
-                            Text(
-                              tr('Pronto para abrir! (+5★ e um item)'),
-                              style: bodyText(
-                                12,
-                                color: const Color(0xFFFDE047),
+                            ),
+                            const SizedBox(height: 2),
+                            if (chestClaimed)
+                              Text(
+                                tr('Aberto! Volte amanhã'),
+                                style: bodyText(
+                                  12,
+                                  color: const Color(0xFF34D399),
+                                ),
+                              )
+                            else if (chestAvailable)
+                              Text(
+                                tr('Pronto para abrir! (+5★ e um item)'),
+                                style: bodyText(
+                                  12,
+                                  color: const Color(0xFFFDE047),
+                                ),
+                              )
+                            else
+                              Text(
+                                tr('Complete as 3 missões ({n}/3)', {
+                                  'n': completedCount,
+                                }),
+                                style: bodyText(12, color: Palette.textDim),
                               ),
-                            )
-                          else
-                            Text(
-                              tr('Complete as 3 missões ({n}/3)', {
-                                'n': completedCount,
-                              }),
-                              style: bodyText(12, color: Palette.textDim),
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (chestAvailable)
-                      Semantics(
-                        button: true,
-                        label: tr('Abrir Baú do Capi'),
-                        child: ElevatedButton(
-                          onPressed: _claimChest,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF59E0B),
-                            foregroundColor: const Color(0xFF3A1D0D),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            tr('Abrir!'),
-                            style: displayText(
-                              14,
-                              color: const Color(0xFF3A1D0D),
-                            ),
-                          ),
+                          ],
                         ),
-                      )
-                    else if (chestClaimed)
-                      const Icon(
-                        Icons.check_circle_rounded,
-                        color: Color(0xFF34D399),
-                        size: 28,
                       ),
-                  ],
+                      if (chestAvailable)
+                        Semantics(
+                          button: true,
+                          label: tr('Abrir Baú do Capi'),
+                          child: ElevatedButton(
+                            onPressed: _claimChest,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF59E0B),
+                              foregroundColor: const Color(0xFF3A1D0D),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              tr('Abrir!'),
+                              style: displayText(
+                                14,
+                                color: const Color(0xFF3A1D0D),
+                              ),
+                            ),
+                          ),
+                        )
+                      else if (chestClaimed)
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: Color(0xFF34D399),
+                          size: 28,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              // No surprises: the chest shows every item it can give.
-              if (!chestClaimed) _chestPoolLine(store),
-              if (widget.services.ads.hasVideoAds) ...[
-                const SizedBox(height: 10),
-                _bauBonus(store),
+                // No surprises: the chest shows every item it can give.
+                if (!chestClaimed) _chestPoolLine(store),
+                if (widget.services.ads.hasVideoAds) ...[
+                  const SizedBox(height: 10),
+                  _bauBonus(store),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
