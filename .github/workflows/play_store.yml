@@ -4,7 +4,9 @@
 # Usa a conta de serviço play-publicador (secret PLAY_SERVICE_ACCOUNT_JSON) e
 # a chave de envio do .aab (secrets CAPI_KEYSTORE_*). As notas da versão vêm
 # de distribution/whatsnew/. Produção só com a confirmação do Carlos (veja o
-# CLAUDE.md). "Só verificar a chave" não envia nada.
+# CLAUDE.md). "verificar" só confere a chave, sem enviar nada.
+# "promover-para-producao" leva para produção a versão que já está no teste
+# interno, sem compilar de novo (um número de versão só sobe uma vez).
 name: 'Android: Play Store'
 
 on:
@@ -13,7 +15,7 @@ on:
       faixa:
         description: 'Faixa da Play Store'
         type: choice
-        options: [verificar, internal, alpha, beta, production]
+        options: [verificar, internal, alpha, beta, production, promover-para-producao]
         default: verificar
       situacao:
         description: 'completed = publica; draft = rascunho na Play Console'
@@ -48,9 +50,21 @@ jobs:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: python3 tool/play_verificar.py
 
+  promover:
+    name: Promove o teste interno para produção
+    if: ${{ inputs.faixa == 'promover-para-producao' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --quiet google-auth requests
+      - env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: python3 tool/play_promover.py internal production "${{ inputs.porcentagem }}"
+
   enviar:
     name: Compila e envia à Play Store
-    if: ${{ inputs.faixa != 'verificar' }}
+    if: ${{ inputs.faixa != 'verificar' && inputs.faixa != 'promover-para-producao' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
