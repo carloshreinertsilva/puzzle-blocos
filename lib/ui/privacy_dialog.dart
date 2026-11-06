@@ -55,12 +55,18 @@ class _PrivacySheet extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   OutlinedTitle(tr('Privacidade'), size: 26),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: Palette.textDim,
+                  Semantics(
+                    button: true,
+                    label: tr('Fechar'),
+                    excludeSemantics: true,
+                    onTap: () => Navigator.of(context).pop(),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Palette.textDim,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),

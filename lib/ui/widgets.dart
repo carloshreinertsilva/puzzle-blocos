@@ -502,3 +502,36 @@ class _StarRowState extends State<StarRow> with SingleTickerProviderStateMixin {
     );
   }
 }
+
+/// A bottom sheet's content with a close button in its top-right corner:
+/// tall sheets (the shop, the settings) leave almost nothing to tap above
+/// them, their lists take the drag, and the iPhone has no back button.
+class ComFechar extends StatelessWidget {
+  const ComFechar({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    void fechar() => Navigator.of(context).maybePop();
+    return Stack(
+      children: [
+        child,
+        Positioned(
+          top: 4,
+          right: 4,
+          child: Semantics(
+            button: true,
+            label: tr('Fechar'),
+            excludeSemantics: true,
+            onTap: fechar,
+            child: IconButton(
+              icon: const Icon(Icons.close_rounded, color: Palette.textDim),
+              iconSize: 28,
+              onPressed: fechar,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

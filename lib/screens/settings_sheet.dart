@@ -18,17 +18,20 @@ Future<void> showSettings(BuildContext context, AppServices services) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    showDragHandle: true,
     backgroundColor: Palette.panel,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (sheet) => _Settings(
-      services: services,
-      // Statistics replace the settings, so only one sheet is open.
-      onStats: () {
-        Navigator.of(sheet).pop();
-        showStats(context, services);
-      },
+    builder: (sheet) => ComFechar(
+      child: _Settings(
+        services: services,
+        // Statistics replace the settings, so only one sheet is open.
+        onStats: () {
+          Navigator.of(sheet).pop();
+          showStats(context, services);
+        },
+      ),
     ),
   );
 }
@@ -334,7 +337,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.7.2 · CHS TECH',
+                'CapiBlocks v1.7.3 · CHS TECH',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],
