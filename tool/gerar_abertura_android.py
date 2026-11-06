@@ -1,4 +1,4 @@
-"""Gera as imagens da abertura do Android e o ícone adaptativo.
+"""Gera as imagens da abertura do Android.
 
 Uso (na raiz do projeto): python3 tool/gerar_abertura_android.py
 
@@ -6,9 +6,9 @@ Lê art/capi.png e assets/fonts/LilitaOne-Regular.ttf e escreve em
 android/app/src/main/res/:
 - drawable-*/splash_capi.png: o Capi da tela de abertura (Android 12+ usa
   um quadro de 288 dp, com o desenho dentro do círculo central de 192 dp);
-- drawable-*/splash_marca.png: o nome CapiBlocks embaixo (200 x 80 dp);
-- mipmap-*/ic_launcher_frente.png: a frente do ícone adaptativo (108 dp,
-  com o desenho dentro da área segura de 66 dp).
+- drawable-*/splash_marca.png: o nome CapiBlocks embaixo (200 x 80 dp).
+
+O ícone do app (inclusive o adaptativo) vem de tool/gerar_icone.py.
 """
 
 from pathlib import Path
@@ -21,7 +21,6 @@ DENSIDADES = {'mdpi': 1, 'hdpi': 1.5, 'xhdpi': 2, 'xxhdpi': 3, 'xxxhdpi': 4}
 CAPI = Image.open(RAIZ / 'art/capi.png').convert('RGBA')
 CAPI = CAPI.crop(CAPI.getbbox())
 FONTE = RAIZ / 'assets/fonts/LilitaOne-Regular.ttf'
-BLOCOS = ['#22B8CF', '#FF6B6B', '#B05CF5', '#51CF66', '#FFD43B']
 
 
 def capi_em(lado, altura):
@@ -36,17 +35,6 @@ def capi_em(lado, altura):
         capi, ((lado - capi.width) // 2, (lado - capi.height) // 2)
     )
     return quadro
-
-
-def bloco(desenho, x, y, tam, cor):
-    r = tam * 0.24
-    desenho.rounded_rectangle((x, y, x + tam, y + tam), r, fill=cor)
-    # Brilho em cima, como os blocos do jogo.
-    desenho.rounded_rectangle(
-        (x + tam * 0.18, y + tam * 0.12, x + tam * 0.82, y + tam * 0.3),
-        r * 0.4,
-        fill=(255, 255, 255, 110),
-    )
 
 
 def marca(largura, altura):
@@ -64,28 +52,6 @@ def marca(largura, altura):
     return img
 
 
-def frente_icone(lado):
-    """O Capi e quatro blocos, dentro do círculo seguro do ícone adaptativo
-    (66 dp de diâmetro num quadro de 108 dp)."""
-    img = Image.new('RGBA', (lado, lado), (0, 0, 0, 0))
-    raio = lado * 33 / 108
-    desenho = ImageDraw.Draw(img)
-    tam = raio * 0.28
-    centro = lado / 2
-    for (fx, fy), cor in zip(
-        [(-0.68, -0.42), (0.68, -0.48), (0.72, 0.2), (-0.72, 0.28)], BLOCOS
-    ):
-        bloco(
-            desenho,
-            centro + fx * raio - tam / 2,
-            centro + fy * raio - tam / 2,
-            tam,
-            cor,
-        )
-    img.alpha_composite(capi_em(lado, round(raio * 1.62)))
-    return img
-
-
 def salvar(img, pasta, nome):
     destino = RES / pasta / nome
     destino.parent.mkdir(parents=True, exist_ok=True)
@@ -95,5 +61,4 @@ def salvar(img, pasta, nome):
 for nome, d in DENSIDADES.items():
     salvar(capi_em(round(288 * d), round(150 * d)), f'drawable-{nome}', 'splash_capi.png')
     salvar(marca(round(200 * d), round(80 * d)), f'drawable-{nome}', 'splash_marca.png')
-    salvar(frente_icone(round(108 * d)), f'mipmap-{nome}', 'ic_launcher_frente.png')
 print('Imagens geradas em', RES)
