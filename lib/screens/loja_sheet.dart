@@ -5,6 +5,7 @@ import '../core/mercado.dart';
 import '../core/passe.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
+import '../services/plataforma.dart';
 import '../services/analytics.dart';
 import '../services/progress_store.dart';
 import '../shop/loja_service.dart';
@@ -23,11 +24,12 @@ Future<void> showLoja(BuildContext context, AppServices services) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    showDragHandle: true,
     backgroundColor: Palette.panel,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (context) => _Loja(services: services),
+    builder: (context) => ComFechar(child: _Loja(services: services)),
   );
 }
 
@@ -105,7 +107,8 @@ class _LojaState extends State<_Loja> {
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+          // Room above to tap outside and close.
+          maxHeight: MediaQuery.sizeOf(context).height * 0.82,
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
@@ -232,10 +235,15 @@ class _LojaState extends State<_Loja> {
                 ),
               ),
               Text(
-                tr(
-                  'O pagamento é feito pelo Google Play. Nada aqui é sorteio: '
-                  'você sempre sabe o que está comprando.',
-                ),
+                noIPhone
+                    ? tr(
+                        'O pagamento é feito pela App Store. Nada aqui é '
+                        'sorteio: você sempre sabe o que está comprando.',
+                      )
+                    : tr(
+                        'O pagamento é feito pelo Google Play. Nada aqui é '
+                        'sorteio: você sempre sabe o que está comprando.',
+                      ),
                 textAlign: TextAlign.center,
                 style: bodyText(12, color: Palette.textDim),
               ),

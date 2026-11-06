@@ -22,6 +22,16 @@ test.describe('Loja do Capi', () => {
     await expect(page.getByRole('button', { name: /^Comprar Remover anúncios por/ })).toHaveCount(0);
   });
 
+  test('a loja fecha pelo botão Fechar', async ({ page }) => {
+    await openApp(page, { stars: 5 });
+    await page.getByRole('button', { name: 'Loja' }).click();
+    await expect(page.getByText('Loja do Capi')).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('button', { name: 'Fechar' }).click();
+    await expect(page.getByText('Loja do Capi')).toHaveCount(0, { timeout: 10_000 });
+    // Back on the menu, which takes taps again.
+    await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
+  });
+
   test('dobrar as estrelas da fase com um vídeo', async ({ page }) => {
     await openApp(page, { level: 2, stars: 0 });
     await startLevel(page);

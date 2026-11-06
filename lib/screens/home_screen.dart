@@ -22,6 +22,7 @@ import '../services/jogo_salvo.dart';
 import '../services/musica.dart';
 import '../services/placares.dart';
 import '../services/progress_store.dart';
+import '../testing/test_bridge.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/oferta_nuvem.dart';
@@ -62,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     widget.services.loja.addListener(_lojaMudou);
     widget.services.feedback.musica.tocar(Trilha.menu);
+    _talvezSugerir();
     // Let the menu show first, then the gift (and any update) over it.
     _abertura = Timer(const Duration(milliseconds: 600), () async {
       await _presenteDoDia();
@@ -163,6 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     widget.services.loja.removeListener(_lojaMudou);
     _abertura?.cancel();
+    _sugestaoTimer?.cancel();
     super.dispose();
   }
 
@@ -220,6 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _locked(String mode, int level) {
+    _sairDaFolha();
     widget.services.feedback.click();
     setState(
       () => _hint = tr('Chegue na fase {n} que eu libero o {modo} pra você!', {
@@ -253,6 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int? duelTargetScore,
     String? duelRivalName,
   }) async {
+    _sairDaFolha();
     widget.services.feedback.click();
     if (mode == GameMode.endless) {
       widget.services.store.markSeen('opened_endless');
@@ -280,6 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openTower() async {
+    _sairDaFolha();
     Analytics.event('screen_open', {'screen': 'tower'});
     widget.services.feedback.click();
     widget.services.store.markSeen('opened_tower');
@@ -376,6 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openDuelDialog() {
+    _sairDaFolha();
     widget.services.feedback.click();
     final seed = DateTime.now().millisecondsSinceEpoch % 1000000;
     showDialog<void>(
@@ -471,6 +478,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final next = Village.suggestion(store.villageItems);
     final canBuild = next != null && store.stars >= next.cost;
     return MenuCard(
+      compact: true,
       icon: Icons.cottage_rounded,
       color: Palette.blocks[3],
       title: tr('Vila do Capi'),
@@ -488,6 +496,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _obrasCard(ProgressStore store) {
     if (!Onboarding.obrasUnlocked(store)) {
       return MenuCard(
+        compact: true,
         icon: Icons.lock_rounded,
         color: Palette.panelEdge,
         title: tr('Obras'),
@@ -496,6 +505,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     return MenuCard(
+      compact: true,
       icon: Icons.architecture_rounded,
       color: Palette.blocks[6],
       title: tr('Obras'),
@@ -506,6 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openObras() async {
+    _sairDaFolha();
     Analytics.event('screen_open', {'screen': 'obras'});
     widget.services.feedback.click();
     widget.services.store.markSeen('opened_obras');
@@ -520,6 +531,179 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) setState(() {});
   }
 
+  Widget _endlessCard(ProgressStore store) {
+    if (!Onboarding.endlessUnlocked(store)) {
+      return MenuCard(
+        compact: true,
+        icon: Icons.lock_rounded,
+        color: Palette.panelEdge,
+        title: tr('Infinito'),
+        subtitle: tr('Libera na fase {n}', {'n': Onboarding.endlessAt}),
+        onTap: () => _locked('Infinito', Onboarding.endlessAt),
+      );
+    }
+    return MenuCard(
+      compact: true,
+      icon: Icons.all_inclusive_rounded,
+      color: Palette.blocks[5],
+      title: tr('Infinito'),
+      subtitle: store.bestScore > 0
+          ? tr('Recorde {n}', {'n': formatInt(store.bestScore)})
+          : tr('Sem metas, sem fim'),
+      badge: store.hasSeen('opened_endless') ? null : tr('NOVO'),
+      onTap: () => _open(GameMode.endless),
+    );
+  }
+
+  /// A mode the player has unlocked but never opened: "NOVO" on Modos.
+  bool _modoNovo(ProgressStore store) =>
+      (Onboarding.endlessUnlocked(store) && !store.hasSeen('opened_endless')) ||
+      (Onboarding.blitzUnlocked(store) && !store.hasSeen('opened_blitz')) ||
+      (Onboarding.duelUnlocked(store) && !store.hasSeen('opened_duel')) ||
+      (Onboarding.towerUnlocked(store) && !store.hasSeen('opened_tower')) ||
+      (Onboarding.obrasUnlocked(store) && !store.hasSeen('opened_obras'));
+
+  /// Every other way to play, in one sheet: the menu keeps room for the
+  /// road.
+  Future<void> _openModos() async {
+    Analytics.event('screen_open', {'screen': 'modos'});
+    widget.services.feedback.click();
+    final store = widget.services.store;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        _folha = Navigator.of(ctx);
+        Widget toque(Widget Function(ProgressStore) card) => card(store);
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.all(12),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: Palette.panel,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Palette.panelEdge, width: 2),
+            ),
+            // A close button too: the iPhone has no back button.
+            child: ComFechar(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        tr('Modos de jogo'),
+                        style: displayText(20, color: Palette.text),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Row(
+                      children: [
+                        Expanded(child: toque(_endlessCard)),
+                        const SizedBox(width: 10),
+                        Expanded(child: toque(_blitzCard)),
+                        const SizedBox(width: 10),
+                        Expanded(child: toque(_duelCard)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: toque(_towerCard)),
+                        const SizedBox(width: 10),
+                        Expanded(child: toque(_obrasCard)),
+                        const SizedBox(width: 10),
+                        const Expanded(child: SizedBox.shrink()),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    _folha = null;
+    if (mounted) setState(() {});
+  }
+
+  /// The Modos sheet while it is open: a mode chosen in it closes it first.
+  NavigatorState? _folha;
+
+  void _sairDaFolha() {
+    final folha = _folha;
+    _folha = null;
+    if (folha != null && folha.mounted && folha.canPop()) folha.pop();
+  }
+
+  Future<void> _openMercado() async {
+    Analytics.event('screen_open', {'screen': 'mercado'});
+    widget.services.feedback.click();
+    await WardrobeDialog.show(context, widget.services, mercado: true);
+    if (mounted) setState(() {});
+  }
+
+  /// The leaderboards (Google Play Games, Game Center); on the web, where
+  /// there are none, the player's own records.
+  Future<void> _openRanking() async {
+    Analytics.event('screen_open', {'screen': 'ranking'});
+    widget.services.feedback.click();
+    if (Placares.ativo &&
+        await Placares.mostrar(widget.services.store) &&
+        mounted) {
+      return;
+    }
+    if (mounted) await showStats(context, widget.services);
+  }
+
+  /// Now and then Capi shows himself in something from the wardrobe: on
+  /// the first menu of a session and then every third, when nothing else
+  /// is being said.
+  static int _menus = 0;
+  Cosmetic? _sugestao;
+  Timer? _sugestaoTimer;
+
+  void _talvezSugerir() {
+    // Browser tests keep Capi as he is (they look at the menu around him).
+    if (kTestBridge || _menus++ % 3 != 0) return;
+    _sugestaoTimer = Timer(const Duration(seconds: 7), () {
+      if (!mounted || _capiLine != null) return;
+      if (ModalRoute.of(context)?.isCurrent != true) return;
+      final item = _escolherSugestao(widget.services.store);
+      if (item == null) return;
+      Analytics.event('capi_sugestao', {'item': item.id});
+      setState(() => _sugestao = item);
+      _sugestaoTimer = Timer(const Duration(seconds: 7), () {
+        if (mounted) setState(() => _sugestao = null);
+      });
+    });
+  }
+
+  /// Something the player doesn't have yet, best one they can buy now.
+  static Cosmetic? _escolherSugestao(ProgressStore store) {
+    final faltam = [
+      for (final c in Wardrobe.catalog)
+        if (!Wardrobe.owns(store, c) && c.preco != null) c,
+    ];
+    if (faltam.isEmpty) return null;
+    final cabe = [
+      for (final c in faltam)
+        if (c.preco! <= store.stars) c,
+    ];
+    final lista = cabe.isNotEmpty ? cabe : faltam;
+    return lista[Random().nextInt(lista.length)];
+  }
+
+  Future<void> _verSugestao() async {
+    _sugestaoTimer?.cancel();
+    setState(() => _sugestao = null);
+    await _openWardrobe();
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = widget.services.store;
@@ -527,11 +711,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final dailyDone = store.dailyDone(today);
     final streak = store.dailyStreak(today);
     final dailyOpen = Onboarding.dailyUnlocked(store);
-    final endlessOpen = Onboarding.endlessUnlocked(store);
-    final hasExtraModes =
-        Onboarding.blitzUnlocked(store) ||
-        Onboarding.duelUnlocked(store) ||
-        Onboarding.towerUnlocked(store);
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isSmall = MediaQuery.sizeOf(context).height < 720;
     final horizontalPadding = screenWidth < 360 ? 12.0 : 20.0;
@@ -595,17 +774,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : null,
                               onTap: _openDailyMissions,
                             ),
-                            SizedBox(width: buttonGap),
-                            RoundIconButton(
-                              icon: Icons.checkroom_rounded,
-                              label: tr('Guarda-Roupa'),
-                              onTap: _openWardrobe,
-                            ),
-                            SizedBox(width: buttonGap),
-                            // No room for one more button on small phones:
-                            // with a shop, the statistics move to the
-                            // settings.
-                            if (widget.services.loja.disponivel)
+                            if (widget.services.loja.disponivel) ...[
+                              SizedBox(width: buttonGap),
                               _LojaBotao(
                                 badge:
                                     Entrega.mostraPacoteInicial(
@@ -615,14 +785,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ? '!'
                                     : null,
                                 onTap: _openLoja,
-                              )
-                            else
-                              RoundIconButton(
-                                icon: Icons.bar_chart_rounded,
-                                label: tr('Estatísticas'),
-                                onTap: () =>
-                                    showStats(context, widget.services),
                               ),
+                            ],
                             SizedBox(width: buttonGap),
                             RoundIconButton(
                               icon: Icons.settings_rounded,
@@ -632,12 +796,54 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        SizedBox(height: isSmall ? 8 : 18),
-                        Logo(compact: isSmall, showCapi: false),
+                        if (!isSmall) ...[
+                          const SizedBox(height: 6),
+                          Logo(compact: true, showCapi: false),
+                        ],
+                        SizedBox(height: isSmall ? 8 : 10),
+                        // What the player looks at first: dressing Capi,
+                        // the market and the leaderboards.
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _Destaque(
+                                icon: Icons.checkroom_rounded,
+                                cor: const Color(0xFFE8590C),
+                                titulo: tr('Guarda-Roupa'),
+                                subtitulo: tr('Vista o Capi'),
+                                onTap: _openWardrobe,
+                              ),
+                            ),
+                            SizedBox(width: buttonGap + 2),
+                            Expanded(
+                              child: _Destaque(
+                                icon: Icons.diamond_rounded,
+                                cor: const Color(0xFF9C36B5),
+                                titulo: tr('Mercado'),
+                                subtitulo: tr('Lendário do dia'),
+                                onTap: _openMercado,
+                              ),
+                            ),
+                            SizedBox(width: buttonGap + 2),
+                            Expanded(
+                              child: _Destaque(
+                                icon: Icons.emoji_events_rounded,
+                                cor: const Color(0xFF1971C2),
+                                titulo: tr('Ranking'),
+                                subtitulo: store.bestScore > 0
+                                    ? tr('Recorde {n}', {
+                                        'n': formatInt(store.bestScore),
+                                      })
+                                    : tr('Placares'),
+                                onTap: _openRanking,
+                              ),
+                            ),
+                          ],
+                        ),
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.symmetric(
-                              vertical: isSmall ? 4 : 10,
+                              vertical: isSmall ? 4 : 8,
                             ),
                             // Capi stands big by the road, in everything
                             // he wears; the road keeps clear of him.
@@ -647,7 +853,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   150.0,
                                   max(96.0, box.maxHeight * 0.42),
                                 );
+                                final sugestao = _sugestao;
+                                final look = sugestao == null
+                                    ? CapiLook.of(store)
+                                    : CapiLook.of(store).wearing(sugestao);
                                 return Stack(
+                                  clipBehavior: Clip.none,
                                   children: [
                                     Positioned.fill(
                                       child: LevelPath(
@@ -671,14 +882,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                         excludeSemantics: true,
                                         onTap: _tip,
                                         child: GestureDetector(
-                                          onTap: _tip,
-                                          child: Capi(
-                                            size: capi,
-                                            look: CapiLook.of(store),
-                                          ),
+                                          onTap: sugestao == null
+                                              ? _tip
+                                              : _verSugestao,
+                                          child: Capi(size: capi, look: look),
                                         ),
                                       ),
                                     ),
+                                    if (sugestao != null)
+                                      Positioned(
+                                        left: 0,
+                                        bottom: capi * 0.98,
+                                        child: _SugestaoBalao(
+                                          texto: tr(
+                                            'Que tal {item}? Fica a minha cara!',
+                                            {'item': sugestao.label},
+                                          ),
+                                          onTap: _verSugestao,
+                                        ),
+                                      ),
                                   ],
                                 );
                               },
@@ -691,20 +913,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           label: tr('Jogar · Fase {n}', {'n': store.level}),
                           onTap: () => _open(GameMode.levels),
                         ),
-                        SizedBox(height: isSmall ? 10 : 22),
+                        SizedBox(height: isSmall ? 10 : 18),
                         Row(
                           children: [
                             Expanded(child: _villageCard(store)),
-                            const SizedBox(width: 12),
-                            Expanded(child: _obrasCard(store)),
-                          ],
-                        ),
-                        SizedBox(height: isSmall ? 10 : 26),
-                        Row(
-                          children: [
+                            SizedBox(width: buttonGap + 4),
                             Expanded(
                               child: dailyOpen
                                   ? MenuCard(
+                                      compact: true,
                                       icon: dailyDone
                                           ? Icons.check_circle_rounded
                                           : Icons.calendar_today_rounded,
@@ -721,6 +938,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       onTap: () => _open(GameMode.daily),
                                     )
                                   : MenuCard(
+                                      compact: true,
                                       icon: Icons.lock_rounded,
                                       color: Palette.panelEdge,
                                       title: tr('Desafio diário'),
@@ -733,50 +951,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: buttonGap + 4),
                             Expanded(
-                              child: endlessOpen
-                                  ? MenuCard(
-                                      icon: Icons.all_inclusive_rounded,
-                                      color: Palette.blocks[5],
-                                      title: tr('Infinito'),
-                                      subtitle: store.bestScore > 0
-                                          ? tr('Recorde {n}', {
-                                              'n': formatInt(store.bestScore),
-                                            })
-                                          : tr('Sem metas, sem fim'),
-                                      badge: store.hasSeen('opened_endless')
-                                          ? null
-                                          : tr('NOVO'),
-                                      onTap: () => _open(GameMode.endless),
-                                    )
-                                  : MenuCard(
-                                      icon: Icons.lock_rounded,
-                                      color: Palette.panelEdge,
-                                      title: tr('Infinito'),
-                                      subtitle: tr('Libera na fase {n}', {
-                                        'n': Onboarding.endlessAt,
-                                      }),
-                                      onTap: () => _locked(
-                                        'Infinito',
-                                        Onboarding.endlessAt,
-                                      ),
-                                    ),
+                              child: MenuCard(
+                                compact: true,
+                                icon: Icons.sports_esports_rounded,
+                                color: Palette.blocks[5],
+                                title: tr('Modos'),
+                                subtitle: tr('Modos de jogo'),
+                                badge: _modoNovo(store) ? tr('NOVO') : null,
+                                onTap: _openModos,
+                              ),
                             ),
                           ],
                         ),
-                        if (hasExtraModes) ...[
-                          SizedBox(height: isSmall ? 10 : 12),
-                          Row(
-                            children: [
-                              Expanded(child: _blitzCard(store)),
-                              const SizedBox(width: 10),
-                              Expanded(child: _duelCard(store)),
-                              const SizedBox(width: 10),
-                              Expanded(child: _towerCard(store)),
-                            ],
-                          ),
-                        ],
                         SizedBox(height: isSmall ? 10 : 16),
                       ],
                     ),
@@ -985,4 +1173,142 @@ class _PontaBalao extends CustomPainter {
 
   @override
   bool shouldRepaint(_PontaBalao old) => false;
+}
+
+/// One of the three big buttons under the top bar: wardrobe, market,
+/// leaderboards.
+class _Destaque extends StatelessWidget {
+  const _Destaque({
+    required this.icon,
+    required this.cor,
+    required this.titulo,
+    required this.subtitulo,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color cor;
+  final String titulo;
+  final String subtitulo;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: titulo,
+      hint: subtitulo,
+      excludeSemantics: true,
+      onTap: onTap,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 62,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color.lerp(cor, Colors.white, 0.15)!, cor],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border(
+              bottom: BorderSide(
+                color: Color.lerp(cor, Colors.black, 0.35)!,
+                width: 4,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 24),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        titulo,
+                        maxLines: 1,
+                        style: displayText(15, color: Colors.white),
+                      ),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        subtitulo,
+                        maxLines: 1,
+                        style: bodyText(11, color: const Color(0xDDFFFFFF)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Capi's balloon over his head when he shows himself in something new.
+class _SugestaoBalao extends StatelessWidget {
+  const _SugestaoBalao({required this.texto, required this.onTap});
+  final String texto;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: texto,
+      excludeSemantics: true,
+      onTap: onTap,
+      child: GestureDetector(
+        onTap: onTap,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutBack,
+          builder: (context, v, child) => Transform.scale(
+            scale: v,
+            alignment: Alignment.bottomLeft,
+            child: child,
+          ),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 190),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: const [
+                BoxShadow(color: Color(0x55000000), blurRadius: 6),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  texto,
+                  style: displayText(13, color: const Color(0xFF2A1458)),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  tr('Ver no guarda-roupa ›'),
+                  style: bodyText(11, color: const Color(0xFF7048E8)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

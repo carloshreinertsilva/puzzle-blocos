@@ -18,17 +18,20 @@ Future<void> showSettings(BuildContext context, AppServices services) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    showDragHandle: true,
     backgroundColor: Palette.panel,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (sheet) => _Settings(
-      services: services,
-      // Statistics replace the settings, so only one sheet is open.
-      onStats: () {
-        Navigator.of(sheet).pop();
-        showStats(context, services);
-      },
+    builder: (sheet) => ComFechar(
+      child: _Settings(
+        services: services,
+        // Statistics replace the settings, so only one sheet is open.
+        onStats: () {
+          Navigator.of(sheet).pop();
+          showStats(context, services);
+        },
+      ),
     ),
   );
 }
@@ -221,7 +224,7 @@ class _SettingsState extends State<_Settings> {
                   ),
                 ),
 
-              // Google Play Games leaderboards (Android only).
+              // Leaderboards: Google Play Games or Game Center.
               if (Placares.ativo)
                 ListTile(
                   leading: const Icon(
@@ -230,7 +233,7 @@ class _SettingsState extends State<_Settings> {
                   ),
                   title: Text(tr('Placares'), style: bodyText(16)),
                   subtitle: Text(
-                    tr('Google Play Games'),
+                    Placares.nome,
                     style: bodyText(13, color: Palette.textDim),
                   ),
                   onTap: () async {
@@ -239,7 +242,9 @@ class _SettingsState extends State<_Settings> {
                     if (!ok && context.mounted) {
                       await _aviso(
                         context,
-                        tr('Não deu para entrar no Play Games agora.'),
+                        tr('Não deu para entrar no {servico} agora.', {
+                          'servico': Placares.nome,
+                        }),
                       );
                     }
                   },
@@ -249,7 +254,7 @@ class _SettingsState extends State<_Settings> {
                 ),
 
               // Progress saved in Google Play Games (Android only).
-              if (Placares.ativo)
+              if (JogoSalvo.ativo)
                 ListTile(
                   leading: const Icon(
                     Icons.cloud_sync_rounded,
@@ -272,7 +277,8 @@ class _SettingsState extends State<_Settings> {
                     Progresso? nuvem;
                     if (!await Placares.entrar(store)) {
                       resultado = tr(
-                        'Não deu para entrar no Play Games agora.',
+                        'Não deu para entrar no {servico} agora.',
+                        {'servico': Placares.nome},
                       );
                     } else {
                       nuvem = await JogoSalvo.verificarDeNovo(store);

@@ -24,9 +24,8 @@ abstract final class AdConfig {
   static const prodRewardedAndroid = 'ca-app-pub-2477171262502738/4877674077';
   static const prodInterstitialAndroid =
       'ca-app-pub-2477171262502738/8764948192';
-  // The iOS app in AdMob (empty until it is created there).
-  static const prodRewardedIos = '';
-  static const prodInterstitialIos = '';
+  static const prodRewardedIos = 'ca-app-pub-2477171262502738/1093184181';
+  static const prodInterstitialIos = 'ca-app-pub-2477171262502738/5442271540';
 
   static String get _prodRewarded =>
       _ios ? prodRewardedIos : prodRewardedAndroid;

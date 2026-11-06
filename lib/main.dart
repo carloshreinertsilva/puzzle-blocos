@@ -37,7 +37,10 @@ Future<void> main() async {
     SemanticsBinding.instance.ensureSemantics();
     TestBridge.instance.install();
   }
-  Placares.ativo = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  Placares.ativo =
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
   CapiArte.ativa = true;
   if (kIsWeb) {
     // The page's own loading screen (web/index.html) covers the start.

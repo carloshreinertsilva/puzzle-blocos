@@ -101,7 +101,9 @@ jobs:
     # (R8), like the white start screen of v1.0.1.
     name: Android (.aab e abre no emulador)
     if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
-    runs-on: ubuntu-latest
+    # Fixo, como o Playwright: no ubuntu-latest (26.04) o emulador às vezes
+    # caía no meio do teste.
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     env:
       KEYSTORE_BASE64: ${{ secrets.CAPI_KEYSTORE_BASE64 }}
@@ -167,8 +169,11 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Abrir o jogo no emulador
+        # The emulator once died mid-test and adb waited 40 minutes for it.
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
+          ram-size: 4096M
           api-level: 34
           arch: x86_64
           target: google_apis

@@ -91,6 +91,7 @@ class _GameScreenState extends State<GameScreen> {
     game ??= PuzzleGame(
       controller: controller,
       topInset: MediaQuery.paddingOf(context).top + hudHeight,
+      bottomInset: MediaQuery.paddingOf(context).bottom,
     );
   }
 
@@ -100,22 +101,27 @@ class _GameScreenState extends State<GameScreen> {
   Timer? _desafiosTimer;
   GameSession? _desafiosDe;
 
+  /// The stars button at the top: the challenges card grows out of it and
+  /// shrinks back into it.
+  final _estrelasKey = GlobalKey();
+
   bool get _comDesafios => widget.mode == GameMode.levels && !_onboarding;
 
   void _aoMudar() {
     if (!_comDesafios || !controller.playing) return;
     if (identical(_desafiosDe, controller.session)) return;
     _desafiosDe = controller.session;
-    // After the level's title has played ("Fase 12 / Quebre as pedras").
+    // As the level's title ("Fase 12 / Quebre as pedras") fades out.
     _desafiosTimer?.cancel();
-    _desafiosTimer = Timer(const Duration(milliseconds: 2400), _verDesafios);
+    _desafiosTimer = Timer(const Duration(milliseconds: 1500), _verDesafios);
   }
 
   void _verDesafios() {
     if (!mounted) return;
     _desafiosTimer?.cancel();
     setState(() => _desafios = true);
-    _desafiosTimer = Timer(const Duration(milliseconds: 4500), () {
+    // Short: it is read at a glance, and the stars button brings it back.
+    _desafiosTimer = Timer(const Duration(milliseconds: 2400), () {
       if (mounted) setState(() => _desafios = false);
     });
   }
@@ -277,7 +283,12 @@ class _GameScreenState extends State<GameScreen> {
       top: MediaQuery.paddingOf(context).top + hudHeight + 6,
       child: IgnorePointer(
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 420),
+          transitionBuilder: (child, animation) => _RumoAsEstrelas(
+            animation: animation,
+            estrelas: _estrelasKey,
+            child: child,
+          ),
           child: !show
               ? const SizedBox.shrink()
               : Center(
@@ -562,6 +573,7 @@ class _GameScreenState extends State<GameScreen> {
                             onPause: () => controller.setPaused(true),
                             onTools: _openToolsSheet,
                             onDesafios: _comDesafios ? _verDesafios : null,
+                            estrelasKey: _estrelasKey,
                           ),
                   ),
                 ),
@@ -753,19 +765,25 @@ class _CapiPopUp extends StatelessWidget {
       right: 8,
       bottom: MediaQuery.paddingOf(context).bottom + 4,
       child: IgnorePointer(
-        child: AnimatedSlide(
-          offset: visible ? Offset.zero : const Offset(0, 1.3),
-          duration: const Duration(milliseconds: 380),
-          curve: visible ? Curves.easeOutBack : Curves.easeIn,
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 300),
-              child: CapiSays(
-                key: ValueKey(controller.capiSeq),
-                text: controller.capiSays,
-                mood: mood,
-                capiSize: 70,
+        // Faded out as well as slid down: on phones with a tall bottom bar
+        // (iPhone), the slide alone left the top of his helmet showing.
+        child: AnimatedOpacity(
+          opacity: visible ? 1 : 0,
+          duration: Duration(milliseconds: visible ? 120 : 380),
+          child: AnimatedSlide(
+            offset: visible ? Offset.zero : const Offset(0, 1.3),
+            duration: const Duration(milliseconds: 380),
+            curve: visible ? Curves.easeOutBack : Curves.easeIn,
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: CapiSays(
+                  key: ValueKey(controller.capiSeq),
+                  text: controller.capiSays,
+                  mood: mood,
+                  capiSize: 70,
+                ),
               ),
             ),
           ),
@@ -835,6 +853,7 @@ class _Hud extends StatelessWidget {
     required this.onPause,
     required this.onTools,
     this.onDesafios,
+    this.estrelasKey,
   });
   final GameController controller;
   final VoidCallback onPause;
@@ -842,6 +861,7 @@ class _Hud extends StatelessWidget {
 
   /// Levels mode: the three star challenges sit by the goals.
   final VoidCallback? onDesafios;
+  final Key? estrelasKey;
 
   @override
   Widget build(BuildContext context) {
@@ -925,6 +945,7 @@ class _Hud extends StatelessWidget {
               stars: onDesafios == null
                   ? null
                   : _StarStrip(
+                      key: estrelasKey,
                       bits: controller.liveStarBits,
                       onTap: onDesafios!,
                     ),
@@ -2318,7 +2339,7 @@ class _DuelOutcomeCard extends StatelessWidget {
 /// "no second chance" one stays lit until the second chance is used). A tap
 /// shows what each one asks.
 class _StarStrip extends StatelessWidget {
-  const _StarStrip({required this.bits, required this.onTap});
+  const _StarStrip({super.key, required this.bits, required this.onTap});
   final int bits;
   final VoidCallback onTap;
 
@@ -2357,4 +2378,55 @@ class _StarStrip extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// The challenges card grows out of the stars button at the top and
+/// shrinks back into it.
+class _RumoAsEstrelas extends StatelessWidget {
+  const _RumoAsEstrelas({
+    required this.animation,
+    required this.estrelas,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final GlobalKey estrelas;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      child: child,
+      builder: (context, child) {
+        final v = Curves.easeInOutCubic.transform(animation.value);
+        return Opacity(
+          opacity: v.clamp(0.0, 1.0),
+          child: Transform.scale(
+            scale: 0.08 + 0.92 * v,
+            alignment: _alvo(context),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Where the stars button is, seen from the card (the card is already
+  /// laid out once it shrinks away; before that, up and to the right).
+  Alignment _alvo(BuildContext context) {
+    const padrao = Alignment(0.4, -1.4);
+    final alvo = estrelas.currentContext?.findRenderObject();
+    final eu = context.findRenderObject();
+    if (alvo is! RenderBox || eu is! RenderBox) return padrao;
+    if (!alvo.hasSize || !eu.hasSize || !alvo.attached || !eu.attached) {
+      return padrao;
+    }
+    final centro = eu.globalToLocal(
+      alvo.localToGlobal(alvo.size.center(Offset.zero)),
+    );
+    final w = eu.size.width, h = eu.size.height;
+    if (w <= 0 || h <= 0) return padrao;
+    return Alignment(centro.dx / w * 2 - 1, centro.dy / h * 2 - 1);
+  }
 }

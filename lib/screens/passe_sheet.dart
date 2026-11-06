@@ -4,6 +4,7 @@ import '../core/passe.dart';
 import '../core/wardrobe.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
+import '../services/plataforma.dart';
 import '../services/analytics.dart';
 import '../services/progress_store.dart';
 import '../shop/loja_service.dart';
@@ -241,7 +242,9 @@ class _PasseState extends State<_Passe> {
   Widget _premiumCta() {
     if (!_loja.disponivel) {
       return Text(
-        tr('A trilha premium sai no app Android (Google Play).'),
+        noIPhone
+            ? tr('A trilha premium ainda não está à venda no iPhone.')
+            : tr('A trilha premium sai no app Android (Google Play).'),
         textAlign: TextAlign.center,
         style: bodyText(12, color: Palette.textDim),
       );
