@@ -7,12 +7,26 @@ apk=build/app/outputs/flutter-apk/app-release.apk
 saida=build/android_abre
 mkdir -p "$saida"
 
-adb install -r "$apk" || exit 1
-adb logcat -c
-adb shell am start -W -n com.capiblocks.app/.MainActivity
+# adb waits forever for a device that went away ("- waiting for device -"):
+# if the emulator itself dies, fail in a minute or two, saying so, instead
+# of hanging until the job is cancelled.
+a() {
+  timeout 90 adb "$@"
+  local s=$?
+  if [ "$s" = 124 ]; then
+    echo "::error::O emulador parou de responder (adb $*). Falha do emulador do CI, não do jogo."
+    adb devices || true
+    exit 1
+  fi
+  return "$s"
+}
+
+a install -r "$apk" || exit 1
+a logcat -c
+a shell am start -W -n com.capiblocks.app/.MainActivity
 sleep 30
-adb exec-out screencap -p > "$saida/tela.png"
-adb logcat -d > "$saida/logcat.txt"
+a exec-out screencap -p > "$saida/tela.png"
+a logcat -d > "$saida/logcat.txt"
 
 falhou=0
 if grep -E 'Unhandled Exception|NoSuchMethodError|FATAL EXCEPTION' "$saida/logcat.txt"; then
@@ -21,7 +35,7 @@ if grep -E 'Unhandled Exception|NoSuchMethodError|FATAL EXCEPTION' "$saida/logca
   grep -E -A40 'FATAL EXCEPTION|Unhandled Exception' "$saida/logcat.txt" | head -120
   falhou=1
 fi
-if [ -z "$(adb shell pidof com.capiblocks.app | tr -d '[:space:]')" ]; then
+if [ -z "$(a shell pidof com.capiblocks.app | tr -d '[:space:]')" ]; then
   echo '::error::O jogo fechou sozinho ao abrir no Android.'
   falhou=1
 fi
