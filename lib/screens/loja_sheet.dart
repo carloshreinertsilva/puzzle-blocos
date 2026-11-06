@@ -24,11 +24,12 @@ Future<void> showLoja(BuildContext context, AppServices services) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    showDragHandle: true,
     backgroundColor: Palette.panel,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (context) => _Loja(services: services),
+    builder: (context) => ComFechar(child: _Loja(services: services)),
   );
 }
 
@@ -106,7 +107,8 @@ class _LojaState extends State<_Loja> {
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+          // Room above to tap outside and close.
+          maxHeight: MediaQuery.sizeOf(context).height * 0.82,
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
