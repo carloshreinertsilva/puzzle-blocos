@@ -48,6 +48,7 @@ test('depois da fase 3 o menu aparece com o Capi; modos liberam por fase', async
   await page.getByRole('button', { name: 'Bora!' }).click();
   await expect(page.getByRole('button', { name: /^Jogar · Fase 4/ })).toBeVisible();
 
+  await page.getByRole('button', { name: 'Modos' }).click();
   await page.getByRole('button', { name: 'Infinito' }).click();
   await expect(page.getByText(/fase 5 que eu libero o Infinito/)).toBeVisible();
   await page.getByRole('button', { name: 'Beleza!' }).click();
