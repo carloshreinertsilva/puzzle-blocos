@@ -22,6 +22,7 @@ async function buildAll(page: Page, onPlaced?: (i: number) => Promise<void>) {
 
 test('obras: arrastar as peças monta o desenho e dá estrelas', async ({ page }, testInfo) => {
   await openApp(page, { level: 6, stars: 0 });
+  await page.getByRole('button', { name: 'Modos' }).click();
   await page.getByRole('button', { name: /^Obras/ }).click();
   await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
   await page.waitForTimeout(400);
@@ -43,6 +44,7 @@ test('obras: arrastar as peças monta o desenho e dá estrelas', async ({ page }
 
 test('obras: dica mostra a peça e custa uma estrela', async ({ page }) => {
   await openApp(page, { level: 6 });
+  await page.getByRole('button', { name: 'Modos' }).click();
   await page.getByRole('button', { name: /^Obras/ }).click();
   await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
   await page.getByRole('button', { name: 'Dica' }).click();
@@ -67,6 +69,7 @@ async function drop(page: Page, piece: number) {
 // Only the first hint is free: the next ones cost 5 stars or a video.
 test('obras: a segunda dica custa estrelas ou um vídeo', async ({ page }) => {
   await openApp(page, { level: 6, stars: 10 });
+  await page.getByRole('button', { name: 'Modos' }).click();
   await page.getByRole('button', { name: /^Obras/ }).click();
   await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
   await page.waitForTimeout(400);
@@ -109,6 +112,7 @@ test('obras: a segunda dica custa estrelas ou um vídeo', async ({ page }) => {
 // player, on the lamp post).
 test('obras: peças na última linha do desenho encaixam', async ({ page }) => {
   await openApp(page, { level: 6, obraLevel: 6 });
+  await page.getByRole('button', { name: 'Modos' }).click();
   await page.getByRole('button', { name: /^Obras/ }).click();
   await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
   await page.waitForTimeout(400);

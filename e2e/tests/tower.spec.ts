@@ -7,6 +7,7 @@ test.describe('Torre do Capi em 2.5D', () => {
     await openApp(page, { level: 10, seen_opened_tower: true });
 
     // Localiza e clica no cartão da Torre do Capi
+    await page.getByRole('button', { name: 'Modos' }).click();
     const towerCard = page.getByRole('button', { name: /^Torre do Capi/ });
     await expect(towerCard).toBeVisible();
     await towerCard.click();

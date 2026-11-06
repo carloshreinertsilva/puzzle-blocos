@@ -9,6 +9,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await openApp(page, { level: 10, seen_opened_blitz: true });
 
     // Localiza e clica no cartão do Blitz 60s
+    await page.getByRole('button', { name: 'Modos' }).click();
     const blitzCard = page.getByRole('button', { name: /^Blitz 60s/ });
     await expect(blitzCard).toBeVisible();
     await blitzCard.click();
@@ -41,6 +42,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
 
   test('Blitz continua depois das primeiras peças (só o tempo encerra)', async ({ page }) => {
     await openApp(page, { level: 10, seen_opened_blitz: true });
+    await page.getByRole('button', { name: 'Modos' }).click();
     await page.getByRole('button', { name: /^Blitz 60s/ }).click();
     await waitForState(page, (s) => s.mode === 'blitz' && s.status === 'playing', 'blitz aberto');
     expect(await playMove(page)).toBe(true);
@@ -96,6 +98,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
 
   test('duelo pelo menu: explica o desafio, sem meta falsa, e no fim manda a marca', async ({ page }) => {
     await openApp(page, { level: 10, seen_opened_duel: true });
+    await page.getByRole('button', { name: 'Modos' }).click();
     await page.getByRole('button', { name: /^Duelo/ }).click();
     await expect(page.getByText('No fim, toque em Desafiar Amigo e mande o link.')).toBeVisible();
     await expect(page.getByText(/Semente/)).toHaveCount(0);
