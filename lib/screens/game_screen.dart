@@ -91,6 +91,7 @@ class _GameScreenState extends State<GameScreen> {
     game ??= PuzzleGame(
       controller: controller,
       topInset: MediaQuery.paddingOf(context).top + hudHeight,
+      bottomInset: MediaQuery.paddingOf(context).bottom,
     );
   }
 
@@ -753,19 +754,25 @@ class _CapiPopUp extends StatelessWidget {
       right: 8,
       bottom: MediaQuery.paddingOf(context).bottom + 4,
       child: IgnorePointer(
-        child: AnimatedSlide(
-          offset: visible ? Offset.zero : const Offset(0, 1.3),
-          duration: const Duration(milliseconds: 380),
-          curve: visible ? Curves.easeOutBack : Curves.easeIn,
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 300),
-              child: CapiSays(
-                key: ValueKey(controller.capiSeq),
-                text: controller.capiSays,
-                mood: mood,
-                capiSize: 70,
+        // Faded out as well as slid down: on phones with a tall bottom bar
+        // (iPhone), the slide alone left the top of his helmet showing.
+        child: AnimatedOpacity(
+          opacity: visible ? 1 : 0,
+          duration: Duration(milliseconds: visible ? 120 : 380),
+          child: AnimatedSlide(
+            offset: visible ? Offset.zero : const Offset(0, 1.3),
+            duration: const Duration(milliseconds: 380),
+            curve: visible ? Curves.easeOutBack : Curves.easeIn,
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: CapiSays(
+                  key: ValueKey(controller.capiSeq),
+                  text: controller.capiSays,
+                  mood: mood,
+                  capiSize: 70,
+                ),
               ),
             ),
           ),
