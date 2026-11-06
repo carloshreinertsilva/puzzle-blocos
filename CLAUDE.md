@@ -19,7 +19,9 @@ o `README.md`.
   enviados sem perguntar. **Produção na Google Play só depois de o Carlos
   confirmar no chat, a cada versão** (e as notas em `distribution/whatsnew/`
   revisadas). Cada envio precisa de um número de build novo no `pubspec.yaml`
-  (o do TestFlight é o número da execução do workflow).
+  (o do TestFlight é o número da execução do workflow). Para produção, a
+  versão já testada no teste interno é promovida (`promover-para-producao`),
+  sem compilar de novo.
 
 ## Pontos de atenção
 
