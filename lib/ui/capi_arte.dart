@@ -72,17 +72,16 @@ class PoseArte {
   final double w;
   final double h;
 
-  static const _feliz = PoseArte('feliz', 597, 249.5, 456, 1172, 1515);
-  static const _comemora = PoseArte('comemora', 646, 289.5, 452, 1282, 1517);
+  static const _feliz = PoseArte('feliz', 699.5, 379.5, 609, 1400, 1640);
 
   static const todas = {
     CapiMood.happy: _feliz,
-    CapiMood.cheer: _comemora,
-    CapiMood.worried: PoseArte('preocupado', 491, 251.5, 452, 959, 1516),
-    CapiMood.sad: PoseArte('triste', 605, 221.5, 434, 1170, 1476),
-    CapiMood.point: PoseArte('aponta', 607.5, 250, 445, 1354, 1517),
+    CapiMood.cheer: PoseArte('comemora', 450, 172.5, 289, 895, 936),
+    CapiMood.worried: PoseArte('preocupado', 547.5, 395.5, 609, 1098, 1649),
+    CapiMood.sad: PoseArte('triste', 279.5, 186, 299.5, 560, 812),
+    CapiMood.point: PoseArte('aponta', 335.5, 208.5, 308.5, 767, 837),
     // Arms up, the piece he carries over his head.
-    CapiMood.carry: _comemora,
+    CapiMood.carry: PoseArte('carrega', 780, 376, 609, 1562, 1633),
   };
 
   /// The fur colours the art is made in (anything else: caramel).
@@ -135,47 +134,54 @@ class ItemArte {
   static String asset(String id) => 'assets/capi/itens/$id.webp';
 
   static const todos = {
-    // Hats (ids as in CapiHat): the bottom of the hat on the head.
-    'helmet': ItemArte(1.06, 0, -0.05, fy: 1),
-    'fundador': ItemArte(1.06, 0, -0.05, fy: 1),
-    'straw': ItemArte(1.40, 0, -0.02, fy: 1),
-    'junino': ItemArte(1.40, 0, -0.02, fy: 1),
-    'pirate': ItemArte(1.30, 0, -0.06, fy: 1),
-    'touca': ItemArte(1.08, 0, 0.02, fy: 1),
-    'chef': ItemArte(0.85, 0, -0.12, fy: 1),
-    'wizard': ItemArte(1.10, 0, -0.06, fy: 1),
-    'vip': ItemArte(0.95, 0, -0.12, fy: 1),
-    'crown': ItemArte(0.85, 0, -0.30, fy: 1),
-    'coroa_estrelas': ItemArte(0.90, 0, -0.30, fy: 1),
-    'party': ItemArte(0.55, 0.20, -0.32, fy: 1),
+    // Hats (ids as in CapiHat): the bottom of the hat on the head, the brim
+    // just above the eyes, like the helmet in the icon.
+    'helmet': ItemArte(1.78, 0, -0.17, fy: 1),
+    'fundador': ItemArte(1.78, 0, -0.17, fy: 1),
+    'straw': ItemArte(2.15, 0, -0.14, fy: 1),
+    'junino': ItemArte(2.2, 0, -0.14, fy: 1),
+    'pirate': ItemArte(1.95, 0, -0.2, fy: 1),
+    'touca': ItemArte(1.62, 0, -0.1, fy: 1),
+    'chef': ItemArte(1.42, 0, -0.3, fy: 1),
+    'wizard': ItemArte(1.95, 0, -0.2, fy: 1),
+    'vip': ItemArte(1.35, 0, -0.36, fy: 1),
+    'crown': ItemArte(1.15, 0, -0.44, fy: 1),
+    'coroa_estrelas': ItemArte(1.22, 0, -0.44, fy: 1),
+    'party': ItemArte(0.78, 0.22, -0.46, fy: 1),
     // Face.
-    'oculos_sol': ItemArte(1.25, 0.01, 0.04, fy: 0.45),
-    'oculos_coracao': ItemArte(1.25, 0.01, 0.04, fy: 0.42),
-    'mascara_heroi': ItemArte(1.25, 0.01, 0.04, fy: 0.45),
-    'monoculo': ItemArte(0.55, 0.478, 0.034, fy: 0.30),
-    'bigode': ItemArte(0.94, -0.015, 0.593, fy: 0.40),
+    'oculos_sol': ItemArte(1.72, 0, 0.0),
+    'oculos_coracao': ItemArte(1.78, 0, 0.0),
+    'mascara_heroi': ItemArte(1.74, 0, -0.02),
+    'monoculo': ItemArte(0.62, 0.5, 0.0, fx: 0.45, fy: 0.43),
+    'bigode': ItemArte(1.02, 0, 0.5, fy: 0.42),
     // Neck.
     'cachecol': ItemArte(
-      1.40,
-      -0.015,
-      0.96,
-      fy: 0.12,
-      volta: Rect.fromLTRB(0.25, 0, 0.75, 0.33),
+      1.6,
+      0,
+      1.14,
+      fy: 0.22,
+      volta: Rect.fromLTRB(0.1, 0, 0.9, 0.24),
     ),
-    'gravata': ItemArte(0.62, -0.015, 1.08),
-    'lenco': ItemArte(1.06, -0.015, 0.95, fy: 0.10),
+    'gravata': ItemArte(0.72, 0, 1.05),
+    'lenco': ItemArte(
+      1.32,
+      0,
+      1.1,
+      fy: 0.14,
+      volta: Rect.fromLTRB(0.15, 0, 0.85, 0.22),
+    ),
     'colar_flores': ItemArte(
-      1.45,
-      -0.015,
-      0.88,
-      fy: 0.12,
-      volta: Rect.fromLTRB(0.22, 0, 0.75, 0.48),
+      1.58,
+      0,
+      1.12,
+      fy: 0.18,
+      volta: Rect.fromLTRB(0.15, 0, 0.85, 0.3),
     ),
     // Back (and the swim ring around the waist).
-    'asinhas': ItemArte(2.9, -0.015, 1.12, atras: true),
-    'capa_real': ItemArte(2.4, -0.015, 0.45, fy: 0, atras: true),
-    'mochila': ItemArte(1.75, -0.015, 0.40, fy: 0, atras: true),
-    'boia': ItemArte(2.22, -0.015, 1.909),
+    'asinhas': ItemArte(3.2, 0, 1.15, atras: true),
+    'capa_real': ItemArte(2.6, 0, 2.05, fy: 1, atras: true),
+    'mochila': ItemArte(2.4, 0, 0.85, atras: true),
+    'boia': ItemArte(2.7, 0, 1.6, fy: 0.62),
   };
 }
 
@@ -269,8 +275,8 @@ bool pintarCapiArte(
 /// [olhos] and the eye distance [d] (grid units).
 void _alcas(Canvas canvas, Offset olhos, double d) {
   for (final lado in [-1.0, 1.0]) {
-    final de = olhos + Offset(lado * 0.64 * d, 1.0 * d);
-    final ate = olhos + Offset(lado * 0.44 * d, 1.75 * d);
+    final de = olhos + Offset(lado * 0.58 * d, 0.86 * d);
+    final ate = olhos + Offset(lado * 0.52 * d, 1.62 * d);
     final meio = Offset.lerp(de, ate, 0.5)! + Offset(lado * 0.05 * d, 0);
     final alca = Path()
       ..moveTo(de.dx, de.dy)

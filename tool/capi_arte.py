@@ -2,7 +2,8 @@
 
     python3 tool/capi_arte.py
 
-Sources (painted with Gemini, background removed):
+Sources (painted with Gemini in the 3D vinyl style of the icon, background
+removed with tool/recortar_fundo.py):
   art/capi/fontes/poses/<pose>.webp   Capi in each pose (caramel fur)
   art/capi/fontes/itens/<id>.webp     each wardrobe item alone, front view
   art/capi/fontes/filhote*.webp       the pup, standing and sleeping
@@ -33,11 +34,12 @@ ITEM = 512
 
 # In source pixels: head centre x, eye line y, head width (cheek to cheek).
 POSES = {
-    "feliz": (590, 270, 780),
-    "comemora": (644, 300, 818),
-    "preocupado": (477, 274, 785),
-    "triste": (587, 229, 779),
-    "aponta": (589, 270, 788),
+    "feliz": (699.5, 379.5, 1010),
+    "comemora": (450, 172.5, 480),
+    "preocupado": (547.5, 395.5, 1010),
+    "triste": (279.5, 186, 499),
+    "aponta": (335.5, 208.5, 506),
+    "carrega": (780, 376, 1012),
 }
 
 # Things held that are not fur (source pixels: x0, y0, x1, y1).
@@ -55,8 +57,8 @@ COATS = {
 
 # Face landmarks, relative to the head (x from its centre, y from the eye
 # line, both in head widths); measured on the "feliz" pose.
-OLHOS = [(-0.263, 0.006), (0.301, 0.0)]
-BOCHECHAS = [(-0.333, 0.18), (0.397, 0.18)]
+OLHOS = [(-0.301, 0.0), (0.301, 0.0)]
+BOCHECHAS = [(-0.389, 0.15), (0.386, 0.155)]
 
 
 def _hex(c):
@@ -88,7 +90,7 @@ def recolorir(im, coat, cx, ey, hw, protegidos=()):
     yy, xx = np.mgrid[0 : a.shape[0], 0 : a.shape[1]]
     for dx, dy in OLHOS:
         d = np.hypot(xx - (cx + dx * hw), yy - (ey + dy * hw))
-        w *= _ss(d, 0.075 * hw, 0.10 * hw)
+        w *= _ss(d, 0.035 * hw, 0.05 * hw)
     # Only the pink of the cheeks is kept (the fur around them changes).
     dp = np.abs(((hue - 350) + 180) % 360 - 180)
     rosa = (1 - _ss(dp, 18, 30)) * _ss(sat, 0.10, 0.20)
@@ -107,7 +109,7 @@ def recolorir(im, coat, cx, ey, hw, protegidos=()):
     cor = np.where(t < 0.5, dark + (mid - dark) * (t / 0.5), mid + (light - mid) * ((t - 0.5) / 0.5))
     out = a.copy()
     out[..., :3] = a[..., :3] * (1 - w[..., None]) + cor * w[..., None]
-    return Image.fromarray(out.astype(np.uint8), "RGBA")
+    return Image.fromarray(out.astype(np.uint8))
 
 
 def _encolher(im, altura=None, lado=None):
@@ -135,9 +137,7 @@ def main():
         _salvar(_encolher(im, lado=ITEM), f"{SAIDA}/itens/{f}")
     print("itens", len(os.listdir(f"{FONTES}/itens")))
     _salvar(_encolher(Image.open(f"{FONTES}/filhote.webp").convert("RGBA"), altura=360), f"{SAIDA}/filhote.webp")
-    # The sleeping pup came out darker: same caramel as the standing one.
     dorme = Image.open(f"{FONTES}/filhote_dormindo.webp").convert("RGBA")
-    dorme = recolorir(dorme, ("#F6D3A6", "#D9A06A", "#A66C3C"), -9999, -9999, 1)
     _salvar(_encolher(dorme, altura=300), f"{SAIDA}/filhote_dormindo.webp")
     print("filhotes")
 
