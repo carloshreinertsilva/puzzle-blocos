@@ -579,43 +579,49 @@ class _HomeScreenState extends State<HomeScreen> {
         return SafeArea(
           child: Container(
             margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: Palette.panel,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: Palette.panelEdge, width: 2),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Semantics(
-                  header: true,
-                  child: Text(
-                    tr('Modos de jogo'),
-                    style: displayText(20, color: Palette.text),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
+            // A close button too: the iPhone has no back button.
+            child: ComFechar(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(child: toque(_endlessCard)),
-                    const SizedBox(width: 10),
-                    Expanded(child: toque(_blitzCard)),
-                    const SizedBox(width: 10),
-                    Expanded(child: toque(_duelCard)),
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        tr('Modos de jogo'),
+                        style: displayText(20, color: Palette.text),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Row(
+                      children: [
+                        Expanded(child: toque(_endlessCard)),
+                        const SizedBox(width: 10),
+                        Expanded(child: toque(_blitzCard)),
+                        const SizedBox(width: 10),
+                        Expanded(child: toque(_duelCard)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: toque(_towerCard)),
+                        const SizedBox(width: 10),
+                        Expanded(child: toque(_obrasCard)),
+                        const SizedBox(width: 10),
+                        const Expanded(child: SizedBox.shrink()),
+                      ],
+                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: toque(_towerCard)),
-                    const SizedBox(width: 10),
-                    Expanded(child: toque(_obrasCard)),
-                    const SizedBox(width: 10),
-                    const Expanded(child: SizedBox.shrink()),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
         );

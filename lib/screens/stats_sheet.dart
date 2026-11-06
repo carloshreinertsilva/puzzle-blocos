@@ -36,14 +36,17 @@ Future<void> showStats(BuildContext context, AppServices services) {
   ];
   return showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
     backgroundColor: Palette.panel,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (context) => ComFechar(
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+        // Scrolls on short screens (the iPhone SE cut the last row).
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
