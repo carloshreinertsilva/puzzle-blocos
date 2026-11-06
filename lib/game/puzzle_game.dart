@@ -104,7 +104,7 @@ class PuzzleGame extends FlameGame {
         position: Vector2(boardRect.center.dx, boardRect.center.dy),
         cellSize: cellSize * 0.85,
         subtitle: goalSummary(level),
-        hold: 1.2,
+        hold: 0.7,
         maxWidth: boardRect.width,
       )..priority = 40,
     );
