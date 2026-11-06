@@ -6,6 +6,7 @@ import '../core/wardrobe.dart';
 import '../l10n/idioma.dart';
 import '../shop/loja_service.dart';
 import '../main.dart';
+import '../services/plataforma.dart';
 import '../services/progress_store.dart';
 import '../ui/capi.dart';
 import '../ui/palette.dart';
@@ -509,7 +510,11 @@ class _WardrobeDialogState extends State<WardrobeDialog> {
           preco: loja.disponivel
               ? loja.preco(Mercado.produtoDe(lendario))
               : null,
-          rotulo: loja.disponivel ? null : tr('À venda no app Android'),
+          rotulo: loja.disponivel
+              ? null
+              : noIPhone
+              ? tr('Ainda não está à venda no iPhone')
+              : tr('À venda no app Android'),
           onComprar: loja.disponivel ? () => _comprarLendario(lendario) : null,
         ),
         for (final c in [Mercado.comumDoDia(agora), Mercado.raroDoDia(agora)])

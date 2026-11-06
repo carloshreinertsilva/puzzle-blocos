@@ -52,7 +52,7 @@ void main() {
     }
 
     expect(
-      find.text('Não deu para entrar no Play Games agora.'),
+      find.text('Não deu para entrar no Google Play Games agora.'),
       findsOneWidget,
     );
     expect(find.byType(AlertDialog), findsOneWidget);

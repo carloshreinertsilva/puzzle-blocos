@@ -70,8 +70,6 @@ const Map<String, String> enMenu = {
   'Esta versão do jogo é antiga demais. Atualize pela Play Store para continuar jogando — seu progresso continua salvo.': 'This version of the game is too old. Update it from the Play Store to keep playing — your progress stays saved.',
   'Atualizar agora': 'Update now',
   'Google Play Games': 'Google Play Games',
-  'Não deu para entrar no Play Games agora.':
-      "Couldn't sign in to Play Games right now.",
   'Vista o Capi': 'Dress up Capi',
   'Lendário do dia': 'Legendary of the day',
   'Ranking': 'Ranking',
@@ -136,6 +134,11 @@ const Map<String, String> enMenu = {
   '5. Seus Direitos e Exclusão (LGPD)':
       "5. Your Rights and Deletion (Brazil's LGPD)",
   'Você tem controle total. Para apagar os dados do aparelho, limpe os dados do app nas configurações ou desinstale o jogo. Os placares e o progresso na nuvem podem ser apagados pelo app Google Play Games ou pelo Google Drive. Passo a passo em capiblocks.vercel.app/excluir-dados': "You are in full control. To erase the data on your device, clear the app's data in your settings or uninstall the game. Leaderboard scores and cloud progress can be deleted in the Google Play Games app or in Google Drive. Step by step at capiblocks.vercel.app/excluir-dados",
+  'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho.': 'Your progress (levels, stars, Capi\'s Village items, records and preferences) is kept in your device\'s storage.',
+  '• Anúncios: os anúncios do Google AdMob podem usar o identificador de publicidade (só se você permitir no pedido de rastreamento do iPhone) e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo da App Store; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Game Center: se você entrar, suas melhores pontuações aparecem nos placares com o seu apelido do Game Center. Não recebemos seu e-mail nem dados da sua conta Apple.': '• Ads: Google AdMob ads may use the advertising identifier (only if you allow it in the iPhone tracking request) and diagnostic data, under Google\'s policies.\n• Usage statistics: Google Firebase Analytics anonymously records how the game is played (levels, modes, tools), so we know what to improve. You can turn it off in Settings → Usage statistics.\n• Purchases: payment is handled entirely by the App Store; we never receive card details. Nothing is sold by chance.\n• Game Center: if you sign in, your best scores appear on the leaderboards with your Game Center nickname. We never receive your email or your Apple account data.',
+  'Você tem controle total. Para apagar os dados do aparelho, desinstale o jogo. Suas pontuações nos placares podem ser apagadas em Ajustes → Game Center. Passo a passo em capiblocks.vercel.app/excluir-dados': 'You are fully in control. To delete the data on the device, uninstall the game. Your leaderboard scores can be deleted in Settings → Game Center. Step by step at capiblocks.vercel.app/excluir-dados',
+  'Não deu para entrar no {servico} agora.':
+      'Couldn\'t sign in to {servico} right now.',
   '6. Contato e Suporte Oficial': '6. Contact and Official Support',
   'Em caso de dúvidas sobre privacidade, suporte ou conformidade legal, entre em contato conosco:\n• E-mail: contato@chstech.dev.br\n• Website: https://www.chstech.dev.br': 'If you have questions about privacy, support or legal compliance, please contact us:\n• Email: contato@chstech.dev.br\n• Website: https://www.chstech.dev.br',
   'Ver na Web': 'View on the web',
@@ -298,8 +301,6 @@ const Map<String, String> esMenu = {
   'Esta versão do jogo é antiga demais. Atualize pela Play Store para continuar jogando — seu progresso continua salvo.': 'Esta versión del juego es demasiado antigua. Actualízala en Play Store para seguir jugando; tu progreso sigue guardado.',
   'Atualizar agora': 'Actualizar ahora',
   'Google Play Games': 'Google Play Juegos',
-  'Não deu para entrar no Play Games agora.':
-      'No se pudo entrar en Play Juegos ahora.',
   'Vista o Capi': 'Viste a Capi',
   'Lendário do dia': 'Legendario del día',
   'Ranking': 'Clasificación',
@@ -364,6 +365,11 @@ const Map<String, String> esMenu = {
   '5. Seus Direitos e Exclusão (LGPD)':
       '5. Tus derechos y eliminación (LGPD de Brasil)',
   'Você tem controle total. Para apagar os dados do aparelho, limpe os dados do app nas configurações ou desinstale o jogo. Os placares e o progresso na nuvem podem ser apagados pelo app Google Play Games ou pelo Google Drive. Passo a passo em capiblocks.vercel.app/excluir-dados': 'Tienes control total. Para borrar los datos del dispositivo, borra los datos de la app en los ajustes o desinstala el juego. Las clasificaciones y el progreso en la nube se pueden borrar en la app Google Play Juegos o en Google Drive. Paso a paso en capiblocks.vercel.app/excluir-dados',
+  'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho.': 'Tu progreso (niveles, estrellas, objetos de la Aldea de Capi, récords y preferencias) se guarda en el almacenamiento de tu dispositivo.',
+  '• Anúncios: os anúncios do Google AdMob podem usar o identificador de publicidade (só se você permitir no pedido de rastreamento do iPhone) e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo da App Store; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Game Center: se você entrar, suas melhores pontuações aparecem nos placares com o seu apelido do Game Center. Não recebemos seu e-mail nem dados da sua conta Apple.': '• Anuncios: los anuncios de Google AdMob pueden usar el identificador de publicidad (solo si lo permites en la solicitud de rastreo del iPhone) y datos de diagnóstico, según las políticas de Google.\n• Estadísticas de uso: Google Firebase Analytics registra de forma anónima cómo se juega (niveles, modos, herramientas), para saber qué mejorar. Puedes desactivarlo en Ajustes → Estadísticas de uso.\n• Compras: el pago lo hace todo la App Store; nunca recibimos datos de tarjetas. Nada se vende al azar.\n• Game Center: si entras, tus mejores puntuaciones aparecen en las clasificaciones con tu apodo de Game Center. Nunca recibimos tu correo ni datos de tu cuenta de Apple.',
+  'Você tem controle total. Para apagar os dados do aparelho, desinstale o jogo. Suas pontuações nos placares podem ser apagadas em Ajustes → Game Center. Passo a passo em capiblocks.vercel.app/excluir-dados': 'Tienes el control total. Para borrar los datos del dispositivo, desinstala el juego. Tus puntuaciones en las clasificaciones se pueden borrar en Ajustes → Game Center. Paso a paso en capiblocks.vercel.app/excluir-dados',
+  'Não deu para entrar no {servico} agora.':
+      'No se pudo entrar en {servico} ahora.',
   '6. Contato e Suporte Oficial': '6. Contacto y soporte oficial',
   'Em caso de dúvidas sobre privacidade, suporte ou conformidade legal, entre em contato conosco:\n• E-mail: contato@chstech.dev.br\n• Website: https://www.chstech.dev.br': 'Si tienes dudas sobre privacidad, soporte o cumplimiento legal, contáctanos:\n• Correo electrónico: contato@chstech.dev.br\n• Sitio web: https://www.chstech.dev.br',
   'Ver na Web': 'Ver en la web',

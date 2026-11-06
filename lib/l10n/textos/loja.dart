@@ -159,6 +159,10 @@ const Map<String, String> enLoja = {
       "Couldn't buy it right now. Try again later.",
   'Ofertas de hoje · mudam em {h} h {min} min':
       "Today's deals · change in {h} h {min} min",
+  'O pagamento é feito pela App Store. Nada aqui é sorteio: você sempre sabe o que está comprando.': 'Payment is handled by the App Store. Nothing here is random: you always know what you are buying.',
+  'A trilha premium ainda não está à venda no iPhone.':
+      'The premium track is not for sale on iPhone yet.',
+  'Ainda não está à venda no iPhone': 'Not for sale on iPhone yet',
   'À venda no app Android': 'For sale in the Android app',
   'de {preco}': 'was {preco}',
   'Todo dia tem ofertas novas, na mesma ordem para todos: '
@@ -443,6 +447,10 @@ const Map<String, String> esLoja = {
       'No se pudo comprar ahora. Inténtalo de nuevo más tarde.',
   'Ofertas de hoje · mudam em {h} h {min} min':
       'Ofertas de hoy · cambian en {h} h {min} min',
+  'O pagamento é feito pela App Store. Nada aqui é sorteio: você sempre sabe o que está comprando.': 'El pago se hace con la App Store. Nada aquí es al azar: siempre sabes lo que compras.',
+  'A trilha premium ainda não está à venda no iPhone.':
+      'La ruta premium aún no está a la venta en iPhone.',
+  'Ainda não está à venda no iPhone': 'Aún no está a la venta en iPhone',
   'À venda no app Android': 'A la venta en la app de Android',
   'de {preco}': 'antes {preco}',
   'Todo dia tem ofertas novas, na mesma ordem para todos: '
