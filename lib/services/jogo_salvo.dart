@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:games_services/games_services.dart';
 
 import 'placares.dart';
+import 'plataforma.dart';
 import 'progress_store.dart';
 
 /// A copy of the progress: where the player is, and every saved value.
@@ -65,6 +66,9 @@ class Progresso {
 abstract final class JogoSalvo {
   static const nome = 'capiblocks';
 
+  /// Android only for now (on iPhone it would need iCloud).
+  static bool get ativo => Placares.ativo && !noIPhone;
+
   /// Google can be slow (or not answer at all while Saved Games is still
   /// being switched on): never wait forever.
   static const _limite = Duration(seconds: 20);
@@ -89,7 +93,7 @@ abstract final class JogoSalvo {
   }
 
   static Future<Progresso?> _verificar(ProgressStore store) async {
-    if (!Placares.ativo || !await Placares.conectado()) return null;
+    if (!ativo || !await Placares.conectado()) return null;
     try {
       // Loading a save that doesn't exist is an error: look at the list
       // first (an error there means no answer from the cloud).
@@ -120,7 +124,7 @@ abstract final class JogoSalvo {
 
   /// Sends this phone's progress (at most once a minute).
   static Future<void> salvar(ProgressStore store) async {
-    if (!Placares.ativo || !await Placares.conectado()) return;
+    if (!ativo || !await Placares.conectado()) return;
     // Only after the cloud copy was looked at, and never over a better one
     // the player hasn't answered about.
     await verificar(store);
@@ -136,7 +140,7 @@ abstract final class JogoSalvo {
   /// Settings → Cloud save: sends at once, unless a better copy waits for
   /// an answer. True when it was sent.
   static Future<bool> salvarAgora(ProgressStore store) async {
-    if (!Placares.ativo || !await Placares.conectado()) return false;
+    if (!ativo || !await Placares.conectado()) return false;
     // Right after verificarDeNovo: a failed check is not tried again here.
     final v = _verificacao;
     if (v == null) return false;

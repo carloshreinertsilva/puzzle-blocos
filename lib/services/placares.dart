@@ -3,16 +3,17 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:games_services/games_services.dart';
 
+import 'plataforma.dart';
 import 'progress_store.dart';
 
-/// The Google Play Games leaderboards (Android only).
+/// The leaderboards: Google Play Games on Android, Game Center on iPhone.
 ///
-/// Play Games signs the player in by itself when the game opens; scores go
-/// up after each match, and the Ranking button shows the boards (asking to
-/// sign in first when the player isn't). Off Android, and in tests, nothing
+/// Both sign the player in by themselves when the game opens; scores go up
+/// after each match, and the Ranking button shows the boards (asking to
+/// sign in first when the player isn't). On the web, and in tests, nothing
 /// here runs ([ativo] stays false).
 abstract final class Placares {
-  /// Turned on by main() on Android.
+  /// Turned on by main() on Android and iPhone.
   static bool ativo = false;
 
   // IDs from the Play Console (Play Games Services → Placares).
@@ -20,6 +21,17 @@ abstract final class Placares {
   static const blitz = 'CgkInKLAmqYVEAIQAw';
   static const torre = 'CgkInKLAmqYVEAIQBA';
   static const estrelas = 'CgkInKLAmqYVEAIQBQ';
+
+  // The same boards in Game Center (App Store Connect → Game Center).
+  static const iosIds = {
+    infinito: 'capiblocks_infinito',
+    blitz: 'capiblocks_blitz',
+    torre: 'capiblocks_torre',
+    estrelas: 'capiblocks_estrelas',
+  };
+
+  /// The service's name, for the player.
+  static String get nome => noIPhone ? 'Game Center' : 'Google Play Games';
 
   static bool _entrou = false;
   static Future<void>? _inicio;
@@ -32,8 +44,9 @@ abstract final class Placares {
 
   /// The menu invites the player to sign in, after the first levels: at
   /// most twice, on different days, and never once signed in.
+  /// Not on iPhone: Game Center asks by itself when the game opens.
   static Future<bool> deveConvidar(ProgressStore store, int hoje) async {
-    if (!ativo || store.level < 6) return false;
+    if (!ativo || noIPhone || store.level < 6) return false;
     if (store.playGamesConvites >= 2 || store.playGamesConviteDia == hoje) {
       return false;
     }
@@ -69,7 +82,11 @@ abstract final class Placares {
       if (valor <= 0) continue;
       try {
         await Leaderboards.submitScore(
-          score: Score(androidLeaderboardID: id, value: valor),
+          score: Score(
+            androidLeaderboardID: id,
+            iOSLeaderboardID: iosIds[id],
+            value: valor,
+          ),
         );
       } catch (e) {
         debugPrint('Play Games: $e');

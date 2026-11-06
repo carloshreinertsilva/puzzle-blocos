@@ -9,12 +9,13 @@ import 'loja_service.dart';
 import 'produtos.dart';
 
 LojaService? criarLojaPlay(ProgressStore store) =>
-    Platform.isAndroid ? LojaPlay(store) : null;
+    Platform.isAndroid || Platform.isIOS ? LojaPlay(store) : null;
 
-/// Google Play Billing. Purchases are delivered from the purchase stream,
-/// which also brings purchases finished while the game was closed and the
-/// ones "Restaurar compras" brings back. Purchases are checked by Google
-/// Play on the phone; there is no server of ours yet.
+/// Google Play Billing on Android, StoreKit on iPhone (both through
+/// in_app_purchase, with the same product ids). Purchases are delivered from
+/// the purchase stream, which also brings purchases finished while the game
+/// was closed and the ones "Restaurar compras" brings back. Purchases are
+/// checked by the store on the phone; there is no server of ours yet.
 class LojaPlay extends LojaService {
   LojaPlay(super.store);
 
