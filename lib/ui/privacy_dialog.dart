@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/idioma.dart';
+import '../services/plataforma.dart';
 import 'palette.dart';
 import 'typography.dart';
 import 'widgets.dart';
@@ -98,15 +99,21 @@ class _PrivacySheet extends StatelessWidget {
                         ),
                         _section(
                           '3. Onde Fica seu Progresso',
-                          'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho. Se você entrar no Google Play Games, uma cópia também fica nos Jogos salvos da sua conta Google, numa pasta oculta do Google Drive que só o CapiBlocks usa, para você recuperar o progresso em outro celular.',
+                          noIPhone
+                              ? 'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho.'
+                              : 'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho. Se você entrar no Google Play Games, uma cópia também fica nos Jogos salvos da sua conta Google, numa pasta oculta do Google Drive que só o CapiBlocks usa, para você recuperar o progresso em outro celular.',
                         ),
                         _section(
                           '4. Serviços Opcionais',
-                          '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo do Google Play; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Notificações: no Android, lembretes diários (se você aceitar) e avisos de novidades pelo Firebase Cloud Messaging, que usa um identificador do aparelho só para entregar a mensagem. Dá para desligar em Configurações ou no Android.\n• Google Play Games: no Android, se você entrar, suas melhores pontuações aparecem nos placares com o nome e o avatar do seu perfil Play Games, e o progresso é salvo na nuvem. Não recebemos seu e-mail nem dados da sua conta Google.',
+                          noIPhone
+                              ? '• Anúncios: os anúncios do Google AdMob podem usar o identificador de publicidade (só se você permitir no pedido de rastreamento do iPhone) e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo da App Store; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Game Center: se você entrar, suas melhores pontuações aparecem nos placares com o seu apelido do Game Center. Não recebemos seu e-mail nem dados da sua conta Apple.'
+                              : '• Anúncios: no Android, os anúncios do Google AdMob podem usar identificadores de publicidade e dados de diagnóstico, conforme as políticas do Google.\n• Estatísticas de uso: no Android, o Google Firebase Analytics registra de forma anônima como o jogo é usado (fases, modos, ferramentas), para sabermos o que melhorar. Dá para desligar em Configurações → Estatísticas de uso.\n• Compras: o pagamento é todo do Google Play; não recebemos dados de cartão. Nada é vendido por sorteio.\n• Notificações: no Android, lembretes diários (se você aceitar) e avisos de novidades pelo Firebase Cloud Messaging, que usa um identificador do aparelho só para entregar a mensagem. Dá para desligar em Configurações ou no Android.\n• Google Play Games: no Android, se você entrar, suas melhores pontuações aparecem nos placares com o nome e o avatar do seu perfil Play Games, e o progresso é salvo na nuvem. Não recebemos seu e-mail nem dados da sua conta Google.',
                         ),
                         _section(
                           '5. Seus Direitos e Exclusão (LGPD)',
-                          'Você tem controle total. Para apagar os dados do aparelho, limpe os dados do app nas configurações ou desinstale o jogo. Os placares e o progresso na nuvem podem ser apagados pelo app Google Play Games ou pelo Google Drive. Passo a passo em capiblocks.vercel.app/excluir-dados',
+                          noIPhone
+                              ? 'Você tem controle total. Para apagar os dados do aparelho, desinstale o jogo. Suas pontuações nos placares podem ser apagadas em Ajustes → Game Center. Passo a passo em capiblocks.vercel.app/excluir-dados'
+                              : 'Você tem controle total. Para apagar os dados do aparelho, limpe os dados do app nas configurações ou desinstale o jogo. Os placares e o progresso na nuvem podem ser apagados pelo app Google Play Games ou pelo Google Drive. Passo a passo em capiblocks.vercel.app/excluir-dados',
                         ),
                         _section(
                           '6. Contato e Suporte Oficial',
