@@ -18,17 +18,17 @@ test.describe('Missões Diárias e Guarda-Roupa de Chapéus', () => {
     await expect(wardrobeBtn).toBeVisible();
     await wardrobeBtn.click();
 
-    // Diálogo de guarda-roupa deve estar aberto
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
+    // A tela do guarda-roupa abre
+    const titulo = page.getByRole('heading', { name: 'Guarda-Roupa do Capi' });
+    await expect(titulo).toBeVisible();
 
     // Seleciona a Coroa Real
     const crownCard = page.getByRole('button', { name: /Coroa Real/i });
     await expect(crownCard).toBeVisible();
     await crownCard.click();
 
-    // Clica em Equipar
-    const equipBtn = page.getByRole('button', { name: /Equipar/i });
+    // Clica em Vestir
+    const equipBtn = page.getByRole('button', { name: /^Vestir/ });
     await expect(equipBtn).toBeVisible();
     await equipBtn.click();
 
@@ -37,9 +37,9 @@ test.describe('Missões Diárias e Guarda-Roupa de Chapéus', () => {
     const sAfter = await state(page);
     expect(sAfter.equippedHat).toBe('crown');
 
-    // Fecha o guarda-roupa
-    await page.getByRole('button', { name: 'Fechar' }).click();
-    await expect(dialog).toHaveCount(0);
+    // Volta ao menu
+    await page.getByRole('button', { name: 'Voltar' }).click();
+    await expect(titulo).toHaveCount(0);
   });
 
   test('abre missões diárias, visualiza as 3 tarefas e resgata recompensa', async ({ page }) => {

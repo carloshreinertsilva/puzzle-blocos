@@ -111,7 +111,7 @@ class Cosmetic {
     }),
     Loja(:final texto) => texto,
     Passe() => tr('Trilha premium do Passe do Capi'),
-    NoMercado() => tr('Aparece à venda no Mercado do Capi'),
+    NoMercado() => tr('Aparece nas Ofertas do dia, na Loja'),
   };
 
   /// The hat this item is, for the head slot.

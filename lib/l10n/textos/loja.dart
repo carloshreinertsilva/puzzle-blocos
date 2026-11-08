@@ -3,6 +3,27 @@
 // the Passe do Capi, the Mercado do Capi and the test ads.
 
 const Map<String, String> enLoja = {
+  // --- Wardrobe screen and Today's deals ---
+  "{item} é seu! Já está no Capi.": "{item} is yours! Capi is wearing it.",
+  "Ofertas do dia": "Today's deals",
+  "mudam em {h} h {min} min": "change in {h} h {min} min",
+  "Aparece nas Ofertas do dia, na Loja":
+      "Shows up in Today's deals, in the Shop",
+  "{n} prêmio pronto": "{n} reward ready",
+  "{n} prêmios prontos": "{n} rewards ready",
+  "Nível {n}": "Level {n}",
+  "Vestir": "Wear",
+  "Vestir {item}": "Wear {item}",
+  "Vestindo agora": "Wearing it now",
+  "Oferta do dia: {n} estrelas. Faltam {falta}.":
+      "Today's deal: {n} stars. {falta} to go.",
+  "Oferta do dia: {n}": "Today's deal: {n}",
+  "Oferta do dia: {preco}": "Today's deal: {preco}",
+  "{tipo}: {tem} de {total}": "{tipo}: {tem} of {total}",
+  "Vestindo": "Wearing",
+  "Oferta": "Deal",
+  "Olha as ofertas do dia!": "Check out today's deals!",
+  "Prêmios da temporada": "Season rewards",
   // --- Wardrobe: slots, rarities and collections (data in wardrobe.dart) ---
   'Cabeça': 'Head',
   'Rosto': 'Face',
@@ -286,6 +307,27 @@ const Map<String, String> enLoja = {
 };
 
 const Map<String, String> esLoja = {
+  // --- Wardrobe screen and Today's deals ---
+  "{item} é seu! Já está no Capi.": "¡{item} es tuyo! Capi ya lo lleva puesto.",
+  "Ofertas do dia": "Ofertas del día",
+  "mudam em {h} h {min} min": "cambian en {h} h {min} min",
+  "Aparece nas Ofertas do dia, na Loja":
+      "Aparece en las Ofertas del día, en la Tienda",
+  "{n} prêmio pronto": "{n} premio listo",
+  "{n} prêmios prontos": "{n} premios listos",
+  "Nível {n}": "Nivel {n}",
+  "Vestir": "Vestir",
+  "Vestir {item}": "Vestir {item}",
+  "Vestindo agora": "Lo lleva puesto",
+  "Oferta do dia: {n} estrelas. Faltam {falta}.":
+      "Oferta del día: {n} estrellas. Faltan {falta}.",
+  "Oferta do dia: {n}": "Oferta del día: {n}",
+  "Oferta do dia: {preco}": "Oferta del día: {preco}",
+  "{tipo}: {tem} de {total}": "{tipo}: {tem} de {total}",
+  "Vestindo": "Puesto",
+  "Oferta": "Oferta",
+  "Olha as ofertas do dia!": "¡Mira las ofertas del día!",
+  "Prêmios da temporada": "Premios de la temporada",
   // --- Wardrobe: slots, rarities and collections (data in wardrobe.dart) ---
   'Cabeça': 'Cabeza',
   'Rosto': 'Cara',

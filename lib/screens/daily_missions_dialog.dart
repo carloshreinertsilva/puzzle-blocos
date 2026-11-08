@@ -15,7 +15,7 @@ import '../ui/widgets.dart';
 import '../ui/premio.dart';
 import 'passe_sheet.dart';
 import 'presente_dialog.dart';
-import 'wardrobe_dialog.dart';
+import 'wardrobe_screen.dart';
 
 /// Modal dialog showing the daily 3 missions, progress tracking, and the daily chest.
 /// Stars in the daily bonus chest.
@@ -231,8 +231,9 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: () {
-                        Navigator.of(context).pop();
-                        WardrobeDialog.show(context, widget.services);
+                        final nav = Navigator.of(context);
+                        nav.pop();
+                        WardrobeScreen.show(nav.context, widget.services);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
