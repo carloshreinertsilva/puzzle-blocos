@@ -469,10 +469,12 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
             child: _Categoria(
               slot: slot,
               selecionada: slot == _slot,
-              tem: Wardrobe.inSlot(slot)
-                  .where((c) => Wardrobe.owns(_store, c))
-                  .length,
-              total: Wardrobe.inSlot(slot).length,
+              tem: Wardrobe.visiveis(
+                _store,
+                slot,
+                DateTime.now(),
+              ).where((c) => Wardrobe.owns(_store, c)).length,
+              total: Wardrobe.visiveis(_store, slot, DateTime.now()).length,
               onTap: () => _openSlot(slot),
             ),
           ),
@@ -481,7 +483,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   );
 
   Widget _grade(CapiLook look) {
-    final itens = Wardrobe.inSlot(_slot);
+    final itens = Wardrobe.visiveis(_store, _slot, DateTime.now());
     return LayoutBuilder(
       builder: (context, c) {
         final colunas = max(3, (c.maxWidth / 130).floor());

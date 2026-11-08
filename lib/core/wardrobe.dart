@@ -63,9 +63,16 @@ class Loja extends Fonte {
   String get texto => tr(_texto);
 }
 
-/// A reward on the Passe do Capi's track (exclusive to it).
+/// From the Passe do Capi of one month's season (exclusive to it): on the
+/// track, or ([naCompra]) given the moment the premium track is bought.
+/// Outside that month it is not on offer (and hidden from players who don't
+/// have it); it comes back with the same month's season a year later.
 class Passe extends Fonte {
-  const Passe();
+  const Passe(this.mes, {this.naCompra = false});
+
+  /// The month (1 to 12) of the season it belongs to.
+  final int mes;
+  final bool naCompra;
 }
 
 /// Sold now and then in the Mercado do Capi (see [Mercado]).
@@ -110,7 +117,12 @@ class Cosmetic {
       'colecao': tr(colecao),
     }),
     Loja(:final texto) => texto,
-    Passe() => tr('Trilha premium do Passe do Capi'),
+    Passe(:final mes, :final naCompra) =>
+      DateTime.now().month == mes
+          ? (naCompra
+                ? tr('Vem com o premium do Passe deste mês')
+                : tr('Trilha do Passe do Capi deste mês'))
+          : tr('Volta no Passe de {mes}', {'mes': nomeDoMes(mes)}),
     NoMercado() => tr('Aparece nas Ofertas do dia, na Loja'),
   };
 
@@ -297,7 +309,7 @@ abstract final class Wardrobe {
       'Coroa de Estrelas',
       Slot.cabeca,
       Raridade.lendario,
-      Passe(),
+      Passe(11),
       descricao: 'Brilha como o céu da vila à noite.',
     ),
 
@@ -467,16 +479,50 @@ abstract final class Wardrobe {
       'Óculos Estrelados',
       Slot.rosto,
       Raridade.raro,
-      Passe(),
-      descricao: 'Do Passe do Capi, temporada 1.',
+      Passe(11),
+      descricao: 'Do Passe do Capi de novembro.',
     ),
     Cosmetic(
       'medalha',
       'Medalha da Temporada',
       Slot.pescoco,
       Raridade.raro,
-      Passe(),
-      descricao: 'Do Passe do Capi, temporada 1.',
+      Passe(11),
+      descricao: 'Do Passe do Capi de novembro.',
+    ),
+
+    // The Christmas season (December's Passe do Capi).
+    Cosmetic(
+      'gorro_natal',
+      'Gorro de Papai Noel',
+      Slot.cabeca,
+      Raridade.lendario,
+      Passe(12, naCompra: true),
+      descricao: 'Ho-ho-ho! Vem na hora com o Passe de Natal.',
+    ),
+    Cosmetic(
+      'chifres_rena',
+      'Chifres de Rena',
+      Slot.cabeca,
+      Raridade.epico,
+      Passe(12),
+      descricao: 'Para puxar o trenó dos blocos.',
+    ),
+    Cosmetic(
+      'cachecol_natal',
+      'Cachecol Natalino',
+      Slot.pescoco,
+      Raridade.raro,
+      Passe(12),
+      descricao: 'Listrado de vermelho e verde, quentinho.',
+    ),
+    Cosmetic(
+      'sininho',
+      'Sininho de Natal',
+      Slot.pescoco,
+      Raridade.comum,
+      Passe(12),
+      descricao: 'Plim-plim a cada linha limpa.',
     ),
 
     // More legendaries for the Mercado.
@@ -521,6 +567,24 @@ abstract final class Wardrobe {
   static List<Cosmetic> inSlot(Slot slot) => [
     for (final c in catalog)
       if (c.slot == slot) c,
+  ];
+
+  /// Whether [c] shows in the wardrobe: a season's item only in its month,
+  /// or for whoever already has it (theirs to wear forever).
+  static bool visivel(ProgressStore store, Cosmetic c, DateTime agora) =>
+      switch (c.fonte) {
+        Passe(:final mes) => mes == agora.month || owns(store, c),
+        _ => true,
+      };
+
+  /// What shows in [slot] now (see [visivel]).
+  static List<Cosmetic> visiveis(
+    ProgressStore store,
+    Slot slot,
+    DateTime agora,
+  ) => [
+    for (final c in inSlot(slot))
+      if (visivel(store, c, agora)) c,
   ];
 
   static bool owns(ProgressStore store, Cosmetic item) =>
@@ -609,3 +673,21 @@ abstract final class Wardrobe {
         c,
   ];
 }
+
+/// A month's name (1 to 12), in the current language.
+String nomeDoMes(int mes) => tr(
+  const [
+    'janeiro',
+    'fevereiro',
+    'março',
+    'abril',
+    'maio',
+    'junho',
+    'julho',
+    'agosto',
+    'setembro',
+    'outubro',
+    'novembro',
+    'dezembro',
+  ][mes - 1],
+);

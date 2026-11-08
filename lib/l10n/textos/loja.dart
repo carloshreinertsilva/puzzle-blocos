@@ -3,6 +3,47 @@
 // the Passe do Capi, the Mercado do Capi and the test ads.
 
 const Map<String, String> enLoja = {
+  // --- Seasons of the Passe do Capi (Christmas) ---
+  "Vem com o premium do Passe deste mês":
+      "Comes with this month's premium Pass",
+  "Trilha do Passe do Capi deste mês": "On this month's Capi Pass track",
+  "Volta no Passe de {mes}": "Comes back in the {mes} Pass",
+  "Trilha premium liberada! {item} já está no Capi.":
+      "Premium track unlocked! Capi is already wearing {item}.",
+  "Temporada {tema} · termina em {n} dia": "{tema} season · ends in {n} day",
+  "Temporada {tema} · termina em {n} dias": "{tema} season · ends in {n} days",
+  "Ganhe na hora: {item}, {raridade}": "Get it right away: {item}, {raridade}",
+  "Ganhe na hora": "Get it right away",
+  "Só neste mês. Depois, é seu para sempre.":
+      "This month only. Then it's yours forever.",
+  "Premium: os itens da temporada, mais estrelas e ferramentas. Você vê tudo antes de comprar.": "Premium: the season's items, plus stars and tools. You see everything before you buy.",
+  "Natal": "Christmas",
+  "Gorro de Papai Noel": "Santa Hat",
+  "Ho-ho-ho! Vem na hora com o Passe de Natal.":
+      "Ho-ho-ho! Comes right away with the Christmas Pass.",
+  "Chifres de Rena": "Reindeer Antlers",
+  "Para puxar o trenó dos blocos.": "For pulling the block sleigh.",
+  "Cachecol Natalino": "Christmas Scarf",
+  "Listrado de vermelho e verde, quentinho.":
+      "Red and green stripes, nice and warm.",
+  "Sininho de Natal": "Christmas Bell",
+  "Plim-plim a cada linha limpa.": "Ding-ding with every line cleared.",
+  "Vem com o premium do Passe de Natal":
+      "Comes with the Christmas Pass premium",
+  "Trilha premium do Passe de Natal": "Christmas Pass premium track",
+  "Do Passe do Capi de novembro.": "From November's Capi Pass.",
+  "janeiro": "January",
+  "fevereiro": "February",
+  "março": "March",
+  "abril": "April",
+  "maio": "May",
+  "junho": "June",
+  "julho": "July",
+  "agosto": "August",
+  "setembro": "September",
+  "outubro": "October",
+  "novembro": "November",
+  "dezembro": "December",
   // --- Wardrobe screen and Today's deals ---
   "{item} é seu! Já está no Capi.": "{item} is yours! Capi is wearing it.",
   "Ofertas do dia": "Today's deals",
@@ -307,6 +348,51 @@ const Map<String, String> enLoja = {
 };
 
 const Map<String, String> esLoja = {
+  // --- Seasons of the Passe do Capi (Christmas) ---
+  "Vem com o premium do Passe deste mês":
+      "Viene con el premium del Pase de este mes",
+  "Trilha do Passe do Capi deste mês":
+      "En la ruta del Pase de Capi de este mes",
+  "Volta no Passe de {mes}": "Vuelve en el Pase de {mes}",
+  "Trilha premium liberada! {item} já está no Capi.":
+      "¡Ruta premium desbloqueada! Capi ya lleva {item}.",
+  "Temporada {tema} · termina em {n} dia":
+      "Temporada {tema} · termina en {n} día",
+  "Temporada {tema} · termina em {n} dias":
+      "Temporada {tema} · termina en {n} días",
+  "Ganhe na hora: {item}, {raridade}":
+      "Recíbelo al instante: {item}, {raridade}",
+  "Ganhe na hora": "Recíbelo al instante",
+  "Só neste mês. Depois, é seu para sempre.":
+      "Solo este mes. Después, es tuyo para siempre.",
+  "Premium: os itens da temporada, mais estrelas e ferramentas. Você vê tudo antes de comprar.": "Premium: los objetos de la temporada, más estrellas y herramientas. Ves todo antes de comprar.",
+  "Natal": "Navidad",
+  "Gorro de Papai Noel": "Gorro de Papá Noel",
+  "Ho-ho-ho! Vem na hora com o Passe de Natal.":
+      "¡Jo-jo-jo! Llega al instante con el Pase de Navidad.",
+  "Chifres de Rena": "Cuernos de Reno",
+  "Para puxar o trenó dos blocos.": "Para tirar del trineo de bloques.",
+  "Cachecol Natalino": "Bufanda Navideña",
+  "Listrado de vermelho e verde, quentinho.":
+      "A rayas rojas y verdes, calentita.",
+  "Sininho de Natal": "Campanita de Navidad",
+  "Plim-plim a cada linha limpa.": "Tilín-tilín con cada línea limpia.",
+  "Vem com o premium do Passe de Natal":
+      "Viene con el premium del Pase de Navidad",
+  "Trilha premium do Passe de Natal": "Ruta premium del Pase de Navidad",
+  "Do Passe do Capi de novembro.": "Del Pase de Capi de noviembre.",
+  "janeiro": "enero",
+  "fevereiro": "febrero",
+  "março": "marzo",
+  "abril": "abril",
+  "maio": "mayo",
+  "junho": "junio",
+  "julho": "julio",
+  "agosto": "agosto",
+  "setembro": "septiembre",
+  "outubro": "octubre",
+  "novembro": "noviembre",
+  "dezembro": "diciembre",
   // --- Wardrobe screen and Today's deals ---
   "{item} é seu! Já está no Capi.": "¡{item} es tuyo! Capi ya lo lleva puesto.",
   "Ofertas do dia": "Ofertas del día",
