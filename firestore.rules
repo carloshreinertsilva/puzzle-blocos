@@ -18,18 +18,19 @@ service cloud.firestore {
       allow update, delete, list: if false;
     }
 
-    // convites/{uid}: o código com que este jogador entrou e se ele já
-    // chegou à fase 5. Só o próprio jogador cria e marca a fase 5; quem
-    // convidou só conta (os documentos não têm dado pessoal).
+    // convites/{uid}: o código com que este jogador entrou, de quem é esse
+    // código (dono) e se ele já chegou à fase 5. Só o próprio jogador cria
+    // e marca a fase 5; cada um só lista os convites que são seus.
     match /convites/{uid} {
       allow get: if request.auth != null && request.auth.uid == uid;
-      allow list: if request.auth != null;
+      allow list: if request.auth != null
+        && resource.data.dono == request.auth.uid;
       allow create: if request.auth != null
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['codigo', 'fase5', 'criadoEm'])
+        && request.resource.data.keys().hasOnly(['codigo', 'dono', 'fase5', 'criadoEm'])
         && request.resource.data.fase5 == false
-        && exists(/databases/$(database)/documents/codigos/$(request.resource.data.codigo))
-        && get(/databases/$(database)/documents/codigos/$(request.resource.data.codigo)).data.uid != uid;
+        && request.resource.data.dono != uid
+        && request.resource.data.dono == get(/databases/$(database)/documents/codigos/$(request.resource.data.codigo)).data.uid;
       allow update: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fase5'])
