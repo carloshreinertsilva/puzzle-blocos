@@ -67,6 +67,12 @@ enum CapiHat {
     'Chapéu de Melancia',
     'Refrescante: vem na hora com o Passe de Verão.',
     loja: 'Vem com o premium do Passe de Verão',
+  ),
+  coroaAmizade(
+    'coroa_amizade',
+    'Coroa de Amizade',
+    'Corações dourados: 5 amigos na Vila do Capi.',
+    loja: 'Convide 5 amigos para jogar',
   );
 
   const CapiHat(this.id, this._label, this._description, {this._loja});

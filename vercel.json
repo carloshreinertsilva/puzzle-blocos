@@ -47,6 +47,10 @@
     {
       "source": "/duelo",
       "destination": "/index.html"
+    },
+    {
+      "source": "/convite",
+      "destination": "/convite/index.html"
     }
   ]
 }

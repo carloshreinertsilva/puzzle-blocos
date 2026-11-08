@@ -37,6 +37,9 @@ class TestBridge {
 
   String stateJson() => jsonEncode(state());
 
+  /// Opens a route by name, as an Android App Link does (set by the app).
+  void Function(String rota)? abrirRota;
+
   /// The star wallet, set by the app (so the home screen reports it too).
   int Function()? wallet;
   ProgressStore? store;

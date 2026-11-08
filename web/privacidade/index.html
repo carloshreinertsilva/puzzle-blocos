@@ -198,7 +198,8 @@
       <h2>Em resumo:</h2>
       <p>
         O <strong>CapiBlocks</strong> foi feito para você se divertir sem complicações.
-        <strong>Não temos servidor próprio, não criamos contas e não pedimos dados pessoais</strong> como nome ou e-mail.
+        <strong>Não criamos contas e não pedimos dados pessoais</strong> como nome ou e-mail.
+        Nos aplicativos de celular, os convites de amigos usam um identificador anônimo no Google Firebase (seção 5).
         Seu progresso fica salvo no seu celular ou navegador e, se você usar o login opcional do Google Play Games,
         também nos Jogos salvos da sua conta Google (seção "Placares").
         No aplicativo Android, usamos serviços do Google para anúncios e para estatísticas anônimas de uso
@@ -341,6 +342,25 @@
       <p>
         O aplicativo apenas copia esse link para a área de transferência do seu sistema operacional.
         Nenhum dado é transmitido para servidores nem associado à sua identidade.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Convites de amigos (aplicativos Android e iPhone)</h2>
+      <p>
+        Cada aparelho tem um <strong>código de convite</strong> de 6 letras, criado ao acaso pelo jogo. Para que quem convida ganhe
+        os prêmios, o jogo guarda no <strong>Google Firebase</strong> (Authentication anônimo e Cloud Firestore, servidores do Google):
+      </p>
+      <ul>
+        <li>um <strong>identificador anônimo</strong> do aparelho, gerado pelo Firebase, sem nome, e-mail ou login;</li>
+        <li>o seu código de convite;</li>
+        <li>se você entrou pelo convite de alguém: o código desse convite e se você já chegou à fase 5.</li>
+      </ul>
+      <p>
+        Nada disso identifica você ou o seu amigo: quem convidou vê apenas <strong>quantos</strong> amigos chegaram à fase 5.
+        No Android, o código do convite também pode chegar ao jogo pela Google Play, junto com a instalação (referência de
+        instalação). Ao compartilhar um convite, quem escolhe para quem enviar é você, pelo WhatsApp ou outro aplicativo do celular.
+        Para apagar esses registros, escreva para o contato no fim desta página informando o seu código de convite.
       </p>
     </section>
 
