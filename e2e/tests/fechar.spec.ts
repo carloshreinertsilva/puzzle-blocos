@@ -32,7 +32,7 @@ test.describe('Toda janela fecha pelo botão Fechar', () => {
   test('Guarda-Roupa volta ao menu', async ({ page }) => {
     await openApp(page, { level: 40, stars: 500 });
     await page.getByRole('button', { name: 'Guarda-Roupa' }).click();
-    const titulo = page.getByRole('heading', { name: 'Guarda-Roupa do Capi' });
+    const titulo = page.getByRole('button', { name: /^Cabeça: \d+ de \d+$/ });
     await expect(titulo).toBeVisible({ timeout: 30_000 });
     await page.getByRole('button', { name: 'Voltar' }).click();
     await expect(titulo).toHaveCount(0, { timeout: 10_000 });

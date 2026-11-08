@@ -19,7 +19,7 @@ test.describe('Missões Diárias e Guarda-Roupa de Chapéus', () => {
     await wardrobeBtn.click();
 
     // A tela do guarda-roupa abre
-    const titulo = page.getByRole('heading', { name: 'Guarda-Roupa do Capi' });
+    const titulo = page.getByRole('button', { name: /^Cabeça: \d+ de \d+$/ });
     await expect(titulo).toBeVisible();
 
     // Seleciona a Coroa Real

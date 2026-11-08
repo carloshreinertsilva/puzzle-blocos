@@ -4,7 +4,7 @@ import { openApp, snap, state, waitForState } from './helpers';
 /** Opens the wardrobe screen from the menu. */
 async function abrirGuardaRoupa(page: Page) {
   await page.getByRole('button', { name: 'Guarda-Roupa' }).click();
-  await expect(page.getByRole('heading', { name: 'Guarda-Roupa do Capi' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: /^Cabeça: \d+ de \d+$/ })).toBeVisible({ timeout: 30_000 });
   await page.waitForTimeout(400); // the screen's fade-in
 }
 
@@ -34,7 +34,7 @@ test('guarda-roupa: compra com estrelas, veste e continua vestido', async ({ pag
 
   // Back to the menu and in again: still wearing both.
   await page.getByRole('button', { name: 'Voltar' }).click();
-  await expect(page.getByRole('heading', { name: 'Guarda-Roupa do Capi' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Cabeça: \d+ de \d+$/ })).toHaveCount(0);
   await abrirGuardaRoupa(page);
   await expect(page.getByRole('button', { name: /^Touca de Inverno, comum, em uso/ })).toBeVisible();
   await page.getByRole('button', { name: /^Rosto: / }).click();
