@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_blocos/ads/ad_service.dart';
 import 'package:puzzle_blocos/main.dart';
@@ -56,5 +57,19 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(tentativas, 2);
     expect(find.byType(App), findsOneWidget);
+  });
+
+  testWidgets('the loading bar waits near the end, then fills when ready', (
+    tester,
+  ) async {
+    final pronto = ValueNotifier(false);
+    await tester.pumpWidget(Abertura(pronto: pronto));
+    expect(find.text('Carregando'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.text('90%'), findsOneWidget);
+    pronto.value = true;
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('100%'), findsOneWidget);
   });
 }
