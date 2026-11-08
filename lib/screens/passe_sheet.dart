@@ -69,9 +69,8 @@ class _PasseState extends State<_Passe> {
     );
     if (!ok || !mounted) return;
     widget.services.feedback.praise(2);
-    final r = premium
-        ? PasseDoCapi.trilha[n - 1].premium
-        : PasseDoCapi.trilha[n - 1].gratis;
+    final nivel = PasseDoCapi.trilha(DateTime.now())[n - 1];
+    final r = premium ? nivel.premium : nivel.gratis;
     setState(() => _aviso = tr('Você ganhou: {premio}!', {'premio': r.texto}));
   }
 
@@ -83,9 +82,13 @@ class _PasseState extends State<_Passe> {
     setState(() {
       _comprando = false;
       _aviso = switch (r) {
-        ResultadoCompra.ok => tr(
-          'Trilha premium liberada! Pegue seus prêmios.',
-        ),
+        ResultadoCompra.ok => switch (_exclusivo) {
+          final item? => tr(
+            'Trilha premium liberada! {item} já está no Capi.',
+            {'item': item.label},
+          ),
+          null => tr('Trilha premium liberada! Pegue seus prêmios.'),
+        },
         ResultadoCompra.pendente => tr(
           'Pagamento pendente: a trilha libera quando ele for aprovado.',
         ),
@@ -95,9 +98,16 @@ class _PasseState extends State<_Passe> {
     });
   }
 
+  /// This month's item that comes with the premium track, if any.
+  Cosmetic? get _exclusivo => switch (PasseDoCapi.tema(DateTime.now())) {
+    TemaTemporada(naCompra: final id?) => Wardrobe.byId(id),
+    _ => null,
+  };
+
   @override
   Widget build(BuildContext context) {
     final agora = DateTime.now();
+    final tema = PasseDoCapi.tema(agora);
     final temporada = PasseDoCapi.temporada(agora);
     final nivel = PasseDoCapi.nivel(_store, agora);
     final pontos = PasseDoCapi.pontos(_store, agora);
@@ -150,12 +160,19 @@ class _PasseState extends State<_Passe> {
                 ],
               ),
               _texto(
-                trN(
-                  dias,
-                  'Temporada {t} · termina em {n} dia',
-                  'Temporada {t} · termina em {n} dias',
-                  {'t': temporada},
-                ),
+                tema != null
+                    ? trN(
+                        dias,
+                        'Temporada {tema} · termina em {n} dia',
+                        'Temporada {tema} · termina em {n} dias',
+                        {'tema': tema.nome},
+                      )
+                    : trN(
+                        dias,
+                        'Temporada {t} · termina em {n} dia',
+                        'Temporada {t} · termina em {n} dias',
+                        {'t': temporada},
+                      ),
                 bodyText(13, color: Palette.textDim),
               ),
               const SizedBox(height: 8),
@@ -250,12 +267,70 @@ class _PasseState extends State<_Passe> {
       );
     }
     final preco = _loja.preco(Produto.passeCapi);
+    final exclusivo = _exclusivo;
     return Column(
       children: [
+        if (exclusivo != null)
+          // The month's exclusive item, on Capi: it comes at once.
+          Semantics(
+            container: true,
+            label: tr('Ganhe na hora: {item}, {raridade}', {
+              'item': exclusivo.label,
+              'raridade': exclusivo.raridade.label.toLowerCase(),
+            }),
+            excludeSemantics: true,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: exclusivo.raridade.color.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: exclusivo.raridade.color, width: 1.6),
+              ),
+              child: Row(
+                children: [
+                  SizedBox.square(
+                    dimension: 56,
+                    child: CustomPaint(
+                      painter: CapiPainter(
+                        mood: CapiMood.cheer,
+                        t: 0,
+                        hat: CapiLook.of(_store).wearing(exclusivo).hat,
+                        look: CapiLook.of(_store).wearing(exclusivo),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tr('Ganhe na hora'),
+                          style: bodyText(12, color: Palette.textDim),
+                        ),
+                        Text(
+                          exclusivo.label,
+                          style: displayText(
+                            17,
+                            color: exclusivo.raridade.color,
+                          ),
+                        ),
+                        Text(
+                          tr('Só neste mês. Depois, é seu para sempre.'),
+                          style: bodyText(11, color: Palette.textDim),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         Text(
           tr(
-            'Premium: 1 lendário exclusivo, 2 raros exclusivos, 140 estrelas e '
-            'ferramentas. Você vê tudo antes de comprar.',
+            'Premium: os itens da temporada, mais estrelas e ferramentas. '
+            'Você vê tudo antes de comprar.',
           ),
           textAlign: TextAlign.center,
           style: bodyText(12, color: Palette.text),
@@ -279,7 +354,7 @@ class _PasseState extends State<_Passe> {
 
   Widget _linha(int n, int nivel, bool premium) {
     final alcancado = n <= nivel;
-    final nivelPasse = PasseDoCapi.trilha[n - 1];
+    final nivelPasse = PasseDoCapi.trilha(DateTime.now())[n - 1];
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
