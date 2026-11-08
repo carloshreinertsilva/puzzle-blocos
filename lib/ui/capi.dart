@@ -232,6 +232,7 @@ class CapiPainter extends CustomPainter {
       hat: hat,
       pelagem: look.pelagem,
       outros: [look.rosto, look.pescoco, look.costas],
+      reserva: _itemDeReserva,
     );
     canvas.restore();
     if (pintado) return;
@@ -528,6 +529,33 @@ class CapiPainter extends CustomPainter {
     _drawHat(canvas, hat);
     canvas.restore();
     canvas.restore();
+  }
+
+  /// An item without painted art yet, drawn over the painted Capi (on the
+  /// code Capi's grid; see pintarCapiArte).
+  void _itemDeReserva(Canvas canvas, String id, {required bool atras}) {
+    if (id == look.costas) {
+      atras ? _backBehind(canvas, id) : _backFront(canvas, id);
+      return;
+    }
+    if (atras) return;
+    if (id == hat.id) {
+      canvas.save();
+      // A touch lower: the painted head's top is flatter.
+      canvas.translate(50, 19);
+      canvas.scale(64 / 59, 1);
+      canvas.translate(-50, -20.5);
+      _drawHat(canvas, hat);
+      canvas.restore();
+    } else if (id == look.rosto) {
+      _face(canvas, id, closedEyes: false);
+    } else if (id == look.pescoco) {
+      // The painted Capi's neck sits a little lower.
+      canvas.save();
+      canvas.translate(0, 3);
+      _neck(canvas, id);
+      canvas.restore();
+    }
   }
 
   void _drawHat(Canvas canvas, CapiHat h) {
