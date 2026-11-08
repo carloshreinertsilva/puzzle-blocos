@@ -242,6 +242,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
         Expanded(
           child: Center(
             child: Semantics(
+              container: true,
               header: true,
               label: tr('Guarda-Roupa do Capi'),
               excludeSemantics: true,
