@@ -129,7 +129,7 @@ class Inicio extends StatefulWidget {
   const Inicio({super.key, this.carregar = _iniciar});
 
   final Future<AppServices> Function() carregar;
-  static const tempoMinimo = Duration(milliseconds: 900);
+  static const tempoMinimo = Duration(milliseconds: 1600);
 
   @override
   State<Inicio> createState() => _InicioState();
@@ -138,22 +138,43 @@ class Inicio extends StatefulWidget {
 class _InicioState extends State<Inicio> {
   AppServices? _services;
   bool _erro = false;
+  final _pronto = ValueNotifier(false);
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _pronto.dispose();
+    super.dispose();
+  }
+
+  /// The opening art, decoded before the clock starts, so it always shows
+  /// (tests keep the code-drawn Capi and skip it).
+  Future<void>? _arte;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_arte != null) return;
+    _arte = CapiArte.ativa
+        ? precacheImage(
+            const AssetImage(Abertura.imagem),
+            context,
+          ).timeout(const Duration(seconds: 3), onTimeout: () {})
+        : Future<void>.value();
     _carregar();
   }
 
   Future<void> _carregar() async {
     setState(() => _erro = false);
+    _pronto.value = false;
     try {
       final resultado = await Future.wait([
         widget.carregar(),
-        Future<void>.delayed(Inicio.tempoMinimo),
+        _arte!.then((_) => Future<void>.delayed(Inicio.tempoMinimo)),
       ]);
       final services = resultado.first as AppServices;
       if (!mounted) return;
+      // The bar runs to the end while the game fades in.
+      _pronto.value = true;
       setState(() => _services = services);
       _depoisDeAbrir(services);
     } catch (e, pilha) {
@@ -171,7 +192,7 @@ class _InicioState extends State<Inicio> {
       duration: const Duration(milliseconds: 350),
       child: services != null
           ? App(services: services)
-          : Abertura(erro: _erro, onTentarDeNovo: _carregar),
+          : Abertura(erro: _erro, onTentarDeNovo: _carregar, pronto: _pronto),
     );
   }
 }

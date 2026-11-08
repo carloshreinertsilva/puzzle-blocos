@@ -73,6 +73,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/audio/musica/
+    - assets/abertura/
     - assets/capi/
     - assets/capi/poses/
     - assets/capi/itens/
