@@ -21,6 +21,8 @@ export type GameState = {
   level?: number;
   kind?: 'level' | 'endless' | 'daily' | 'blitz' | 'duel';
   blitzSecondsLeft?: number;
+  blitzExtraUsed?: boolean;
+  blitzLastBonus?: number;
   duelSeed?: number;
   duelTargetScore?: number | null;
   duelRivalName?: string | null;

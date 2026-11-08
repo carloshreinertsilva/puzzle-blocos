@@ -155,6 +155,101 @@ void main() {
     });
   });
 
+  group('Blitz extra time', () {
+    test('bigger clears add more seconds', () {
+      int b(int lines, [int combo = 1]) =>
+          GameController.blitzTimeBonus(lines: lines, combo: combo);
+      expect(b(0), 0);
+      expect(b(1), 1);
+      expect(b(2), 3);
+      expect(b(3), 5);
+      expect(b(4), 5);
+      expect(b(1, 2), 2, reason: 'combo seguido vale +1');
+      expect(b(2, 3), 4);
+    });
+
+    test('the clock never goes past 90 seconds', () async {
+      SharedPreferences.setMockInitialValues({'level': 10});
+      final store = await ProgressStore.load();
+      final controller = GameController(
+        store: store,
+        feedback: GameFeedback(store),
+        mode: GameMode.blitz,
+      );
+      controller.blitzSecondsLeft = 89;
+      for (var c = 1; c < Board.size; c++) {
+        controller.session.board.set(0, c, const Cell.block(1));
+      }
+      controller.session.tray[0] = Piece(
+        allShapes.firstWhere((s) => s.id == 'dot0'),
+      );
+      final tick = controller.blitzBonusTick;
+      controller.place(0, 0, 0);
+      expect(controller.blitzSecondsLeft, GameController.blitzMaxSeconds);
+      expect(controller.blitzLastBonus, 1);
+      expect(controller.blitzBonusTick, tick + 1);
+      controller.dispose();
+    });
+
+    testWidgets('a video adds 10 seconds once, and stars are not paid twice', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({'level': 10, 'stars': 0});
+      final store = await ProgressStore.load();
+      final controller = GameController(
+        store: store,
+        feedback: GameFeedback(store),
+        mode: GameMode.blitz,
+      );
+      expect(controller.canBlitzExtraTime, isFalse, reason: 'ainda jogando');
+
+      controller.session.score = 3000; // 2 stars
+      controller.blitzSecondsLeft = 1;
+      await tester.pump(const Duration(seconds: 2));
+      expect(controller.session.status, SessionStatus.won);
+      expect(controller.canBlitzExtraTime, isTrue);
+      await tester.pump();
+      expect(store.stars, 2);
+
+      controller.addBlitzExtraTime();
+      expect(controller.session.status, SessionStatus.playing);
+      expect(controller.blitzSecondsLeft, GameController.blitzExtraSeconds);
+      expect(controller.showOutcome, isFalse);
+      expect(controller.playing, isTrue);
+
+      controller.session.score = 4600; // 3 stars: only 1 more is due
+      await tester.pump(const Duration(seconds: 11));
+      expect(controller.blitzSecondsLeft, 0);
+      expect(controller.session.status, SessionStatus.won);
+      await tester.pump();
+      expect(store.stars, 3);
+      expect(store.blitzBestScore, 4600, reason: 'o recorde conta');
+      expect(controller.canBlitzExtraTime, isFalse, reason: 'só uma vez');
+
+      controller.dispose();
+      await tester.pump(const Duration(seconds: 3));
+    });
+
+    test('a duel against a friend never offers extra time', () async {
+      SharedPreferences.setMockInitialValues({'level': 10});
+      final store = await ProgressStore.load();
+      final controller = GameController(
+        store: store,
+        feedback: GameFeedback(store),
+        mode: GameMode.blitz,
+        duelSeed: 99,
+        duelTargetScore: 500,
+        duelRivalName: 'Amigo',
+      );
+      controller.blitzSecondsLeft = 0;
+      controller.session.status = SessionStatus.won;
+      expect(controller.canBlitzExtraTime, isFalse);
+      controller.addBlitzExtraTime();
+      expect(controller.session.status, SessionStatus.won);
+      controller.dispose();
+    });
+  });
+
   group('Stars from quick modes', () {
     test('a challenge pays once per seed; menu duels pay nothing', () async {
       SharedPreferences.setMockInitialValues({'level': 10, 'stars': 0});

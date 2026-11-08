@@ -7,6 +7,7 @@ import 'ad_policy.dart';
 
 enum RewardPlacement {
   revive,
+  blitzTime,
   doubleStars,
   bonusChest,
   wardrobeItem,

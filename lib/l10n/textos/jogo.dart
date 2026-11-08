@@ -5,6 +5,10 @@ const Map<String, String> enJogo = {
   // Partida: prêmios, dicas e avisos
   '+{n} ★ pelo vídeo!': '+{n} ★ for the video!',
   'Segunda chance liberada!': 'Second chance unlocked!',
+  '+{n} segundos!': '+{n} seconds!',
+  '+{n} segundos': '+{n} seconds',
+  'Assista a um vídeo e continue': 'Watch a video and keep going',
+  'Uma vez por partida': 'Once per game',
   'Travou? Eu te mostro uma jogada.': "Stuck? I'll show you a move.",
   'Ver dica': 'See hint',
   'Usar ferramenta': 'Use a tool',
@@ -243,6 +247,10 @@ const Map<String, String> esJogo = {
   // Partida: prêmios, dicas e avisos
   '+{n} ★ pelo vídeo!': '¡+{n} ★ por el video!',
   'Segunda chance liberada!': '¡Segunda oportunidad desbloqueada!',
+  '+{n} segundos!': '¡+{n} segundos!',
+  '+{n} segundos': '+{n} segundos',
+  'Assista a um vídeo e continue': 'Mira un video y sigue jugando',
+  'Uma vez por partida': 'Una vez por partida',
   'Travou? Eu te mostro uma jogada.': '¿Atascado? Te muestro una jugada.',
   'Ver dica': 'Ver pista',
   'Usar ferramenta': 'Usar herramienta',
