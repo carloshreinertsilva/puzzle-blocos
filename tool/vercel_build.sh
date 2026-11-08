@@ -18,3 +18,9 @@ flutter config --no-analytics >/dev/null
 flutter --version
 flutter pub get
 flutter build web --release --wasm --no-web-resources-cdn
+
+# Debug symbols (about 8.5 MB of .symbols files) are only for reading
+# crash stack traces: they are never loaded by the page. Every Vercel
+# deployment keeps its whole output, so leaving them out saves space.
+find build/web -name '*.symbols' -delete
+du -sh build/web
