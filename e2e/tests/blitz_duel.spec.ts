@@ -69,6 +69,8 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     expect(s.blitzExtraUsed).toBe(true);
     expect(s.blitzSecondsLeft).toBeGreaterThan(0);
     expect(s.blitzSecondsLeft).toBeLessThanOrEqual(10);
+    // O cartão final precisa sair da frente antes da próxima jogada.
+    await expect(extra).toBeHidden();
     // Máquinas lentas gastam os 10 s só para desenhar: folga para a jogada.
     await page.evaluate(() => (window as any).__bb.blitzSeconds(30));
     expect(await playMove(page)).toBe(true);
