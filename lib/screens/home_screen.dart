@@ -1056,7 +1056,11 @@ class _LojaBotaoState extends State<_LojaBotao>
     _timer = Timer(const Duration(seconds: 4), () {
       if (!mounted) return;
       setState(() => _fala = null);
-      _timer = Timer(const Duration(seconds: 40), _chamar);
+      // The overlay closes once the balloon has shrunk away.
+      _timer = Timer(const Duration(milliseconds: 300), () {
+        if (mounted && _fala == null && _portal.isShowing) _portal.hide();
+        _timer = Timer(const Duration(seconds: 40), _chamar);
+      });
     });
   }
 
@@ -1082,14 +1086,19 @@ class _LojaBotaoState extends State<_LojaBotao>
           targetAnchor: Alignment.bottomRight,
           followerAnchor: Alignment.topRight,
           offset: const Offset(8, 6),
-          child: IgnorePointer(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              transitionBuilder: (child, anim) =>
-                  ScaleTransition(scale: anim, child: child),
-              child: _fala == null
-                  ? const SizedBox.shrink()
-                  : _Balao(key: ValueKey(_fala), texto: _fala!),
+          // Just decoration (the Loja button has its own label): kept out
+          // of the semantics, where a full-screen overlay node would sit
+          // over every button of the menu.
+          child: ExcludeSemantics(
+            child: IgnorePointer(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, anim) =>
+                    ScaleTransition(scale: anim, child: child),
+                child: _fala == null
+                    ? const SizedBox.shrink()
+                    : _Balao(key: ValueKey(_fala), texto: _fala!),
+              ),
             ),
           ),
         ),
