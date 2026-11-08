@@ -6,7 +6,7 @@ import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
 import '../core/daily_missions.dart';
 import 'daily_missions_dialog.dart';
-import 'wardrobe_dialog.dart';
+import 'wardrobe_screen.dart';
 
 import 'package:flutter/material.dart';
 
@@ -32,6 +32,7 @@ import '../ui/widgets.dart';
 import '../shop/produtos.dart';
 import 'game_screen.dart';
 import 'loja_sheet.dart';
+import 'passe_sheet.dart';
 import 'presente_dialog.dart';
 import 'obra_screen.dart';
 import 'settings_sheet.dart';
@@ -211,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openWardrobe() async {
     Analytics.event('screen_open', {'screen': 'wardrobe'});
     widget.services.feedback.click();
-    await WardrobeDialog.show(context, widget.services);
+    await WardrobeScreen.show(context, widget.services);
     if (mounted) setState(() {});
   }
 
@@ -640,10 +641,20 @@ class _HomeScreenState extends State<HomeScreen> {
     if (folha != null && folha.mounted && folha.canPop()) folha.pop();
   }
 
-  Future<void> _openMercado() async {
-    Analytics.event('screen_open', {'screen': 'mercado'});
+  /// Under "Passe do Capi": rewards waiting, or the level.
+  static String _passeSubtitulo(ProgressStore store) {
+    final agora = DateTime.now();
+    final prontas = PasseDoCapi.prontas(store, agora);
+    return prontas > 0
+        ? trN(prontas, '{n} prêmio pronto', '{n} prêmios prontos')
+        : PasseDoCapi.nivel(store, agora) == 0
+        ? tr('Prêmios da temporada')
+        : tr('Nível {n}', {'n': PasseDoCapi.nivel(store, agora)});
+  }
+
+  Future<void> _openPasse() async {
     widget.services.feedback.click();
-    await WardrobeDialog.show(context, widget.services, mercado: true);
+    await showPasse(context, widget.services);
     if (mounted) setState(() {});
   }
 
@@ -802,7 +813,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                         SizedBox(height: isSmall ? 8 : 10),
                         // What the player looks at first: dressing Capi,
-                        // the market and the leaderboards.
+                        // the season's pass and the leaderboards.
                         Row(
                           children: [
                             Expanded(
@@ -817,11 +828,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             SizedBox(width: buttonGap + 2),
                             Expanded(
                               child: _Destaque(
-                                icon: Icons.diamond_rounded,
+                                icon: Icons.military_tech_rounded,
                                 cor: const Color(0xFF9C36B5),
-                                titulo: tr('Mercado'),
-                                subtitulo: tr('Lendário do dia'),
-                                onTap: _openMercado,
+                                titulo: tr('Passe do Capi'),
+                                subtitulo: _passeSubtitulo(store),
+                                onTap: _openPasse,
                               ),
                             ),
                             SizedBox(width: buttonGap + 2),
@@ -1018,7 +1029,7 @@ class _LojaBotaoState extends State<_LojaBotao>
     with SingleTickerProviderStateMixin {
   static const _falas = [
     'Novidades na loja!',
-    'Olha o Mercado do Capi de hoje!',
+    'Olha as ofertas do dia!',
     'Tem oferta na loja!',
   ];
 
