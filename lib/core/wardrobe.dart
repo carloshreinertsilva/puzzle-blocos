@@ -525,6 +525,40 @@ abstract final class Wardrobe {
       descricao: 'Plim-plim a cada linha limpa.',
     ),
 
+    // The summer season (January's Passe do Capi).
+    Cosmetic(
+      'chapeu_melancia',
+      'Chapéu de Melancia',
+      Slot.cabeca,
+      Raridade.lendario,
+      Passe(1, naCompra: true),
+      descricao: 'Refrescante: vem na hora com o Passe de Verão.',
+    ),
+    Cosmetic(
+      'mascara_mergulho',
+      'Máscara de Mergulho',
+      Slot.rosto,
+      Raridade.raro,
+      Passe(1),
+      descricao: 'Com snorkel, para mergulhar nos combos.',
+    ),
+    Cosmetic(
+      'prancha_surfe',
+      'Prancha de Surfe',
+      Slot.costas,
+      Raridade.epico,
+      Passe(1),
+      descricao: 'Pegando a onda das linhas limpas.',
+    ),
+    Cosmetic(
+      'colar_conchas',
+      'Colar de Conchas',
+      Slot.pescoco,
+      Raridade.comum,
+      Passe(1),
+      descricao: 'Achadinhos da praia, com uma estrela-do-mar.',
+    ),
+
     // More legendaries for the Mercado.
     Cosmetic(
       'colar_diamante',

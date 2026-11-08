@@ -783,7 +783,8 @@ class CapiPainter extends CustomPainter {
           CapiHat.junino ||
           CapiHat.coroaEstrelas ||
           CapiHat.gorroNatal ||
-          CapiHat.chifresRena:
+          CapiHat.chifresRena ||
+          CapiHat.melancia:
         _drawNewHat(canvas, h);
 
       case CapiHat.vip:
@@ -865,6 +866,29 @@ class CapiPainter extends CustomPainter {
 
   void _backBehind(Canvas canvas, String? id) {
     switch (id) {
+      case 'prancha_surfe':
+        // A surfboard on his back, tilted, peeking out on both sides.
+        canvas.save();
+        canvas.translate(62, 52);
+        canvas.rotate(0.42);
+        final board = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(-12, -48, 24, 90),
+          const Radius.circular(12),
+        );
+        canvas.drawRRect(
+          board,
+          _ball(board.outerRect, const [Color(0xFF74C0FC), Color(0xFF1C7ED6)]),
+        );
+        canvas.drawRect(
+          const Rect.fromLTWH(-1.5, -48, 3, 90),
+          _fill(const Color(0xFFFFFFFF)),
+        );
+        canvas.drawRect(
+          const Rect.fromLTWH(-12, -32, 24, 4),
+          _fill(const Color(0xFFFFD43B)),
+        );
+        canvas.drawRRect(board, _line);
+        canvas.restore();
       case 'jetpack':
         // Two silver tanks peeking out, with little flames.
         for (final s in [-1.0, 1.0]) {
@@ -1116,6 +1140,23 @@ class CapiPainter extends CustomPainter {
           _fill(const Color(0xCCFFFFFF)),
         );
         canvas.drawRRect(tail, _line);
+      case 'colar_conchas':
+        // A string of little shells, a starfish in the middle.
+        for (var i = 0; i < 7; i++) {
+          final a = pi * (0.18 + i * 0.107);
+          final c = Offset(50 - 18 * cos(a), 59 + 4 * sin(a));
+          canvas.drawOval(
+            Rect.fromCenter(center: c, width: 4.6, height: 4),
+            _fill(i.isEven ? const Color(0xFFFFE3E3) : const Color(0xFFFFF3BF)),
+          );
+          canvas.drawOval(
+            Rect.fromCenter(center: c, width: 4.6, height: 4),
+            _line,
+          );
+        }
+        final star = _star(const Offset(50, 66), 5, 0.5);
+        canvas.drawPath(star, _fill(const Color(0xFFFF8787)));
+        canvas.drawPath(star, _line);
       case 'cachecol_natal':
         // Red and green stripes, with a tail down the chest.
         final band = RRect.fromRectAndRadius(
@@ -1251,6 +1292,49 @@ class CapiPainter extends CustomPainter {
     const left = Offset(35, 31);
     const right = Offset(65, 31);
     switch (id) {
+      case 'mascara_mergulho':
+        // A diving mask over both eyes, with its snorkel on the side.
+        final strap = Paint()
+          ..color = const Color(0xFF212529)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3;
+        canvas.drawLine(const Offset(18, 30), const Offset(24, 30), strap);
+        canvas.drawLine(const Offset(76, 30), const Offset(82, 30), strap);
+        final mask = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(24, 22, 52, 18),
+          const Radius.circular(9),
+        );
+        // Clear glass: the eyes show through the orange frame.
+        canvas.drawRRect(mask, _fill(const Color(0x5599E9F2)));
+        canvas.drawRRect(
+          mask.deflate(1.6),
+          Paint()
+            ..color = const Color(0xFFFF922B)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3.2,
+        );
+        canvas.drawLine(
+          const Offset(33, 27),
+          const Offset(38, 27),
+          Paint()
+            ..color = const Color(0xCCFFFFFF)
+            ..strokeWidth = 2
+            ..strokeCap = StrokeCap.round,
+        );
+        canvas.drawRRect(mask, _line);
+        // Snorkel.
+        canvas.drawPath(
+          Path()
+            ..moveTo(78, 34)
+            ..lineTo(84, 34)
+            ..lineTo(84, 8),
+          Paint()
+            ..color = const Color(0xFFFFD43B)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round,
+        );
       case 'oculos_estrelados':
         for (final o in [left, right]) {
           final star = _star(o, 9, 0.5);
@@ -1494,6 +1578,42 @@ class CapiPainter extends CustomPainter {
             _fill(const Color(0xFF74C0FC)),
           );
         }
+      case CapiHat.melancia:
+        // Half a watermelon worn as a helmet: green rind, red inside.
+        final rind = Path()
+          ..moveTo(21, 26)
+          ..cubicTo(21, 2, 79, 2, 79, 26)
+          ..close();
+        _shape(canvas, rind, const Color(0xFF8CE99A), const Color(0xFF2B8A3E));
+        for (final x in [33.0, 44.0, 56.0, 67.0]) {
+          canvas.drawLine(
+            Offset(x, 10 + (x - 50).abs() * 0.25),
+            Offset(x + (x - 50) * 0.12, 24),
+            Paint()
+              ..color = const Color(0x882B8A3E)
+              ..strokeWidth = 2.4
+              ..strokeCap = StrokeCap.round,
+          );
+        }
+        final edge = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(18, 22, 64, 7),
+          const Radius.circular(3.5),
+        );
+        canvas.drawRRect(edge, _fill(const Color(0xFFFF6B6B)));
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            const Rect.fromLTWH(18, 27, 64, 2.5),
+            const Radius.circular(1.2),
+          ),
+          _fill(const Color(0xFFFFFFFF)),
+        );
+        for (final x in [30.0, 42.0, 58.0, 70.0]) {
+          canvas.drawOval(
+            Rect.fromCenter(center: Offset(x, 25), width: 2, height: 3),
+            _fill(const Color(0xFF212529)),
+          );
+        }
+        canvas.drawRRect(edge, _outline);
       case CapiHat.gorroNatal:
         // A red Santa hat flopping to the side, white cuff and pompom.
         final gorro = Path()

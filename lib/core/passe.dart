@@ -76,6 +76,12 @@ abstract final class PasseDoCapi {
   /// The themes, by month (1 to 12). A month without one has a track of
   /// stars and tools only. New ones are added a couple of months ahead.
   static const temas = <int, TemaTemporada>{
+    1: TemaTemporada(
+      'Verão',
+      naCompra: 'chapeu_melancia',
+      premium: {10: 'mascara_mergulho', 20: 'prancha_surfe'},
+      gratis: {25: 'colar_conchas'},
+    ),
     11: TemaTemporada(
       'Estrelas',
       premium: {10: 'oculos_estrelados', 20: 'medalha', 30: 'coroa_estrelas'},

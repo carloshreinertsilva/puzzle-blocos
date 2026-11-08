@@ -61,7 +61,17 @@ void main() {
     expect(PasseDoCapi.trilha(novembro)[9].premium.item, 'oculos_estrelados');
     expect(PasseDoCapi.trilha(dezembro)[9].premium.item, 'cachecol_natal');
     expect(PasseDoCapi.trilha(dezembro)[24].gratis.item, 'sininho');
-    expect(PasseDoCapi.tema(janeiro), isNull);
+    expect(PasseDoCapi.tema(janeiro)!.naCompra, 'chapeu_melancia');
+    expect(PasseDoCapi.trilha(janeiro)[19].premium.item, 'prancha_surfe');
+    // A month without a theme: stars and tools only.
+    final semTema = DateTime(2027, 3, 10);
+    expect(PasseDoCapi.tema(semTema), isNull);
+    expect([
+      for (final n in PasseDoCapi.trilha(semTema)) ...[
+        ?n.gratis.item,
+        ?n.premium.item,
+      ],
+    ], isEmpty);
   });
 
   test(
@@ -163,6 +173,9 @@ void main() {
     final coroa = Wardrobe.byId('coroa_estrelas')!;
     expect(Wardrobe.visivel(store, gorro, dezembro), isTrue);
     expect(Wardrobe.visivel(store, gorro, janeiro), isFalse);
+    final melancia = Wardrobe.byId('chapeu_melancia')!;
+    expect(Wardrobe.visivel(store, melancia, janeiro), isTrue);
+    expect(Wardrobe.visivel(store, melancia, dezembro), isFalse);
     expect(Wardrobe.visivel(store, coroa, novembro), isTrue);
     expect(Wardrobe.visivel(store, coroa, dezembro), isFalse);
     // Bought or earned: the player's to wear, any month.
