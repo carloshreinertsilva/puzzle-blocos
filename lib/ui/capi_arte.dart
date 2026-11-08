@@ -154,28 +154,30 @@ class ItemArte {
     'mascara_heroi': ItemArte(1.74, 0, -0.02),
     'monoculo': ItemArte(0.62, 0.5, 0.0, fx: 0.45, fy: 0.43),
     'bigode': ItemArte(1.02, 0, 0.5, fy: 0.42),
-    // Neck.
+    // Neck. The painted Capi has no neck to see: the ring sits under his
+    // chin (0.86 eye distances below the eyes), and the part of it above
+    // the front arc (the back of the ring) only shows behind the body.
     'cachecol': ItemArte(
-      1.6,
+      1.55,
       0,
-      1.14,
-      fy: 0.22,
-      volta: Rect.fromLTRB(0.1, 0, 0.9, 0.24),
+      0.86,
+      fy: 0.40,
+      volta: Rect.fromLTRB(0, 0, 1, 0.40),
     ),
     'gravata': ItemArte(0.72, 0, 1.05),
     'lenco': ItemArte(
-      1.32,
+      1.25,
       0,
-      1.1,
-      fy: 0.14,
-      volta: Rect.fromLTRB(0.15, 0, 0.85, 0.22),
+      0.86,
+      fy: 0.30,
+      volta: Rect.fromLTRB(0, 0, 1, 0.30),
     ),
     'colar_flores': ItemArte(
-      1.58,
+      1.6,
       0,
-      1.12,
-      fy: 0.18,
-      volta: Rect.fromLTRB(0.15, 0, 0.85, 0.3),
+      0.82,
+      fy: 0.5,
+      volta: Rect.fromLTRB(0, 0, 1, 0.5),
     ),
     // Back (and the swim ring around the waist).
     'asinhas': ItemArte(3.2, 0, 1.15, atras: true),
