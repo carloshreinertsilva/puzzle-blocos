@@ -3,6 +3,20 @@
 // the Passe do Capi, the Mercado do Capi and the test ads.
 
 const Map<String, String> enLoja = {
+  // --- Summer season (January) ---
+  "Verão": "Summer",
+  "Chapéu de Melancia": "Watermelon Hat",
+  "Refrescante: vem na hora com o Passe de Verão.":
+      "Refreshing: comes right away with the Summer Pass.",
+  "Vem com o premium do Passe de Verão": "Comes with the Summer Pass premium",
+  "Máscara de Mergulho": "Diving Mask",
+  "Com snorkel, para mergulhar nos combos.":
+      "With a snorkel, to dive into combos.",
+  "Prancha de Surfe": "Surfboard",
+  "Pegando a onda das linhas limpas.": "Riding the wave of cleared lines.",
+  "Colar de Conchas": "Shell Necklace",
+  "Achadinhos da praia, com uma estrela-do-mar.":
+      "Beach finds, with a starfish.",
   // --- Seasons of the Passe do Capi (Christmas) ---
   "Vem com o premium do Passe deste mês":
       "Comes with this month's premium Pass",
@@ -348,6 +362,21 @@ const Map<String, String> enLoja = {
 };
 
 const Map<String, String> esLoja = {
+  // --- Summer season (January) ---
+  "Verão": "Verano",
+  "Chapéu de Melancia": "Sombrero de Sandía",
+  "Refrescante: vem na hora com o Passe de Verão.":
+      "Refrescante: llega al instante con el Pase de Verano.",
+  "Vem com o premium do Passe de Verão":
+      "Viene con el premium del Pase de Verano",
+  "Máscara de Mergulho": "Máscara de Buceo",
+  "Com snorkel, para mergulhar nos combos.":
+      "Con snorkel, para sumergirse en los combos.",
+  "Prancha de Surfe": "Tabla de Surf",
+  "Pegando a onda das linhas limpas.": "Surfeando la ola de líneas limpias.",
+  "Colar de Conchas": "Collar de Conchas",
+  "Achadinhos da praia, com uma estrela-do-mar.":
+      "Hallazgos de playa, con una estrella de mar.",
   // --- Seasons of the Passe do Capi (Christmas) ---
   "Vem com o premium do Passe deste mês":
       "Viene con el premium del Pase de este mes",
