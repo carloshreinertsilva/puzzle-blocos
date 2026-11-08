@@ -32,6 +32,19 @@ test.describe('Loja do Capi', () => {
     await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
   });
 
+  test('o balão da Loja não tapa os botões do menu', async ({ page }) => {
+    await openApp(page, { stars: 5 });
+    // The balloon shows at 4 s and shrinks away at 8 s: buttons still work
+    // while it is up and after it is gone.
+    await page.waitForTimeout(5_000);
+    await page.getByRole('button', { name: 'Configurações' }).click({ timeout: 10_000 });
+    await expect(page.getByText('Política de Privacidade')).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('button', { name: 'Fechar' }).click();
+    await page.waitForTimeout(5_000);
+    await page.getByRole('button', { name: 'Loja' }).click({ timeout: 10_000 });
+    await expect(page.getByText('Loja do Capi')).toBeVisible({ timeout: 30_000 });
+  });
+
   test('dobrar as estrelas da fase com um vídeo', async ({ page }) => {
     await openApp(page, { level: 2, stars: 0 });
     await startLevel(page);

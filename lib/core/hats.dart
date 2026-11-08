@@ -49,6 +49,24 @@ enum CapiHat {
     'Capacete Fundador',
     'Dourado, com estrela: para quem chegou primeiro à vila.',
     loja: 'Vem com o Pacote Inicial',
+  ),
+  gorroNatal(
+    'gorro_natal',
+    'Gorro de Papai Noel',
+    'Ho-ho-ho! Vem na hora com o Passe de Natal.',
+    loja: 'Vem com o premium do Passe de Natal',
+  ),
+  chifresRena(
+    'chifres_rena',
+    'Chifres de Rena',
+    'Para puxar o trenó dos blocos.',
+    loja: 'Trilha premium do Passe de Natal',
+  ),
+  melancia(
+    'chapeu_melancia',
+    'Chapéu de Melancia',
+    'Refrescante: vem na hora com o Passe de Verão.',
+    loja: 'Vem com o premium do Passe de Verão',
   );
 
   const CapiHat(this.id, this._label, this._description, {this._loja});

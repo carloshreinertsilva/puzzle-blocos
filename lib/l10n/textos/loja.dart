@@ -3,6 +3,82 @@
 // the Passe do Capi, the Mercado do Capi and the test ads.
 
 const Map<String, String> enLoja = {
+  // --- Summer season (January) ---
+  "Verão": "Summer",
+  "Chapéu de Melancia": "Watermelon Hat",
+  "Refrescante: vem na hora com o Passe de Verão.":
+      "Refreshing: comes right away with the Summer Pass.",
+  "Vem com o premium do Passe de Verão": "Comes with the Summer Pass premium",
+  "Máscara de Mergulho": "Diving Mask",
+  "Com snorkel, para mergulhar nos combos.":
+      "With a snorkel, to dive into combos.",
+  "Prancha de Surfe": "Surfboard",
+  "Pegando a onda das linhas limpas.": "Riding the wave of cleared lines.",
+  "Colar de Conchas": "Shell Necklace",
+  "Achadinhos da praia, com uma estrela-do-mar.":
+      "Beach finds, with a starfish.",
+  // --- Seasons of the Passe do Capi (Christmas) ---
+  "Vem com o premium do Passe deste mês":
+      "Comes with this month's premium Pass",
+  "Trilha do Passe do Capi deste mês": "On this month's Capi Pass track",
+  "Volta no Passe de {mes}": "Comes back in the {mes} Pass",
+  "Trilha premium liberada! {item} já está no Capi.":
+      "Premium track unlocked! Capi is already wearing {item}.",
+  "Temporada {tema} · termina em {n} dia": "{tema} season · ends in {n} day",
+  "Temporada {tema} · termina em {n} dias": "{tema} season · ends in {n} days",
+  "Ganhe na hora: {item}, {raridade}": "Get it right away: {item}, {raridade}",
+  "Ganhe na hora": "Get it right away",
+  "Só neste mês. Depois, é seu para sempre.":
+      "This month only. Then it's yours forever.",
+  "Premium: os itens da temporada, mais estrelas e ferramentas. Você vê tudo antes de comprar.": "Premium: the season's items, plus stars and tools. You see everything before you buy.",
+  "Natal": "Christmas",
+  "Gorro de Papai Noel": "Santa Hat",
+  "Ho-ho-ho! Vem na hora com o Passe de Natal.":
+      "Ho-ho-ho! Comes right away with the Christmas Pass.",
+  "Chifres de Rena": "Reindeer Antlers",
+  "Para puxar o trenó dos blocos.": "For pulling the block sleigh.",
+  "Cachecol Natalino": "Christmas Scarf",
+  "Listrado de vermelho e verde, quentinho.":
+      "Red and green stripes, nice and warm.",
+  "Sininho de Natal": "Christmas Bell",
+  "Plim-plim a cada linha limpa.": "Ding-ding with every line cleared.",
+  "Vem com o premium do Passe de Natal":
+      "Comes with the Christmas Pass premium",
+  "Trilha premium do Passe de Natal": "Christmas Pass premium track",
+  "Do Passe do Capi de novembro.": "From November's Capi Pass.",
+  "janeiro": "January",
+  "fevereiro": "February",
+  "março": "March",
+  "abril": "April",
+  "maio": "May",
+  "junho": "June",
+  "julho": "July",
+  "agosto": "August",
+  "setembro": "September",
+  "outubro": "October",
+  "novembro": "November",
+  "dezembro": "December",
+  // --- Wardrobe screen and Today's deals ---
+  "{item} é seu! Já está no Capi.": "{item} is yours! Capi is wearing it.",
+  "Ofertas do dia": "Today's deals",
+  "mudam em {h} h {min} min": "change in {h} h {min} min",
+  "Aparece nas Ofertas do dia, na Loja":
+      "Shows up in Today's deals, in the Shop",
+  "{n} prêmio pronto": "{n} reward ready",
+  "{n} prêmios prontos": "{n} rewards ready",
+  "Nível {n}": "Level {n}",
+  "Vestir": "Wear",
+  "Vestir {item}": "Wear {item}",
+  "Vestindo agora": "Wearing it now",
+  "Oferta do dia: {n} estrelas. Faltam {falta}.":
+      "Today's deal: {n} stars. {falta} to go.",
+  "Oferta do dia: {n}": "Today's deal: {n}",
+  "Oferta do dia: {preco}": "Today's deal: {preco}",
+  "{tipo}: {tem} de {total}": "{tipo}: {tem} of {total}",
+  "Vestindo": "Wearing",
+  "Oferta": "Deal",
+  "Olha as ofertas do dia!": "Check out today's deals!",
+  "Prêmios da temporada": "Season rewards",
   // --- Wardrobe: slots, rarities and collections (data in wardrobe.dart) ---
   'Cabeça': 'Head',
   'Rosto': 'Face',
@@ -286,6 +362,87 @@ const Map<String, String> enLoja = {
 };
 
 const Map<String, String> esLoja = {
+  // --- Summer season (January) ---
+  "Verão": "Verano",
+  "Chapéu de Melancia": "Sombrero de Sandía",
+  "Refrescante: vem na hora com o Passe de Verão.":
+      "Refrescante: llega al instante con el Pase de Verano.",
+  "Vem com o premium do Passe de Verão":
+      "Viene con el premium del Pase de Verano",
+  "Máscara de Mergulho": "Máscara de Buceo",
+  "Com snorkel, para mergulhar nos combos.":
+      "Con snorkel, para sumergirse en los combos.",
+  "Prancha de Surfe": "Tabla de Surf",
+  "Pegando a onda das linhas limpas.": "Surfeando la ola de líneas limpias.",
+  "Colar de Conchas": "Collar de Conchas",
+  "Achadinhos da praia, com uma estrela-do-mar.":
+      "Hallazgos de playa, con una estrella de mar.",
+  // --- Seasons of the Passe do Capi (Christmas) ---
+  "Vem com o premium do Passe deste mês":
+      "Viene con el premium del Pase de este mes",
+  "Trilha do Passe do Capi deste mês":
+      "En la ruta del Pase de Capi de este mes",
+  "Volta no Passe de {mes}": "Vuelve en el Pase de {mes}",
+  "Trilha premium liberada! {item} já está no Capi.":
+      "¡Ruta premium desbloqueada! Capi ya lleva {item}.",
+  "Temporada {tema} · termina em {n} dia":
+      "Temporada {tema} · termina en {n} día",
+  "Temporada {tema} · termina em {n} dias":
+      "Temporada {tema} · termina en {n} días",
+  "Ganhe na hora: {item}, {raridade}":
+      "Recíbelo al instante: {item}, {raridade}",
+  "Ganhe na hora": "Recíbelo al instante",
+  "Só neste mês. Depois, é seu para sempre.":
+      "Solo este mes. Después, es tuyo para siempre.",
+  "Premium: os itens da temporada, mais estrelas e ferramentas. Você vê tudo antes de comprar.": "Premium: los objetos de la temporada, más estrellas y herramientas. Ves todo antes de comprar.",
+  "Natal": "Navidad",
+  "Gorro de Papai Noel": "Gorro de Papá Noel",
+  "Ho-ho-ho! Vem na hora com o Passe de Natal.":
+      "¡Jo-jo-jo! Llega al instante con el Pase de Navidad.",
+  "Chifres de Rena": "Cuernos de Reno",
+  "Para puxar o trenó dos blocos.": "Para tirar del trineo de bloques.",
+  "Cachecol Natalino": "Bufanda Navideña",
+  "Listrado de vermelho e verde, quentinho.":
+      "A rayas rojas y verdes, calentita.",
+  "Sininho de Natal": "Campanita de Navidad",
+  "Plim-plim a cada linha limpa.": "Tilín-tilín con cada línea limpia.",
+  "Vem com o premium do Passe de Natal":
+      "Viene con el premium del Pase de Navidad",
+  "Trilha premium do Passe de Natal": "Ruta premium del Pase de Navidad",
+  "Do Passe do Capi de novembro.": "Del Pase de Capi de noviembre.",
+  "janeiro": "enero",
+  "fevereiro": "febrero",
+  "março": "marzo",
+  "abril": "abril",
+  "maio": "mayo",
+  "junho": "junio",
+  "julho": "julio",
+  "agosto": "agosto",
+  "setembro": "septiembre",
+  "outubro": "octubre",
+  "novembro": "noviembre",
+  "dezembro": "diciembre",
+  // --- Wardrobe screen and Today's deals ---
+  "{item} é seu! Já está no Capi.": "¡{item} es tuyo! Capi ya lo lleva puesto.",
+  "Ofertas do dia": "Ofertas del día",
+  "mudam em {h} h {min} min": "cambian en {h} h {min} min",
+  "Aparece nas Ofertas do dia, na Loja":
+      "Aparece en las Ofertas del día, en la Tienda",
+  "{n} prêmio pronto": "{n} premio listo",
+  "{n} prêmios prontos": "{n} premios listos",
+  "Nível {n}": "Nivel {n}",
+  "Vestir": "Vestir",
+  "Vestir {item}": "Vestir {item}",
+  "Vestindo agora": "Lo lleva puesto",
+  "Oferta do dia: {n} estrelas. Faltam {falta}.":
+      "Oferta del día: {n} estrellas. Faltan {falta}.",
+  "Oferta do dia: {n}": "Oferta del día: {n}",
+  "Oferta do dia: {preco}": "Oferta del día: {preco}",
+  "{tipo}: {tem} de {total}": "{tipo}: {tem} de {total}",
+  "Vestindo": "Puesto",
+  "Oferta": "Oferta",
+  "Olha as ofertas do dia!": "¡Mira las ofertas del día!",
+  "Prêmios da temporada": "Premios de la temporada",
   // --- Wardrobe: slots, rarities and collections (data in wardrobe.dart) ---
   'Cabeça': 'Cabeza',
   'Rosto': 'Cara',

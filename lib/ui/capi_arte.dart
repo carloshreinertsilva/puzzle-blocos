@@ -194,6 +194,7 @@ bool pintarCapiArte(
   required CapiHat hat,
   required String pelagem,
   required List<String?> outros,
+  void Function(Canvas canvas, String id, {required bool atras})? reserva,
 }) {
   final pose = PoseArte.todas[mood]!;
   final corpo = CapiArte.imagem(pose.asset(pelagem));
@@ -222,11 +223,25 @@ bool pintarCapiArte(
   canvas.translate(-50, -96 + bob * 0.5);
 
   final ids = [hat.id, ...outros];
+  // The eyes' midpoint, where an item without art yet is placed.
+  final olhos = Offset(left + pose.ex * s, top + pose.ey * s);
   void itens(bool atras) {
     for (final id in ids) {
       if (id == null) continue;
       final arte = ItemArte.todos[id];
-      if (arte == null) continue;
+      if (arte == null) {
+        // No painted art for it yet (a new season's item): its drawing
+        // from the code Capi, matched by the eyes (35,31 and 65,31 there).
+        if (reserva != null) {
+          canvas.save();
+          canvas.translate(olhos.dx, olhos.dy);
+          canvas.scale(26.9 / 30);
+          canvas.translate(-50, -31);
+          reserva(canvas, id, atras: atras);
+          canvas.restore();
+        }
+        continue;
+      }
       final volta = arte.volta;
       if (arte.atras != atras && !(volta != null && atras)) continue;
       final img = CapiArte.imagem(ItemArte.asset(id));

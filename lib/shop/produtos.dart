@@ -143,14 +143,20 @@ abstract final class Entrega {
     ProgressStore store,
     Produto produto, {
     String? compraId,
+    DateTime? agora,
   }) async {
     if (produto.consumivel) {
       if (compraId != null && store.purchaseDelivered(compraId)) return;
       if (produto.estrelas > 0) {
         await store.addBoughtStars(produto.estrelas);
       } else if (produto == Produto.passeCapi) {
-        // The premium track of the season it was bought in.
-        await store.setPassPremium(PasseDoCapi.temporada(DateTime.now()));
+        // The premium track of the season it was bought in, and that
+        // month's exclusive item at once (worn straight away).
+        final quando = agora ?? DateTime.now();
+        await store.setPassPremium(PasseDoCapi.temporada(quando));
+        if (PasseDoCapi.tema(quando)?.naCompra case final id?) {
+          await _vestir(store, id);
+        }
       } else {
         await store.addTool(CapiTool.hammer, 3);
         await store.addTool(CapiTool.shovel, 3);
