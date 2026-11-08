@@ -186,6 +186,7 @@ Todos os ativos de marketing foram produzidos sob medida para atender rigorosame
   - Capi Estilo: Capi novo em 2.5D;
   - guarda-roupa com 5 posições, 4 raridades, 30 itens e 5 coleções;
   - Passe do Capi: temporadas de 30 dias com trilha grátis e premium (`docs/passe.md`).
+- **1.8.0:** o Capi em 3D estilo vinil, o mesmo do ícone novo: 6 poses, 6 pelagens, 25 acessórios e filhotes pintados no Gemini (`art/capi/fontes/`, recortados com `tool/recortar_fundo.py` e montados com `tool/capi_arte.py`); ícone e banner da loja novos.
 
 ## 7. Próximos Passos (Pós-Aprovação na Loja)
 

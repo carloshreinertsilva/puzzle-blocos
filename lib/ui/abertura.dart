@@ -1,24 +1,34 @@
-import 'dart:math';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/idioma.dart';
-import 'capi.dart';
 import 'palette.dart';
 import 'typography.dart';
 
-/// The opening screen while the game loads. It continues Android's own
-/// splash (same colors, Capi in the middle, the name at the bottom) and
-/// adds four hopping blocks, like the web loading screen. If loading fails,
-/// it says so and offers to try again instead of hanging.
+/// The opening screen while the game loads: Capi hauling a big block into
+/// the Vila do Capi (painted with Gemini, assets/abertura/), the name on top
+/// and a loading bar at the bottom that fills up when the game is ready
+/// ([pronto]). If loading fails, it says so and offers to try again instead
+/// of hanging.
 class Abertura extends StatelessWidget {
-  const Abertura({super.key, this.erro = false, this.onTentarDeNovo});
+  const Abertura({
+    super.key,
+    this.erro = false,
+    this.onTentarDeNovo,
+    this.pronto,
+  });
 
   final bool erro;
   final VoidCallback? onTentarDeNovo;
 
+  /// Becomes true when the game has loaded: the bar runs to the end.
+  final ValueListenable<bool>? pronto;
+
+  static const imagem = 'assets/abertura/abertura.webp';
+
   @override
   Widget build(BuildContext context) {
+    final margens = MediaQuery.paddingOf(context);
     return Directionality(
       textDirection: TextDirection.ltr,
       child: DecoratedBox(
@@ -32,40 +42,83 @@ class Abertura extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Balances the blocks below, so Capi sits right in the
-                  // middle, where Android's own splash drew him.
-                  if (!erro) const SizedBox(height: 64),
-                  Capi(
-                    size: 165,
-                    mood: erro ? CapiMood.worried : CapiMood.happy,
-                  ),
-                  const SizedBox(height: 18),
-                  if (erro)
-                    _Erro(onTentarDeNovo: onTentarDeNovo)
-                  else
-                    Semantics(
-                      label: tr('Carregando'),
-                      child: const _BlocosPulando(),
+            // Covers the screen; on wider screens it keeps Capi (lower
+            // middle) in sight and loses some sky.
+            Image.asset(
+              imagem,
+              fit: BoxFit.cover,
+              alignment: const Alignment(0, 0.4),
+              gaplessPlayback: true,
+              excludeFromSemantics: true,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              frameBuilder: (context, child, frame, sincrona) => sincrona
+                  ? child
+                  : AnimatedOpacity(
+                      opacity: frame == null ? 0 : 1,
+                      duration: const Duration(milliseconds: 300),
+                      child: child,
                     ),
-                ],
+            ),
+            // Shade behind the name and the bar, so both read on the art.
+            const Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 230,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xB31C2155), Color(0x001C2155)],
+                  ),
+                ),
+              ),
+            ),
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 220,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x00160F33), Color(0xE6160F33)],
+                  ),
+                ),
               ),
             ),
             Positioned(
               left: 0,
               right: 0,
-              bottom: 48 + MediaQuery.paddingOf(context).bottom,
+              top: margens.top + 40,
               child: Text(
                 appTitle,
                 textAlign: TextAlign.center,
                 style: displayText(
-                  44,
+                  52,
                   shadows: const [
-                    Shadow(color: Color(0xFF2A1458), offset: Offset(0, 3)),
+                    Shadow(color: Color(0xFF2A1458), offset: Offset(0, 4)),
+                    Shadow(color: Color(0x88000000), blurRadius: 12),
                   ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: margens.bottom + 36,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: erro
+                        ? _Erro(onTentarDeNovo: onTentarDeNovo)
+                        : _BarraDeCarregamento(pronto: pronto),
+                  ),
                 ),
               ),
             ),
@@ -76,89 +129,111 @@ class Abertura extends StatelessWidget {
   }
 }
 
-class _BlocosPulando extends StatefulWidget {
-  const _BlocosPulando();
+/// Fills towards 90% while the game loads (quickly at first, then slowing
+/// down), and runs to 100% once [pronto] says it is ready.
+class _BarraDeCarregamento extends StatefulWidget {
+  const _BarraDeCarregamento({this.pronto});
+  final ValueListenable<bool>? pronto;
 
   @override
-  State<_BlocosPulando> createState() => _BlocosPulandoState();
+  State<_BarraDeCarregamento> createState() => _BarraDeCarregamentoState();
 }
 
-class _BlocosPulandoState extends State<_BlocosPulando>
+class _BarraDeCarregamentoState extends State<_BarraDeCarregamento>
     with SingleTickerProviderStateMixin {
-  static const _cores = [
-    Color(0xFFFFA94D),
-    Color(0xFFFFD43B),
-    Color(0xFF51CF66),
-    Color(0xFF22B8CF),
-  ];
+  late final AnimationController _anim = AnimationController(vsync: this);
 
-  late final AnimationController _anim = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1000),
-  )..repeat();
+  @override
+  void initState() {
+    super.initState();
+    widget.pronto?.addListener(_mudou);
+    _mudou();
+  }
+
+  void _mudou() {
+    if (widget.pronto?.value ?? false) {
+      _anim.animateTo(
+        1,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    } else {
+      _anim.animateTo(
+        0.9,
+        duration: const Duration(milliseconds: 3200),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
 
   @override
   void dispose() {
+    widget.pronto?.removeListener(_mudou);
     _anim.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    final semMovimento = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    return SizedBox(
-      height: 46,
-      child: AnimatedBuilder(
-        animation: _anim,
-        builder: (context, _) => Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            for (var i = 0; i < _cores.length; i++)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Transform.translate(
-                  offset: Offset(
-                    0,
-                    semMovimento ? 0 : -14 * _pulo(_anim.value - i * 0.12),
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _anim,
+    builder: (context, _) {
+      final p = _anim.value;
+      final pct = '${(p * 100).round()}%';
+      return Semantics(
+        label: tr('Carregando'),
+        value: pct,
+        child: ExcludeSemantics(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(tr('Carregando'), style: displayText(18)),
+                  const Spacer(),
+                  Text(pct, style: displayText(18)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 20,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: const Color(0x66000000),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0x55FFFFFF),
+                    width: 1.5,
                   ),
-                  child: _Bloco(cor: _cores[i]),
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    widthFactor: p.clamp(0.04, 1),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(7),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF8A3D), Color(0xFFFFC94D)],
+                        ),
+                      ),
+                      foregroundDecoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(7),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0x66FFFFFF), Color(0x00FFFFFF)],
+                          stops: [0, 0.6],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  /// 0..1..0: up quickly, down again, then a rest (like the web's "hop").
-  static double _pulo(double t) {
-    final f = t % 1;
-    return f < 0.8 ? sin(f / 0.8 * pi) : 0;
-  }
-}
-
-class _Bloco extends StatelessWidget {
-  const _Bloco({required this.cor});
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 28,
-    height: 28,
-    decoration: BoxDecoration(
-      color: cor,
-      borderRadius: BorderRadius.circular(7),
-    ),
-    foregroundDecoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(7),
-      gradient: const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0x55FFFFFF), Color(0x00FFFFFF), Color(0x40000000)],
-        stops: [0, 0.4, 1],
-      ),
-    ),
+      );
+    },
   );
 }
 
@@ -167,8 +242,12 @@ class _Erro extends StatelessWidget {
   final VoidCallback? onTentarDeNovo;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 32),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+    decoration: BoxDecoration(
+      color: const Color(0xD91C2155),
+      borderRadius: BorderRadius.circular(20),
+    ),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
