@@ -57,14 +57,21 @@ jobs:
           path: build/web_test
           retention-days: 3
 
-  # Um job só para os 4 tamanhos: prepara o navegador uma vez.
+  # Os 4 tamanhos de tela, divididos em duas máquinas.
   e2e:
-    name: Playwright
+    name: Playwright (${{ matrix.parte }}/2)
     needs: flutter
     # Fixo no 24.04: o ubuntu-latest virou 26.04, que o Playwright 1.56
     # ainda não suporta ("does not support chromium on ubuntu26.04").
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    # Metade dos testes em cada máquina, um navegador por vez: com dois
+    # navegadores desenhando sem GPU na mesma máquina de 2 núcleos, a
+    # página travava de vez em quando e o teste estourava o tempo.
+    strategy:
+      fail-fast: false
+      matrix:
+        parte: [1, 2]
     defaults:
       run:
         working-directory: e2e
@@ -83,12 +90,12 @@ jobs:
       - name: Navegador (Chromium)
         run: npx playwright install --with-deps chromium
       - name: Testes de ponta a ponta
-        run: npx playwright test
+        run: npx playwright test --shard=${{ matrix.parte }}/2 --workers=1
       - name: Relatório
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: relatorio-playwright
+          name: relatorio-playwright-${{ matrix.parte }}
           path: e2e/playwright-report
           retention-days: 14
 
