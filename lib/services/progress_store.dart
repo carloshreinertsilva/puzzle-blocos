@@ -569,4 +569,50 @@ class ProgressStore {
       _prefs.getBool('bonus_chest_${dayKey(day)}') ?? false;
   Future<void> setBonusChestClaimed(DateTime day) =>
       _prefs.setBool('bonus_chest_${dayKey(day)}', true);
+
+  // --- Inviting friends (see core/convites.dart) ---
+
+  /// This player's invite code, made once on this phone.
+  String? get conviteCodigo => _prefs.getString('conviteCodigo');
+  Future<void> setConviteCodigo(String c) =>
+      _prefs.setString('conviteCodigo', c);
+
+  /// Whether the code is saved on the server (so friends can use it).
+  bool get conviteCodigoNoServidor =>
+      _prefs.getBool('conviteCodigoServidor') ?? false;
+  Future<void> setConviteCodigoNoServidor() =>
+      _prefs.setBool('conviteCodigoServidor', true);
+
+  /// The friend's code this player came in with (once per phone).
+  String? get conviteUsado => _prefs.getString('conviteUsado');
+  Future<void> setConviteUsado(String c) => _prefs.setString('conviteUsado', c);
+
+  /// What the server already knows about this player's invite: 0 nothing,
+  /// 1 that they came in with it, 2 that they reached the level that makes
+  /// it count.
+  int get conviteEnviado => _prefs.getInt('conviteEnviado') ?? 0;
+  Future<void> setConviteEnviado(int n) => _prefs.setInt('conviteEnviado', n);
+
+  /// Friends who came in with this player's code and played enough (last
+  /// count from the server).
+  int get conviteAmigos => _prefs.getInt('conviteAmigos') ?? 0;
+  Future<void> setConviteAmigos(int n) => _prefs.setInt('conviteAmigos', n);
+
+  /// Reward steps (friends needed) already given.
+  List<int> get conviteMetasDadas => [
+    for (final s in _prefs.getStringList('conviteMetas') ?? <String>[])
+      ?int.tryParse(s),
+  ];
+  Future<void> addConviteMeta(int n) async {
+    final atual = conviteMetasDadas;
+    if (atual.contains(n)) return;
+    await _prefs.setStringList('conviteMetas', [
+      for (final m in [...atual, n]) '$m',
+    ]);
+  }
+
+  /// Whether the Play Store's install referrer was read already.
+  bool get conviteReferrerLido => _prefs.getBool('conviteReferrer') ?? false;
+  Future<void> setConviteReferrerLido() =>
+      _prefs.setBool('conviteReferrer', true);
 }

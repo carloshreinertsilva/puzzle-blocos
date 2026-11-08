@@ -37,6 +37,7 @@
                 <data android:scheme="https"/>
                 <data android:host="capiblocks.vercel.app"/>
                 <data android:path="/duelo"/>
+                <data android:path="/convite"/>
             </intent-filter>
             <!-- The link reaches Flutter as a route (App.onGenerateRoute). -->
             <meta-data

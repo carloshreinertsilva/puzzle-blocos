@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:async';
 
+import '../core/convites.dart';
 import '../core/passe.dart';
 import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
@@ -18,6 +19,7 @@ import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
+import '../services/convites_servidor.dart';
 import '../services/jogo_salvo.dart';
 import '../services/musica.dart';
 import '../services/placares.dart';
@@ -27,10 +29,12 @@ import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/oferta_nuvem.dart';
 import '../ui/palette.dart';
+import '../ui/premio.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import '../shop/produtos.dart';
 import 'game_screen.dart';
+import 'convites_sheet.dart';
 import 'loja_sheet.dart';
 import 'passe_sheet.dart';
 import 'presente_dialog.dart';
@@ -68,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Let the menu show first, then the gift (and any update) over it.
     _abertura = Timer(const Duration(milliseconds: 600), () async {
       await _presenteDoDia();
+      await _conviteNaAbertura();
       if (mounted) {
         await Avisos.verificarAtualizacao(context, widget.services.store);
       }
@@ -77,6 +82,29 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       await oferecerProgressoDaNuvem(context, widget.services.store, nuvem);
     });
+  }
+
+  /// A friend's invite from the Play Store (first run on Android), then the
+  /// server's count of this player's friends and any reward reached.
+  Future<void> _conviteNaAbertura() async {
+    final store = widget.services.store;
+    final codigo = await ConvitesServidor.codigoDaInstalacao(store);
+    if (codigo != null && mounted) {
+      await mostrarConviteRecebido(context, widget.services, codigo);
+    }
+    await _sincronizarConvites();
+  }
+
+  Future<void> _sincronizarConvites() async {
+    final novas = await ConvitesServidor.sincronizar(widget.services.store);
+    if (!mounted) return;
+    for (final m in novas) {
+      mostrarPremio(
+        context,
+        tr('Amigos no CapiBlocks! Você ganhou: {premio}', {'premio': m.texto}),
+      );
+    }
+    if (novas.isNotEmpty) setState(() {});
   }
 
   /// After the first levels, twice at most: sign in to Play Games to be on
@@ -281,6 +309,13 @@ class _HomeScreenState extends State<HomeScreen> {
     // Level, record and streak may have changed, and modes may unlock.
     unawaited(Placares.enviar(widget.services.store));
     unawaited(JogoSalvo.salvar(widget.services.store));
+    // A friend's invite counts once this player reaches level 5.
+    final store = widget.services.store;
+    if (store.conviteUsado != null &&
+        store.conviteEnviado < 2 &&
+        store.level >= Convites.faseQueConta) {
+      unawaited(_sincronizarConvites());
+    }
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
   }
@@ -300,6 +335,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     unawaited(Placares.enviar(widget.services.store));
     unawaited(JogoSalvo.salvar(widget.services.store));
+    // A friend's invite counts once this player reaches level 5.
+    final store = widget.services.store;
+    if (store.conviteUsado != null &&
+        store.conviteEnviado < 2 &&
+        store.level >= Convites.faseQueConta) {
+      unawaited(_sincronizarConvites());
+    }
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
   }
@@ -652,6 +694,12 @@ class _HomeScreenState extends State<HomeScreen> {
         : tr('Nível {n}', {'n': PasseDoCapi.nivel(store, agora)});
   }
 
+  Future<void> _openConvites() async {
+    widget.services.feedback.click();
+    await showConvites(context, widget.services);
+    if (mounted) setState(() {});
+  }
+
   Future<void> _openPasse() async {
     widget.services.feedback.click();
     await showPasse(context, widget.services);
@@ -851,6 +899,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
+                        SizedBox(height: isSmall ? 6 : 8),
+                        _ConviteFaixa(store: store, onTap: _openConvites),
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.symmetric(
@@ -1324,6 +1374,134 @@ class _SugestaoBalao extends StatelessWidget {
                   tr('Ver no guarda-roupa ›'),
                   style: bodyText(11, color: const Color(0xFF7048E8)),
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Under the highlights: the invite call, with the next prize. Now and
+/// then (like the shop) it gives a little shake and says something else,
+/// inside the button itself (no overlay over the menu).
+class _ConviteFaixa extends StatefulWidget {
+  const _ConviteFaixa({required this.store, required this.onTap});
+  final ProgressStore store;
+  final VoidCallback onTap;
+
+  @override
+  State<_ConviteFaixa> createState() => _ConviteFaixaState();
+}
+
+class _ConviteFaixaState extends State<_ConviteFaixa>
+    with SingleTickerProviderStateMixin {
+  static const _lembretes = [
+    'Seus amigos ganham 50 estrelas!',
+    'Chame um amigo para a Vila!',
+  ];
+
+  late final AnimationController _balanco = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+  Timer? _timer;
+  String? _lembrete;
+  int _vez = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // After the shop's balloon (4 s), then every so often.
+    _timer = Timer(const Duration(seconds: 14), _lembrar);
+  }
+
+  void _lembrar() {
+    if (!mounted) return;
+    setState(() => _lembrete = tr(_lembretes[_vez++ % _lembretes.length]));
+    _balanco.forward(from: 0);
+    _timer = Timer(const Duration(seconds: 5), () {
+      if (!mounted) return;
+      setState(() => _lembrete = null);
+      _timer = Timer(const Duration(seconds: 45), _lembrar);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _balanco.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final store = widget.store;
+    final proxima = Convites.proxima(store);
+    final texto =
+        _lembrete ??
+        (proxima == null
+            ? tr('Capi Embaixador! Continue chamando amigos')
+            : tr('Convide amigos e ganhe: {premio}', {
+                'premio': proxima.texto,
+              }));
+    return Semantics(
+      button: true,
+      label: tr('Convidar amigos'),
+      excludeSemantics: true,
+      onTap: widget.onTap,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _balanco,
+          builder: (context, child) {
+            final v = _balanco.value;
+            // A short wiggle that settles.
+            final angulo = sin(v * pi * 6) * 0.035 * (1 - v);
+            return Transform.rotate(angle: angulo, child: child);
+          },
+          child: Container(
+            // 44: the smallest comfortable tap target.
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2B8A3E), Color(0xFF37B24D)],
+              ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: _lembrete != null
+                    ? const Color(0xFFFFF1B8)
+                    : const Color(0x55FFFFFF),
+                width: _lembrete != null ? 2 : 1,
+              ),
+              boxShadow: const [
+                BoxShadow(color: Color(0x55000000), offset: Offset(0, 3)),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.card_giftcard_rounded, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: Text(
+                      texto,
+                      key: ValueKey(texto),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: displayText(14, color: Colors.white),
+                    ),
+                  ),
+                ),
+                if (proxima != null)
+                  Text(
+                    '${store.conviteAmigos}/${proxima.amigos}',
+                    style: displayText(14, color: const Color(0xFFD3F9D8)),
+                  ),
+                const Icon(Icons.chevron_right_rounded, color: Colors.white),
               ],
             ),
           ),

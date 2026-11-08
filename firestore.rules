@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// CapiBlocks: os convites de amigos (lib/services/convites_servidor.dart).
+// Cada celular entra anonimamente no Firebase. Nada aqui tem nome, e-mail
+// ou dado pessoal: só códigos de convite e se o amigo chegou à fase 5.
+// Para publicar: console do Firebase > Firestore Database > Regras > colar
+// este arquivo inteiro > Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // codigos/{codigo}: de quem é o código (criado uma vez, nunca muda).
+    match /codigos/{codigo} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null
+        && codigo.matches('^[A-HJKMNP-Z2-9]{6}$')
+        && request.resource.data.keys().hasOnly(['uid', 'criadoEm'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete, list: if false;
+    }
+
+    // convites/{uid}: o código com que este jogador entrou e se ele já
+    // chegou à fase 5. Só o próprio jogador cria e marca a fase 5; quem
+    // convidou só conta (os documentos não têm dado pessoal).
+    match /convites/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list: if request.auth != null;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['codigo', 'fase5', 'criadoEm'])
+        && request.resource.data.fase5 == false
+        && exists(/databases/$(database)/documents/codigos/$(request.resource.data.codigo))
+        && get(/databases/$(database)/documents/codigos/$(request.resource.data.codigo)).data.uid != uid;
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fase5'])
+        && resource.data.fase5 == false
+        && request.resource.data.fase5 == true;
+      allow delete: if false;
+    }
+
+    // Todo o resto: fechado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
