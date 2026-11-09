@@ -4,13 +4,15 @@ building or uploading again (a version code can only be uploaded once).
     python3 tool/play_promover.py <de> <para> [porcentagem]
 
 e.g. `internal production 1`: the build being tested internally goes to
-production, with its release notes, for everyone (or for a fraction, like
+production, with the notes in distribution/whatsnew/ (or the ones it
+already had, when that folder has none), for everyone (or for a fraction, like
 0.1 for 10%, as a staged rollout). Uses the service account in
 PLAY_SERVICE_ACCOUNT_JSON. Needs the google-auth and requests packages.
 """
 import json
 import os
 import sys
+from pathlib import Path
 
 import requests
 from google.auth.transport.requests import Request
@@ -29,6 +31,17 @@ def _sessao():
     s = requests.Session()
     s.headers["Authorization"] = f"Bearer {cred.token}"
     return s
+
+
+def _notas():
+    """The notes in distribution/whatsnew/whatsnew-<idioma>, as the API wants."""
+    pasta = Path(__file__).resolve().parent.parent / "distribution" / "whatsnew"
+    notas = []
+    for f in sorted(pasta.glob("whatsnew-*")):
+        texto = f.read_text(encoding="utf-8").strip()
+        if texto:
+            notas.append({"language": f.name[len("whatsnew-"):], "text": texto[:500]})
+    return notas
 
 
 def _ok(r, o_que):
@@ -51,7 +64,7 @@ def main():
         nova = {
             "name": rel.get("name"),
             "versionCodes": rel["versionCodes"],
-            "releaseNotes": rel.get("releaseNotes", []),
+            "releaseNotes": _notas() or rel.get("releaseNotes", []),
             "status": "completed" if fracao >= 1 else "inProgress",
         }
         if fracao < 1:
