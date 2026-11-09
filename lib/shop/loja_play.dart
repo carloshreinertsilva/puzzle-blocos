@@ -113,6 +113,18 @@ class LojaPlay extends LojaService {
 
   Future<void> _processar(PurchaseDetails compra) async {
     final id = compra.productID;
+    if (id.isEmpty) {
+      // When Google Play's answer brings no purchase (cancelled, item already
+      // owned...) the Android plugin reports it with no product. The shop
+      // sells one thing at a time, so it is about whatever is waiting. Even
+      // if the status says "purchased", there is nothing here to deliver.
+      _terminarTodas(
+        compra.status == PurchaseStatus.canceled
+            ? ResultadoCompra.cancelada
+            : ResultadoCompra.erro,
+      );
+      return;
+    }
     if (_aindaPendente(compra)) {
       _terminar(id, ResultadoCompra.pendente);
       return;
@@ -181,6 +193,12 @@ class LojaPlay extends LojaService {
   void _terminar(String id, ResultadoCompra resultado) {
     final espera = _esperando.remove(id);
     if (espera != null && !espera.isCompleted) espera.complete(resultado);
+  }
+
+  void _terminarTodas(ResultadoCompra resultado) {
+    for (final id in _esperando.keys.toList()) {
+      _terminar(id, resultado);
+    }
   }
 
   @override

@@ -35,6 +35,20 @@ GooglePlayPurchaseDetails _compra(
   ),
 ).single;
 
+/// What the Android plugin reports when Google Play's answer brings no
+/// purchase (the player cancelled, the item is already owned...): no product.
+PurchaseDetails _avisoSemProduto(PurchaseStatus status) => PurchaseDetails(
+  purchaseID: '',
+  productID: '',
+  status: status,
+  transactionDate: null,
+  verificationData: PurchaseVerificationData(
+    localVerificationData: '',
+    serverVerificationData: '',
+    source: 'google_play',
+  ),
+);
+
 class _Plataforma extends InAppPurchasePlatform {
   // Synchronous, so a second report arrives while the first is being handled.
   final fluxo = StreamController<List<PurchaseDetails>>.broadcast(sync: true);
@@ -213,6 +227,30 @@ void main() {
     unawaited(loja.comprar(Produto.estrelas150));
     await pumpEventQueue();
     expect(plataforma.autoConsume, isFalse);
+  });
+
+  group('an answer from the store with no purchase ends the wait', () {
+    for (final (status, esperado) in [
+      (PurchaseStatus.canceled, ResultadoCompra.cancelada),
+      (PurchaseStatus.error, ResultadoCompra.erro),
+      // Nothing came to deliver, so it must not be reported as delivered.
+      (PurchaseStatus.purchased, ResultadoCompra.erro),
+    ]) {
+      test('${status.name} is ${esperado.name}', () async {
+        final loja = await abrir();
+        ResultadoCompra? resultado;
+        unawaited(loja.comprar(Produto.estrelas150).then((r) => resultado = r));
+        await pumpEventQueue();
+        expect(resultado, isNull);
+
+        plataforma.fluxo.add([_avisoSemProduto(status)]);
+        await pumpEventQueue();
+
+        expect(resultado, esperado);
+        expect(store.stars, 0);
+        expect(estatisticas.eventos, isEmpty);
+      });
+    }
   });
 
   test('on iPhone: automatic consume, and no restore at the opening', () async {
