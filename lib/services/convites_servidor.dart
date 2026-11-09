@@ -14,9 +14,11 @@ import 'progress_store.dart';
 ///
 /// Firestore (rules in firestore.rules):
 /// - `codigos/{codigo}`: `{uid}`, whose code it is (created once);
-/// - `convites/{uid}`: `{codigo, fase5}`, the code this player came in with
-///   and whether they reached [Convites.faseQueConta].
-/// Whoever invited counts the `convites` with their code and `fase5`.
+/// - `convites/{uid}`: `{codigo, dono, fase5}`, the code this player came in
+///   with, whose code it is, and whether they reached
+///   [Convites.faseQueConta].
+/// Whoever invited counts the `convites` that are theirs (`dono`) with
+/// `fase5`; nobody can list anyone else's.
 ///
 /// Off on the web and in tests: there, codes still work on the phone but
 /// nothing is counted.
@@ -46,7 +48,7 @@ abstract final class ConvitesServidor {
     try {
       await _registrarCodigo(store, user.uid);
       await _enviarConvite(store, user.uid);
-      final amigos = await _contarAmigos(store);
+      final amigos = await _contarAmigos(store, user.uid);
       if (amigos == null) return const [];
       return await Convites.receberMetas(store, amigos);
     } catch (e) {
@@ -77,11 +79,21 @@ abstract final class ConvitesServidor {
 
   static Future<void> _enviarConvite(ProgressStore store, String uid) async {
     final codigo = store.conviteUsado;
-    if (codigo == null) return;
+    if (codigo == null || store.conviteEnviado == _semDono) return;
     final doc = _db.collection('convites').doc(uid);
     if (store.conviteEnviado < 1) {
+      // Whose code it is: the invite is saved under them, so each player
+      // can only count their own friends.
+      final dono = await _db.collection('codigos').doc(codigo).get();
+      final donoUid = dono.data()?['uid'];
+      if (donoUid is! String || donoUid == uid) {
+        // A code nobody has (typed wrong): the gift stays, nothing counts.
+        await store.setConviteEnviado(_semDono);
+        return;
+      }
       await doc.set({
         'codigo': codigo,
+        'dono': donoUid,
         'fase5': false,
         'criadoEm': FieldValue.serverTimestamp(),
       });
@@ -93,12 +105,14 @@ abstract final class ConvitesServidor {
     }
   }
 
-  static Future<int?> _contarAmigos(ProgressStore store) async {
-    final codigo = store.conviteCodigo;
-    if (codigo == null || !store.conviteCodigoNoServidor) return null;
+  /// [ProgressStore.conviteEnviado] for a code with no owner on the server.
+  static const _semDono = 9;
+
+  static Future<int?> _contarAmigos(ProgressStore store, String uid) async {
+    if (!store.conviteCodigoNoServidor) return null;
     final total = await _db
         .collection('convites')
-        .where('codigo', isEqualTo: codigo)
+        .where('dono', isEqualTo: uid)
         .where('fase5', isEqualTo: true)
         .count()
         .get();
