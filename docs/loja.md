@@ -62,9 +62,13 @@ criado.
   Uma compra única entrega o conteúdo uma vez só; um consumível, uma vez
   por compra (o ID da compra fica salvo), mesmo que a loja o reenvie.
 - `lib/shop/loja_play.dart`: Google Play Billing (`in_app_purchase`).
-  Escuta as compras desde a abertura do jogo: entrega as que terminaram
-  com o jogo fechado (pagamento pendente aprovado depois) e confirma cada
-  uma ao Google (sem a confirmação o Google estorna em 3 dias).
+  Escuta as compras desde a abertura do jogo e, no Android, consulta o
+  Google a cada abertura: é assim que chega um Pix aprovado com o jogo
+  fechado. Só entrega o que já foi pago (restaurar marca tudo como
+  "restaurada", até Pix não pago, então vale o estado real da compra) e só
+  depois confirma ao Google (sem a confirmação o Google estorna em 3 dias).
+  Consumíveis são consumidos pelo jogo, depois da entrega, e não pelo
+  consumo automático do plugin, que se perde se o jogo fechar antes.
 - `LojaSimulada`: nos testes do navegador e na web em depuração, a compra
   passa na hora. A versão web publicada não tem loja.
 - Ainda não há servidor para validar as compras; a validação é a do
