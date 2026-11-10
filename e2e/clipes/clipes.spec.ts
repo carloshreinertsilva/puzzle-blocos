@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { test, type Page } from '@playwright/test';
-import { bestMove, loadScenario, openApp, state, waitForState, type GameState } from '../tests/helpers';
+import { bestMove, dragPiece, loadScenario, openApp, state, waitForState, type GameState } from '../tests/helpers';
 import { FPS, Gravador } from './gravador';
 
 /**
@@ -97,6 +97,7 @@ const POSTS: Record<string, string> = {
   natal: 'O Capi já entrou no clima de Natal 🎄🦫 #capiblocks #capivara #natal #jogosmobile',
   blitz: 'Quantos pontos você faz em 60 segundos? ⏱️ Comenta aí! #capiblocks #blitz #desafio #jogodeblocos',
   torre: 'Até onde a torre do Capi chega? 🏗️🦫 #capiblocks #capivara #jogosmobile #satisfatorio',
+  'blitz-final': 'Últimos segundos do Blitz… e o combo salvou! 😱⏱️🧩 #capiblocks #blitz #combo #jogodeblocos #capivara',
 };
 
 async function gravar(page: Page, nome: string, cena: (g: Gravador) => Promise<void>) {
@@ -202,6 +203,45 @@ test('blitz', async ({ page }) => {
     // Ritmo de Blitz: peças rápidas, quase sem pausa.
     await jogarSozinho(g, page, 22, 220, 360);
     await g.esperar(800);
+  });
+});
+
+// O fim de um Blitz: o relógio é adiantado fora do vídeo até sobrarem uns
+// 14 segundos; no vídeo, jogadas apressadas até quase zerar e, no fim, o
+// tabuleiro do combo grande (os combos devolvem segundos ao relógio).
+test('blitz-final', async ({ page }) => {
+  await openApp(page, { level: 30, seen_opened_blitz: true });
+  await page.getByRole('button', { name: 'Modos' }).click();
+  await page.getByRole('button', { name: /^Blitz 60s/ }).click();
+  await waitForState(page, (s) => s.mode === 'blitz', 'blitz aberto');
+  await fecharApresentacoes(page);
+  // Joga um pouco fora do vídeo, para o tabuleiro não começar vazio, e
+  // adianta o relógio até sobrarem uns 7 segundos.
+  for (let i = 0; i < 6; i++) {
+    const m = bestMove(await state(page));
+    if (m) await dragPiece(page, m.slot, m.row, m.col);
+  }
+  const resto = (await state(page)).blitzSecondsLeft ?? 60;
+  if (resto > 7) await page.clock.runFor((resto - 7) * 1000);
+  await waitForState(page, (s) => (s.blitzSecondsLeft ?? 60) <= 7, 'blitz no fim');
+  const segundos = (await state(page)).blitzSecondsLeft;
+  await gravar(page, 'blitz-final', async (g) => {
+    g.legenda(`Faltam <b>${segundos} segundos</b>…`, 2200);
+    await g.esperar(500);
+    for (let i = 0; i < 30; i++) {
+      const s = await state(page);
+      if (s.status !== 'playing' || (s.blitzSecondsLeft ?? 0) <= 3) break;
+      const m = bestMove(s);
+      if (!m) break;
+      await jogar(g, page, m, 120, 300);
+    }
+    // O tabuleiro do combo entra já nos últimos segundos (o relógio do
+    // Blitz para enquanto o cenário é carregado, então não dá para esperar).
+    await loadScenario(page, COMBO);
+    await g.esperar(300);
+    g.legenda('Nos últimos segundos… <b>COMBO!</b>', 3200);
+    for (const m of JOGADAS_COMBO) await jogar(g, page, m, 260, 320);
+    await g.esperar(2600);
   });
 });
 
