@@ -106,6 +106,14 @@ test('combo', async ({ page }) => {
 
 test('partida', async ({ page }) => {
   await openApp(page, { level: 14 });
+  // Abre a fase uma vez fora do vídeo, para as novidades da fase não
+  // aparecerem na gravação, e volta ao menu.
+  await page.getByRole('button', { name: /^Jogar · Fase/ }).click();
+  await waitForState(page, (s) => s.screen === 'game', 'fase aberta');
+  await fecharApresentacoes(page);
+  await page.getByRole('button', { name: 'Pausar' }).click();
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await waitForState(page, (s) => s.screen === 'home', 'menu');
   await page.waitForTimeout(1500);
   await gravar(page, 'partida', async (g) => {
     await g.esperar(800);
