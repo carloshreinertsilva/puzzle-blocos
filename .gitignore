@@ -50,3 +50,6 @@ app.*.map.json
 /build_release/
 tool/firestore/node_modules/
 tool/firestore/*-debug.log
+
+# Chaves do TikTok (tool/tiktok.py)
+tool/.tiktok.env
