@@ -7,6 +7,8 @@
 # CLAUDE.md). "verificar" só confere a chave, sem enviar nada.
 # "promover-para-producao" leva para produção a versão que já está no teste
 # interno, sem compilar de novo (um número de versão só sobe uma vez).
+# "ficha-da-loja" troca textos, ícone, banner e capturas da ficha da loja
+# (docs/loja/play/, tool/play_ficha.py), sem versão nova.
 name: 'Android: Play Store'
 
 on:
@@ -15,7 +17,7 @@ on:
       faixa:
         description: 'Faixa da Play Store'
         type: choice
-        options: [verificar, internal, alpha, beta, production, promover-para-producao]
+        options: [verificar, internal, alpha, beta, production, promover-para-producao, ficha-da-loja]
         default: verificar
       situacao:
         description: 'completed = publica; draft = rascunho na Play Console'
@@ -26,6 +28,10 @@ on:
         description: 'Produção: parte dos jogadores que recebe (0.1 = 10%; 1 = todos)'
         type: string
         default: '1'
+      youtube:
+        description: 'ficha-da-loja: link do vídeo no YouTube (opcional)'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -62,9 +68,22 @@ jobs:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: python3 tool/play_promover.py internal production "${{ inputs.porcentagem }}"
 
+  ficha:
+    name: Atualiza a ficha da loja (textos, ícone, banner e capturas)
+    if: ${{ inputs.faixa == 'ficha-da-loja' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --quiet google-auth requests
+      - env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          YOUTUBE: ${{ inputs.youtube }}
+        run: python3 tool/play_ficha.py --enviar
+
   enviar:
     name: Compila e envia à Play Store
-    if: ${{ inputs.faixa != 'verificar' && inputs.faixa != 'promover-para-producao' }}
+    if: ${{ inputs.faixa != 'verificar' && inputs.faixa != 'promover-para-producao' && inputs.faixa != 'ficha-da-loja' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
