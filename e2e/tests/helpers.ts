@@ -67,6 +67,11 @@ export type GameState = {
     gameOver: boolean;
     playing: boolean;
     starsGained: number;
+    floors: number;
+    zone: string;
+    canContinue: boolean;
+    offset: number;
+    room: number;
   };
   equippedHat?: string;
   passe?: { nivel: number; premium: boolean };

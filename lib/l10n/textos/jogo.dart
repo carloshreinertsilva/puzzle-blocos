@@ -2,6 +2,30 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enJogo = {
+  // Torre do Capi: a subida até a Lua.
+  'Por um fio!': 'By a hair!',
+  'Em chamas!': 'On fire!',
+  'Perfeito!': 'Perfect!',
+  'Agora é só subir!': 'Now keep climbing!',
+  'De volta!': "You're back!",
+  'Mais uma chance': 'One more chance',
+  'Andar {n}': 'Floor {n}',
+  'Falta {n} andar para o recorde': '{n} floor to the record',
+  'Faltam {n} andares para o recorde': '{n} floors to the record',
+  'Falta {n} andar para: {zona}': '{n} floor to: {zona}',
+  'Faltam {n} andares para: {zona}': '{n} floors to: {zona}',
+  '{n} andar': '{n} floor',
+  '{n} andares': '{n} floors',
+  'Toque para soltar o bloco': 'Tap to drop the block',
+  'Andares': 'Floors',
+  'Sequência': 'Streak',
+  'Zona': 'Zone',
+  'Continuar a subida vendo um vídeo': 'Keep climbing by watching a video',
+  'Em chamas! x{n}': 'On fire! x{n}',
+  'Nuvens': 'Clouds',
+  'Pôr do sol': 'Sunset',
+  'Espaço': 'Space',
+  'Lua': 'Moon',
   // Partida: prêmios, dicas e avisos
   '+{n} ★ pelo vídeo!': '+{n} ★ for the video!',
   'Segunda chance liberada!': 'Second chance unlocked!',
@@ -240,6 +264,30 @@ const Map<String, String> enJogo = {
 };
 
 const Map<String, String> esJogo = {
+  // Torre do Capi: a subida até a Lua.
+  'Por um fio!': '¡Por un pelo!',
+  'Em chamas!': '¡En llamas!',
+  'Perfeito!': '¡Perfecto!',
+  'Agora é só subir!': '¡Ahora a seguir subiendo!',
+  'De volta!': '¡De vuelta!',
+  'Mais uma chance': 'Una oportunidad más',
+  'Andar {n}': 'Piso {n}',
+  'Falta {n} andar para o recorde': 'Falta {n} piso para el récord',
+  'Faltam {n} andares para o recorde': 'Faltan {n} pisos para el récord',
+  'Falta {n} andar para: {zona}': 'Falta {n} piso para: {zona}',
+  'Faltam {n} andares para: {zona}': 'Faltan {n} pisos para: {zona}',
+  '{n} andar': '{n} piso',
+  '{n} andares': '{n} pisos',
+  'Toque para soltar o bloco': 'Toca para soltar el bloque',
+  'Andares': 'Pisos',
+  'Sequência': 'Racha',
+  'Zona': 'Zona',
+  'Continuar a subida vendo um vídeo': 'Sigue subiendo viendo un video',
+  'Em chamas! x{n}': '¡En llamas! x{n}',
+  'Nuvens': 'Nubes',
+  'Pôr do sol': 'Atardecer',
+  'Espaço': 'Espacio',
+  'Lua': 'Luna',
   // Partida: prêmios, dicas e avisos
   '+{n} ★ pelo vídeo!': '¡+{n} ★ por el video!',
   'Segunda chance liberada!': '¡Segunda oportunidad desbloqueada!',
