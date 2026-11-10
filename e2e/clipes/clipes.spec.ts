@@ -93,7 +93,7 @@ const naTela = (page: Page, cond: (s: GameState) => boolean) => async () => cond
 /** Sugestão de texto para o post de cada clipe (fica ao lado do MP4). */
 const POSTS: Record<string, string> = {
   combo: 'Esse combo foi LENDÁRIO 🤯🧩 Você consegue? #capiblocks #jogodeblocos #capivara #puzzle #jogosmobile',
-  partida: 'Só mais uma fase… 🦫🧩 Joga grátis: capiblocks.vercel.app #capiblocks #capivara #jogodeblocos #jogosmobile',
+  partida: 'Só mais uma fase… 🦫🧩 Baixe grátis: procure CapiBlocks na Play Store #capiblocks #capivara #jogodeblocos #jogosmobile',
   natal: 'O Capi já entrou no clima de Natal 🎄🦫 #capiblocks #capivara #natal #jogosmobile',
   blitz: 'Quantos pontos você faz em 60 segundos? ⏱️ Comenta aí! #capiblocks #blitz #desafio #jogodeblocos',
   torre: 'Até onde a torre do Capi chega? 🏗️🦫 #capiblocks #capivara #jogosmobile #satisfatorio',
