@@ -71,6 +71,15 @@ class TestBridge {
           'gameOver': t.gameOver,
           'playing': t.playing,
           'starsGained': t.starsGained,
+          'floors': t.floors,
+          'zone': t.zone.name,
+          'canContinue': t.canContinue,
+          // How far the moving block is from a perfect fit, and the room
+          // there is (the size of the block below, along the same axis).
+          'offset': t.isAxisX
+              ? t.currentX - t.blocks.last.x
+              : t.currentY - t.blocks.last.y,
+          'room': t.isAxisX ? t.blocks.last.dx : t.blocks.last.dy,
         },
       };
     }
