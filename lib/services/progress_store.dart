@@ -615,4 +615,16 @@ class ProgressStore {
   bool get conviteReferrerLido => _prefs.getBool('conviteReferrer') ?? false;
   Future<void> setConviteReferrerLido() =>
       _prefs.setBool('conviteReferrer', true);
+
+  /// Store rating: how many times it was asked for, and when last.
+  int get avaliacaoPedidos => _prefs.getInt('avaliacaoPedidos') ?? 0;
+  DateTime? get avaliacaoPedidaEm {
+    final ms = _prefs.getInt('avaliacaoPedidaEm');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> setAvaliacaoPedida(DateTime t) async {
+    await _prefs.setInt('avaliacaoPedidaEm', t.millisecondsSinceEpoch);
+    await _prefs.setInt('avaliacaoPedidos', avaliacaoPedidos + 1);
+  }
 }

@@ -2,6 +2,7 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enMenu = {
+  'Avaliar o CapiBlocks': 'Rate CapiBlocks',
   'Dica: guarde espaço para as peças grandes, como o quadradão 3x3.':
       'Tip: save room for the big pieces, like the chunky 3x3 square.',
   'Limpar duas linhas de uma vez vale muito mais pontos!':
@@ -234,6 +235,7 @@ const Map<String, String> enMenu = {
 };
 
 const Map<String, String> esMenu = {
+  'Avaliar o CapiBlocks': 'Calificar CapiBlocks',
   'Dica: guarde espaço para as peças grandes, como o quadradão 3x3.': 'Consejo: guarda espacio para las piezas grandes, como el cuadrado gigante de 3x3.',
   'Limpar duas linhas de uma vez vale muito mais pontos!':
       '¡Limpiar dos líneas a la vez vale muchos más puntos!',
