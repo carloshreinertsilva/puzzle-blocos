@@ -20,6 +20,7 @@ navegador de testes não desenha 60 qps sozinho), então cada clipe leva uns
 | `combo.mp4` | Um combo de 3 linhas e 3 colunas de uma vez ("Lendário!") e algumas jogadas |
 | `partida.mp4` | Uma fase do começo, jogada pelo robô |
 | `natal.mp4` | O Capi de Natal no menu e um combo no Infinito |
+| `torre.mp4` | A Torre do Capi: sequência de acertos, as Nuvens, o recorde batido e a torre inteira no fim |
 
 Os vídeos saem sem som: nas redes, coloque uma música em alta pelo próprio
 app (TikTok/Instagram), que ajuda o alcance. Para um clipe novo, copie um dos

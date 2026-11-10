@@ -80,6 +80,99 @@ void main() {
     expect(store.stars, greaterThan(0));
   });
 
+  test('Corte que deixa pouco bloco é "por um fio" e treme a tela', () {
+    final c = TowerController(store: store, feedback: feedback);
+    c.debugPlace(perfect: false, offset: 0.6);
+    expect(c.fx.last.kind, TowerFxKind.cut);
+    // O segundo bloco vem pelo outro eixo (3.0 de lado): sobra 1/3 dele.
+    c.debugPlace(perfect: false, offset: 2.0);
+    expect(c.fx.last.kind, TowerFxKind.closeCall);
+    expect(c.shake, 1);
+    expect(c.blocks.last.dy, closeTo(1.0, 0.01));
+    expect(c.tense, isTrue);
+  });
+
+  test('O bloco cortado fica onde caiu, e a fatia cai do lado certo', () {
+    final c = TowerController(store: store, feedback: feedback);
+    final base = c.blocks.first;
+    c.debugPlace(perfect: false, offset: -0.5);
+    // Passou para a esquerda: o bloco fica alinhado à base e a sobra, antes.
+    expect(c.blocks.last.x, closeTo(base.x, 0.001));
+    expect(c.fallingSlices.single.x, closeTo(base.x - 0.5, 0.001));
+    expect(c.fallingSlices.single.vx, lessThan(0));
+  });
+
+  test('Zonas: a cada marco o céu muda e o Capi comemora', () {
+    final c = TowerController(store: store, feedback: feedback);
+    expect(c.zone.name, 'Vila do Capi');
+    expect(c.nextZone!.floor, 10);
+    for (var i = 0; i < 10; i++) {
+      c.debugPlace(perfect: true);
+    }
+    expect(c.floors, 10);
+    expect(c.zone.name, 'Nuvens');
+    expect(
+      c.fx.where((e) => e.kind == TowerFxKind.zone).single.zone!.floor,
+      10,
+    );
+    expect(c.fever, isTrue);
+    expect(TowerController.zoneAt(61).name, 'Lua');
+  });
+
+  test('Passar do recorde comemora na hora, uma vez só', () async {
+    await store.recordTowerHeight(3);
+    final c = TowerController(store: store, feedback: feedback);
+    expect(c.recordToBeat, 3);
+    for (var i = 0; i < 3; i++) {
+      c.debugPlace(perfect: true);
+    }
+    expect(c.recordBeaten, isFalse, reason: 'empatou, ainda não passou');
+    c.debugPlace(perfect: true);
+    c.debugPlace(perfect: true);
+    expect(c.recordBeaten, isTrue);
+    expect(c.fx.where((e) => e.kind == TowerFxKind.record).length, 1);
+  });
+
+  test(
+    'Continuar: uma vez por subida, e as estrelas não contam em dobro',
+    () async {
+      final c = TowerController(store: store, feedback: feedback);
+      for (var i = 0; i < 4; i++) {
+        c.debugPlace(perfect: true);
+      }
+      c.debugPlace(perfect: false, offset: 8.0);
+      expect(c.canContinue, isFalse, reason: 'só a partir de 5 andares');
+
+      c.reset();
+      for (var i = 0; i < 5; i++) {
+        c.debugPlace(perfect: true);
+      }
+      c.debugPlace(perfect: false, offset: 8.0);
+      await pumpEventQueue();
+      expect(c.canContinue, isTrue);
+      expect(c.starsGained, 1);
+      final jogos = store.towerGamesPlayed;
+
+      expect(c.continueClimb(), isTrue);
+      expect(c.gameOver, isFalse);
+      expect(c.floors, 5);
+      expect(c.fallingSlices, isEmpty);
+      for (var i = 0; i < 5; i++) {
+        c.debugPlace(perfect: true);
+      }
+      c.debugPlace(perfect: false, offset: 8.0);
+      await pumpEventQueue();
+      expect(c.floors, 10);
+      // 10 andares valem 3 estrelas no total: 1 já tinha sido dada.
+      expect(c.starsGained, 3);
+      expect(store.stars, 3);
+      expect(store.towerGamesPlayed, jogos, reason: 'a mesma subida');
+      expect(store.towerBestHeight, 10);
+      expect(c.canContinue, isFalse, reason: 'só uma vez');
+      expect(c.continueClimb(), isFalse);
+    },
+  );
+
   test('Desbloqueio no Onboarding ocorre na fase 9', () async {
     await store.setLevel(8);
     expect(Onboarding.towerUnlocked(store), isFalse);
