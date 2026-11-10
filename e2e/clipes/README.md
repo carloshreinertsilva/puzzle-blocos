@@ -20,6 +20,14 @@ navegador de testes não desenha 60 qps sozinho), então cada clipe leva uns
 | `combo.mp4` | Um combo de 3 linhas e 3 colunas de uma vez ("Lendário!") e algumas jogadas |
 | `partida.mp4` | Uma fase do começo, jogada pelo robô |
 | `natal.mp4` | O Capi de Natal no menu e um combo no Infinito |
+| `blitz.mp4` | O Blitz 60s aberto pelo menu, jogado em ritmo rápido |
+| `torre.mp4` | A Torre do Capi subindo andar por andar até errar |
+
+Cada clipe abre com uma legenda curta no alto (o gancho dos primeiros
+segundos) e mostra um dedo onde a tela é tocada, para quem assiste ver de
+onde a peça sai. Ao lado de cada MP4 fica um `.txt` com uma sugestão de
+texto e hashtags para o post. A legenda usa a fonte do jogo, que não tem
+emoji: emoji só no texto do post.
 
 Os vídeos saem sem som: nas redes, coloque uma música em alta pelo próprio
 app (TikTok/Instagram), que ajuda o alcance. Para um clipe novo, copie um dos

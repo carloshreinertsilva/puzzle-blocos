@@ -22,6 +22,10 @@ export class Gravador {
   private n = 0;
   private ultimo = '';
   private pasta: string;
+  // O dedo na tela: onde está, desde que quadro está apertado / foi solto.
+  private dedo = { x: 0, y: 0, apertouEm: -1, soltouEm: -1 };
+  // Legenda de abertura: texto e os quadros em que aparece e some.
+  private texto = { html: '', de: 0, ate: -1 };
 
   constructor(
     private page: Page,
@@ -40,8 +44,20 @@ export class Gravador {
   async comecar() {
     rmSync(this.pasta, { recursive: true, force: true });
     mkdirSync(this.pasta, { recursive: true });
-    const agora = await this.page.evaluate(() => Date.now());
-    await this.page.clock.pauseAt(agora + 20);
+    // O relógio ainda corre enquanto isto roda: se o ponto de pausa já
+    // passou, tenta de novo um pouco mais à frente.
+    for (let folga = 50; ; folga *= 4) {
+      const agora = await this.page.evaluate(() => Date.now());
+      try {
+        await this.page.clock.pauseAt(agora + folga);
+        break;
+      } catch (e) {
+        if (folga > 5000) throw e;
+      }
+    }
+    await this.page.evaluate(CAMADA);
+    // A fonte do jogo, para a legenda (carrega em tempo real).
+    await this.page.evaluate(() => (window as any).__clipe.fonte);
     await this.quadro();
   }
 
@@ -50,6 +66,7 @@ export class Gravador {
     await this.page.clock.runFor(1000 / FPS);
     // O desenho termina em tarefas marcadas para logo depois do quadro.
     for (let i = 0; i < 3; i++) await this.page.clock.runFor(0);
+    await this.desenharCamada();
     let foto = await this.foto();
     let hash = createHash('md5').update(foto).digest('hex');
     if (hash === this.ultimo) {
@@ -89,29 +106,82 @@ export class Gravador {
     if (!box) throw new Error(`${this.nome}: botão fora da tela.`);
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
-    await this.page.mouse.move(x, y);
-    await this.page.mouse.down();
-    await this.quadro();
-    await this.page.mouse.up();
+    await this.apertar(x, y, async () => {
+      await this.page.mouse.move(x, y);
+      await this.page.mouse.down();
+      await this.esperar(100);
+      await this.page.mouse.up();
+    });
     await this.esperar(depoisMs);
   }
 
   /** Arrasta de [de] até [para] em [ms], como um dedo (anda junto com os quadros). */
   async arrastar(de: { x: number; y: number }, para: { x: number; y: number }, ms = 520) {
     const m = this.page.mouse;
-    await m.move(de.x, de.y);
-    await m.down();
-    await this.esperar(100);
-    const passos = Math.max(2, Math.round((ms * FPS) / 1000));
-    for (let i = 1; i <= passos; i++) {
-      // Sai devagar, acelera e chega devagar.
-      const t = i / passos;
-      const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-      await m.move(de.x + (para.x - de.x) * e, de.y + (para.y - de.y) * e);
-      await this.quadro();
+    await this.apertar(de.x, de.y, async () => {
+      await m.move(de.x, de.y);
+      await m.down();
+      await this.esperar(100);
+      const passos = Math.max(2, Math.round((ms * FPS) / 1000));
+      for (let i = 1; i <= passos; i++) {
+        // Sai devagar, acelera e chega devagar.
+        const t = i / passos;
+        const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+        const x = de.x + (para.x - de.x) * e;
+        const y = de.y + (para.y - de.y) * e;
+        await m.move(x, y);
+        this.dedo.x = x;
+        this.dedo.y = y;
+        await this.quadro();
+      }
+      await this.esperar(120);
+      await m.up();
+    });
+  }
+
+  /**
+   * Mostra o dedo apertando em (x, y) enquanto [acao] roda. Para toques que
+   * o jogo recebe por outro caminho (a ponte de testes), use com uma ação
+   * que só grava quadros.
+   */
+  async apertar(x: number, y: number, acao: () => Promise<void>) {
+    this.dedo = { x, y, apertouEm: this.n, soltouEm: -1 };
+    await acao();
+    this.dedo.soltouEm = this.n;
+  }
+
+  /** Uma legenda grande no alto do vídeo por [ms] (aceita <b>destaque</b>; sem emoji, a fonte do jogo não tem). */
+  legenda(html: string, ms = 2600) {
+    this.texto = { html, de: this.n, ate: this.n + Math.round((ms * FPS) / 1000) };
+  }
+
+  /** Põe o dedo e a legenda no quadro atual (animados pelo número do quadro). */
+  private async desenharCamada() {
+    const seg = (quadros: number) => quadros / FPS;
+    const { x, y, apertouEm, soltouEm } = this.dedo;
+    let dedo = 0;
+    let escala = 1;
+    if (apertouEm >= 0) {
+      const desde = seg(this.n - apertouEm);
+      if (soltouEm < 0) {
+        dedo = Math.min(1, desde / 0.08);
+        escala = 1 - 0.18 * Math.min(1, desde / 0.1);
+      } else {
+        const depois = seg(this.n - soltouEm);
+        dedo = Math.max(0, 1 - depois / 0.18);
+        escala = 0.82 + 0.3 * Math.min(1, depois / 0.18);
+      }
     }
-    await this.esperar(120);
-    await m.up();
+    const { html, de, ate } = this.texto;
+    let legenda = 0;
+    if (html && this.n >= de) {
+      const entrada = Math.min(1, seg(this.n - de) / 0.25);
+      const saida = Math.max(0, Math.min(1, seg(ate - this.n) / 0.3));
+      legenda = Math.min(entrada, saida);
+    }
+    await this.page.evaluate((c) => (window as any).__clipe.desenhar(c), {
+      x, y, dedo, escala, html, legenda,
+    });
   }
 
   /** Monta o vídeo. Devolve o caminho do MP4. */
@@ -130,3 +200,49 @@ export class Gravador {
     return mp4;
   }
 }
+
+/**
+ * Camada por cima do jogo com o dedo (para quem assiste ver de onde a peça
+ * sai) e a legenda de abertura. É desenhada quadro a quadro pelo Gravador;
+ * nada aqui tem animação própria, que andaria fora do relógio do vídeo.
+ */
+const CAMADA = `(() => {
+  if (window.__clipe) return;
+  const css = document.createElement('style');
+  css.textContent = \`
+    #clipe-dedo { position: fixed; left: 0; top: 0; width: 44px; height: 44px;
+      margin: -22px 0 0 -22px; border-radius: 50%; pointer-events: none;
+      z-index: 2147483647; background: rgba(255,255,255,.38);
+      border: 3px solid rgba(255,255,255,.95);
+      box-shadow: 0 2px 10px rgba(0,0,0,.4); opacity: 0; }
+    #clipe-legenda { position: fixed; left: 20px; right: 20px; top: 21%;
+      text-align: center; pointer-events: none; z-index: 2147483646;
+      font: 30px/1.12 'Lilita One', sans-serif; color: #fff;
+      -webkit-text-stroke: 6px #14163a; paint-order: stroke fill;
+      opacity: 0; }
+    #clipe-legenda span { display: inline-block; padding: 10px 16px 12px;
+      border-radius: 18px; background: rgba(14, 16, 46, .78);
+      box-shadow: 0 6px 18px rgba(0,0,0,.45); }
+    #clipe-legenda b { color: #ffc94d; font-weight: normal; }
+  \`;
+  document.head.appendChild(css);
+  const dedo = document.createElement('div');
+  dedo.id = 'clipe-dedo';
+  const legenda = document.createElement('div');
+  legenda.id = 'clipe-legenda';
+  document.body.append(dedo, legenda);
+  const fonte = new FontFace('Lilita One', 'url(assets/assets/fonts/LilitaOne-Regular.ttf)');
+  window.__clipe = {
+    fonte: fonte.load().then((f) => document.fonts.add(f)).catch(() => {}),
+    desenhar(c) {
+      dedo.style.left = c.x + 'px';
+      dedo.style.top = c.y + 'px';
+      dedo.style.opacity = c.dedo;
+      dedo.style.transform = 'scale(' + c.escala + ')';
+      const html = '<span>' + c.html + '</span>';
+      if (legenda.innerHTML !== html) legenda.innerHTML = html;
+      legenda.style.opacity = c.legenda;
+      legenda.style.transform = 'scale(' + (0.88 + 0.12 * c.legenda) + ')';
+    },
+  };
+})()`;
