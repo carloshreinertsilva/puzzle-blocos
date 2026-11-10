@@ -1,4 +1,5 @@
 import '../core/daily_missions.dart';
+import '../core/ranking.dart';
 
 import 'dart:math';
 
@@ -464,6 +465,7 @@ class TowerController extends ChangeNotifier {
       });
     }
 
+    Ranking.marcar(store, Quadro.torre, finalHeight, DateTime.now());
     if (finalHeight > bestHeight) {
       isNewBest = true;
       store.recordTowerHeight(finalHeight);

@@ -10,6 +10,7 @@ import '../core/game_session.dart';
 import '../core/hint.dart';
 import '../core/level.dart';
 import '../core/missions.dart';
+import '../core/ranking.dart';
 import '../core/shapes.dart';
 import '../l10n/idioma.dart';
 import '../services/analytics.dart';
@@ -453,7 +454,10 @@ class GameController extends ChangeNotifier {
     }
     switch (mode) {
       case GameMode.levels when won:
-        if (!isReplay) store.setLevel(level.number + 1);
+        if (!isReplay) {
+          store.setLevel(level.number + 1);
+          Ranking.marcar(store, Quadro.fases, 1, DateTime.now());
+        }
         store.setFailStreak(level.number, 0);
         _awardLevelStars();
         DailyMissionsManager.reportEvent(store, DailyMissionType.playLevels, 1);
@@ -480,6 +484,7 @@ class GameController extends ChangeNotifier {
               starsGained += n;
               if (!_disposed) notifyListeners();
             });
+        Ranking.marcar(store, Quadro.blitz, session.score, DateTime.now());
         if (session.score > store.blitzBestScore) {
           newBest = true;
           bestScore = session.score;
@@ -500,6 +505,7 @@ class GameController extends ChangeNotifier {
         starsGained = due - _endlessStarsGiven;
         _endlessStarsGiven = due;
         store.addStars(starsGained);
+        Ranking.marcar(store, Quadro.infinito, session.score, DateTime.now());
         if (session.score > store.bestScore) {
           newBest = true;
           bestScore = session.score;

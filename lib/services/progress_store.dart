@@ -627,4 +627,35 @@ class ProgressStore {
     await _prefs.setInt('avaliacaoPedidaEm', t.millisecondsSinceEpoch);
     await _prefs.setInt('avaliacaoPedidos', avaliacaoPedidos + 1);
   }
+
+  // --- The game's own ranking (core/ranking.dart) ---
+
+  /// The name the player chose for the ranking, or null.
+  String? get rankingNome => _prefs.getString('rankingNome');
+  Future<void> setRankingNome(String nome) =>
+      _prefs.setString('rankingNome', nome);
+
+  /// This week's score on a board (0 when what is kept is another week's).
+  int rankingDaSemana(String quadro, int semana) {
+    final v = (_prefs.getString('rkSemana_$quadro') ?? '').split(':');
+    if (v.length != 2 || int.tryParse(v[0]) != semana) return 0;
+    return int.tryParse(v[1]) ?? 0;
+  }
+
+  Future<void> setRankingDaSemana(String quadro, int semana, int pontos) =>
+      _prefs.setString('rkSemana_$quadro', '$semana:$pontos');
+
+  /// What was last sent for a board and period (Ranking.assinatura).
+  String? rankingEnviado(String quadro, String periodo) =>
+      _prefs.getString('rkEnviado_${quadro}_$periodo');
+  Future<void> setRankingEnviado(String quadro, String periodo, String v) =>
+      _prefs.setString('rkEnviado_${quadro}_$periodo', v);
+
+  /// Lines the player reported: hidden on this phone from then on.
+  List<String> get rankingDenunciados =>
+      _prefs.getStringList('rkDenunciados') ?? const [];
+  Future<void> addRankingDenunciado(String uid) => _prefs.setStringList(
+    'rkDenunciados',
+    {...rankingDenunciados, uid}.toList(),
+  );
 }
