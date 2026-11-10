@@ -2,6 +2,46 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enMenu = {
+  // O ranking do jogo.
+  'Denunciar nome': 'Report name',
+  'O nome "{nome}" é ofensivo? Ele some da sua lista e vai para a nossa moderação.': 'Is the name "{nome}" offensive? It leaves your list and goes to our moderation.',
+  'Denunciar': 'Report',
+  'Obrigado! Vamos olhar esse nome.': "Thanks! We'll look at that name.",
+  'Mudar meu nome no ranking': 'Change my ranking name',
+  'Esta semana': 'This week',
+  'Sempre': 'All time',
+  'Recomeça em {d} d {h} h': 'Starts over in {d} d {h} h',
+  'Não deu para abrir o ranking. Confira a internet.':
+      "Couldn't open the ranking. Check your internet.",
+  'Ninguém por aqui ainda. Seja o primeiro!': 'Nobody here yet. Be the first!',
+  'Ver os placares do {servico}': 'See the {servico} leaderboards',
+  'Escolher meu nome': 'Choose my name',
+  'Escolher meu nome para entrar no ranking':
+      'Choose my name to join the ranking',
+  'Jogue esta semana para entrar na lista!':
+      'Play this week to get on the list!',
+  'Jogue para entrar na lista!': 'Play to get on the list!',
+  'Ranking: {quadro}': 'Ranking: {quadro}',
+  '{posicao}º lugar: {nome}, {pontos} {unidade}':
+      'Place {posicao}: {nome}, {pontos} {unidade}',
+  'Embaixador': 'Ambassador',
+  'Denunciar o nome {nome}': 'Report the name {nome}',
+  'O nome precisa de pelo menos 3 letras.':
+      'The name needs at least 3 letters.',
+  'O nome pode ter até 16 letras.': 'The name can have up to 16 letters.',
+  'Use só letras, números, espaço, ponto, traço ou _.':
+      'Use only letters, numbers, space, dot, dash or _.',
+  'Esse nome não pode. Escolha outro, por favor.':
+      "That name isn't allowed. Please choose another.",
+  'Seu nome no ranking': 'Your ranking name',
+  'Todo mundo vê esse nome nas listas. Pode ser um apelido: não use nome completo nem dados pessoais.': "Everyone sees this name on the lists. A nickname is fine: don't use your full name or personal details.",
+  'Nome no ranking': 'Ranking name',
+  'Salvar': 'Save',
+  'Salvar meu nome no ranking': 'Save my ranking name',
+  'Fases': 'Levels',
+  'andares': 'floors',
+  'pontos': 'points',
+  'fases': 'levels',
   'Avaliar o CapiBlocks': 'Rate CapiBlocks',
   'Dica: guarde espaço para as peças grandes, como o quadradão 3x3.':
       'Tip: save room for the big pieces, like the chunky 3x3 square.',
@@ -235,6 +275,47 @@ const Map<String, String> enMenu = {
 };
 
 const Map<String, String> esMenu = {
+  // O ranking do jogo.
+  'Denunciar nome': 'Reportar nombre',
+  'O nome "{nome}" é ofensivo? Ele some da sua lista e vai para a nossa moderação.': '¿El nombre "{nome}" es ofensivo? Desaparece de tu lista y va a nuestra moderación.',
+  'Denunciar': 'Reportar',
+  'Obrigado! Vamos olhar esse nome.': '¡Gracias! Vamos a revisar ese nombre.',
+  'Mudar meu nome no ranking': 'Cambiar mi nombre en el ranking',
+  'Esta semana': 'Esta semana',
+  'Sempre': 'Siempre',
+  'Recomeça em {d} d {h} h': 'Se reinicia en {d} d {h} h',
+  'Não deu para abrir o ranking. Confira a internet.':
+      'No se pudo abrir el ranking. Revisa tu internet.',
+  'Ninguém por aqui ainda. Seja o primeiro!':
+      'Nadie por aquí todavía. ¡Sé el primero!',
+  'Ver os placares do {servico}': 'Ver las clasificaciones de {servico}',
+  'Escolher meu nome': 'Elegir mi nombre',
+  'Escolher meu nome para entrar no ranking':
+      'Elegir mi nombre para entrar al ranking',
+  'Jogue esta semana para entrar na lista!':
+      '¡Juega esta semana para entrar en la lista!',
+  'Jogue para entrar na lista!': '¡Juega para entrar en la lista!',
+  'Ranking: {quadro}': 'Ranking: {quadro}',
+  '{posicao}º lugar: {nome}, {pontos} {unidade}':
+      'Puesto {posicao}: {nome}, {pontos} {unidade}',
+  'Embaixador': 'Embajador',
+  'Denunciar o nome {nome}': 'Reportar el nombre {nome}',
+  'O nome precisa de pelo menos 3 letras.':
+      'El nombre necesita al menos 3 letras.',
+  'O nome pode ter até 16 letras.': 'El nombre puede tener hasta 16 letras.',
+  'Use só letras, números, espaço, ponto, traço ou _.':
+      'Usa solo letras, números, espacio, punto, guion o _.',
+  'Esse nome não pode. Escolha outro, por favor.':
+      'Ese nombre no se puede. Elige otro, por favor.',
+  'Seu nome no ranking': 'Tu nombre en el ranking',
+  'Todo mundo vê esse nome nas listas. Pode ser um apelido: não use nome completo nem dados pessoais.': 'Todos ven este nombre en las listas. Puede ser un apodo: no uses tu nombre completo ni datos personales.',
+  'Nome no ranking': 'Nombre en el ranking',
+  'Salvar': 'Guardar',
+  'Salvar meu nome no ranking': 'Guardar mi nombre en el ranking',
+  'Fases': 'Niveles',
+  'andares': 'pisos',
+  'pontos': 'puntos',
+  'fases': 'niveles',
   'Avaliar o CapiBlocks': 'Calificar CapiBlocks',
   'Dica: guarde espaço para as peças grandes, como o quadradão 3x3.': 'Consejo: guarda espacio para las piezas grandes, como el cuadrado gigante de 3x3.',
   'Limpar duas linhas de uma vez vale muito mais pontos!':

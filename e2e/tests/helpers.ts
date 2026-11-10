@@ -73,6 +73,7 @@ export type GameState = {
     offset: number;
     room: number;
   };
+  ranking?: { nome: string | null; denuncias: number; linhas: Record<string, number> };
   equippedHat?: string;
   passe?: { nivel: number; premium: boolean };
   unlockedHats?: string[];

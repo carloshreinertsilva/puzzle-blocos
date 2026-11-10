@@ -7,6 +7,8 @@ import '../core/shapes.dart';
 import '../services/progress_store.dart';
 import '../game/game_controller.dart';
 import '../core/passe.dart';
+import '../core/ranking.dart';
+import '../services/ranking_servidor.dart';
 import '../game/obra_controller.dart';
 import '../tower/tower_controller.dart';
 import '../game/puzzle_game.dart';
@@ -30,6 +32,54 @@ class TestBridge {
   /// The construction puzzle on screen, and how to drag its pieces.
   ObraController? obra;
   TowerController? tower;
+
+  /// The ranking of the browser tests: in memory, with a few rivals on
+  /// every board (this week's and the all-time one).
+  late final RankingDeTeste ranking = _rankingComRivais();
+
+  static RankingDeTeste _rankingComRivais() {
+    final r = RankingDeTeste();
+    const rivais = [
+      ('r1', 'Bia Blocos', 'crown', true, 1.0),
+      ('r2', 'Zeca', 'pirate', false, 0.6),
+      ('r3', 'Lia_22', 'helmet', false, 0.3),
+    ];
+    const melhores = {
+      Quadro.torre: 40,
+      Quadro.infinito: 9000,
+      Quadro.blitz: 6000,
+      Quadro.fases: 80,
+    };
+    final agora = DateTime.now();
+    for (final q in Quadro.values) {
+      for (final p in Periodo.values) {
+        for (final (uid, nome, chapeu, emb, k) in rivais) {
+          r.enviar(
+            Ranking.id(q, p, agora),
+            EntradaRanking(
+              uid: uid,
+              nome: nome,
+              pontos: (melhores[q]! * k * (p == Periodo.semana ? 0.5 : 1))
+                  .round(),
+              chapeu: chapeu,
+              embaixador: emb,
+            ),
+          );
+        }
+      }
+    }
+    return r;
+  }
+
+  /// What the player has on the test ranking: board id → score.
+  Map<String, Object?> _meuRanking() => {
+    'nome': store?.rankingNome,
+    'denuncias': ranking.denuncias.length,
+    'linhas': {
+      for (final e in ranking.quadros.entries)
+        if (e.value[ranking.uid] != null) e.key: e.value[ranking.uid]!.pontos,
+    },
+  };
   Map<String, Object?>? Function(int piece)? obraDrag;
   final praises = <String>[];
 
@@ -114,6 +164,7 @@ class TestBridge {
         'screen': screen,
         'stars': wallet?.call(),
         'equippedHat': equipped,
+        'ranking': _meuRanking(),
         'unlockedHats': hats,
         'dailyChestAvailable': chestAvail,
         'dailyChestClaimed': chestDone,

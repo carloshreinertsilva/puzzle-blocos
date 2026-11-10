@@ -23,6 +23,7 @@ import '../services/convites_servidor.dart';
 import '../services/jogo_salvo.dart';
 import '../services/musica.dart';
 import '../services/placares.dart';
+import '../services/ranking_servidor.dart';
 import '../services/progress_store.dart';
 import '../testing/test_bridge.dart';
 import '../ui/capi.dart';
@@ -37,6 +38,7 @@ import 'game_screen.dart';
 import 'convites_sheet.dart';
 import 'loja_sheet.dart';
 import 'passe_sheet.dart';
+import 'ranking_screen.dart';
 import 'presente_dialog.dart';
 import 'obra_screen.dart';
 import 'settings_sheet.dart';
@@ -308,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Level, record and streak may have changed, and modes may unlock.
     unawaited(Placares.enviar(widget.services.store));
+    unawaited(RankingSync.enviar(widget.services.store));
     unawaited(JogoSalvo.salvar(widget.services.store));
     // A friend's invite counts once this player reaches level 5.
     final store = widget.services.store;
@@ -334,6 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     unawaited(Placares.enviar(widget.services.store));
+    unawaited(RankingSync.enviar(widget.services.store));
     unawaited(JogoSalvo.salvar(widget.services.store));
     // A friend's invite counts once this player reaches level 5.
     final store = widget.services.store;
@@ -706,11 +710,16 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) setState(() {});
   }
 
-  /// The leaderboards (Google Play Games, Game Center); on the web, where
-  /// there are none, the player's own records.
+  /// The game's own ranking; where there is none (the web), the stores'
+  /// boards or, without them, the player's own records.
   Future<void> _openRanking() async {
     Analytics.event('screen_open', {'screen': 'ranking'});
     widget.services.feedback.click();
+    if (RankingServidor.atual != null) {
+      await RankingScreen.show(context, widget.services);
+      if (mounted) setState(() {});
+      return;
+    }
     if (Placares.ativo &&
         await Placares.mostrar(widget.services.store) &&
         mounted) {
