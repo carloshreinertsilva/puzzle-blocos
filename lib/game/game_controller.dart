@@ -13,6 +13,7 @@ import '../core/missions.dart';
 import '../core/shapes.dart';
 import '../l10n/idioma.dart';
 import '../services/analytics.dart';
+import '../services/avaliacao.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
 import 'tutorial.dart';
@@ -108,6 +109,7 @@ class GameController extends ChangeNotifier {
   VoidCallback? onReady;
 
   Timer? _outcomeTimer;
+  Timer? _avaliacaoTimer;
   bool _counted = false;
 
   /// Tutorial only: the current step (== steps.length once finished), what
@@ -505,10 +507,19 @@ class GameController extends ChangeNotifier {
         }
     }
     _outcomeTimer?.cancel();
+    _avaliacaoTimer?.cancel();
     _outcomeTimer = Timer(Duration(milliseconds: won ? 1300 : 700), () {
       won ? feedback.win() : feedback.lose();
       showOutcome = true;
       notifyListeners();
+      if (won && mode == GameMode.levels && !isReplay) {
+        // A level won: maybe the store's rating window, once the card is up.
+        final fase = level.number;
+        _avaliacaoTimer = Timer(
+          const Duration(milliseconds: 1600),
+          () => Avaliacao.talvezPedir(store, fase),
+        );
+      }
     });
   }
 
@@ -638,6 +649,7 @@ class GameController extends ChangeNotifier {
   /// Retry this level, or move on to the next one after a win.
   void restart() {
     _outcomeTimer?.cancel();
+    _avaliacaoTimer?.cancel();
     _start();
     onRestarted?.call();
     if (intros.isEmpty) onReady?.call();
@@ -738,6 +750,7 @@ class GameController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _outcomeTimer?.cancel();
+    _avaliacaoTimer?.cancel();
     _tutorialTimer?.cancel();
     _capiTimer?.cancel();
     _idleTimer?.cancel();
