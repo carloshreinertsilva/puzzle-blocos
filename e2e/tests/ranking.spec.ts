@@ -20,10 +20,16 @@ const linha = (page: Page, texto: string) =>
 
 async function digitarNome(page: Page, nome: string) {
   const campo = page.getByRole('textbox', { name: 'Nome no ranking' });
-  await campo.click();
-  await campo.press('Control+A');
-  await campo.press('Backspace');
-  await campo.pressSequentially(nome, { delay: 30 });
+  // Apaga letra por letra (o nome tem no máximo 16) e confere o que ficou:
+  // selecionar tudo com o teclado falhava de vez em quando, e o nome novo
+  // ia para o fim do antigo.
+  await expect(async () => {
+    await campo.click();
+    await campo.press('End');
+    for (let i = 0; i < 18; i++) await campo.press('Backspace');
+    await campo.pressSequentially(nome, { delay: 30 });
+    await expect(campo).toHaveValue(nome, { timeout: 1500 });
+  }).toPass({ timeout: 20_000 });
   await page.getByRole('button', { name: 'Salvar meu nome no ranking' }).click();
 }
 
