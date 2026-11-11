@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -12,6 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../l10n/idioma.dart';
 import 'avisos.dart';
+import 'config_remota_firebase.dart';
 import 'firebase_app.dart';
 import 'progress_store.dart';
 
@@ -187,17 +188,10 @@ Future<void> verificarAtualizacao(
 /// Remote Config (`versao_minima`; 0 or missing: none is required).
 Future<bool> _obrigatoria() async {
   try {
-    if (!await firebasePronto()) return false;
-    final rc = FirebaseRemoteConfig.instance;
-    await rc.setConfigSettings(
-      RemoteConfigSettings(
-        fetchTimeout: const Duration(seconds: 5),
-        minimumFetchInterval: const Duration(hours: 1),
-      ),
-    );
-    await rc.setDefaults(const {'versao_minima': 0});
+    final rc = await configRemota();
+    if (rc == null) return false;
     await rc.fetchAndActivate();
-    final minima = rc.getInt('versao_minima');
+    final minima = rc.getInt(chaveVersaoMinima);
     final atual = int.tryParse((await PackageInfo.fromPlatform()).buildNumber);
     return atual != null && atual < minima;
   } catch (_) {
