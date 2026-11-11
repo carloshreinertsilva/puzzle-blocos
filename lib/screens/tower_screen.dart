@@ -75,6 +75,7 @@ class _TowerScreenState extends State<TowerScreen>
     widget.services.feedback.click();
     setState(() {
       _lastTick = Duration.zero;
+      _ofertaContada = false;
       _controller.reset();
     });
   }
@@ -314,9 +315,19 @@ class _TowerScreenState extends State<TowerScreen>
     );
   }
 
+  /// Whether this fall's "continue" offer was already counted.
+  bool _ofertaContada = false;
+
   Widget _fim(int floors) {
     final c = _controller;
     final video = c.canContinue && widget.services.ads.hasVideoAds;
+    if (video && !_ofertaContada) {
+      _ofertaContada = true;
+      widget.services.ads.offered(RewardPlacement.revive, {
+        'mode': 'tower',
+        'level': floors,
+      });
+    }
     return CardPanel(
       child: Column(
         mainAxisSize: MainAxisSize.min,

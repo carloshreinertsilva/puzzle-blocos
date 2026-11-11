@@ -12,6 +12,7 @@ import '../ads/ad_service.dart';
 import '../core/game_session.dart';
 import '../core/ranking.dart';
 import '../services/musica.dart';
+import '../services/ajustes.dart';
 import '../services/analytics.dart';
 import '../services/duelo_link.dart';
 import '../core/missions.dart';
@@ -35,7 +36,6 @@ import '../ui/premio.dart';
 
 /// "Dobrar com vídeo" at most this many times a day, so watching every
 /// video doesn't double the whole star economy.
-const dobrarPorDia = 10;
 
 /// A level, the daily challenge or an endless run. The play area stays
 /// clean: a slim HUD on top, the board and the tray. No banners; cards only
@@ -109,7 +109,47 @@ class _GameScreenState extends State<GameScreen> {
 
   bool get _comDesafios => widget.mode == GameMode.levels && !_onboarding;
 
+  /// The result card whose video offers were already counted.
+  GameSession? _ofertasDe;
+  bool _ofertasVistas = false;
+
+  /// Counts the video offers on the result card, once each time it shows.
+  void _registrarOfertas() {
+    final s = controller.session;
+    if (!controller.showOutcome) {
+      _ofertasVistas = false;
+      return;
+    }
+    if (_ofertasVistas && identical(_ofertasDe, s)) return;
+    _ofertasVistas = true;
+    _ofertasDe = s;
+    final ads = widget.services.ads;
+    final dados = {
+      'mode': controller.mode.name,
+      'level': controller.level.number,
+      'progress': controller.progressPercent,
+    };
+    if (s.status == SessionStatus.won) {
+      if (controller.mode == GameMode.levels && _podeDobrar) {
+        ads.offered(RewardPlacement.doubleStars, dados);
+      }
+    } else if (controller.canRevive &&
+        !controller.isChallenge &&
+        !controller.isDuel &&
+        !controller.isBlitz) {
+      ads.offered(RewardPlacement.revive, dados);
+    }
+  }
+
+  /// Whether this win's stars can still be doubled with a video today.
+  bool get _podeDobrar =>
+      widget.services.ads.hasVideoAds &&
+      controller.starsGained > 0 &&
+      widget.services.store.videosToday('dobrar', DateTime.now()) <
+          Ajustes.atuais.dobrarPorDia;
+
   void _aoMudar() {
+    _registrarOfertas();
     if (!_comDesafios || !controller.playing) return;
     if (identical(_desafiosDe, controller.session)) return;
     _desafiosDe = controller.session;
@@ -676,16 +716,7 @@ class _GameScreenState extends State<GameScreen> {
                 newBits: controller.starBits & ~controller.previousStarBits,
                 starsGained: controller.starsGained,
                 dobrado: _dobrado,
-                onDobrar:
-                    widget.services.ads.hasVideoAds &&
-                        controller.starsGained > 0 &&
-                        widget.services.store.videosToday(
-                              'dobrar',
-                              DateTime.now(),
-                            ) <
-                            dobrarPorDia
-                    ? _dobrarEstrelas
-                    : null,
+                onDobrar: _podeDobrar ? _dobrarEstrelas : null,
                 replay: controller.isReplay,
                 onNext: _next,
                 onRetry: _retry,

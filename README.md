@@ -184,7 +184,8 @@ Sem banner; a tela de jogo fica limpa. Só dois tipos (`lib/ads/ad_policy.dart`)
   anúncio de tela cheia (de qualquer tipo) foi há mais de 6 minutos. O horário
   fica salvo, então fechar e abrir o app não zera o intervalo.
 
-Os números ficam em `AdPolicy` e podem ir para o Firebase Remote Config depois.
+Os números vêm de `Ajustes` (`lib/services/ajustes.dart`) e mudam pelo Firebase
+Remote Config, sem versão nova: `docs/ajustes-remotos.md`.
 
 Qual serviço o app usa (`lib/main.dart`):
 
