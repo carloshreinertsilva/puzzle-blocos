@@ -57,6 +57,36 @@ class GameController extends ChangeNotifier {
 
   /// Blitz mode: remaining time in seconds.
   int blitzSecondsLeft = 60;
+
+  /// The Blitz clock never goes past this, bonuses and video included.
+  static const blitzMaxSeconds = 90;
+
+  /// Seconds a Blitz video adds once the clock has run out.
+  static const blitzExtraSeconds = 10;
+
+  /// Seconds the last Blitz clear added (0: none yet), and a counter that
+  /// changes with each bonus so the clock can show "+3s" every time.
+  int blitzLastBonus = 0;
+  int blitzBonusTick = 0;
+
+  /// Whether this Blitz already used its video for extra time.
+  bool blitzExtraUsed = false;
+
+  /// Blitz stars already paid this run (an extended run pays only the rest).
+  int _blitzStarsGiven = 0;
+
+  /// Seconds a Blitz clear adds: more for clearing several lines at once,
+  /// and one more when it keeps a combo going.
+  static int blitzTimeBonus({required int lines, required int combo}) {
+    if (lines <= 0) return 0;
+    final base = switch (lines) {
+      1 => 1,
+      2 => 3,
+      _ => 5,
+    };
+    return base + (combo >= 2 ? 1 : 0);
+  }
+
   Timer? _blitzTimer;
 
   /// After a win: the missions this attempt completed, what the level had
@@ -292,6 +322,9 @@ class GameController extends ChangeNotifier {
     Analytics.event('level_start', {'mode': mode.name, 'level': config.number});
     _startedAt = DateTime.now();
     blitzSecondsLeft = 60;
+    blitzLastBonus = 0;
+    blitzExtraUsed = false;
+    _blitzStarsGiven = 0;
     _blitzTimer?.cancel();
     if (mode == GameMode.blitz) {
       _startBlitzTimer();
@@ -446,8 +479,16 @@ class GameController extends ChangeNotifier {
     onPlaced?.call(result, piece);
 
     if (isBlitz && out.lines > 0) {
-      final bonus = out.lines >= 2 ? 3 : (result.combo >= 2 ? 2 : 1);
-      blitzSecondsLeft = min(75, blitzSecondsLeft + bonus);
+      final antes = blitzSecondsLeft;
+      blitzSecondsLeft = min(
+        blitzMaxSeconds,
+        blitzSecondsLeft +
+            blitzTimeBonus(lines: out.lines, combo: result.combo),
+      );
+      if (blitzSecondsLeft > antes) {
+        blitzLastBonus = blitzSecondsLeft - antes;
+        blitzBonusTick++;
+      }
     }
     if (isChallenge && !duelWon && session.score >= (duelTargetScore ?? 1000)) {
       duelWon = true;
@@ -504,12 +545,21 @@ class GameController extends ChangeNotifier {
         store.completeDaily(today);
       case GameMode.blitz:
         _blitzTimer?.cancel();
-        DailyMissionsManager.reportEvent(store, DailyMissionType.playBlitz, 1);
+        // A run extended with a video counts as the same game.
+        if (!blitzExtraUsed) {
+          DailyMissionsManager.reportEvent(
+            store,
+            DailyMissionType.playBlitz,
+            1,
+          );
+        }
         _payChallenge();
         // One star per 1,500 points, up to 3 a run and a few a day.
         final dueBlitz = min(3, session.score ~/ 1500);
+        final novas = dueBlitz - _blitzStarsGiven;
+        _blitzStarsGiven = max(_blitzStarsGiven, dueBlitz);
         store
-            .addStarsCapped('blitz', dueBlitz, minigameStarsPerDay, today)
+            .addStarsCapped('blitz', max(0, novas), minigameStarsPerDay, today)
             .then((n) {
               starsGained += n;
               if (!_disposed) notifyListeners();
@@ -774,6 +824,32 @@ class GameController extends ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  /// The Blitz clock ran out and this run may still buy more time with a
+  /// video: once per run, and never in a duel against a friend.
+  bool get canBlitzExtraTime =>
+      isBlitz &&
+      !isChallenge &&
+      !blitzExtraUsed &&
+      blitzSecondsLeft == 0 &&
+      session.status == SessionStatus.won;
+
+  /// The video was watched: the same run goes on for a few more seconds.
+  void addBlitzExtraTime() {
+    if (!canBlitzExtraTime) return;
+    blitzExtraUsed = true;
+    _outcomeTimer?.cancel();
+    showOutcome = false;
+    blitzSecondsLeft = min(blitzMaxSeconds, blitzExtraSeconds);
+    blitzLastBonus = blitzSecondsLeft;
+    blitzBonusTick++;
+    session.status = SessionStatus.playing;
+    feedback.revive();
+    Analytics.event('blitz_extra_time', {'score': session.score});
+    noteActivity();
+    _startBlitzTimer();
+    notifyListeners();
   }
 
   void _finishBlitz() {

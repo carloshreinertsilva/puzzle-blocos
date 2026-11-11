@@ -238,6 +238,8 @@ class TestBridge {
       },
       if (c.activeToolMode != null) 'activeTool': c.activeToolMode!.name,
       if (c.isBlitz) 'blitzSecondsLeft': c.blitzSecondsLeft,
+      if (c.isBlitz) 'blitzExtraUsed': c.blitzExtraUsed,
+      if (c.isBlitz) 'blitzLastBonus': c.blitzLastBonus,
       if (c.isDuel) ...{
         'duelSeed': c.duelSeed,
         'duelTargetScore': c.duelTargetScore,
@@ -342,6 +344,14 @@ class TestBridge {
     if (s == null) return null;
     final h = await DailyMissionsManager.claimChest(s, DateTime.now());
     return h?.id;
+  }
+
+  /// Blitz: sets the clock (to watch it run out without waiting a minute).
+  bool blitzSeconds(int n) {
+    final c = controller;
+    if (c == null || !c.isBlitz) return false;
+    c.blitzSecondsLeft = n;
+    return true;
   }
 
   bool win() {

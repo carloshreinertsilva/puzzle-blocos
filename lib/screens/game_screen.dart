@@ -263,6 +263,28 @@ class _GameScreenState extends State<GameScreen> {
     }
   });
 
+  /// Blitz over: a video buys a few more seconds of the same run (on the
+  /// web, with no videos, it is simply offered).
+  Future<void> _blitzExtraTime() => _guard(() async {
+    if (!controller.canBlitzExtraTime) return;
+    if (widget.services.ads.hasVideoAds) {
+      final ok = await widget.services.ads.rewarded(
+        context,
+        RewardPlacement.blitzTime,
+      );
+      if (!ok || !mounted) return;
+    }
+    controller.addBlitzExtraTime();
+    widget.services.feedback.praise(2);
+    if (mounted) {
+      mostrarPremio(
+        context,
+        tr('+{n} segundos!', {'n': GameController.blitzExtraSeconds}),
+        icon: Icons.timer_rounded,
+      );
+    }
+  });
+
   /// The hint lamp: this game's free hint first, then a paid one.
   void _pedirDica() {
     if (!controller.playing || controller.activeToolMode != null) return;
@@ -673,6 +695,8 @@ class _GameScreenState extends State<GameScreen> {
           best: controller.bestScore,
           newBest: controller.newBest,
           starsGained: controller.starsGained,
+          onExtraTime: controller.canBlitzExtraTime ? _blitzExtraTime : null,
+          videoExtra: widget.services.ads.hasVideoAds,
           ranking: PosicaoNoRanking(
             key: ValueKey(s),
             store: widget.services.store,
@@ -713,6 +737,8 @@ class _GameScreenState extends State<GameScreen> {
           best: controller.bestScore,
           newBest: controller.newBest,
           starsGained: controller.starsGained,
+          onExtraTime: controller.canBlitzExtraTime ? _blitzExtraTime : null,
+          videoExtra: widget.services.ads.hasVideoAds,
           ranking: PosicaoNoRanking(
             key: ValueKey(s),
             store: widget.services.store,
@@ -1079,7 +1105,11 @@ class _Hud extends StatelessWidget {
           ),
           if (controller.isBlitz) ...[
             const SizedBox(height: 4),
-            _BlitzTimerChip(secondsLeft: controller.blitzSecondsLeft),
+            _BlitzTimerChip(
+              secondsLeft: controller.blitzSecondsLeft,
+              bonus: controller.blitzLastBonus,
+              bonusTick: controller.blitzBonusTick,
+            ),
           ],
           if (controller.isChallenge) ...[
             const SizedBox(height: 4),
@@ -2055,37 +2085,121 @@ class _PauseCard extends StatelessWidget {
   );
 }
 
-class _BlitzTimerChip extends StatelessWidget {
-  const _BlitzTimerChip({required this.secondsLeft});
+/// The Blitz clock. When a clear adds time it flashes green and a "+3s"
+/// pops out of it, so the player sees what the big move earned.
+class _BlitzTimerChip extends StatefulWidget {
+  const _BlitzTimerChip({
+    required this.secondsLeft,
+    this.bonus = 0,
+    this.bonusTick = 0,
+  });
   final int secondsLeft;
+
+  /// Seconds the last bonus added; [bonusTick] changes with each one.
+  final int bonus;
+  final int bonusTick;
+
+  @override
+  State<_BlitzTimerChip> createState() => _BlitzTimerChipState();
+}
+
+class _BlitzTimerChipState extends State<_BlitzTimerChip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+    value: 1,
+  );
+
+  @override
+  void didUpdateWidget(_BlitzTimerChip old) {
+    super.didUpdateWidget(old);
+    if (widget.bonusTick != old.bonusTick && widget.bonus > 0) {
+      _anim.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final urgent = secondsLeft <= 10;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      decoration: BoxDecoration(
-        color: urgent ? const Color(0x55FA5252) : const Color(0x442A3356),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: urgent ? const Color(0xFFFA5252) : const Color(0x66FFD43B),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const BlitzIcon(size: 20),
-          const SizedBox(width: 8),
-          Text(
-            '${secondsLeft}s',
-            style: displayText(
-              16,
-              color: urgent ? const Color(0xFFFF8787) : Palette.accent,
+    final urgent = widget.secondsLeft <= 10;
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (context, _) {
+        final t = _anim.value;
+        final flash = 1 - t;
+        return Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              decoration: BoxDecoration(
+                color: Color.lerp(
+                  urgent ? const Color(0x55FA5252) : const Color(0x442A3356),
+                  const Color(0x5540C057),
+                  flash,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Color.lerp(
+                    urgent ? const Color(0xFFFA5252) : const Color(0x66FFD43B),
+                    Palette.good,
+                    flash,
+                  )!,
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const BlitzIcon(size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${widget.secondsLeft}s',
+                    style: displayText(
+                      16,
+                      color: flash > 0.3
+                          ? const Color(0xFF8CE99A)
+                          : urgent
+                          ? const Color(0xFFFF8787)
+                          : Palette.accent,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+            if (t < 1)
+              Positioned(
+                right: -40 - 24 * t,
+                top: -2 - 10 * t,
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: (1 - t * t).clamp(0.0, 1.0),
+                    child: Text(
+                      '+${widget.bonus}s',
+                      style: displayText(
+                        20,
+                        color: const Color(0xFF8CE99A),
+                        shadows: const [
+                          Shadow(
+                            color: Color(0xFF0B3B16),
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -2155,12 +2269,20 @@ class _BlitzWinCard extends StatelessWidget {
     required this.onRetry,
     required this.onExit,
     required this.onShareDuel,
+    this.onExtraTime,
+    this.videoExtra = true,
   });
 
   final int score;
   final int best;
   final bool newBest;
   final int starsGained;
+
+  /// More seconds for the same run (null: already used, or not offered).
+  final VoidCallback? onExtraTime;
+
+  /// The extra seconds cost a short video (false: simply offered).
+  final bool videoExtra;
   final VoidCallback onRetry;
   final VoidCallback onExit;
   final VoidCallback onShareDuel;
@@ -2219,10 +2341,37 @@ class _BlitzWinCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
+          if (onExtraTime case final extra?) ...[
+            ChunkyButton(
+              label: tr('+{n} segundos', {
+                'n': GameController.blitzExtraSeconds,
+              }),
+              icon: videoExtra
+                  ? Icons.smart_display_rounded
+                  : Icons.timer_rounded,
+              color: Palette.good,
+              textColor: const Color(0xFF0B3B16),
+              big: true,
+              onTap: extra,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 14),
+              child: Text(
+                videoExtra
+                    ? tr('Assista a um vídeo e continue')
+                    : tr('Uma vez por partida'),
+                style: bodyText(13, color: Palette.textDim, weight: 500),
+              ),
+            ),
+          ],
           ChunkyButton(
             label: tr('Jogar de novo'),
             icon: Icons.refresh_rounded,
-            big: true,
+            big: onExtraTime == null,
+            color: onExtraTime == null ? Palette.accent : Palette.panelEdge,
+            textColor: onExtraTime == null
+                ? const Color(0xFF3A2200)
+                : Palette.text,
             onTap: onRetry,
           ),
           const SizedBox(height: 10),
