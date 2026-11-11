@@ -784,7 +784,8 @@ class CapiPainter extends CustomPainter {
           CapiHat.coroaEstrelas ||
           CapiHat.gorroNatal ||
           CapiHat.chifresRena ||
-          CapiHat.melancia:
+          CapiHat.melancia ||
+          CapiHat.coroaAmizade:
         _drawNewHat(canvas, h);
 
       case CapiHat.vip:
@@ -853,6 +854,27 @@ class CapiPainter extends CustomPainter {
     ..strokeJoin = StrokeJoin.round;
 
   /// A five-pointed star centered at [c].
+  /// A heart of half-width [r] centred on [c].
+  Path _coracao(Offset c, double r) => Path()
+    ..moveTo(c.dx, c.dy + r)
+    ..cubicTo(
+      c.dx - r * 1.6,
+      c.dy - r * 0.2,
+      c.dx - r * 0.7,
+      c.dy - r * 1.3,
+      c.dx,
+      c.dy - r * 0.4,
+    )
+    ..cubicTo(
+      c.dx + r * 0.7,
+      c.dy - r * 1.3,
+      c.dx + r * 1.6,
+      c.dy - r * 0.2,
+      c.dx,
+      c.dy + r,
+    )
+    ..close();
+
   Path _star(Offset c, double r, [double inner = 0.45]) {
     final p = Path();
     for (var i = 0; i < 10; i++) {
@@ -1140,6 +1162,54 @@ class CapiPainter extends CustomPainter {
           _fill(const Color(0xCCFFFFFF)),
         );
         canvas.drawRRect(tail, _line);
+      case 'laco_amizade':
+        // A pink bow tie with little hearts.
+        for (final lado in [-1.0, 1.0]) {
+          final asa = Path()
+            ..moveTo(50, 62)
+            ..lineTo(50 + lado * 11, 56)
+            ..quadraticBezierTo(50 + lado * 14, 62, 50 + lado * 11, 68)
+            ..close();
+          _shape(canvas, asa, const Color(0xFFFFA8C5), const Color(0xFFE64980));
+          canvas.drawPath(
+            _coracao(Offset(50 + lado * 8, 62), 1.8),
+            _fill(const Color(0xFFFFFFFF)),
+          );
+        }
+        canvas.drawCircle(
+          const Offset(50, 62),
+          2.8,
+          _fill(const Color(0xFFD6336C)),
+        );
+      case 'faixa_embaixador':
+        // A royal-blue sash across the chest with a gold star badge.
+        canvas.save();
+        canvas.clipRect(const Rect.fromLTWH(20, 50, 60, 40));
+        final faixa = Path()
+          ..moveTo(28, 52)
+          ..lineTo(36, 52)
+          ..lineTo(74, 86)
+          ..lineTo(64, 86)
+          ..close();
+        canvas.drawPath(
+          faixa,
+          _ball(const Rect.fromLTWH(28, 52, 46, 34), const [
+            Color(0xFF74C0FC),
+            Color(0xFF1864AB),
+          ]),
+        );
+        canvas.drawPath(faixa, _line);
+        canvas.restore();
+        final selo = Rect.fromCircle(center: const Offset(46, 64), radius: 5);
+        canvas.drawOval(
+          selo,
+          _ball(selo, const [Color(0xFFFFF3BF), Color(0xFFE0A100)]),
+        );
+        canvas.drawOval(selo, _line);
+        canvas.drawPath(
+          _star(const Offset(46, 64), 3.4),
+          _fill(const Color(0xFFFFFFFF)),
+        );
       case 'colar_conchas':
         // A string of little shells, a starfish in the middle.
         for (var i = 0; i < 7; i++) {
@@ -1576,6 +1646,34 @@ class CapiPainter extends CustomPainter {
             Offset(x, 21.5),
             1.8,
             _fill(const Color(0xFF74C0FC)),
+          );
+        }
+      case CapiHat.coroaAmizade:
+        // A gold crown whose points are little hearts.
+        _glow(canvas, const Offset(50, 14), 28, 12, const Color(0x44FF8FAB));
+        final band = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(24, 17, 52, 9),
+          const Radius.circular(3),
+        );
+        canvas.drawRRect(
+          band,
+          _ball(band.outerRect, const [Color(0xFFFFF3BF), Color(0xFFE0A100)]),
+        );
+        canvas.drawRRect(band, _outline);
+        for (final (x, y, r) in [
+          (31.0, 13.0, 5.0),
+          (50.0, 8.0, 7.0),
+          (69.0, 13.0, 5.0),
+        ]) {
+          final heart = _coracao(Offset(x, y), r);
+          canvas.drawPath(heart, _fill(const Color(0xFFFF6B8A)));
+          canvas.drawPath(heart, _line..color = const Color(0xFFB0124A));
+        }
+        for (final x in [37.0, 50.0, 63.0]) {
+          canvas.drawCircle(
+            Offset(x, 21.5),
+            1.8,
+            _fill(const Color(0xFFFFFFFF)),
           );
         }
       case CapiHat.melancia:

@@ -2,6 +2,70 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enMenu = {
+  // Novidades e posição no ranking.
+  'O que há de novo': "What's new",
+  'Ver agora': 'See it now',
+  'Ver agora: {titulo}': 'See it now: {titulo}',
+  'Ranking de todo mundo': 'One ranking for everyone',
+  'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': "Android and iPhone now share the same ranking. See where you stand this week!",
+  'Torre do Capi nova': "Capi's Tower, renewed",
+  'A subida agora vai até a Lua, com o Capi torcendo por você.':
+      'The climb now goes all the way to the Moon, with Capi cheering you on.',
+  '{n}º na semana': '#{n} this week',
+  'Entre na disputa!': 'Join the race!',
+  'subiu': 'went up',
+  'caiu': 'went down',
+  'novidade': 'new',
+  'Você está em {n}º no ranking da semana.':
+      "You're #{n} in this week's ranking.",
+  'Você lidera a semana!': "You're leading the week!",
+  'Falta {n} ponto para subir de posição!': '{n} more point to move up!',
+  'Faltam {n} pontos para subir de posição!': '{n} more points to move up!',
+  'Falta {n} andar para subir de posição!': '{n} more floor to move up!',
+  'Faltam {n} andares para subir de posição!': '{n} more floors to move up!',
+  'Falta {n} fase para subir de posição!': '{n} more level to move up!',
+  'Faltam {n} fases para subir de posição!': '{n} more levels to move up!',
+  // O ranking do jogo.
+  'Denunciar nome': 'Report name',
+  'O nome "{nome}" é ofensivo? Ele some da sua lista e vai para a nossa moderação.': 'Is the name "{nome}" offensive? It leaves your list and goes to our moderation.',
+  'Denunciar': 'Report',
+  'Obrigado! Vamos olhar esse nome.': "Thanks! We'll look at that name.",
+  'Mudar meu nome no ranking': 'Change my ranking name',
+  'Esta semana': 'This week',
+  'Sempre': 'All time',
+  'Recomeça em {d} d {h} h': 'Starts over in {d} d {h} h',
+  'Não deu para abrir o ranking. Confira a internet.':
+      "Couldn't open the ranking. Check your internet.",
+  'Ninguém por aqui ainda. Seja o primeiro!': 'Nobody here yet. Be the first!',
+  'Ver os placares do {servico}': 'See the {servico} leaderboards',
+  'Escolher meu nome': 'Choose my name',
+  'Escolher meu nome para entrar no ranking':
+      'Choose my name to join the ranking',
+  'Jogue esta semana para entrar na lista!':
+      'Play this week to get on the list!',
+  'Jogue para entrar na lista!': 'Play to get on the list!',
+  'Ranking: {quadro}': 'Ranking: {quadro}',
+  '{posicao}º lugar: {nome}, {pontos} {unidade}':
+      'Place {posicao}: {nome}, {pontos} {unidade}',
+  'Embaixador': 'Ambassador',
+  'Denunciar o nome {nome}': 'Report the name {nome}',
+  'O nome precisa de pelo menos 3 letras.':
+      'The name needs at least 3 letters.',
+  'O nome pode ter até 16 letras.': 'The name can have up to 16 letters.',
+  'Use só letras, números, espaço, ponto, traço ou _.':
+      'Use only letters, numbers, space, dot, dash or _.',
+  'Esse nome não pode. Escolha outro, por favor.':
+      "That name isn't allowed. Please choose another.",
+  'Seu nome no ranking': 'Your ranking name',
+  'Todo mundo vê esse nome nas listas. Pode ser um apelido: não use nome completo nem dados pessoais.': "Everyone sees this name on the lists. A nickname is fine: don't use your full name or personal details.",
+  'Nome no ranking': 'Ranking name',
+  'Salvar': 'Save',
+  'Salvar meu nome no ranking': 'Save my ranking name',
+  'Fases': 'Levels',
+  'andares': 'floors',
+  'pontos': 'points',
+  'fases': 'levels',
+  'Avaliar o CapiBlocks': 'Rate CapiBlocks',
   'Dica: guarde espaço para as peças grandes, como o quadradão 3x3.':
       'Tip: save room for the big pieces, like the chunky 3x3 square.',
   'Limpar duas linhas de uma vez vale muito mais pontos!':
@@ -234,6 +298,77 @@ const Map<String, String> enMenu = {
 };
 
 const Map<String, String> esMenu = {
+  // Novidades e posição no ranking.
+  'O que há de novo': 'Novedades',
+  'Ver agora': 'Ver ahora',
+  'Ver agora: {titulo}': 'Ver ahora: {titulo}',
+  'Ranking de todo mundo': 'Un ranking para todos',
+  'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': 'Android y iPhone ahora compiten en el mismo ranking. ¡Mira tu posición de la semana!',
+  'Torre do Capi nova': 'Nueva Torre de Capi',
+  'A subida agora vai até a Lua, com o Capi torcendo por você.':
+      'La subida ahora llega hasta la Luna, con Capi animándote.',
+  '{n}º na semana': '{n}.º en la semana',
+  'Entre na disputa!': '¡Entra en la competencia!',
+  'subiu': 'subió',
+  'caiu': 'bajó',
+  'novidade': 'novedad',
+  'Você está em {n}º no ranking da semana.':
+      'Estás en el puesto {n} del ranking de la semana.',
+  'Você lidera a semana!': '¡Lideras la semana!',
+  'Falta {n} ponto para subir de posição!':
+      '¡Falta {n} punto para subir de puesto!',
+  'Faltam {n} pontos para subir de posição!':
+      '¡Faltan {n} puntos para subir de puesto!',
+  'Falta {n} andar para subir de posição!':
+      '¡Falta {n} piso para subir de puesto!',
+  'Faltam {n} andares para subir de posição!':
+      '¡Faltan {n} pisos para subir de puesto!',
+  'Falta {n} fase para subir de posição!':
+      '¡Falta {n} nivel para subir de puesto!',
+  'Faltam {n} fases para subir de posição!':
+      '¡Faltan {n} niveles para subir de puesto!',
+  // O ranking do jogo.
+  'Denunciar nome': 'Reportar nombre',
+  'O nome "{nome}" é ofensivo? Ele some da sua lista e vai para a nossa moderação.': '¿El nombre "{nome}" es ofensivo? Desaparece de tu lista y va a nuestra moderación.',
+  'Denunciar': 'Reportar',
+  'Obrigado! Vamos olhar esse nome.': '¡Gracias! Vamos a revisar ese nombre.',
+  'Mudar meu nome no ranking': 'Cambiar mi nombre en el ranking',
+  'Esta semana': 'Esta semana',
+  'Sempre': 'Siempre',
+  'Recomeça em {d} d {h} h': 'Se reinicia en {d} d {h} h',
+  'Não deu para abrir o ranking. Confira a internet.':
+      'No se pudo abrir el ranking. Revisa tu internet.',
+  'Ninguém por aqui ainda. Seja o primeiro!':
+      'Nadie por aquí todavía. ¡Sé el primero!',
+  'Ver os placares do {servico}': 'Ver las clasificaciones de {servico}',
+  'Escolher meu nome': 'Elegir mi nombre',
+  'Escolher meu nome para entrar no ranking':
+      'Elegir mi nombre para entrar al ranking',
+  'Jogue esta semana para entrar na lista!':
+      '¡Juega esta semana para entrar en la lista!',
+  'Jogue para entrar na lista!': '¡Juega para entrar en la lista!',
+  'Ranking: {quadro}': 'Ranking: {quadro}',
+  '{posicao}º lugar: {nome}, {pontos} {unidade}':
+      'Puesto {posicao}: {nome}, {pontos} {unidade}',
+  'Embaixador': 'Embajador',
+  'Denunciar o nome {nome}': 'Reportar el nombre {nome}',
+  'O nome precisa de pelo menos 3 letras.':
+      'El nombre necesita al menos 3 letras.',
+  'O nome pode ter até 16 letras.': 'El nombre puede tener hasta 16 letras.',
+  'Use só letras, números, espaço, ponto, traço ou _.':
+      'Usa solo letras, números, espacio, punto, guion o _.',
+  'Esse nome não pode. Escolha outro, por favor.':
+      'Ese nombre no se puede. Elige otro, por favor.',
+  'Seu nome no ranking': 'Tu nombre en el ranking',
+  'Todo mundo vê esse nome nas listas. Pode ser um apelido: não use nome completo nem dados pessoais.': 'Todos ven este nombre en las listas. Puede ser un apodo: no uses tu nombre completo ni datos personales.',
+  'Nome no ranking': 'Nombre en el ranking',
+  'Salvar': 'Guardar',
+  'Salvar meu nome no ranking': 'Guardar mi nombre en el ranking',
+  'Fases': 'Niveles',
+  'andares': 'pisos',
+  'pontos': 'puntos',
+  'fases': 'niveles',
+  'Avaliar o CapiBlocks': 'Calificar CapiBlocks',
   'Dica: guarde espaço para as peças grandes, como o quadradão 3x3.': 'Consejo: guarda espacio para las piezas grandes, como el cuadrado gigante de 3x3.',
   'Limpar duas linhas de uma vez vale muito mais pontos!':
       '¡Limpiar dos líneas a la vez vale muchos más puntos!',

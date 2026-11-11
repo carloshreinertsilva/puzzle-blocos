@@ -75,6 +75,14 @@ class Passe extends Fonte {
   final bool naCompra;
 }
 
+/// From inviting friends (see core/convites.dart): [amigos] friends who came
+/// in with the player's code, or 0 for the gift of whoever comes in with a
+/// friend's code.
+class Amizade extends Fonte {
+  const Amizade(this.amigos);
+  final int amigos;
+}
+
 /// Sold now and then in the Mercado do Capi (see [Mercado]).
 class NoMercado extends Fonte {
   const NoMercado();
@@ -124,6 +132,12 @@ class Cosmetic {
                 : tr('Trilha do Passe do Capi deste mês'))
           : tr('Volta no Passe de {mes}', {'mes': nomeDoMes(mes)}),
     NoMercado() => tr('Aparece nas Ofertas do dia, na Loja'),
+    Amizade(amigos: 0) => tr('Presente de quem entra pelo convite de um amigo'),
+    Amizade(:final amigos) => trN(
+      amigos,
+      'Convide {n} amigo para jogar',
+      'Convide {n} amigos para jogar',
+    ),
   };
 
   /// The hat this item is, for the head slot.
@@ -523,6 +537,32 @@ abstract final class Wardrobe {
       Raridade.comum,
       Passe(12),
       descricao: 'Plim-plim a cada linha limpa.',
+    ),
+
+    // From inviting friends.
+    Cosmetic(
+      'laco_amizade',
+      'Laço da Amizade',
+      Slot.pescoco,
+      Raridade.raro,
+      Amizade(0),
+      descricao: 'Presente para quem chega pelo convite de um amigo.',
+    ),
+    Cosmetic(
+      'faixa_embaixador',
+      'Faixa de Embaixador',
+      Slot.pescoco,
+      Raridade.epico,
+      Amizade(3),
+      descricao: 'Para o Capi Embaixador, que trouxe 3 amigos.',
+    ),
+    Cosmetic(
+      'coroa_amizade',
+      'Coroa de Amizade',
+      Slot.cabeca,
+      Raridade.lendario,
+      Amizade(5),
+      descricao: 'Corações dourados: 5 amigos na Vila do Capi.',
     ),
 
     // The summer season (January's Passe do Capi).

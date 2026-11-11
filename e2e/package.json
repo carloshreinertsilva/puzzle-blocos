@@ -5,7 +5,9 @@
   "scripts": {
     "build": "cd .. && flutter build web --profile --wasm --no-web-resources-cdn --dart-define=TEST_BRIDGE=true -o build/web_test",
     "test": "playwright test",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "clipes": "playwright test -c playwright.clipes.config.ts",
+    "loja": "playwright test -c playwright.loja.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",

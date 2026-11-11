@@ -1,4 +1,5 @@
 import '../core/daily_missions.dart';
+import '../core/ranking.dart';
 
 import 'dart:math';
 
@@ -65,6 +66,41 @@ class FallingSlice {
   }
 }
 
+/// A stretch of the climb: the sky changes at each one (see tower_painter).
+class TowerZone {
+  const TowerZone(this.floor, this.name);
+
+  /// The first floor of the zone.
+  final int floor;
+
+  /// Its name, in Portuguese (shown through `tr`).
+  final String name;
+}
+
+/// What just happened, for the painter to celebrate (or to shake).
+enum TowerFxKind { perfect, cut, closeCall, zone, record, revive }
+
+class TowerFx {
+  const TowerFx(
+    this.kind,
+    this.at, {
+    this.x = 0,
+    this.y = 0,
+    this.z = 0,
+    this.combo = 0,
+    this.zone,
+  });
+  final TowerFxKind kind;
+
+  /// [TowerController.time] when it happened.
+  final double at;
+
+  /// Where, in the tower's world (the middle of the block's top).
+  final double x, y, z;
+  final int combo;
+  final TowerZone? zone;
+}
+
 /// Game controller for Capi's 2.5D Tower stacking mini-game.
 class TowerController extends ChangeNotifier {
   bool _disposed = false;
@@ -86,8 +122,30 @@ class TowerController extends ChangeNotifier {
   static const double baseSize = 3.0;
   static const double perfectThreshold = 0.12;
 
+  /// A cut that leaves less than this part of the block is a close call.
+  static const double closeCallRatio = 0.4;
+
+  /// With this many perfect floors in a row Capi is "on fire".
+  static const int feverCombo = 3;
+
+  /// One "continue" per climb, from this many floors on.
+  static const int continueFromFloor = 5;
+
+  /// The climb, from the village to the Moon.
+  static const zones = [
+    TowerZone(0, 'Vila do Capi'),
+    TowerZone(10, 'Nuvens'),
+    TowerZone(20, 'Pôr do sol'),
+    TowerZone(30, 'Estrelas'),
+    TowerZone(45, 'Espaço'),
+    TowerZone(60, 'Lua'),
+  ];
+
   final List<TowerBlock> blocks = [];
   final List<FallingSlice> fallingSlices = [];
+
+  /// Recent events, for the painter (dropped after a few seconds).
+  final List<TowerFx> fx = [];
 
   int height = 0;
   int get bestHeight => store.towerBestHeight;
@@ -97,6 +155,28 @@ class TowerController extends ChangeNotifier {
   int starsGained = 0;
   bool gameOver = false;
   bool playing = false;
+
+  /// Seconds played (the painter's clock).
+  double time = 0;
+
+  /// When the last block landed and when the climb ended ([time]).
+  double placedAt = -10;
+  double overAt = -10;
+
+  /// Screen shake, 1 right after a cut and fading out.
+  double shake = 0;
+
+  /// The record when this climb began, and whether it was beaten already.
+  int recordToBeat = 0;
+  bool recordBeaten = false;
+
+  /// Whether the one "continue" of this climb was used.
+  bool continued = false;
+
+  // What was already counted for this climb (a continued climb ends twice).
+  int _starsDue = 0;
+  int _floorsReported = 0;
+  bool _gameCounted = false;
 
   // Moving block properties
   double currentX = 0.0;
@@ -110,9 +190,39 @@ class TowerController extends ChangeNotifier {
   // Camera tracking: smooth camera height in world coordinates
   double cameraZ = 0.0;
 
+  /// Floors built (the base does not count).
+  int get floors => blocks.length - 1;
+
+  bool get fever => combo >= feverCombo && !gameOver;
+
+  /// The zone of floor [n].
+  static TowerZone zoneAt(int n) => zones.lastWhere((z) => z.floor <= n);
+
+  TowerZone get zone => zoneAt(floors);
+
+  /// The next zone up, or null on the Moon.
+  TowerZone? get nextZone {
+    for (final z in zones) {
+      if (z.floor > floors) return z;
+    }
+    return null;
+  }
+
+  /// Where Capi stands: the middle of the top block's top.
+  (double, double, double) get top {
+    final b = blocks.last;
+    return (b.x + b.dx / 2, b.y + b.dy / 2, b.z + b.dz);
+  }
+
+  /// The top block is small: every tap is a risk.
+  bool get tense => min(blocks.last.dx, blocks.last.dy) < 1.15;
+
+  bool get canContinue => gameOver && !continued && floors >= continueFromFloor;
+
   void reset() {
     blocks.clear();
     fallingSlices.clear();
+    fx.clear();
     height = 0;
     combo = 0;
     maxCombo = 0;
@@ -120,6 +230,16 @@ class TowerController extends ChangeNotifier {
     gameOver = false;
     isNewBest = false;
     playing = true;
+    time = 0;
+    placedAt = -10;
+    overAt = -10;
+    shake = 0;
+    recordToBeat = store.towerBestHeight;
+    recordBeaten = false;
+    continued = false;
+    _starsDue = 0;
+    _floorsReported = 0;
+    _gameCounted = false;
 
     // Base block (level 0)
     currentDx = baseSize;
@@ -166,16 +286,14 @@ class TowerController extends ChangeNotifier {
 
   /// Called on animation frame to update moving block position and falling slices.
   void tick(double dt) {
+    time += dt;
+    shake = max(0, shake - dt * 3.2);
+    fx.removeWhere((e) => time - e.at > 3.5);
+    for (final slice in fallingSlices) {
+      if (slice.z > -10.0) slice.update(dt);
+    }
     if (gameOver) {
-      // Keep falling slices active
-      var changed = false;
-      for (final slice in fallingSlices) {
-        if (slice.z > -10.0) {
-          slice.update(dt);
-          changed = true;
-        }
-      }
-      if (changed) notifyListeners();
+      notifyListeners();
       return;
     }
 
@@ -194,12 +312,6 @@ class TowerController extends ChangeNotifier {
     final targetCameraZ = max(0.0, (height - 3) * blockDz);
     cameraZ += (targetCameraZ - cameraZ) * min(1.0, dt * 4.0);
 
-    // Update falling slices
-    for (final slice in fallingSlices) {
-      if (slice.z > -10.0) {
-        slice.update(dt);
-      }
-    }
     fallingSlices.removeWhere((s) => s.z < -10.0);
 
     notifyListeners();
@@ -212,233 +324,114 @@ class TowerController extends ChangeNotifier {
     final prev = blocks.last;
     final currentZ = height * blockDz;
     final colorIdx = height % 8;
+    // Along the axis the block moves on: where it is, and the block below.
+    final pos = isAxisX ? currentX : currentY;
+    final prevPos = isAxisX ? prev.x : prev.y;
+    final prevSize = isAxisX ? prev.dx : prev.dy;
+    final diff = pos - prevPos;
 
-    if (isAxisX) {
-      final diff = currentX - prev.x;
-      if (diff.abs() <= perfectThreshold) {
-        // Perfect alignment!
-        currentX = prev.x;
-        combo++;
-        if (combo > maxCombo) maxCombo = combo;
-        feedback.praise(combo);
+    if (diff.abs() >= prevSize && diff.abs() > perfectThreshold) {
+      // Completely missed!
+      _triggerGameOver(currentZ, colorIdx);
+      return false;
+    }
 
-        // Combo reward: recover some width if shaved
-        if (combo >= 3 && currentDx < baseSize) {
-          currentDx = min(baseSize, currentDx + 0.3);
-          currentX = prev.x - 0.15;
-        }
-
-        blocks.add(
-          TowerBlock(
-            x: currentX,
-            y: currentY,
-            z: currentZ,
-            dx: currentDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-          ),
-        );
-        _spawnNext();
-        notifyListeners();
-        return true;
-      } else if (diff > 0 && diff < prev.dx) {
-        // Overlap right: cut off the right slice
-        combo = 0;
-        final newDx = prev.dx - diff;
-        final sliceDx = diff;
-        final sliceX = prev.x + newDx;
-
-        fallingSlices.add(
-          FallingSlice(
-            x: sliceX,
-            y: currentY,
-            z: currentZ,
-            dx: sliceDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-            vx: 1.5,
-          ),
-        );
-
-        currentX = prev.x;
-        currentDx = newDx;
-
-        blocks.add(
-          TowerBlock(
-            x: currentX,
-            y: currentY,
-            z: currentZ,
-            dx: currentDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-          ),
-        );
-        feedback.click();
-        _spawnNext();
-        notifyListeners();
-        return true;
-      } else if (diff < 0 && -diff < prev.dx) {
-        // Overlap left: cut off the left slice
-        combo = 0;
-        final sliceDx = -diff;
-        final newDx = prev.dx - sliceDx;
-        final sliceX = currentX;
-
-        fallingSlices.add(
-          FallingSlice(
-            x: sliceX,
-            y: currentY,
-            z: currentZ,
-            dx: sliceDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-            vx: -1.5,
-          ),
-        );
-
-        currentX = prev.x;
-        currentDx = newDx;
-
-        blocks.add(
-          TowerBlock(
-            x: currentX,
-            y: currentY,
-            z: currentZ,
-            dx: currentDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-          ),
-        );
-        feedback.click();
-        _spawnNext();
-        notifyListeners();
-        return true;
-      } else {
-        // Completely missed!
-        _triggerGameOver(currentZ, colorIdx);
-        return false;
+    var newPos = prevPos;
+    var newSize = prevSize;
+    final perfect = diff.abs() <= perfectThreshold;
+    if (perfect) {
+      combo++;
+      if (combo > maxCombo) maxCombo = combo;
+      feedback.praise(combo);
+      // Combo reward: recover some width if shaved
+      if (combo >= feverCombo && newSize < baseSize) {
+        newSize = min(baseSize, newSize + 0.3);
+        newPos = prevPos - 0.15;
       }
     } else {
-      // Axis Y
-      final diff = currentY - prev.y;
-      if (diff.abs() <= perfectThreshold) {
-        // Perfect alignment!
-        currentY = prev.y;
-        combo++;
-        if (combo > maxCombo) maxCombo = combo;
-        feedback.praise(combo);
-
-        if (combo >= 3 && currentDy < baseSize) {
-          currentDy = min(baseSize, currentDy + 0.3);
-          currentY = prev.y - 0.15;
-        }
-
-        blocks.add(
-          TowerBlock(
-            x: currentX,
-            y: currentY,
-            z: currentZ,
-            dx: currentDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-          ),
-        );
-        _spawnNext();
-        notifyListeners();
-        return true;
-      } else if (diff > 0 && diff < prev.dy) {
-        // Overlap forward
-        combo = 0;
-        final newDy = prev.dy - diff;
-        final sliceDy = diff;
-        final sliceY = prev.y + newDy;
-
-        fallingSlices.add(
-          FallingSlice(
-            x: currentX,
-            y: sliceY,
-            z: currentZ,
-            dx: currentDx,
-            dy: sliceDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-            vy: 1.5,
-          ),
-        );
-
-        currentY = prev.y;
-        currentDy = newDy;
-
-        blocks.add(
-          TowerBlock(
-            x: currentX,
-            y: currentY,
-            z: currentZ,
-            dx: currentDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-          ),
-        );
-        feedback.click();
-        _spawnNext();
-        notifyListeners();
-        return true;
-      } else if (diff < 0 && -diff < prev.dy) {
-        // Overlap backward
-        combo = 0;
-        final sliceDy = -diff;
-        final newDy = prev.dy - sliceDy;
-        final sliceY = currentY;
-
-        fallingSlices.add(
-          FallingSlice(
-            x: currentX,
-            y: sliceY,
-            z: currentZ,
-            dx: currentDx,
-            dy: sliceDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-            vy: -1.5,
-          ),
-        );
-
-        currentY = prev.y;
-        currentDy = newDy;
-
-        blocks.add(
-          TowerBlock(
-            x: currentX,
-            y: currentY,
-            z: currentZ,
-            dx: currentDx,
-            dy: currentDy,
-            dz: blockDz,
-            colorIndex: colorIdx,
-          ),
-        );
-        feedback.click();
-        _spawnNext();
-        notifyListeners();
-        return true;
-      } else {
-        // Completely missed!
-        _triggerGameOver(currentZ, colorIdx);
-        return false;
-      }
+      // What hangs over the edge is cut off and falls.
+      combo = 0;
+      final cut = diff.abs();
+      newSize = prevSize - cut;
+      newPos = diff > 0 ? pos : prevPos;
+      final slicePos = diff > 0 ? prevPos + prevSize : pos;
+      final v = diff > 0 ? 1.5 : -1.5;
+      fallingSlices.add(
+        FallingSlice(
+          x: isAxisX ? slicePos : currentX,
+          y: isAxisX ? currentY : slicePos,
+          z: currentZ,
+          dx: isAxisX ? cut : currentDx,
+          dy: isAxisX ? currentDy : cut,
+          dz: blockDz,
+          colorIndex: colorIdx,
+          vx: isAxisX ? v : 0,
+          vy: isAxisX ? 0 : v,
+        ),
+      );
+      feedback.click();
     }
+
+    if (isAxisX) {
+      currentX = newPos;
+      currentDx = newSize;
+    } else {
+      currentY = newPos;
+      currentDy = newSize;
+    }
+    blocks.add(
+      TowerBlock(
+        x: currentX,
+        y: currentY,
+        z: currentZ,
+        dx: currentDx,
+        dy: currentDy,
+        dz: blockDz,
+        colorIndex: colorIdx,
+      ),
+    );
+    placedAt = time;
+
+    final (tx, ty, tz) = top;
+    if (perfect) {
+      fx.add(
+        TowerFx(TowerFxKind.perfect, time, x: tx, y: ty, z: tz, combo: combo),
+      );
+    } else {
+      final closeCall = newSize / prevSize < closeCallRatio;
+      shake = closeCall ? 1 : 0.45;
+      fx.add(
+        TowerFx(
+          closeCall ? TowerFxKind.closeCall : TowerFxKind.cut,
+          time,
+          x: tx,
+          y: ty,
+          z: tz,
+        ),
+      );
+    }
+    // A new zone, or the record left behind: the big moments.
+    final z = zone;
+    if (z.floor == floors && floors > 0) {
+      fx.add(TowerFx(TowerFxKind.zone, time, x: tx, y: ty, z: tz, zone: z));
+      feedback.praise(4);
+    }
+    if (!recordBeaten && recordToBeat > 0 && floors > recordToBeat) {
+      recordBeaten = true;
+      fx.add(TowerFx(TowerFxKind.record, time, x: tx, y: ty, z: tz));
+      feedback.praise(5);
+    }
+
+    _spawnNext();
+    notifyListeners();
+    return true;
   }
 
   void _triggerGameOver(double currentZ, int colorIdx) {
     gameOver = true;
     playing = false;
+    overAt = time;
+    shake = 1;
     Analytics.event('tower_end', {'height': height, 'best_combo': maxCombo});
 
     // The whole block falls down
@@ -457,29 +450,57 @@ class TowerController extends ChangeNotifier {
     );
 
     // Score height is the count of placed blocks minus base
-    final finalHeight = blocks.length - 1;
+    final finalHeight = floors;
 
     // Stars earned: +1 at 5, +1 at 10, +1 at 15, etc., plus bonus for every 10
-    // A few stars a day at most: the tower is quick to replay.
+    // A few stars a day at most: the tower is quick to replay. A continued
+    // climb ends twice: the second time only what it added counts.
     final due = (finalHeight ~/ 5) + (finalHeight ~/ 10);
-    starsGained = 0;
-    store.addStarsCapped('tower', due, 6, DateTime.now()).then((n) {
-      starsGained = n;
-      if (!_disposed) notifyListeners();
-    });
+    final more = due - _starsDue;
+    _starsDue = due;
+    if (more > 0) {
+      store.addStarsCapped('tower', more, 6, DateTime.now()).then((n) {
+        starsGained += n;
+        if (!_disposed) notifyListeners();
+      });
+    }
 
+    Ranking.marcar(store, Quadro.torre, finalHeight, DateTime.now());
     if (finalHeight > bestHeight) {
       isNewBest = true;
       store.recordTowerHeight(finalHeight);
     }
-    store.recordTowerGame();
+    if (!_gameCounted) {
+      _gameCounted = true;
+      store.recordTowerGame();
+    }
     DailyMissionsManager.reportEvent(
       store,
       DailyMissionType.playTower,
-      finalHeight,
+      finalHeight - _floorsReported,
     );
+    _floorsReported = finalHeight;
     feedback.lose();
     notifyListeners();
+  }
+
+  /// The one second chance of a climb (after a video): the block that fell
+  /// comes back and the climb goes on from the same floor.
+  bool continueClimb() {
+    if (!canContinue) return false;
+    continued = true;
+    gameOver = false;
+    playing = true;
+    combo = 0;
+    fallingSlices.clear();
+    height--;
+    _spawnNext();
+    final (tx, ty, tz) = top;
+    fx.add(TowerFx(TowerFxKind.revive, time, x: tx, y: ty, z: tz));
+    feedback.revive();
+    Analytics.event('tower_continue', {'height': height});
+    notifyListeners();
+    return true;
   }
 
   /// Deterministic debug placement for tests.

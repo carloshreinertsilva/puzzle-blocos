@@ -1,0 +1,118 @@
+rules_version = '2';
+
+// CapiBlocks: os convites de amigos (lib/services/convites_servidor.dart)
+// e o ranking do jogo (lib/services/ranking_servidor.dart).
+// Cada celular entra anonimamente no Firebase. Nada aqui tem nome, e-mail
+// ou dado pessoal obrigatório: códigos de convite, se o amigo chegou à
+// fase 5 e, no ranking, o nome que o jogador escolheu e a pontuação dele.
+// Para publicar: console do Firebase > Firestore Database > Regras > colar
+// este arquivo inteiro > Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // codigos/{codigo}: de quem é o código (criado uma vez, nunca muda).
+    match /codigos/{codigo} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null
+        && codigo.matches('^[A-HJKMNP-Z2-9]{6}$')
+        && request.resource.data.keys().hasOnly(['uid', 'criadoEm'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete, list: if false;
+    }
+
+    // convites/{uid}: o código com que este jogador entrou, de quem é esse
+    // código (dono) e se ele já chegou à fase 5. Só o próprio jogador cria
+    // e marca a fase 5; cada um só lista os convites que são seus.
+    match /convites/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list: if request.auth != null
+        && resource.data.dono == request.auth.uid;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['codigo', 'dono', 'fase5', 'criadoEm'])
+        && request.resource.data.fase5 == false
+        && request.resource.data.dono != uid
+        && request.resource.data.dono == get(/databases/$(database)/documents/codigos/$(request.resource.data.codigo)).data.uid;
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fase5'])
+        && resource.data.fase5 == false
+        && request.resource.data.fase5 == true;
+      allow delete: if false;
+    }
+
+    // --- O ranking do jogo (lib/services/ranking_servidor.dart) ---
+    // rankings/{quadro}/jogadores/{uid}: a linha de um jogador num placar.
+    // quadro = torre|infinito|blitz|fases + _geral ou _s<semana> (semanas
+    // desde 1970, começando na segunda-feira, UTC: só dá para escrever na
+    // semana que está valendo). Cada um só escreve a própria linha, com um
+    // nome de 3 a 16 letras, e a pontuação nunca diminui nem passa do teto.
+    function semanaAtual() {
+      return (request.time.toMillis() / 86400000 + 3) / 7;
+    }
+    function quadroValido(q) {
+      return q.matches('^(torre|infinito|blitz|fases)_(geral|s[0-9]+)$')
+        && (q.matches('^[a-z]+_geral$')
+          || q == q.split('_')[0] + '_s' + string(semanaAtual()));
+    }
+    function teto(q) {
+      return q.matches('^torre_.*') ? 500
+        : q.matches('^infinito_.*') ? 5000000
+        : q.matches('^blitz_.*') ? 1000000
+        : 100000;
+    }
+    function nomeValido(n) {
+      return n is string && n.size() >= 3 && n.size() <= 16
+        && n.matches('^[\\p{L}\\p{N} _.\\-]+$');
+    }
+    match /rankings/{quadro}/jogadores/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && quadroValido(quadro)
+        && request.resource.data.keys().hasOnly(['nome', 'pontos', 'chapeu', 'pelagem', 'embaixador', 'em'])
+        && nomeValido(request.resource.data.nome)
+        && request.resource.data.pontos is int
+        && request.resource.data.pontos > 0
+        && request.resource.data.pontos <= teto(quadro)
+        && request.resource.data.chapeu is string
+        && request.resource.data.chapeu.size() <= 40
+        && request.resource.data.pelagem is string
+        && request.resource.data.pelagem.size() <= 40
+        && request.resource.data.embaixador is bool
+        && request.resource.data.em == request.time
+        && (resource == null || request.resource.data.pontos >= resource.data.pontos);
+      // O jogador pode tirar a própria linha.
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // denuncias/{id}: um nome denunciado por um jogador. Só dá para criar;
+    // quem modera lê no console do Firebase.
+    match /denuncias/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['quadro', 'uid', 'nome', 'por', 'em'])
+        && request.resource.data.por == request.auth.uid
+        && request.resource.data.uid is string
+        && request.resource.data.uid.size() <= 128
+        && request.resource.data.quadro is string
+        && request.resource.data.quadro.size() <= 40
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() <= 16
+        && request.resource.data.em == request.time;
+      allow read, update, delete: if false;
+    }
+
+    // config/ranking: {ocultos: [uid], palavras: [..]}, editado à mão no
+    // console: jogadores escondidos das listas e mais palavras para o
+    // filtro de nomes. O jogo só lê.
+    match /config/{documento} {
+      allow get: if request.auth != null;
+      allow list, write: if false;
+    }
+
+    // Todo o resto: fechado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

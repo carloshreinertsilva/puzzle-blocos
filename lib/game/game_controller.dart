@@ -10,9 +10,11 @@ import '../core/game_session.dart';
 import '../core/hint.dart';
 import '../core/level.dart';
 import '../core/missions.dart';
+import '../core/ranking.dart';
 import '../core/shapes.dart';
 import '../l10n/idioma.dart';
 import '../services/analytics.dart';
+import '../services/avaliacao.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
 import 'tutorial.dart';
@@ -138,7 +140,9 @@ class GameController extends ChangeNotifier {
   VoidCallback? onReady;
 
   Timer? _outcomeTimer;
+  Timer? _avaliacaoTimer;
   bool _counted = false;
+  DateTime _startedAt = DateTime.now();
 
   /// Tutorial only: the current step (== steps.length once finished), what
   /// Capi says, and whether a step change is on its way.
@@ -156,7 +160,12 @@ class GameController extends ChangeNotifier {
   Timer? _capiTimer;
 
   /// After this long without a move, Capi suggests one.
+  /// Without a move for this long, the hint lamp starts to pulse.
   static const idleHintAfter = Duration(seconds: 10);
+
+  /// A little later the lamp opens and asks "want a hint?". It never
+  /// covers the pieces: a player who is just thinking is left alone.
+  static const hintOfferAfter = Duration(seconds: 15);
   Timer? _idleTimer;
   (int, int, int)? _idleHint;
 
@@ -165,8 +174,18 @@ class GameController extends ChangeNotifier {
   static const freeIdleHints = 1;
   int idleHints = 0;
 
-  /// Capi is offering a paid hint (shown until the player moves).
+  /// The hint lamp is pulsing (until the player moves).
+  bool hintNudge = false;
+
+  /// The hint lamp is open, asking (until the player moves).
   bool hintOffer = false;
+
+  /// Whether this game's free hint is still there.
+  bool get freeHintLeft => idleHints < freeIdleHints;
+
+  /// The first levels teach the game: there Capi shows the move by
+  /// himself instead of waiting to be asked.
+  bool get _autoHint => mode == GameMode.levels && level.number <= 3;
   bool _warned = false;
   final _rng = Random();
 
@@ -222,9 +241,10 @@ class GameController extends ChangeNotifier {
   /// the idle clock again.
   void noteActivity() {
     _idleTimer?.cancel();
-    if (_idleHint != null || hintOffer) {
+    if (_idleHint != null || hintOffer || hintNudge) {
       _idleHint = null;
       hintOffer = false;
+      hintNudge = false;
       if (capiReaction == CapiReaction.hint) capiReaction = null;
       notifyListeners();
     }
@@ -233,18 +253,25 @@ class GameController extends ChangeNotifier {
       if (!playing) return noteActivity();
       final move = suggestMove(session.board, session.tray);
       if (move == null) return;
-      if (idleHints >= freeIdleHints) {
+      if (_autoHint && freeHintLeft) return _showHint(move);
+      hintNudge = true;
+      notifyListeners();
+      _idleTimer = Timer(hintOfferAfter - idleHintAfter, () {
+        if (!playing) return noteActivity();
         hintOffer = true;
         notifyListeners();
-        return;
-      }
-      _showHint(move);
+      });
     });
   }
+
+  /// The hint lamp was tapped: shows this game's free hint, if it is
+  /// still there. False when a hint now has to be paid for.
+  bool showFreeHint() => freeHintLeft && showPaidHint();
 
   void _showHint((int, int, int) move) {
     idleHints++;
     hintOffer = false;
+    hintNudge = false;
     _idleHint = move;
     _react(
       CapiReaction.hint,
@@ -293,6 +320,7 @@ class GameController extends ChangeNotifier {
     );
     bestScore = mode == GameMode.blitz ? store.blitzBestScore : store.bestScore;
     Analytics.event('level_start', {'mode': mode.name, 'level': config.number});
+    _startedAt = DateTime.now();
     blitzSecondsLeft = 60;
     blitzLastBonus = 0;
     blitzExtraUsed = false;
@@ -319,6 +347,7 @@ class GameController extends ChangeNotifier {
     capiReaction = null;
     idleHints = 0;
     hintOffer = false;
+    hintNudge = false;
     _idleHint = null;
     if (tutorial) _loadTutorialStep(0);
     noteActivity();
@@ -485,6 +514,10 @@ class GameController extends ChangeNotifier {
       'success': won ? 1 : 0,
       'score': session.score,
       'revived': session.revived ? 1 : 0,
+      'progress': progressPercent,
+      'moves': session.moves,
+      'seconds': DateTime.now().difference(_startedAt).inSeconds,
+      'attempt': session.failStreak + 1,
     });
     if (!_counted) {
       _counted = true;
@@ -492,7 +525,10 @@ class GameController extends ChangeNotifier {
     }
     switch (mode) {
       case GameMode.levels when won:
-        if (!isReplay) store.setLevel(level.number + 1);
+        if (!isReplay) {
+          store.setLevel(level.number + 1);
+          Ranking.marcar(store, Quadro.fases, 1, DateTime.now());
+        }
         store.setFailStreak(level.number, 0);
         _awardLevelStars();
         DailyMissionsManager.reportEvent(store, DailyMissionType.playLevels, 1);
@@ -528,6 +564,7 @@ class GameController extends ChangeNotifier {
               starsGained += n;
               if (!_disposed) notifyListeners();
             });
+        Ranking.marcar(store, Quadro.blitz, session.score, DateTime.now());
         if (session.score > store.blitzBestScore) {
           newBest = true;
           bestScore = session.score;
@@ -548,6 +585,7 @@ class GameController extends ChangeNotifier {
         starsGained = due - _endlessStarsGiven;
         _endlessStarsGiven = due;
         store.addStars(starsGained);
+        Ranking.marcar(store, Quadro.infinito, session.score, DateTime.now());
         if (session.score > store.bestScore) {
           newBest = true;
           bestScore = session.score;
@@ -555,10 +593,19 @@ class GameController extends ChangeNotifier {
         }
     }
     _outcomeTimer?.cancel();
+    _avaliacaoTimer?.cancel();
     _outcomeTimer = Timer(Duration(milliseconds: won ? 1300 : 700), () {
       won ? feedback.win() : feedback.lose();
       showOutcome = true;
       notifyListeners();
+      if (won && mode == GameMode.levels && !isReplay) {
+        // A level won: maybe the store's rating window, once the card is up.
+        final fase = level.number;
+        _avaliacaoTimer = Timer(
+          const Duration(milliseconds: 1600),
+          () => Avaliacao.talvezPedir(store, fase),
+        );
+      }
     });
   }
 
@@ -573,6 +620,14 @@ class GameController extends ChangeNotifier {
     starsGained = Missions.count(all) - Missions.count(previousStarBits);
     store.setLevelStars(level.number, all);
     store.addStars(starsGained);
+  }
+
+  /// How close this attempt is, 0 to 100: the share of the level's goals
+  /// done or, without a goal (Endless, Blitz), of the record.
+  int get progressPercent {
+    if (!level.isEndless && !level.isBlitz) return session.goalPercent;
+    if (bestScore <= 0) return 100;
+    return (100 * session.score / bestScore).floor().clamp(0, 100);
   }
 
   bool get canRevive =>
@@ -688,6 +743,7 @@ class GameController extends ChangeNotifier {
   /// Retry this level, or move on to the next one after a win.
   void restart() {
     _outcomeTimer?.cancel();
+    _avaliacaoTimer?.cancel();
     _start();
     onRestarted?.call();
     if (intros.isEmpty) onReady?.call();
@@ -814,6 +870,7 @@ class GameController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _outcomeTimer?.cancel();
+    _avaliacaoTimer?.cancel();
     _tutorialTimer?.cancel();
     _capiTimer?.cancel();
     _idleTimer?.cancel();

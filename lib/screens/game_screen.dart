@@ -10,7 +10,9 @@ import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
+import '../core/ranking.dart';
 import '../services/musica.dart';
+import '../services/ajustes.dart';
 import '../services/analytics.dart';
 import '../services/duelo_link.dart';
 import '../core/missions.dart';
@@ -24,6 +26,7 @@ import '../ui/level_text.dart';
 import '../ui/capi.dart';
 import '../ui/dica_paga.dart';
 import '../ui/palette.dart';
+import '../ui/posicao_ranking.dart';
 import '../ui/typography.dart';
 import '../core/board.dart';
 import '../services/progress_store.dart';
@@ -33,7 +36,6 @@ import '../ui/premio.dart';
 
 /// "Dobrar com vídeo" at most this many times a day, so watching every
 /// video doesn't double the whole star economy.
-const dobrarPorDia = 10;
 
 /// A level, the daily challenge or an endless run. The play area stays
 /// clean: a slim HUD on top, the board and the tray. No banners; cards only
@@ -107,7 +109,47 @@ class _GameScreenState extends State<GameScreen> {
 
   bool get _comDesafios => widget.mode == GameMode.levels && !_onboarding;
 
+  /// The result card whose video offers were already counted.
+  GameSession? _ofertasDe;
+  bool _ofertasVistas = false;
+
+  /// Counts the video offers on the result card, once each time it shows.
+  void _registrarOfertas() {
+    final s = controller.session;
+    if (!controller.showOutcome) {
+      _ofertasVistas = false;
+      return;
+    }
+    if (_ofertasVistas && identical(_ofertasDe, s)) return;
+    _ofertasVistas = true;
+    _ofertasDe = s;
+    final ads = widget.services.ads;
+    final dados = {
+      'mode': controller.mode.name,
+      'level': controller.level.number,
+      'progress': controller.progressPercent,
+    };
+    if (s.status == SessionStatus.won) {
+      if (controller.mode == GameMode.levels && _podeDobrar) {
+        ads.offered(RewardPlacement.doubleStars, dados);
+      }
+    } else if (controller.canRevive &&
+        !controller.isChallenge &&
+        !controller.isDuel &&
+        !controller.isBlitz) {
+      ads.offered(RewardPlacement.revive, dados);
+    }
+  }
+
+  /// Whether this win's stars can still be doubled with a video today.
+  bool get _podeDobrar =>
+      widget.services.ads.hasVideoAds &&
+      controller.starsGained > 0 &&
+      widget.services.store.videosToday('dobrar', DateTime.now()) <
+          Ajustes.atuais.dobrarPorDia;
+
   void _aoMudar() {
+    _registrarOfertas();
     if (!_comDesafios || !controller.playing) return;
     if (identical(_desafiosDe, controller.session)) return;
     _desafiosDe = controller.session;
@@ -243,34 +285,18 @@ class _GameScreenState extends State<GameScreen> {
     }
   });
 
-  /// Stuck after the free hint: Capi offers a paid hint, or the tools.
-  Widget _hintOffer() {
-    final show =
-        controller.hintOffer &&
-        controller.playing &&
-        !controller.showOutcome &&
-        controller.activeToolMode == null;
-    if (!show) return const SizedBox.shrink();
-    return Positioned(
-      left: 8,
-      right: 8,
-      bottom: MediaQuery.paddingOf(context).bottom + 4,
-      child: Align(
-        alignment: Alignment.bottomLeft,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 320),
-          child: CapiSays(
-            text: tr('Travou? Eu te mostro uma jogada.'),
-            mood: CapiMood.point,
-            capiSize: 70,
-            action: tr('Ver dica'),
-            onAction: _dicaPaga,
-            secondary: tr('Usar ferramenta'),
-            onSecondary: _openToolsSheet,
-          ),
-        ),
-      ),
-    );
+  /// The hint lamp: this game's free hint first, then a paid one.
+  void _pedirDica() {
+    if (!controller.playing || controller.activeToolMode != null) return;
+    if (controller.showFreeHint()) {
+      widget.services.feedback.click();
+      Analytics.event('fase_dica', {
+        'level': controller.level.number,
+        'pagamento': 'gratis',
+      });
+      return;
+    }
+    _dicaPaga();
   }
 
   Future<void> _dicaPaga() => _guard(() async {
@@ -594,6 +620,7 @@ class _GameScreenState extends State<GameScreen> {
                             controller: controller,
                             onPause: () => controller.setPaused(true),
                             onTools: _openToolsSheet,
+                            onDica: _pedirDica,
                             onDesafios: _comDesafios ? _verDesafios : null,
                             estrelasKey: _estrelasKey,
                           ),
@@ -604,10 +631,6 @@ class _GameScreenState extends State<GameScreen> {
             ListenableBuilder(
               listenable: controller,
               builder: (context, _) => _CapiPopUp(controller: controller),
-            ),
-            ListenableBuilder(
-              listenable: controller,
-              builder: (context, _) => _hintOffer(),
             ),
             ListenableBuilder(
               listenable: controller,
@@ -674,6 +697,11 @@ class _GameScreenState extends State<GameScreen> {
           starsGained: controller.starsGained,
           onExtraTime: controller.canBlitzExtraTime ? _blitzExtraTime : null,
           videoExtra: widget.services.ads.hasVideoAds,
+          ranking: PosicaoNoRanking(
+            key: ValueKey(s),
+            store: widget.services.store,
+            quadro: Quadro.blitz,
+          ),
           onRetry: _retry,
           onExit: _exit,
           onShareDuel: () => _shareDuelLink(s.score),
@@ -693,16 +721,7 @@ class _GameScreenState extends State<GameScreen> {
                 newBits: controller.starBits & ~controller.previousStarBits,
                 starsGained: controller.starsGained,
                 dobrado: _dobrado,
-                onDobrar:
-                    widget.services.ads.hasVideoAds &&
-                        controller.starsGained > 0 &&
-                        widget.services.store.videosToday(
-                              'dobrar',
-                              DateTime.now(),
-                            ) <
-                            dobrarPorDia
-                    ? _dobrarEstrelas
-                    : null,
+                onDobrar: _podeDobrar ? _dobrarEstrelas : null,
                 replay: controller.isReplay,
                 onNext: _next,
                 onRetry: _retry,
@@ -720,6 +739,11 @@ class _GameScreenState extends State<GameScreen> {
           starsGained: controller.starsGained,
           onExtraTime: controller.canBlitzExtraTime ? _blitzExtraTime : null,
           videoExtra: widget.services.ads.hasVideoAds,
+          ranking: PosicaoNoRanking(
+            key: ValueKey(s),
+            store: widget.services.store,
+            quadro: Quadro.blitz,
+          ),
           onRetry: _retry,
           onExit: _exit,
           onShareDuel: () => _shareDuelLink(s.score),
@@ -733,6 +757,13 @@ class _GameScreenState extends State<GameScreen> {
           newBest: controller.newBest,
           canRevive: controller.canRevive,
           videoRevive: widget.services.ads.hasVideoAds,
+          ranking: controller.endless
+              ? PosicaoNoRanking(
+                  key: ValueKey(s),
+                  store: widget.services.store,
+                  quadro: Quadro.infinito,
+                )
+              : null,
           onRevive: _revive,
           onRetry: _retry,
           onExit: _onboarding ? null : _exit,
@@ -767,6 +798,115 @@ class _GameScreenState extends State<GameScreen> {
 /// Capi pops up from the bottom corner for a moment: cheering big moves,
 /// worried when the board fills up, pointing at a hint when the player is
 /// stuck. Never blocks touches.
+/// The hint lamp, always on the HUD. After a while without a move it
+/// pulses, and a little later it opens to ask "want a hint?". It grows
+/// inside the HUD, so it never covers the board or the pieces.
+class _Lampada extends StatefulWidget {
+  const _Lampada({
+    required this.pulsando,
+    required this.aberta,
+    required this.onTap,
+  });
+  final bool pulsando;
+  final bool aberta;
+  final VoidCallback onTap;
+
+  @override
+  State<_Lampada> createState() => _LampadaState();
+}
+
+class _LampadaState extends State<_Lampada>
+    with SingleTickerProviderStateMixin {
+  late final _pulso = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  );
+
+  bool get _chamando => widget.pulsando || widget.aberta;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_chamando) _pulso.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(_Lampada old) {
+    super.didUpdateWidget(old);
+    if (_chamando && !_pulso.isAnimating) {
+      _pulso.repeat(reverse: true);
+    } else if (!_chamando && _pulso.isAnimating) {
+      _pulso
+        ..stop()
+        ..value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulso.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const tinta = Color(0xFF3A2200);
+    final cor = _chamando ? tinta : Palette.text;
+    return Semantics(
+      button: true,
+      label: tr('Dica'),
+      excludeSemantics: true,
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _pulso,
+        builder: (context, child) => Transform.scale(
+          scale: 1 + 0.1 * Curves.easeInOut.transform(_pulso.value),
+          child: child,
+        ),
+        child: Material(
+          color: _chamando
+              ? Palette.accent
+              : Palette.panel.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(14),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: widget.onTap,
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                height: 44,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 44,
+                      child: Icon(
+                        Icons.lightbulb_rounded,
+                        color: cor,
+                        size: 24,
+                      ),
+                    ),
+                    if (widget.aberta)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Text(
+                          tr('Quer dica?'),
+                          style: displayText(15, color: tinta),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _CapiPopUp extends StatelessWidget {
   const _CapiPopUp({required this.controller});
   final GameController controller;
@@ -878,12 +1018,14 @@ class _Hud extends StatelessWidget {
     required this.controller,
     required this.onPause,
     required this.onTools,
+    required this.onDica,
     this.onDesafios,
     this.estrelasKey,
   });
   final GameController controller;
   final VoidCallback onPause;
   final VoidCallback onTools;
+  final VoidCallback onDica;
 
   /// Levels mode: the three star challenges sit by the goals.
   final VoidCallback? onDesafios;
@@ -907,41 +1049,53 @@ class _Hud extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          levelTitle(level),
-                          style: displayText(17, color: Palette.textDim),
-                        ),
-                        if (level.isHard) ...[
-                          const SizedBox(width: 8),
-                          _Tag(tr('DIFÍCIL'), Palette.danger),
-                        ],
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _AnimatedScore(score: s.score),
-                        if (level.isEndless || controller.isBlitz) ...[
-                          const SizedBox(width: 10),
-                          const Icon(
-                            Icons.emoji_events_rounded,
-                            color: Palette.accent,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 3),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                           Text(
-                            formatInt(controller.bestScore),
-                            style: displayText(15, color: Palette.textDim),
+                            levelTitle(level),
+                            style: displayText(17, color: Palette.textDim),
                           ),
+                          if (level.isHard) ...[
+                            const SizedBox(width: 8),
+                            _Tag(tr('DIFÍCIL'), Palette.danger),
+                          ],
                         ],
-                      ],
+                      ),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _AnimatedScore(score: s.score),
+                          if (level.isEndless || controller.isBlitz) ...[
+                            const SizedBox(width: 10),
+                            const Icon(
+                              Icons.emoji_events_rounded,
+                              color: Palette.accent,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              formatInt(controller.bestScore),
+                              style: displayText(15, color: Palette.textDim),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
+              _Lampada(
+                pulsando: controller.hintNudge,
+                aberta: controller.hintOffer,
+                onTap: onDica,
+              ),
+              const SizedBox(width: 8),
               RoundIconButton(
                 icon: Icons.construction_rounded,
                 label: tr('Ferramentas'),
@@ -1765,7 +1919,11 @@ class _LoseCard extends StatelessWidget {
     required this.onRetry,
     required this.onExit,
     this.videoRevive = true,
+    this.ranking,
   });
+
+  /// The player's place on the week's board, under the score.
+  final Widget? ranking;
 
   final bool endless;
 
@@ -1821,6 +1979,7 @@ class _LoseCard extends StatelessWidget {
           style: _bodyStyle,
           textAlign: TextAlign.center,
         ),
+        ?ranking,
         const SizedBox(height: 24),
         if (canRevive) ...[
           ChunkyButton(
@@ -2098,7 +2257,11 @@ class _DuelTargetChip extends StatelessWidget {
 }
 
 class _BlitzWinCard extends StatelessWidget {
+  /// The place on the week's board, under the score.
+  final Widget? ranking;
+
   const _BlitzWinCard({
+    this.ranking,
     required this.score,
     required this.best,
     required this.newBest,
@@ -2162,6 +2325,7 @@ class _BlitzWinCard extends StatelessWidget {
               style: bodyText(14, color: Palette.textDim),
             ),
           ],
+          ?ranking,
           if (starsGained > 0) ...[
             const SizedBox(height: 10),
             Row(

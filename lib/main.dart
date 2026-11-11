@@ -8,17 +8,22 @@ import 'package:flutter/services.dart';
 import 'ads/ad_service.dart';
 import 'ads/admob.dart';
 import 'game/game_controller.dart';
+import 'core/convites.dart';
 import 'core/wardrobe.dart';
 import 'l10n/idioma.dart';
+import 'screens/convites_sheet.dart';
 import 'screens/game_screen.dart';
 import 'screens/root.dart';
 import 'services/duelo_link.dart';
 import 'services/analytics.dart';
 import 'services/avisos.dart';
+import 'services/config_remota.dart';
 import 'services/feedback.dart';
 import 'services/musica.dart';
 import 'services/sound/music_player.dart';
+import 'services/convites_servidor.dart';
 import 'services/placares.dart';
+import 'services/ranking_servidor.dart';
 import 'testing/test_bridge.dart';
 import 'services/progress_store.dart';
 import 'shop/loja_service.dart';
@@ -41,6 +46,8 @@ Future<void> main() async {
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
+  if (ConvitesServidor.ativo) RankingServidor.atual = RankingFirebase();
+  if (kTestBridge) RankingServidor.atual = TestBridge.instance.ranking;
   CapiArte.ativa = true;
   if (kIsWeb) {
     // The page's own loading screen (web/index.html) covers the start.
@@ -120,6 +127,7 @@ void _depoisDeAbrir(AppServices services) {
   unawaited(services.ads.start());
   unawaited(Analytics.start(enabled: services.store.analyticsOn));
   unawaited(Avisos.iniciar(services.store));
+  unawaited(ConfigRemota.iniciar());
   unawaited(Placares.iniciar(services.store));
 }
 
@@ -226,8 +234,16 @@ class App extends StatelessWidget {
     ),
   );
 
+  /// The app's navigator (the test bridge opens links through it).
+  static final navegador = GlobalKey<NavigatorState>();
+
   Widget _app(BuildContext context) {
+    if (kTestBridge) {
+      TestBridge.instance.abrirRota = (rota) =>
+          navegador.currentState?.pushNamed(rota);
+    }
     return MaterialApp(
+      navigatorKey: navegador,
       title: appTitle,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -245,7 +261,11 @@ class App extends StatelessWidget {
       // route, at start or while the game is open, and opens the match on
       // top of wherever the player is.
       onGenerateRoute: (settings) {
-        final convite = DueloConvite.ler(Uri.parse(settings.name ?? ''));
+        final endereco = Uri.parse(settings.name ?? '');
+        // An invite link (`/convite?c=…`): the welcome gift over the game.
+        final codigo = Convites.lerLink(endereco);
+        if (codigo != null) return rotaConviteRecebido(services, codigo);
+        final convite = DueloConvite.ler(endereco);
         if (convite == null) return null;
         return MaterialPageRoute<void>(
           settings: settings,

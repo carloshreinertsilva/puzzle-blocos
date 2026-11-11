@@ -3,6 +3,63 @@
 // the Passe do Capi, the Mercado do Capi and the test ads.
 
 const Map<String, String> enLoja = {
+  // --- Inviting friends ---
+  "Presente de quem entra pelo convite de um amigo":
+      "A gift for whoever joins through a friend's invite",
+  "Convide {n} amigo para jogar": "Invite {n} friend to play",
+  "Convide {n} amigos para jogar": "Invite {n} friends to play",
+  "Vem jogar CapiBlocks comigo! Encaixe blocos, salve filhotes e construa a Vila do Capi. Entrando pelo meu convite você ganha {estrelas} estrelas e um presente: {link} (código {codigo})": "Come play CapiBlocks with me! Fit blocks, rescue pups and build Capi's Village. Join with my invite and get {estrelas} stars and a gift: {link} (code {codigo})",
+  "Amigos no CapiBlocks! Você ganhou: {premio}":
+      "Friends in CapiBlocks! You got: {premio}",
+  "Capi Embaixador! Continue chamando amigos":
+      "Capi Ambassador! Keep inviting friends",
+  "Convide amigos e ganhe: {premio}": "Invite friends and get: {premio}",
+  "Convidar amigos": "Invite friends",
+  "Vem jogar CapiBlocks comigo!": "Come play CapiBlocks with me!",
+  "Convite copiado! Cole no WhatsApp.": "Invite copied! Paste it in WhatsApp.",
+  "O código tem 6 letras e números. Confira e tente de novo.":
+      "The code has 6 letters and numbers. Check it and try again.",
+  "Esse é o seu código: mande para um amigo!":
+      "That's your own code: send it to a friend!",
+  "Presente do convite: {n} estrelas e {item}!":
+      "Invite gift: {n} stars and {item}!",
+  "Convide amigos": "Invite friends",
+  "Capi Embaixador": "Capi Ambassador",
+  "Chame amigos para a Vila do Capi! Quem entra pelo seu convite ganha {n} estrelas e o {item}. Cada amigo que chegar à fase {fase} conta para os seus prêmios.": "Bring friends to Capi's Village! Whoever joins with your invite gets {n} stars and the {item}. Each friend who reaches level {fase} counts toward your rewards.",
+  "{n} amigo já chegou à fase {fase}": "{n} friend has reached level {fase}",
+  "{n} amigos já chegaram à fase {fase}":
+      "{n} friends have reached level {fase}",
+  "Os convites contam no app do celular.": "Invites count in the phone app.",
+  "Seu código: {codigo}": "Your code: {codigo}",
+  "Convidar pelo WhatsApp": "Invite via WhatsApp",
+  "Compartilhar convite": "Share invite",
+  "Ganhou um convite? Digite o código:": "Got an invite? Type the code:",
+  "Código do convite": "Invite code",
+  "Usar": "Use",
+  "Usar código do convite": "Use invite code",
+  "{n} amigo: {premio}": "{n} friend: {premio}",
+  "{n} amigos: {premio}": "{n} friends: {premio}",
+  "{meta}, ganho": "{meta}, earned",
+  "{n} amigo": "{n} friend",
+  "{n} amigos": "{n} friends",
+  "Presente seu!": "It's yours!",
+  "Você foi convidado!": "You've been invited!",
+  "{n} estrelas e o {item} já estão com você. Bom jogo!":
+      "{n} stars and the {item} are yours. Have fun!",
+  "Um amigo te chamou para a Vila do Capi. Seu presente: {n} estrelas e o {item}.": "A friend invited you to Capi's Village. Your gift: {n} stars and the {item}.",
+  "Pegar presente": "Get gift",
+  "Laço da Amizade": "Friendship Bow",
+  "Presente para quem chega pelo convite de um amigo.":
+      "A gift for whoever arrives through a friend's invite.",
+  "Faixa de Embaixador": "Ambassador Sash",
+  "Para o Capi Embaixador, que trouxe 3 amigos.":
+      "For the Capi Ambassador, who brought 3 friends.",
+  "Coroa de Amizade": "Friendship Crown",
+  "Corações dourados: 5 amigos na Vila do Capi.":
+      "Golden hearts: 5 friends in Capi's Village.",
+  "Convide 5 amigos para jogar": "Invite 5 friends to play",
+  "Seus amigos ganham 50 estrelas!": "Your friends get 50 stars!",
+  "Chame um amigo para a Vila!": "Bring a friend to the Village!",
   // --- Summer season (January) ---
   "Verão": "Summer",
   "Chapéu de Melancia": "Watermelon Hat",
@@ -362,6 +419,65 @@ const Map<String, String> enLoja = {
 };
 
 const Map<String, String> esLoja = {
+  // --- Inviting friends ---
+  "Presente de quem entra pelo convite de um amigo":
+      "Regalo para quien entra con la invitación de un amigo",
+  "Convide {n} amigo para jogar": "Invita a {n} amigo a jugar",
+  "Convide {n} amigos para jogar": "Invita a {n} amigos a jugar",
+  "Vem jogar CapiBlocks comigo! Encaixe blocos, salve filhotes e construa a Vila do Capi. Entrando pelo meu convite você ganha {estrelas} estrelas e um presente: {link} (código {codigo})": "¡Ven a jugar CapiBlocks conmigo! Encaja bloques, salva cachorritos y construye la Villa de Capi. Entrando con mi invitación ganas {estrelas} estrellas y un regalo: {link} (código {codigo})",
+  "Amigos no CapiBlocks! Você ganhou: {premio}":
+      "¡Amigos en CapiBlocks! Ganaste: {premio}",
+  "Capi Embaixador! Continue chamando amigos":
+      "¡Embajador Capi! Sigue invitando amigos",
+  "Convide amigos e ganhe: {premio}": "Invita amigos y gana: {premio}",
+  "Convidar amigos": "Invitar amigos",
+  "Vem jogar CapiBlocks comigo!": "¡Ven a jugar CapiBlocks conmigo!",
+  "Convite copiado! Cole no WhatsApp.":
+      "¡Invitación copiada! Pégala en WhatsApp.",
+  "O código tem 6 letras e números. Confira e tente de novo.":
+      "El código tiene 6 letras y números. Revísalo e inténtalo de nuevo.",
+  "Esse é o seu código: mande para um amigo!":
+      "Ese es tu código: ¡envíaselo a un amigo!",
+  "Presente do convite: {n} estrelas e {item}!":
+      "Regalo de invitación: ¡{n} estrellas y {item}!",
+  "Convide amigos": "Invita amigos",
+  "Capi Embaixador": "Embajador Capi",
+  "Chame amigos para a Vila do Capi! Quem entra pelo seu convite ganha {n} estrelas e o {item}. Cada amigo que chegar à fase {fase} conta para os seus prêmios.": "¡Trae amigos a la Villa de Capi! Quien entra con tu invitación gana {n} estrellas y el {item}. Cada amigo que llegue al nivel {fase} cuenta para tus premios.",
+  "{n} amigo já chegou à fase {fase}": "{n} amigo ya llegó al nivel {fase}",
+  "{n} amigos já chegaram à fase {fase}":
+      "{n} amigos ya llegaron al nivel {fase}",
+  "Os convites contam no app do celular.":
+      "Las invitaciones cuentan en la app del celular.",
+  "Seu código: {codigo}": "Tu código: {codigo}",
+  "Convidar pelo WhatsApp": "Invitar por WhatsApp",
+  "Compartilhar convite": "Compartir invitación",
+  "Ganhou um convite? Digite o código:": "¿Te invitaron? Escribe el código:",
+  "Código do convite": "Código de invitación",
+  "Usar": "Usar",
+  "Usar código do convite": "Usar código de invitación",
+  "{n} amigo: {premio}": "{n} amigo: {premio}",
+  "{n} amigos: {premio}": "{n} amigos: {premio}",
+  "{meta}, ganho": "{meta}, ganado",
+  "{n} amigo": "{n} amigo",
+  "{n} amigos": "{n} amigos",
+  "Presente seu!": "¡Es tuyo!",
+  "Você foi convidado!": "¡Te invitaron!",
+  "{n} estrelas e o {item} já estão com você. Bom jogo!":
+      "{n} estrellas y el {item} ya son tuyos. ¡Buen juego!",
+  "Um amigo te chamou para a Vila do Capi. Seu presente: {n} estrelas e o {item}.": "Un amigo te invitó a la Villa de Capi. Tu regalo: {n} estrellas y el {item}.",
+  "Pegar presente": "Recibir regalo",
+  "Laço da Amizade": "Lazo de la Amistad",
+  "Presente para quem chega pelo convite de um amigo.":
+      "Regalo para quien llega con la invitación de un amigo.",
+  "Faixa de Embaixador": "Banda de Embajador",
+  "Para o Capi Embaixador, que trouxe 3 amigos.":
+      "Para el Embajador Capi, que trajo 3 amigos.",
+  "Coroa de Amizade": "Corona de la Amistad",
+  "Corações dourados: 5 amigos na Vila do Capi.":
+      "Corazones dorados: 5 amigos en la Villa de Capi.",
+  "Convide 5 amigos para jogar": "Invita a 5 amigos a jugar",
+  "Seus amigos ganham 50 estrelas!": "¡Tus amigos ganan 50 estrellas!",
+  "Chame um amigo para a Vila!": "¡Trae un amigo a la Villa!",
   // --- Summer season (January) ---
   "Verão": "Verano",
   "Chapéu de Melancia": "Sombrero de Sandía",

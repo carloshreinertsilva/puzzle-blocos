@@ -5,20 +5,12 @@
   "installCommand": "true",
   "buildCommand": "bash tool/vercel_build.sh",
   "outputDirectory": "build/web",
+  "git": {
+    "deploymentEnabled": {
+      "claude/**": false
+    }
+  },
   "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin"
-        },
-        {
-          "key": "Cross-Origin-Embedder-Policy",
-          "value": "require-corp"
-        }
-      ]
-    },
     {
       "source": "/(index.html|flutter_service_worker.js|flutter_bootstrap.js|version.json)?",
       "headers": [
@@ -42,6 +34,10 @@
     {
       "source": "/duelo",
       "destination": "/index.html"
+    },
+    {
+      "source": "/convite",
+      "destination": "/convite/index.html"
     }
   ]
 }

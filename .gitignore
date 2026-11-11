@@ -48,3 +48,5 @@ app.*.map.json
 .widget_preview/
 
 /build_release/
+tool/firestore/node_modules/
+tool/firestore/*-debug.log

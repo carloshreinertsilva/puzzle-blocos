@@ -57,14 +57,24 @@ jobs:
           path: build/web_test
           retention-days: 3
 
-  # Um job só para os 4 tamanhos: prepara o navegador uma vez.
+  # Os 4 tamanhos de tela, divididos em quatro máquinas.
   e2e:
-    name: Playwright
+    name: Playwright (${{ matrix.parte }}/4)
     needs: flutter
     # Fixo no 24.04: o ubuntu-latest virou 26.04, que o Playwright 1.56
     # ainda não suporta ("does not support chromium on ubuntu26.04").
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    # Um quarto dos testes em cada máquina, um navegador por vez: com dois
+    # navegadores desenhando sem GPU na mesma máquina de 2 núcleos, a
+    # página travava de vez em quando e o teste estourava o tempo. São
+    # quatro máquinas porque o jogo roda numa thread só (veja e2e/serve.py):
+    # sem GPU ele fica quase 3 vezes mais lento, e em duas máquinas cada
+    # metade levava mais de meia hora.
+    strategy:
+      fail-fast: false
+      matrix:
+        parte: [1, 2, 3, 4]
     defaults:
       run:
         working-directory: e2e
@@ -81,14 +91,21 @@ jobs:
           cache-dependency-path: e2e/package-lock.json
       - run: npm ci
       - name: Navegador (Chromium)
-        run: npx playwright install --with-deps chromium
+        # O --with-deps baixa pacotes do espelho do Ubuntu, que às vezes fica
+        # fora do ar no runner (cada tentativa leva vários minutos até
+        # desistir). Uma tentativa de até 4 minutos; se não der, instala só o
+        # navegador, usando as bibliotecas que a imagem do runner já tem.
+        run: |
+          timeout 240 npx playwright install --with-deps chromium && exit 0
+          echo "::warning::Espelho do Ubuntu fora do ar: instalando só o navegador"
+          npx playwright install chromium
       - name: Testes de ponta a ponta
-        run: npx playwright test
+        run: npx playwright test --shard=${{ matrix.parte }}/4 --workers=1
       - name: Relatório
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: relatorio-playwright
+          name: relatorio-playwright-${{ matrix.parte }}
           path: e2e/playwright-report
           retention-days: 14
 

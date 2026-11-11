@@ -16,8 +16,6 @@ const janelas: [string, string | RegExp, (p: Page) => Locator][] = [
   ['Missões', 'Missões Diárias', (p) => p.getByText('Baú do Capi')],
   ['Modos', /^Modos/, (p) => p.getByText('Modos de jogo')],
   ['Passe do Capi', /^Passe do Capi/, (p) => p.getByText(/^Nível \d+ de 30$/)],
-  // On the web (no Game Center / Play Games) Ranking shows the statistics.
-  ['Estatísticas', /Ranking/, (p) => p.getByText('Pedras quebradas')],
 ];
 
 test.describe('Toda janela fecha pelo botão Fechar', () => {
@@ -28,6 +26,16 @@ test.describe('Toda janela fecha pelo botão Fechar', () => {
       await fecharEVoltar(page, marca(page));
     });
   }
+
+  test('Ranking volta ao menu', async ({ page }) => {
+    await openApp(page, { level: 40, stars: 500, rankingNome: JSON.stringify('Carlos') });
+    await page.getByRole('button', { name: /^Ranking/ }).click();
+    const aba = page.getByRole('button', { name: 'Ranking: Torre do Capi' });
+    await expect(aba).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('button', { name: 'Voltar' }).click();
+    await expect(aba).toHaveCount(0, { timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
+  });
 
   test('Guarda-Roupa volta ao menu', async ({ page }) => {
     await openApp(page, { level: 40, stars: 500 });
