@@ -615,4 +615,72 @@ class ProgressStore {
   bool get conviteReferrerLido => _prefs.getBool('conviteReferrer') ?? false;
   Future<void> setConviteReferrerLido() =>
       _prefs.setBool('conviteReferrer', true);
+
+  /// Store rating: how many times it was asked for, and when last.
+  int get avaliacaoPedidos => _prefs.getInt('avaliacaoPedidos') ?? 0;
+  DateTime? get avaliacaoPedidaEm {
+    final ms = _prefs.getInt('avaliacaoPedidaEm');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> setAvaliacaoPedida(DateTime t) async {
+    await _prefs.setInt('avaliacaoPedidaEm', t.millisecondsSinceEpoch);
+    await _prefs.setInt('avaliacaoPedidos', avaliacaoPedidos + 1);
+  }
+
+  // --- The game's own ranking (core/ranking.dart) ---
+
+  /// The name the player chose for the ranking, or null.
+  String? get rankingNome => _prefs.getString('rankingNome');
+  Future<void> setRankingNome(String nome) =>
+      _prefs.setString('rankingNome', nome);
+
+  /// This week's score on a board (0 when what is kept is another week's).
+  int rankingDaSemana(String quadro, int semana) {
+    final v = (_prefs.getString('rkSemana_$quadro') ?? '').split(':');
+    if (v.length != 2 || int.tryParse(v[0]) != semana) return 0;
+    return int.tryParse(v[1]) ?? 0;
+  }
+
+  Future<void> setRankingDaSemana(String quadro, int semana, int pontos) =>
+      _prefs.setString('rkSemana_$quadro', '$semana:$pontos');
+
+  /// What was last sent for a board and period (Ranking.assinatura).
+  String? rankingEnviado(String quadro, String periodo) =>
+      _prefs.getString('rkEnviado_${quadro}_$periodo');
+  Future<void> setRankingEnviado(String quadro, String periodo, String v) =>
+      _prefs.setString('rkEnviado_${quadro}_$periodo', v);
+
+  /// The player's place on a board when the ranking was last opened this
+  /// week, or null.
+  int? rankingVisto(String quadro, int semana) {
+    final v = (_prefs.getString('rkVisto_$quadro') ?? '').split(':');
+    if (v.length != 2 || int.tryParse(v[0]) != semana) return null;
+    return int.tryParse(v[1]);
+  }
+
+  Future<void> setRankingVisto(String quadro, int semana, int posicao) =>
+      _prefs.setString('rkVisto_$quadro', '$semana:$posicao');
+
+  // --- What is new (core/novidades.dart) ---
+
+  /// The newest edition of news already told to the player (-1: none).
+  int get novidadesVistas => _prefs.getInt('novidadesVistas') ?? -1;
+  Future<void> setNovidadesVistas(int edicao) =>
+      _prefs.setInt('novidadesVistas', edicao);
+
+  /// News not opened yet (DestinoNovidade names): each keeps a dot on the
+  /// menu until the player goes there.
+  List<String> get novidadesPendentes =>
+      _prefs.getStringList('novidadesPendentes') ?? const [];
+  Future<void> setNovidadesPendentes(List<String> v) =>
+      _prefs.setStringList('novidadesPendentes', v);
+
+  /// Lines the player reported: hidden on this phone from then on.
+  List<String> get rankingDenunciados =>
+      _prefs.getStringList('rkDenunciados') ?? const [];
+  Future<void> addRankingDenunciado(String uid) => _prefs.setStringList(
+    'rkDenunciados',
+    {...rankingDenunciados, uid}.toList(),
+  );
 }

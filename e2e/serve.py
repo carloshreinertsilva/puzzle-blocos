@@ -21,10 +21,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.path = "/index.html"
         super().do_GET()
 
-    def end_headers(self):
-        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
-        self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
-        super().end_headers()
+    # No Cross-Origin-Opener/Embedder-Policy headers (nor in vercel.json):
+    # with them the WebAssembly renderer runs on several threads, and opening
+    # the Wardrobe froze the game about once in 25-55 times (stuck in the
+    # engine's paragraph layout, or "memory access out of bounds"). On one
+    # thread it opened 120 times in a row without a problem.
 
     def log_message(self, *args):
         pass

@@ -14,7 +14,7 @@ Valores combinados com o dono em 02/11/2026, para a versão 1.3.0.
 - Blitz e Torre dão até 6★ por dia cada.
 - As missões dão 1 ou 2★ cada, e o baú diário 5★ mais 1 item.
 - Com vídeo: "dobrar" as estrelas da fase (**até 10 por dia**,
-  `dobrarPorDia` em `lib/screens/game_screen.dart`) e o baú bônus (+5★,
+  `dobrar_por_dia` em `docs/ajustes-remotos.md`) e o baú bônus (+5★,
   1 por dia).
 
 ## Onde se gastam

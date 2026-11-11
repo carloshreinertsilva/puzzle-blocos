@@ -90,8 +90,21 @@ void main() {
       mode: GameMode.endless,
     );
 
+    // Nothing shows by itself: first the lamp pulses, then it asks.
     expect(c.hint, isNull);
     await tester.pump(GameController.idleHintAfter);
+    expect(c.hint, isNull);
+    expect(c.hintNudge, isTrue);
+    expect(c.hintOffer, isFalse);
+    await tester.pump(
+      GameController.hintOfferAfter - GameController.idleHintAfter,
+    );
+    expect(c.hintOffer, isTrue);
+
+    // The lamp gives this game's free hint.
+    expect(c.showFreeHint(), isTrue);
+    expect(c.hintNudge, isFalse);
+    expect(c.hintOffer, isFalse);
     final hint = c.hint;
     expect(hint, isNotNull);
     expect(c.capiReaction, CapiReaction.hint);
@@ -102,8 +115,9 @@ void main() {
     c.noteActivity();
     expect(c.hint, isNull);
 
-    // Only one free hint per game: next time Capi offers a paid one.
-    await tester.pump(GameController.idleHintAfter);
+    // Only one free hint per game: the next one is paid.
+    expect(c.showFreeHint(), isFalse);
+    await tester.pump(GameController.hintOfferAfter);
     expect(c.hint, isNull);
     expect(c.hintOffer, isTrue);
     expect(c.showPaidHint(), isTrue);

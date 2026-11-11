@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../services/analytics.dart';
+import '../services/avaliacao.dart';
 import '../services/avisos.dart';
 import '../services/jogo_salvo.dart';
 import '../services/placares.dart';
@@ -318,6 +319,25 @@ class _SettingsState extends State<_Settings> {
                 ),
               ),
 
+              // Rate the game (the Play Store page)
+              if (Avaliacao.temPaginaDaLoja)
+                ListTile(
+                  leading: const Icon(
+                    Icons.thumb_up_rounded,
+                    color: Palette.accent,
+                  ),
+                  title: Text(tr('Avaliar o CapiBlocks'), style: bodyText(16)),
+                  trailing: const Icon(
+                    Icons.open_in_new_rounded,
+                    size: 18,
+                    color: Palette.textDim,
+                  ),
+                  onTap: Avaliacao.abrirPaginaDaLoja,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+
               // Privacy Policy
               ListTile(
                 leading: const Icon(
@@ -337,7 +357,7 @@ class _SettingsState extends State<_Settings> {
               ),
               const SizedBox(height: 8),
               Text(
-                'CapiBlocks v1.9.0 · CHS TECH',
+                'CapiBlocks v1.10.0 · CHS TECH',
                 style: bodyText(12, color: Palette.textDim),
               ),
             ],

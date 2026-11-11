@@ -52,6 +52,9 @@ class GameSession {
   int _movesSinceClear = 0;
   bool revived = false;
 
+  /// Pieces placed in this attempt.
+  int moves = 0;
+
   /// Best single move of this attempt (for the level's missions).
   int bestLines = 0;
   int bestCombo = 0;
@@ -73,6 +76,21 @@ class GameSession {
     if (level.hasRockGoal && rocksLeft > 0) return false;
     if (level.hasPupGoal && pupsLeft > 0) return false;
     return true;
+  }
+
+  /// How much of the level's goals is done, 0 to 100 (the average of its
+  /// goals). Endless and Blitz have no goal: always 0.
+  int get goalPercent {
+    final partes = <double>[
+      if (level.targetScore > 0) score / level.targetScore,
+      if (level.gemsTarget > 0) gems / level.gemsTarget,
+      if (level.hasRockGoal && rocksAtStart > 0) rocksBroken / rocksAtStart,
+      if (level.hasPupGoal && pupsSaved + pupsLeft > 0)
+        pupsSaved / (pupsSaved + pupsLeft),
+    ];
+    if (level.isEndless || level.isBlitz || partes.isEmpty) return 0;
+    final soma = partes.fold(0.0, (a, b) => a + b.clamp(0.0, 1.0));
+    return (100 * soma / partes.length).floor();
   }
 
   double get difficultyNow {
@@ -102,6 +120,7 @@ class GameSession {
     final piece = tray[slot]!;
     final outcome = board.place(piece, r, c);
     tray[slot] = null;
+    moves++;
 
     final lines = outcome.lines;
     if (lines > 0) {
