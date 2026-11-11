@@ -195,11 +195,15 @@ test('dica do Capi parado: a primeira é grátis, depois é paga', async ({ page
   const entendi = page.getByRole('button', { name: 'Entendi!' });
   if (await entendi.isVisible().catch(() => false)) await entendi.click();
 
-  await waitForState(page, (x) => x.hint != null, 'dica grátis', 20_000);
+  // A lâmpada dá a dica grátis da partida na hora.
+  await page.getByRole('button', { name: 'Dica', exact: true }).click();
+  await waitForState(page, (x) => x.hint != null, 'dica grátis');
   await playMove(page);
 
+  // Parado, nada cobre as peças: a lâmpada pisca e depois pergunta.
+  await waitForState(page, (x) => x.hintNudge === true, 'lâmpada piscando', 20_000);
   await waitForState(page, (x) => x.hintOffer === true && x.hint == null, 'oferta de dica', 20_000);
-  await page.getByRole('button', { name: 'Ver dica' }).click();
+  await page.getByRole('button', { name: 'Dica', exact: true }).click();
   await page.getByRole('button', { name: 'Usar 5 estrelas na dica' }).click();
   const s = await waitForState(page, (x) => x.hint != null && x.hintOffer === false, 'dica paga');
   expect(s.stars).toBe(5);

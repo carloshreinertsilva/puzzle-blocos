@@ -29,9 +29,7 @@ const Map<String, String> enJogo = {
   // Partida: prêmios, dicas e avisos
   '+{n} ★ pelo vídeo!': '+{n} ★ for the video!',
   'Segunda chance liberada!': 'Second chance unlocked!',
-  'Travou? Eu te mostro uma jogada.': "Stuck? I'll show you a move.",
-  'Ver dica': 'See hint',
-  'Usar ferramenta': 'Use a tool',
+  'Quer dica?': 'Want a hint?',
   'A dica grátis desta fase já foi.': "This level's free hint is used up.",
   'Desafios da fase: {lista}': 'Level challenges: {lista}',
   '3 estrelas nesta fase': '3 stars on this level',
@@ -291,9 +289,7 @@ const Map<String, String> esJogo = {
   // Partida: prêmios, dicas e avisos
   '+{n} ★ pelo vídeo!': '¡+{n} ★ por el video!',
   'Segunda chance liberada!': '¡Segunda oportunidad desbloqueada!',
-  'Travou? Eu te mostro uma jogada.': '¿Atascado? Te muestro una jugada.',
-  'Ver dica': 'Ver pista',
-  'Usar ferramenta': 'Usar herramienta',
+  'Quer dica?': '¿Una pista?',
   'A dica grátis desta fase já foi.':
       'Ya usaste la pista gratis de este nivel.',
   'Desafios da fase: {lista}': 'Retos del nivel: {lista}',

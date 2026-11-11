@@ -91,7 +91,14 @@ jobs:
           cache-dependency-path: e2e/package-lock.json
       - run: npm ci
       - name: Navegador (Chromium)
-        run: npx playwright install --with-deps chromium
+        # O --with-deps baixa pacotes do espelho do Ubuntu, que às vezes fica
+        # fora do ar no runner (cada tentativa leva vários minutos até
+        # desistir). Uma tentativa de até 4 minutos; se não der, instala só o
+        # navegador, usando as bibliotecas que a imagem do runner já tem.
+        run: |
+          timeout 240 npx playwright install --with-deps chromium && exit 0
+          echo "::warning::Espelho do Ubuntu fora do ar: instalando só o navegador"
+          npx playwright install chromium
       - name: Testes de ponta a ponta
         run: npx playwright test --shard=${{ matrix.parte }}/4 --workers=1
       - name: Relatório

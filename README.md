@@ -20,9 +20,16 @@ passos com balão de fala e uma mãozinha.
 
 Arte do Capi e do ícone em `art/` (arquivos-mestre `.vectorcraft`, feitos no
 VectorCraft da ArtCraft, e as exportações PNG/SVG). O Capi do jogo é
-desenhado em código (`lib/ui/capi.dart`) seguindo essa arte. Quando o
-jogador fica 10 s parado, o Capi leva a peça sugerida até o lugar
-(`lib/game/capi_carrier.dart`). Depois vêm as fases 1 a 3 seguidas,
+desenhado em código (`lib/ui/capi.dart`) seguindo essa arte.
+
+Dica: a lâmpada no topo da partida mostra uma jogada a qualquer momento (o
+Capi leva a peça até o lugar, `lib/game/capi_carrier.dart`); a primeira de
+cada partida é grátis, as seguintes custam estrelas ou um vídeo. Com o
+jogador 10 s parado a lâmpada pisca, e aos 15 s ela abre perguntando "Quer
+dica?", sem nunca cobrir o tabuleiro nem as peças. Só nas fases 1 a 3 o Capi
+mostra a jogada sozinho aos 10 s.
+
+Depois vêm as fases 1 a 3 seguidas,
 sem menu; o menu aparece ao vencer a fase 3. Infinito libera na fase 5 e o
 Desafio diário na fase 7.
 

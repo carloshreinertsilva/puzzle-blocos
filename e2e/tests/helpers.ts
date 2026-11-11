@@ -47,6 +47,7 @@ export type GameState = {
   capi?: string;
   hint?: [number, number, number];
   hintOffer?: boolean;
+  hintNudge?: boolean;
   geometry?: {
     board: { left: number; top: number; size: number; cell: number };
     slots: Box[];
