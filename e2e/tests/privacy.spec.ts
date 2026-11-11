@@ -32,6 +32,15 @@ test.describe('Política de Privacidade', () => {
     await expect(page.getByRole('link', { name: 'contato@chstech.dev.br' }).first()).toBeVisible();
   });
 
+  test('página de termos de uso em /termos/ carrega com o titular e o contato', async ({ page }) => {
+    const res = await page.goto('/termos/');
+    expect(res?.status()).toBe(200);
+    await expect(page).toHaveTitle(/Termos de Uso — CapiBlocks/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Termos de Uso' })).toBeVisible();
+    await expect(page.getByText(/CHS CONSULTORIA LTDA/).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'contato@chstech.dev.br' }).first()).toBeVisible();
+  });
+
   test('menu de configurações do app exibe link acessível para a política', async ({ page }) => {
     await openApp(page, { level: 5 });
 
