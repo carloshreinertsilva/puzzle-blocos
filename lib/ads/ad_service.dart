@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/idioma.dart';
+import '../services/ajustes.dart';
 import '../services/analytics.dart';
 import '../services/progress_store.dart';
 import 'ad_policy.dart';
@@ -138,11 +139,14 @@ class _FakeAdState extends State<_FakeAd> {
 /// Applies [AdPolicy] and remembers when the last full-screen ad ran, across
 /// app restarts, so reopening the app does not reset the clock.
 class AdCoordinator {
-  AdCoordinator(this.service, this.store, {this.policy = const AdPolicy()});
+  AdCoordinator(this.service, this.store, {this._policy});
 
   final AdService service;
   final ProgressStore store;
-  final AdPolicy policy;
+  final AdPolicy? _policy;
+
+  /// The one given (tests), else the adjustable one ([Ajustes]).
+  AdPolicy get policy => _policy ?? Ajustes.atuais.anuncios;
   final DateTime sessionStart = DateTime.now();
 
   bool get hasVideoAds => service.hasVideoAds;
@@ -150,6 +154,16 @@ class AdCoordinator {
 
   Future<void> start() => service.start();
   Future<void> showPrivacyOptions() => service.showPrivacyOptions();
+
+  /// A "watch a video" offer just appeared. With `reward_ad` it tells how
+  /// many of the players who see each offer take it.
+  void offered(
+    RewardPlacement placement, [
+    Map<String, Object> params = const {},
+  ]) {
+    if (!hasVideoAds) return;
+    Analytics.event('ad_offer', {'placement': placement.name, ...params});
+  }
 
   Future<bool> rewarded(BuildContext context, RewardPlacement placement) async {
     final ok = await service.showRewarded(context, placement);

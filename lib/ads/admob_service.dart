@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../l10n/idioma.dart';
+import '../services/analytics.dart';
 import 'ad_config.dart';
 import 'ad_service.dart';
 
@@ -168,6 +169,7 @@ class AdMobService implements AdService {
       _loadRewarded();
     }
 
+    ad.onPaidEvent = _receita('rewarded', placement.name);
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: finish,
       onAdFailedToShowFullScreenContent: (ad, _) => finish(ad),
@@ -175,6 +177,17 @@ class AdMobService implements AdService {
     await ad.show(onUserEarnedReward: (_, _) => earned = true);
     return closed.future;
   }
+
+  /// What AdMob estimates one shown ad paid, sent to the statistics so
+  /// revenue can be read by ad type and by offer.
+  static OnPaidEventCallback _receita(String formato, String onde) =>
+      (ad, valueMicros, precision, currencyCode) =>
+          Analytics.event('ad_revenue', {
+            'format': formato,
+            'placement': onde,
+            'value': valueMicros / 1000000,
+            'currency': currencyCode,
+          });
 
   /// A spinner over the game while the video finishes loading.
   Future<void> _waitForVideo(BuildContext context, Future<void> loading) async {
@@ -206,6 +219,7 @@ class AdMobService implements AdService {
     }
     _interstitial = null;
     final closed = Completer<bool>();
+    ad.onPaidEvent = _receita('interstitial', 'between_levels');
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();

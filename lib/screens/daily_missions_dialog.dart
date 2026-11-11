@@ -39,6 +39,14 @@ class DailyMissionsDialog extends StatefulWidget {
 class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
   final DateTime _today = DateTime.now();
 
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.services.store.isBonusChestClaimed(_today)) {
+      widget.services.ads.offered(RewardPlacement.bonusChest);
+    }
+  }
+
   Future<void> _claimMission(DailyMission m) async {
     widget.services.feedback.praise(2);
     final ok = await DailyMissionsManager.claimMission(

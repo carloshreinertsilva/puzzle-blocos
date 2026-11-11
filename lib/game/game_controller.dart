@@ -112,6 +112,7 @@ class GameController extends ChangeNotifier {
   Timer? _outcomeTimer;
   Timer? _avaliacaoTimer;
   bool _counted = false;
+  DateTime _startedAt = DateTime.now();
 
   /// Tutorial only: the current step (== steps.length once finished), what
   /// Capi says, and whether a step change is on its way.
@@ -289,6 +290,7 @@ class GameController extends ChangeNotifier {
     );
     bestScore = mode == GameMode.blitz ? store.blitzBestScore : store.bestScore;
     Analytics.event('level_start', {'mode': mode.name, 'level': config.number});
+    _startedAt = DateTime.now();
     blitzSecondsLeft = 60;
     _blitzTimer?.cancel();
     if (mode == GameMode.blitz) {
@@ -471,6 +473,10 @@ class GameController extends ChangeNotifier {
       'success': won ? 1 : 0,
       'score': session.score,
       'revived': session.revived ? 1 : 0,
+      'progress': progressPercent,
+      'moves': session.moves,
+      'seconds': DateTime.now().difference(_startedAt).inSeconds,
+      'attempt': session.failStreak + 1,
     });
     if (!_counted) {
       _counted = true;
@@ -564,6 +570,14 @@ class GameController extends ChangeNotifier {
     starsGained = Missions.count(all) - Missions.count(previousStarBits);
     store.setLevelStars(level.number, all);
     store.addStars(starsGained);
+  }
+
+  /// How close this attempt is, 0 to 100: the share of the level's goals
+  /// done or, without a goal (Endless, Blitz), of the record.
+  int get progressPercent {
+    if (!level.isEndless && !level.isBlitz) return session.goalPercent;
+    if (bestScore <= 0) return 100;
+    return (100 * session.score / bestScore).floor().clamp(0, 100);
   }
 
   bool get canRevive =>

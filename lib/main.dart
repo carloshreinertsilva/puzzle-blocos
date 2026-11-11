@@ -17,6 +17,7 @@ import 'screens/root.dart';
 import 'services/duelo_link.dart';
 import 'services/analytics.dart';
 import 'services/avisos.dart';
+import 'services/config_remota.dart';
 import 'services/feedback.dart';
 import 'services/musica.dart';
 import 'services/sound/music_player.dart';
@@ -126,6 +127,7 @@ void _depoisDeAbrir(AppServices services) {
   unawaited(services.ads.start());
   unawaited(Analytics.start(enabled: services.store.analyticsOn));
   unawaited(Avisos.iniciar(services.store));
+  unawaited(ConfigRemota.iniciar());
   unawaited(Placares.iniciar(services.store));
 }
 
