@@ -21,6 +21,8 @@ export type GameState = {
   level?: number;
   kind?: 'level' | 'endless' | 'daily' | 'blitz' | 'duel';
   blitzSecondsLeft?: number;
+  blitzExtraUsed?: boolean;
+  blitzLastBonus?: number;
   duelSeed?: number;
   duelTargetScore?: number | null;
   duelRivalName?: string | null;
@@ -47,6 +49,7 @@ export type GameState = {
   capi?: string;
   hint?: [number, number, number];
   hintOffer?: boolean;
+  hintNudge?: boolean;
   geometry?: {
     board: { left: number; top: number; size: number; cell: number };
     slots: Box[];
@@ -67,7 +70,13 @@ export type GameState = {
     gameOver: boolean;
     playing: boolean;
     starsGained: number;
+    floors: number;
+    zone: string;
+    canContinue: boolean;
+    offset: number;
+    room: number;
   };
+  ranking?: { nome: string | null; denuncias: number; linhas: Record<string, number> };
   equippedHat?: string;
   passe?: { nivel: number; premium: boolean };
   unlockedHats?: string[];

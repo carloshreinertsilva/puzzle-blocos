@@ -246,11 +246,19 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
               header: true,
               label: tr('Guarda-Roupa do Capi'),
               excludeSemantics: true,
-              child: OutlinedTitle(tr('Guarda-Roupa'), size: 26),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: OutlinedTitle(tr('Guarda-Roupa'), size: 26),
+              ),
             ),
           ),
         ),
-        _Estrelas(_store.stars),
+        // Never wider than this: once, on the test browser, the count was
+        // measured huge and squeezed the title into one letter per line.
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 104),
+          child: _Estrelas(_store.stars),
+        ),
         const SizedBox(width: 8),
         RoundIconButton(
           icon: Icons.collections_bookmark_rounded,
@@ -666,7 +674,14 @@ class _Estrelas extends StatelessWidget {
         children: [
           const Icon(Icons.star_rounded, color: Palette.accent, size: 20),
           const SizedBox(width: 3),
-          Text(formatInt(n), style: displayText(16, color: Palette.text)),
+          Flexible(
+            child: Text(
+              formatInt(n),
+              maxLines: 1,
+              softWrap: false,
+              style: displayText(16, color: Palette.text),
+            ),
+          ),
         ],
       ),
     ),

@@ -50,6 +50,38 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     expect((await state(page)).status).toBe('playing');
   });
 
+  test('Blitz: quando o tempo acaba, +10 segundos uma vez por partida', async ({ page }) => {
+    await openApp(page, { level: 10, seen_opened_blitz: true });
+    await page.getByRole('button', { name: 'Modos' }).click();
+    await page.getByRole('button', { name: /^Blitz 60s/ }).click();
+    await waitForState(page, (s) => s.mode === 'blitz' && s.status === 'playing', 'blitz aberto');
+    expect(await playMove(page)).toBe(true);
+
+    // Leva o relógio ao fim sem esperar um minuto.
+    await page.evaluate(() => (window as any).__bb.blitzSeconds(1));
+    await expect(page.getByText(/^(Fim do Blitz!|Novo Recorde Blitz!)$/)).toBeVisible({ timeout: 10_000 });
+    const extra = page.getByRole('button', { name: '+10 segundos' });
+    await expect(extra).toBeVisible();
+    await expect(page.getByText('Assista a um vídeo e continue')).toBeVisible();
+    await extra.click(); // tela de anúncio de teste, depois o prêmio
+
+    const s = await waitForState(page, (x) => x.status === 'playing', 'voltou a jogar', 10_000);
+    expect(s.blitzExtraUsed).toBe(true);
+    expect(s.blitzSecondsLeft).toBeGreaterThan(0);
+    expect(s.blitzSecondsLeft).toBeLessThanOrEqual(10);
+    // O cartão final precisa sair da frente antes da próxima jogada.
+    await expect(extra).toBeHidden();
+    // Máquinas lentas gastam os 10 s só para desenhar: folga para a jogada.
+    await page.evaluate(() => (window as any).__bb.blitzSeconds(30));
+    expect(await playMove(page)).toBe(true);
+
+    // Acabou de novo: não oferece outra vez.
+    await page.evaluate(() => (window as any).__bb.blitzSeconds(1));
+    await expect(page.getByText(/^(Fim do Blitz!|Novo Recorde Blitz!)$/)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('button', { name: 'Jogar de novo' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '+10 segundos' })).toHaveCount(0);
+  });
+
   test('modo Duelo abre por link com semente e meta do rival', async ({ page }) => {
     // Abre direto pelo link compartilhado ?duelo=7777&p=300
     await page.goto('/?duelo=7777&p=300');
