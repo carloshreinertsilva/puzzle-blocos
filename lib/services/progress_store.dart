@@ -651,6 +651,31 @@ class ProgressStore {
   Future<void> setRankingEnviado(String quadro, String periodo, String v) =>
       _prefs.setString('rkEnviado_${quadro}_$periodo', v);
 
+  /// The player's place on a board when the ranking was last opened this
+  /// week, or null.
+  int? rankingVisto(String quadro, int semana) {
+    final v = (_prefs.getString('rkVisto_$quadro') ?? '').split(':');
+    if (v.length != 2 || int.tryParse(v[0]) != semana) return null;
+    return int.tryParse(v[1]);
+  }
+
+  Future<void> setRankingVisto(String quadro, int semana, int posicao) =>
+      _prefs.setString('rkVisto_$quadro', '$semana:$posicao');
+
+  // --- What is new (core/novidades.dart) ---
+
+  /// The newest edition of news already told to the player (-1: none).
+  int get novidadesVistas => _prefs.getInt('novidadesVistas') ?? -1;
+  Future<void> setNovidadesVistas(int edicao) =>
+      _prefs.setInt('novidadesVistas', edicao);
+
+  /// News not opened yet (DestinoNovidade names): each keeps a dot on the
+  /// menu until the player goes there.
+  List<String> get novidadesPendentes =>
+      _prefs.getStringList('novidadesPendentes') ?? const [];
+  Future<void> setNovidadesPendentes(List<String> v) =>
+      _prefs.setStringList('novidadesPendentes', v);
+
   /// Lines the player reported: hidden on this phone from then on.
   List<String> get rankingDenunciados =>
       _prefs.getStringList('rkDenunciados') ?? const [];

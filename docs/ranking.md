@@ -16,6 +16,17 @@ aparece: o botão Ranking mostra as estatísticas do jogador.
   `lib/screens/ranking_screen.dart` (a tela). Regras em `firestore.rules`,
   testadas em `tool/firestore/` (`npm test`).
 
+## O ranking fora da tela do ranking
+
+- **No menu:** o cartão Ranking mostra a melhor posição do jogador na semana
+  ("14º na semana"), com uma seta verde se ele subiu ou vermelha se caiu desde
+  a última vez que abriu o ranking.
+- **No fim da partida** (Infinito, Blitz e Torre): "Você está em 14º no ranking
+  da semana. Faltam 230 pontos para subir de posição!".
+- Não aparece nome de outro jogador nesses lugares, só a posição.
+- Código: `lib/services/ranking_resumo.dart` e `lib/ui/posicao_ranking.dart`.
+  Cada posição custa 2 leituras no Firestore e fica guardada por 4 minutos.
+
 ## Moderação (pelo console do Firebase)
 
 Tudo em **Firestore Database → Dados**:

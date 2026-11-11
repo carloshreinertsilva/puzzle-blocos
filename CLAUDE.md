@@ -14,6 +14,11 @@ o `README.md`.
   nos 4 tamanhos de tela). A `main` publica sozinha na Vercel
   (https://capiblocks.vercel.app), então `main` precisa estar sempre boa.
 - Textos para o usuário e mensagens de commit/PR em português.
+- **Novidade visível ao jogador nunca sai calada.** Todo PR que cria ou muda
+  algo que o jogador vê acrescenta uma entrada em `lib/core/novidades.dart`
+  (com o destino do botão "Ver agora" e as traduções). Ao fechar uma versão,
+  as notas das lojas em `distribution/whatsnew/` saem dessa mesma lista. Veja
+  `docs/novidades.md`.
 - **Lojas:** o envio é pelos workflows `iOS: TestFlight` e `Android: Play
   Store` (Actions → Run workflow). Teste interno e TestFlight podem ser
   enviados sem perguntar. **Produção na Google Play só depois de o Carlos

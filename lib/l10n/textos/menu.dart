@@ -2,6 +2,29 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enMenu = {
+  // Novidades e posição no ranking.
+  'O que há de novo': "What's new",
+  'Ver agora': 'See it now',
+  'Ver agora: {titulo}': 'See it now: {titulo}',
+  'Ranking de todo mundo': 'One ranking for everyone',
+  'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': "Android and iPhone now share the same ranking. See where you stand this week!",
+  'Torre do Capi nova': "Capi's Tower, renewed",
+  'A subida agora vai até a Lua, com o Capi torcendo por você.':
+      'The climb now goes all the way to the Moon, with Capi cheering you on.',
+  '{n}º na semana': '#{n} this week',
+  'Entre na disputa!': 'Join the race!',
+  'subiu': 'went up',
+  'caiu': 'went down',
+  'novidade': 'new',
+  'Você está em {n}º no ranking da semana.':
+      "You're #{n} in this week's ranking.",
+  'Você lidera a semana!': "You're leading the week!",
+  'Falta {n} ponto para subir de posição!': '{n} more point to move up!',
+  'Faltam {n} pontos para subir de posição!': '{n} more points to move up!',
+  'Falta {n} andar para subir de posição!': '{n} more floor to move up!',
+  'Faltam {n} andares para subir de posição!': '{n} more floors to move up!',
+  'Falta {n} fase para subir de posição!': '{n} more level to move up!',
+  'Faltam {n} fases para subir de posição!': '{n} more levels to move up!',
   // O ranking do jogo.
   'Denunciar nome': 'Report name',
   'O nome "{nome}" é ofensivo? Ele some da sua lista e vai para a nossa moderação.': 'Is the name "{nome}" offensive? It leaves your list and goes to our moderation.',
@@ -275,6 +298,35 @@ const Map<String, String> enMenu = {
 };
 
 const Map<String, String> esMenu = {
+  // Novidades e posição no ranking.
+  'O que há de novo': 'Novedades',
+  'Ver agora': 'Ver ahora',
+  'Ver agora: {titulo}': 'Ver ahora: {titulo}',
+  'Ranking de todo mundo': 'Un ranking para todos',
+  'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': 'Android y iPhone ahora compiten en el mismo ranking. ¡Mira tu posición de la semana!',
+  'Torre do Capi nova': 'Nueva Torre de Capi',
+  'A subida agora vai até a Lua, com o Capi torcendo por você.':
+      'La subida ahora llega hasta la Luna, con Capi animándote.',
+  '{n}º na semana': '{n}.º en la semana',
+  'Entre na disputa!': '¡Entra en la competencia!',
+  'subiu': 'subió',
+  'caiu': 'bajó',
+  'novidade': 'novedad',
+  'Você está em {n}º no ranking da semana.':
+      'Estás en el puesto {n} del ranking de la semana.',
+  'Você lidera a semana!': '¡Lideras la semana!',
+  'Falta {n} ponto para subir de posição!':
+      '¡Falta {n} punto para subir de puesto!',
+  'Faltam {n} pontos para subir de posição!':
+      '¡Faltan {n} puntos para subir de puesto!',
+  'Falta {n} andar para subir de posição!':
+      '¡Falta {n} piso para subir de puesto!',
+  'Faltam {n} andares para subir de posição!':
+      '¡Faltan {n} pisos para subir de puesto!',
+  'Falta {n} fase para subir de posição!':
+      '¡Falta {n} nivel para subir de puesto!',
+  'Faltam {n} fases para subir de posição!':
+      '¡Faltan {n} niveles para subir de puesto!',
   // O ranking do jogo.
   'Denunciar nome': 'Reportar nombre',
   'O nome "{nome}" é ofensivo? Ele some da sua lista e vai para a nossa moderação.': '¿El nombre "{nome}" es ofensivo? Desaparece de tu lista y va a nuestra moderación.',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../ads/ad_service.dart';
+import '../core/ranking.dart';
 import '../services/musica.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
@@ -10,6 +11,7 @@ import '../tower/tower_controller.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
+import '../ui/posicao_ranking.dart';
 import '../ui/tower_painter.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -375,6 +377,11 @@ class _TowerScreenState extends State<TowerScreen>
                 ),
               ),
             ],
+          ),
+          PosicaoNoRanking(
+            key: ValueKey(floors),
+            store: widget.services.store,
+            quadro: Quadro.torre,
           ),
           const SizedBox(height: 14),
           Row(
