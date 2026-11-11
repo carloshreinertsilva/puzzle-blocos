@@ -10,6 +10,7 @@ import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
 import '../core/game_session.dart';
+import '../core/ranking.dart';
 import '../services/musica.dart';
 import '../services/analytics.dart';
 import '../services/duelo_link.dart';
@@ -24,6 +25,7 @@ import '../ui/level_text.dart';
 import '../ui/capi.dart';
 import '../ui/dica_paga.dart';
 import '../ui/palette.dart';
+import '../ui/posicao_ranking.dart';
 import '../ui/typography.dart';
 import '../core/board.dart';
 import '../services/progress_store.dart';
@@ -650,6 +652,11 @@ class _GameScreenState extends State<GameScreen> {
           best: controller.bestScore,
           newBest: controller.newBest,
           starsGained: controller.starsGained,
+          ranking: PosicaoNoRanking(
+            key: ValueKey(s),
+            store: widget.services.store,
+            quadro: Quadro.blitz,
+          ),
           onRetry: _retry,
           onExit: _exit,
           onShareDuel: () => _shareDuelLink(s.score),
@@ -694,6 +701,11 @@ class _GameScreenState extends State<GameScreen> {
           best: controller.bestScore,
           newBest: controller.newBest,
           starsGained: controller.starsGained,
+          ranking: PosicaoNoRanking(
+            key: ValueKey(s),
+            store: widget.services.store,
+            quadro: Quadro.blitz,
+          ),
           onRetry: _retry,
           onExit: _exit,
           onShareDuel: () => _shareDuelLink(s.score),
@@ -707,6 +719,13 @@ class _GameScreenState extends State<GameScreen> {
           newBest: controller.newBest,
           canRevive: controller.canRevive,
           videoRevive: widget.services.ads.hasVideoAds,
+          ranking: controller.endless
+              ? PosicaoNoRanking(
+                  key: ValueKey(s),
+                  store: widget.services.store,
+                  quadro: Quadro.infinito,
+                )
+              : null,
           onRevive: _revive,
           onRetry: _retry,
           onExit: _onboarding ? null : _exit,
@@ -1735,7 +1754,11 @@ class _LoseCard extends StatelessWidget {
     required this.onRetry,
     required this.onExit,
     this.videoRevive = true,
+    this.ranking,
   });
+
+  /// The player's place on the week's board, under the score.
+  final Widget? ranking;
 
   final bool endless;
 
@@ -1791,6 +1814,7 @@ class _LoseCard extends StatelessWidget {
           style: _bodyStyle,
           textAlign: TextAlign.center,
         ),
+        ?ranking,
         const SizedBox(height: 24),
         if (canRevive) ...[
           ChunkyButton(
@@ -1984,7 +2008,11 @@ class _DuelTargetChip extends StatelessWidget {
 }
 
 class _BlitzWinCard extends StatelessWidget {
+  /// The place on the week's board, under the score.
+  final Widget? ranking;
+
   const _BlitzWinCard({
+    this.ranking,
     required this.score,
     required this.best,
     required this.newBest,
@@ -2040,6 +2068,7 @@ class _BlitzWinCard extends StatelessWidget {
               style: bodyText(14, color: Palette.textDim),
             ),
           ],
+          ?ranking,
           if (starsGained > 0) ...[
             const SizedBox(height: 10),
             Row(

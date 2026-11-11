@@ -23,6 +23,10 @@ abstract class RankingServidor {
   /// How many lines of board [id] have more than [pontos].
   Future<int> acima(String id, int pontos);
 
+  /// The lowest score of board [id] above [pontos]: what it takes to go
+  /// up one place. Null when nobody is above.
+  Future<int?> proximo(String id, int pontos);
+
   Future<void> enviar(String id, EntradaRanking entrada);
 
   /// A player reports [denunciado]'s name on board [id].
@@ -76,6 +80,17 @@ class RankingFirebase implements RankingServidor {
         .count()
         .get();
     return r.count ?? 0;
+  }
+
+  @override
+  Future<int?> proximo(String id, int pontos) async {
+    final r = await _jogadores(id)
+        .where('pontos', isGreaterThan: pontos)
+        .orderBy('pontos')
+        .limit(1)
+        .get();
+    if (r.docs.isEmpty) return null;
+    return (r.docs.first.data()['pontos'] as num?)?.toInt();
   }
 
   @override
@@ -170,6 +185,15 @@ class RankingDeTeste implements RankingServidor {
   @override
   Future<int> acima(String id, int pontos) async =>
       quadros[id]?.values.where((e) => e.pontos > pontos).length ?? 0;
+
+  @override
+  Future<int?> proximo(String id, int pontos) async {
+    final acima = [
+      for (final e in quadros[id]?.values ?? const <EntradaRanking>[])
+        if (e.pontos > pontos) e.pontos,
+    ]..sort();
+    return acima.isEmpty ? null : acima.first;
+  }
 
   @override
   Future<void> enviar(String id, EntradaRanking entrada) async {
