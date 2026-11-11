@@ -129,7 +129,12 @@ class GameController extends ChangeNotifier {
   Timer? _capiTimer;
 
   /// After this long without a move, Capi suggests one.
+  /// Without a move for this long, the hint lamp starts to pulse.
   static const idleHintAfter = Duration(seconds: 10);
+
+  /// A little later the lamp opens and asks "want a hint?". It never
+  /// covers the pieces: a player who is just thinking is left alone.
+  static const hintOfferAfter = Duration(seconds: 15);
   Timer? _idleTimer;
   (int, int, int)? _idleHint;
 
@@ -138,8 +143,18 @@ class GameController extends ChangeNotifier {
   static const freeIdleHints = 1;
   int idleHints = 0;
 
-  /// Capi is offering a paid hint (shown until the player moves).
+  /// The hint lamp is pulsing (until the player moves).
+  bool hintNudge = false;
+
+  /// The hint lamp is open, asking (until the player moves).
   bool hintOffer = false;
+
+  /// Whether this game's free hint is still there.
+  bool get freeHintLeft => idleHints < freeIdleHints;
+
+  /// The first levels teach the game: there Capi shows the move by
+  /// himself instead of waiting to be asked.
+  bool get _autoHint => mode == GameMode.levels && level.number <= 3;
   bool _warned = false;
   final _rng = Random();
 
@@ -195,9 +210,10 @@ class GameController extends ChangeNotifier {
   /// the idle clock again.
   void noteActivity() {
     _idleTimer?.cancel();
-    if (_idleHint != null || hintOffer) {
+    if (_idleHint != null || hintOffer || hintNudge) {
       _idleHint = null;
       hintOffer = false;
+      hintNudge = false;
       if (capiReaction == CapiReaction.hint) capiReaction = null;
       notifyListeners();
     }
@@ -206,18 +222,25 @@ class GameController extends ChangeNotifier {
       if (!playing) return noteActivity();
       final move = suggestMove(session.board, session.tray);
       if (move == null) return;
-      if (idleHints >= freeIdleHints) {
+      if (_autoHint && freeHintLeft) return _showHint(move);
+      hintNudge = true;
+      notifyListeners();
+      _idleTimer = Timer(hintOfferAfter - idleHintAfter, () {
+        if (!playing) return noteActivity();
         hintOffer = true;
         notifyListeners();
-        return;
-      }
-      _showHint(move);
+      });
     });
   }
+
+  /// The hint lamp was tapped: shows this game's free hint, if it is
+  /// still there. False when a hint now has to be paid for.
+  bool showFreeHint() => freeHintLeft && showPaidHint();
 
   void _showHint((int, int, int) move) {
     idleHints++;
     hintOffer = false;
+    hintNudge = false;
     _idleHint = move;
     _react(
       CapiReaction.hint,
@@ -289,6 +312,7 @@ class GameController extends ChangeNotifier {
     capiReaction = null;
     idleHints = 0;
     hintOffer = false;
+    hintNudge = false;
     _idleHint = null;
     if (tutorial) _loadTutorialStep(0);
     noteActivity();
