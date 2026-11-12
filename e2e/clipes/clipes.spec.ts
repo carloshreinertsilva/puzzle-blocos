@@ -245,34 +245,48 @@ test('blitz-final', async ({ page }) => {
   });
 });
 
+// A Torre do Capi: da vila até passar do recorde e o pôr do sol, com
+// acertos em sequência, cortes, um "por um fio" e o fim com a torre inteira.
 test('torre', async ({ page }) => {
-  await openApp(page, { level: 30, seen_opened_tower: true, towerBestHeight: 12 });
+  await openApp(page, { level: 30, seen_opened_tower: true, towerBestHeight: 12, stars: 340 });
+  await page.getByRole('button', { name: 'Modos' }).click();
+  await page.getByRole('button', { name: /^Torre do Capi/ }).click();
+  await waitForState(page, (s) => s.screen === 'tower', 'torre aberta');
+  const torre = async () => (await state(page)).tower!;
+  // O que o robô faz em cada andar: P = perfeito, c = corte, f = por um fio.
+  const plano = 'PPPcPPPPPPPPPPcPPPfPPPPP';
   await gravar(page, 'torre', async (g) => {
     g.legenda('Empilha <b>sem errar</b>', 2400);
     await g.esperar(700);
-    await g.tocar(page.getByRole('button', { name: 'Modos' }), 500);
-    await g.tocar(page.getByRole('button', { name: /^Torre do Capi/ }));
-    await g.ate(naTela(page, (s) => s.screen === 'tower' && !!s.tower?.playing));
-    await g.esperar(900);
-    // O botão de pôr o bloco recebe o toque do dedo; o andar cai pela ponte
-    // (perfeito ou quase), que acerta o tempo sem depender da sorte.
-    const botao = await page.getByRole('button', { name: 'Colocar Bloco' }).boundingBox();
-    const x = botao!.x + botao!.width / 2;
-    const y = botao!.y + botao!.height / 2;
-    const andares = [true, true, true, false, true, true, true, true, false, true, true, true];
-    for (const perfeito of andares) {
-      await g.apertar(x, y, async () => {
-        await page.evaluate((p) => (window as any).__bb.placeTower(p), perfeito);
-        await g.esperar(120);
-      });
-      await g.esperar(650);
+    for (const jogada of plano) {
+      for (let q = 0; q < 400; q++) {
+        await g.quadro();
+        const t = await torre();
+        const longe = Math.abs(t.offset);
+        if (jogada === 'P' && longe < 0.45) {
+          // Encaixe perfeito (a ponte ajusta os últimos milímetros).
+          await g.apertar(180, 420, () =>
+            page.evaluate(() => (window as any).__bb.placeTower(true)),
+          );
+          break;
+        }
+        const alvo = jogada === 'c' ? [0.45, 0.95] : [t.room * 0.62, t.room * 0.9];
+        if (jogada !== 'P' && longe > alvo[0] && longe < alvo[1]) {
+          await g.apertar(180, 420, () => page.mouse.click(180, 420));
+          break;
+        }
+      }
+      await g.esperar(260);
     }
-    // O último erra feio: a torre acaba e aparece o resultado.
-    await g.apertar(x, y, async () => {
-      await page.evaluate(() => (window as any).__bb.missTower());
-      await g.esperar(120);
-    });
-    await g.ate(naTela(page, (s) => s.tower?.gameOver === true));
-    await g.esperar(2200);
+    // Erra de propósito: o bloco passa direto.
+    for (let q = 0; q < 400; q++) {
+      await g.quadro();
+      const t = await torre();
+      if (Math.abs(t.offset) > t.room + 0.3) {
+        await g.apertar(180, 420, () => page.mouse.click(180, 420));
+        break;
+      }
+    }
+    await g.esperar(4200);
   });
 });

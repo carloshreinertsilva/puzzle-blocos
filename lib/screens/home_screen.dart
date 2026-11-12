@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 
 import '../core/convites.dart';
+import '../core/novidades.dart';
 import '../core/passe.dart';
 import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
@@ -23,6 +24,8 @@ import '../services/convites_servidor.dart';
 import '../services/jogo_salvo.dart';
 import '../services/musica.dart';
 import '../services/placares.dart';
+import '../services/ranking_resumo.dart';
+import '../services/ranking_servidor.dart';
 import '../services/progress_store.dart';
 import '../testing/test_bridge.dart';
 import '../ui/capi.dart';
@@ -36,7 +39,9 @@ import '../shop/produtos.dart';
 import 'game_screen.dart';
 import 'convites_sheet.dart';
 import 'loja_sheet.dart';
+import 'novidades_dialog.dart';
 import 'passe_sheet.dart';
+import 'ranking_screen.dart';
 import 'presente_dialog.dart';
 import 'obra_screen.dart';
 import 'settings_sheet.dart';
@@ -70,8 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.services.feedback.musica.tocar(Trilha.menu);
     _talvezSugerir();
     // Let the menu show first, then the gift (and any update) over it.
+    unawaited(_lerPosicao());
     _abertura = Timer(const Duration(milliseconds: 600), () async {
       await _presenteDoDia();
+      await _novidadesDaVersao();
       await _conviteNaAbertura();
       if (mounted) {
         await Avisos.verificarAtualizacao(context, widget.services.store);
@@ -190,6 +197,83 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) setState(() {});
   }
 
+  /// The first time the game opens after an update: what is new, each
+  /// with a button that goes straight to it. Whatever is not opened keeps
+  /// a dot on the menu.
+  Future<void> _novidadesDaVersao() async {
+    final store = widget.services.store;
+    if (!mounted || _news.isNotEmpty || !store.hasSeen('menu')) return;
+    final vistas = store.novidadesVistas;
+    if (vistas >= Novidades.atual) return;
+    // Someone who just arrived has nothing "new" to be told.
+    final primeira = store.firstOpenAt;
+    final novato =
+        vistas < 0 &&
+        (primeira == null ||
+            DateTime.now().difference(primeira) < const Duration(days: 1));
+    await store.setNovidadesVistas(Novidades.atual);
+    if (novato) return;
+    final lista = Novidades.pendentes(vistas);
+    if (lista.isEmpty) return;
+    await store.setNovidadesPendentes(
+      {
+        ...store.novidadesPendentes,
+        for (final n in lista) n.destino.name,
+      }.toList(),
+    );
+    if (!mounted) return;
+    setState(() {});
+    Analytics.event('novidades', {'edicao': Novidades.atual});
+    final destino = await mostrarNovidades(context, lista);
+    if (destino == null || !mounted) return;
+    Analytics.event('novidade_aberta', {'destino': destino.name});
+    await _irPara(destino);
+  }
+
+  Future<void> _irPara(DestinoNovidade destino) => switch (destino) {
+    DestinoNovidade.ranking => _openRanking(),
+    DestinoNovidade.torre => _openTower(),
+    DestinoNovidade.missoes => _openDailyMissions(),
+    DestinoNovidade.guardaRoupa => _openWardrobe(),
+    DestinoNovidade.passe => _openPasse(),
+    DestinoNovidade.loja => _openLoja(),
+  };
+
+  /// Whether [destino] has news the player has not opened yet.
+  bool _pendente(DestinoNovidade destino) =>
+      widget.services.store.novidadesPendentes.contains(destino.name);
+
+  /// The player went to [destino]: its dot goes away.
+  void _abriu(DestinoNovidade destino) {
+    final store = widget.services.store;
+    if (!_pendente(destino)) return;
+    unawaited(
+      store.setNovidadesPendentes([
+        for (final d in store.novidadesPendentes)
+          if (d != destino.name) d,
+      ]),
+    );
+  }
+
+  /// The player's best place on this week's boards, for the Ranking card.
+  PosicaoRanking? _posicao;
+
+  Future<void> _lerPosicao() async {
+    final p = await RankingResumo.melhor(widget.services.store);
+    if (mounted) setState(() => _posicao = p);
+  }
+
+  String _rankingSubtitulo(ProgressStore store) {
+    final p = _posicao;
+    if (p != null) return tr('{n}º na semana', {'n': p.posicao});
+    if (RankingServidor.atual != null && store.rankingNome == null) {
+      return tr('Entre na disputa!');
+    }
+    return store.bestScore > 0
+        ? tr('Recorde {n}', {'n': formatInt(store.bestScore)})
+        : tr('Placares');
+  }
+
   @override
   void dispose() {
     widget.services.loja.removeListener(_lojaMudou);
@@ -203,6 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openLoja() async {
+    _abriu(DestinoNovidade.loja);
     await showLoja(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -240,6 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openWardrobe() async {
     Analytics.event('screen_open', {'screen': 'wardrobe'});
     widget.services.feedback.click();
+    _abriu(DestinoNovidade.guardaRoupa);
     await WardrobeScreen.show(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -247,6 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openDailyMissions() async {
     Analytics.event('screen_open', {'screen': 'missions'});
     widget.services.feedback.click();
+    _abriu(DestinoNovidade.missoes);
     await DailyMissionsDialog.show(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -308,6 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Level, record and streak may have changed, and modes may unlock.
     unawaited(Placares.enviar(widget.services.store));
+    unawaited(RankingSync.enviar(widget.services.store));
     unawaited(JogoSalvo.salvar(widget.services.store));
     // A friend's invite counts once this player reaches level 5.
     final store = widget.services.store;
@@ -318,6 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
+    unawaited(_lerPosicao());
   }
 
   Future<void> _openTower() async {
@@ -325,6 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Analytics.event('screen_open', {'screen': 'tower'});
     widget.services.feedback.click();
     widget.services.store.markSeen('opened_tower');
+    _abriu(DestinoNovidade.torre);
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 280),
@@ -334,6 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     unawaited(Placares.enviar(widget.services.store));
+    unawaited(RankingSync.enviar(widget.services.store));
     unawaited(JogoSalvo.salvar(widget.services.store));
     // A friend's invite counts once this player reaches level 5.
     final store = widget.services.store;
@@ -344,6 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
+    unawaited(_lerPosicao());
   }
 
   Widget _towerCard(ProgressStore store) {
@@ -365,7 +457,9 @@ class _HomeScreenState extends State<HomeScreen> {
       subtitle: store.towerBestHeight > 0
           ? tr('Recorde {n} andares', {'n': store.towerBestHeight})
           : tr('Suba em 2.5D'),
-      badge: store.hasSeen('opened_tower') ? null : tr('NOVO'),
+      badge: store.hasSeen('opened_tower') && !_pendente(DestinoNovidade.torre)
+          ? null
+          : tr('NOVO'),
       onTap: _openTower,
     );
   }
@@ -702,15 +796,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _openPasse() async {
     widget.services.feedback.click();
+    _abriu(DestinoNovidade.passe);
     await showPasse(context, widget.services);
     if (mounted) setState(() {});
   }
 
-  /// The leaderboards (Google Play Games, Game Center); on the web, where
-  /// there are none, the player's own records.
+  /// The game's own ranking; where there is none (the web), the stores'
+  /// boards or, without them, the player's own records.
   Future<void> _openRanking() async {
     Analytics.event('screen_open', {'screen': 'ranking'});
     widget.services.feedback.click();
+    _abriu(DestinoNovidade.ranking);
+    if (RankingServidor.atual != null) {
+      await RankingScreen.show(context, widget.services);
+      // The places were seen: the arrows start over from here.
+      await RankingResumo.visto(widget.services.store);
+      if (mounted) setState(() {});
+      unawaited(_lerPosicao());
+      return;
+    }
     if (Placares.ativo &&
         await Placares.mostrar(widget.services.store) &&
         mounted) {
@@ -870,6 +974,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 cor: const Color(0xFFE8590C),
                                 titulo: tr('Guarda-Roupa'),
                                 subtitulo: tr('Vista o Capi'),
+                                pendente: _pendente(
+                                  DestinoNovidade.guardaRoupa,
+                                ),
                                 onTap: _openWardrobe,
                               ),
                             ),
@@ -880,6 +987,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 cor: const Color(0xFF9C36B5),
                                 titulo: tr('Passe do Capi'),
                                 subtitulo: _passeSubtitulo(store),
+                                pendente: _pendente(DestinoNovidade.passe),
                                 onTap: _openPasse,
                               ),
                             ),
@@ -889,11 +997,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icons.emoji_events_rounded,
                                 cor: const Color(0xFF1971C2),
                                 titulo: tr('Ranking'),
-                                subtitulo: store.bestScore > 0
-                                    ? tr('Recorde {n}', {
-                                        'n': formatInt(store.bestScore),
-                                      })
-                                    : tr('Placares'),
+                                subtitulo: _rankingSubtitulo(store),
+                                pendente: _pendente(DestinoNovidade.ranking),
+                                seta: _posicao == null
+                                    ? 0
+                                    : _posicao!.caiu
+                                    ? -1
+                                    : _posicao!.subiu
+                                    ? 1
+                                    : 0,
                                 onTap: _openRanking,
                               ),
                             ),
@@ -1254,6 +1366,8 @@ class _Destaque extends StatelessWidget {
     required this.titulo,
     required this.subtitulo,
     required this.onTap,
+    this.pendente = false,
+    this.seta = 0,
   });
 
   final IconData icon;
@@ -1262,18 +1376,31 @@ class _Destaque extends StatelessWidget {
   final String subtitulo;
   final VoidCallback onTap;
 
+  /// Something new here that the player has not opened: a dot, like a
+  /// notification.
+  final bool pendente;
+
+  /// By the subtitle: 1 for a green arrow up, -1 for a red one down.
+  final int seta;
+
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
       label: titulo,
-      hint: subtitulo,
+      hint: [
+        subtitulo,
+        if (seta > 0) tr('subiu'),
+        if (seta < 0) tr('caiu'),
+        if (pendente) tr('novidade'),
+      ].join(', '),
       excludeSemantics: true,
       onTap: onTap,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           height: 62,
+          foregroundDecoration: pendente ? const _Bolinha() : null,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -1310,10 +1437,25 @@ class _Destaque extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        subtitulo,
-                        maxLines: 1,
-                        style: bodyText(11, color: const Color(0xDDFFFFFF)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            subtitulo,
+                            maxLines: 1,
+                            style: bodyText(11, color: const Color(0xDDFFFFFF)),
+                          ),
+                          if (seta != 0)
+                            Icon(
+                              seta > 0
+                                  ? Icons.arrow_drop_up_rounded
+                                  : Icons.arrow_drop_down_rounded,
+                              size: 18,
+                              color: seta > 0
+                                  ? const Color(0xFF8CE99A)
+                                  : const Color(0xFFFF6B6B),
+                            ),
+                        ],
                       ),
                     ),
                   ],
@@ -1328,6 +1470,24 @@ class _Destaque extends StatelessWidget {
 }
 
 /// Capi's balloon over his head when he shows himself in something new.
+/// The red dot on the top right corner of a card with something new.
+class _Bolinha extends Decoration {
+  const _Bolinha();
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) => _BolinhaPainter();
+}
+
+class _BolinhaPainter extends BoxPainter {
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    final size = configuration.size!;
+    final centro = offset + Offset(size.width - 7, 7);
+    canvas.drawCircle(centro, 6.5, Paint()..color = Colors.white);
+    canvas.drawCircle(centro, 5, Paint()..color = const Color(0xFFEF4444));
+  }
+}
+
 class _SugestaoBalao extends StatelessWidget {
   const _SugestaoBalao({required this.texto, required this.onTap});
   final String texto;

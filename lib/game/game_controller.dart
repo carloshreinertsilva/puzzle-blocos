@@ -10,6 +10,7 @@ import '../core/game_session.dart';
 import '../core/hint.dart';
 import '../core/level.dart';
 import '../core/missions.dart';
+import '../core/ranking.dart';
 import '../core/shapes.dart';
 import '../l10n/idioma.dart';
 import '../services/analytics.dart';
@@ -56,6 +57,36 @@ class GameController extends ChangeNotifier {
 
   /// Blitz mode: remaining time in seconds.
   int blitzSecondsLeft = 60;
+
+  /// The Blitz clock never goes past this, bonuses and video included.
+  static const blitzMaxSeconds = 90;
+
+  /// Seconds a Blitz video adds once the clock has run out.
+  static const blitzExtraSeconds = 10;
+
+  /// Seconds the last Blitz clear added (0: none yet), and a counter that
+  /// changes with each bonus so the clock can show "+3s" every time.
+  int blitzLastBonus = 0;
+  int blitzBonusTick = 0;
+
+  /// Whether this Blitz already used its video for extra time.
+  bool blitzExtraUsed = false;
+
+  /// Blitz stars already paid this run (an extended run pays only the rest).
+  int _blitzStarsGiven = 0;
+
+  /// Seconds a Blitz clear adds: more for clearing several lines at once,
+  /// and one more when it keeps a combo going.
+  static int blitzTimeBonus({required int lines, required int combo}) {
+    if (lines <= 0) return 0;
+    final base = switch (lines) {
+      1 => 1,
+      2 => 3,
+      _ => 5,
+    };
+    return base + (combo >= 2 ? 1 : 0);
+  }
+
   Timer? _blitzTimer;
 
   /// After a win: the missions this attempt completed, what the level had
@@ -111,6 +142,7 @@ class GameController extends ChangeNotifier {
   Timer? _outcomeTimer;
   Timer? _avaliacaoTimer;
   bool _counted = false;
+  DateTime _startedAt = DateTime.now();
 
   /// Tutorial only: the current step (== steps.length once finished), what
   /// Capi says, and whether a step change is on its way.
@@ -128,7 +160,12 @@ class GameController extends ChangeNotifier {
   Timer? _capiTimer;
 
   /// After this long without a move, Capi suggests one.
+  /// Without a move for this long, the hint lamp starts to pulse.
   static const idleHintAfter = Duration(seconds: 10);
+
+  /// A little later the lamp opens and asks "want a hint?". It never
+  /// covers the pieces: a player who is just thinking is left alone.
+  static const hintOfferAfter = Duration(seconds: 15);
   Timer? _idleTimer;
   (int, int, int)? _idleHint;
 
@@ -137,8 +174,18 @@ class GameController extends ChangeNotifier {
   static const freeIdleHints = 1;
   int idleHints = 0;
 
-  /// Capi is offering a paid hint (shown until the player moves).
+  /// The hint lamp is pulsing (until the player moves).
+  bool hintNudge = false;
+
+  /// The hint lamp is open, asking (until the player moves).
   bool hintOffer = false;
+
+  /// Whether this game's free hint is still there.
+  bool get freeHintLeft => idleHints < freeIdleHints;
+
+  /// The first levels teach the game: there Capi shows the move by
+  /// himself instead of waiting to be asked.
+  bool get _autoHint => mode == GameMode.levels && level.number <= 3;
   bool _warned = false;
   final _rng = Random();
 
@@ -194,9 +241,10 @@ class GameController extends ChangeNotifier {
   /// the idle clock again.
   void noteActivity() {
     _idleTimer?.cancel();
-    if (_idleHint != null || hintOffer) {
+    if (_idleHint != null || hintOffer || hintNudge) {
       _idleHint = null;
       hintOffer = false;
+      hintNudge = false;
       if (capiReaction == CapiReaction.hint) capiReaction = null;
       notifyListeners();
     }
@@ -205,18 +253,25 @@ class GameController extends ChangeNotifier {
       if (!playing) return noteActivity();
       final move = suggestMove(session.board, session.tray);
       if (move == null) return;
-      if (idleHints >= freeIdleHints) {
+      if (_autoHint && freeHintLeft) return _showHint(move);
+      hintNudge = true;
+      notifyListeners();
+      _idleTimer = Timer(hintOfferAfter - idleHintAfter, () {
+        if (!playing) return noteActivity();
         hintOffer = true;
         notifyListeners();
-        return;
-      }
-      _showHint(move);
+      });
     });
   }
+
+  /// The hint lamp was tapped: shows this game's free hint, if it is
+  /// still there. False when a hint now has to be paid for.
+  bool showFreeHint() => freeHintLeft && showPaidHint();
 
   void _showHint((int, int, int) move) {
     idleHints++;
     hintOffer = false;
+    hintNudge = false;
     _idleHint = move;
     _react(
       CapiReaction.hint,
@@ -265,7 +320,11 @@ class GameController extends ChangeNotifier {
     );
     bestScore = mode == GameMode.blitz ? store.blitzBestScore : store.bestScore;
     Analytics.event('level_start', {'mode': mode.name, 'level': config.number});
+    _startedAt = DateTime.now();
     blitzSecondsLeft = 60;
+    blitzLastBonus = 0;
+    blitzExtraUsed = false;
+    _blitzStarsGiven = 0;
     _blitzTimer?.cancel();
     if (mode == GameMode.blitz) {
       _startBlitzTimer();
@@ -288,6 +347,7 @@ class GameController extends ChangeNotifier {
     capiReaction = null;
     idleHints = 0;
     hintOffer = false;
+    hintNudge = false;
     _idleHint = null;
     if (tutorial) _loadTutorialStep(0);
     noteActivity();
@@ -419,8 +479,16 @@ class GameController extends ChangeNotifier {
     onPlaced?.call(result, piece);
 
     if (isBlitz && out.lines > 0) {
-      final bonus = out.lines >= 2 ? 3 : (result.combo >= 2 ? 2 : 1);
-      blitzSecondsLeft = min(75, blitzSecondsLeft + bonus);
+      final antes = blitzSecondsLeft;
+      blitzSecondsLeft = min(
+        blitzMaxSeconds,
+        blitzSecondsLeft +
+            blitzTimeBonus(lines: out.lines, combo: result.combo),
+      );
+      if (blitzSecondsLeft > antes) {
+        blitzLastBonus = blitzSecondsLeft - antes;
+        blitzBonusTick++;
+      }
     }
     if (isChallenge && !duelWon && session.score >= (duelTargetScore ?? 1000)) {
       duelWon = true;
@@ -446,6 +514,10 @@ class GameController extends ChangeNotifier {
       'success': won ? 1 : 0,
       'score': session.score,
       'revived': session.revived ? 1 : 0,
+      'progress': progressPercent,
+      'moves': session.moves,
+      'seconds': DateTime.now().difference(_startedAt).inSeconds,
+      'attempt': session.failStreak + 1,
     });
     if (!_counted) {
       _counted = true;
@@ -453,7 +525,10 @@ class GameController extends ChangeNotifier {
     }
     switch (mode) {
       case GameMode.levels when won:
-        if (!isReplay) store.setLevel(level.number + 1);
+        if (!isReplay) {
+          store.setLevel(level.number + 1);
+          Ranking.marcar(store, Quadro.fases, 1, DateTime.now());
+        }
         store.setFailStreak(level.number, 0);
         _awardLevelStars();
         DailyMissionsManager.reportEvent(store, DailyMissionType.playLevels, 1);
@@ -470,16 +545,26 @@ class GameController extends ChangeNotifier {
         store.completeDaily(today);
       case GameMode.blitz:
         _blitzTimer?.cancel();
-        DailyMissionsManager.reportEvent(store, DailyMissionType.playBlitz, 1);
+        // A run extended with a video counts as the same game.
+        if (!blitzExtraUsed) {
+          DailyMissionsManager.reportEvent(
+            store,
+            DailyMissionType.playBlitz,
+            1,
+          );
+        }
         _payChallenge();
         // One star per 1,500 points, up to 3 a run and a few a day.
         final dueBlitz = min(3, session.score ~/ 1500);
+        final novas = dueBlitz - _blitzStarsGiven;
+        _blitzStarsGiven = max(_blitzStarsGiven, dueBlitz);
         store
-            .addStarsCapped('blitz', dueBlitz, minigameStarsPerDay, today)
+            .addStarsCapped('blitz', max(0, novas), minigameStarsPerDay, today)
             .then((n) {
               starsGained += n;
               if (!_disposed) notifyListeners();
             });
+        Ranking.marcar(store, Quadro.blitz, session.score, DateTime.now());
         if (session.score > store.blitzBestScore) {
           newBest = true;
           bestScore = session.score;
@@ -500,6 +585,7 @@ class GameController extends ChangeNotifier {
         starsGained = due - _endlessStarsGiven;
         _endlessStarsGiven = due;
         store.addStars(starsGained);
+        Ranking.marcar(store, Quadro.infinito, session.score, DateTime.now());
         if (session.score > store.bestScore) {
           newBest = true;
           bestScore = session.score;
@@ -534,6 +620,14 @@ class GameController extends ChangeNotifier {
     starsGained = Missions.count(all) - Missions.count(previousStarBits);
     store.setLevelStars(level.number, all);
     store.addStars(starsGained);
+  }
+
+  /// How close this attempt is, 0 to 100: the share of the level's goals
+  /// done or, without a goal (Endless, Blitz), of the record.
+  int get progressPercent {
+    if (!level.isEndless && !level.isBlitz) return session.goalPercent;
+    if (bestScore <= 0) return 100;
+    return (100 * session.score / bestScore).floor().clamp(0, 100);
   }
 
   bool get canRevive =>
@@ -730,6 +824,32 @@ class GameController extends ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  /// The Blitz clock ran out and this run may still buy more time with a
+  /// video: once per run, and never in a duel against a friend.
+  bool get canBlitzExtraTime =>
+      isBlitz &&
+      !isChallenge &&
+      !blitzExtraUsed &&
+      blitzSecondsLeft == 0 &&
+      session.status == SessionStatus.won;
+
+  /// The video was watched: the same run goes on for a few more seconds.
+  void addBlitzExtraTime() {
+    if (!canBlitzExtraTime) return;
+    blitzExtraUsed = true;
+    _outcomeTimer?.cancel();
+    showOutcome = false;
+    blitzSecondsLeft = min(blitzMaxSeconds, blitzExtraSeconds);
+    blitzLastBonus = blitzSecondsLeft;
+    blitzBonusTick++;
+    session.status = SessionStatus.playing;
+    feedback.revive();
+    Analytics.event('blitz_extra_time', {'score': session.score});
+    noteActivity();
+    _startBlitzTimer();
+    notifyListeners();
   }
 
   void _finishBlitz() {

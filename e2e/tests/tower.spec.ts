@@ -53,4 +53,38 @@ test.describe('Torre do Capi em 2.5D', () => {
     // Volta com segurança para o menu inicial
     await waitForState(page, (s) => s.screen === 'home', 'voltou ao menu inicial');
   });
+
+  test('zonas, recorde no meio da subida e "Continuar" com vídeo uma vez', async ({ page }) => {
+    await openApp(page, { level: 10, seen_opened_tower: true, towerBestHeight: 3 });
+    await page.getByRole('button', { name: 'Modos' }).click();
+    await page.getByRole('button', { name: /^Torre do Capi/ }).click();
+    await waitForState(page, (s) => s.screen === 'tower', 'entrou na torre');
+    // A meta do momento: o recorde, que vem antes das Nuvens.
+    await expect(page.getByText('Faltam 4 andares para o recorde')).toBeVisible();
+
+    const perfeito = () => page.evaluate(() => (window as any).__bb.placeTower(true));
+    for (let i = 0; i < 6; i++) await perfeito();
+    let s = await state(page);
+    expect(s.tower!.floors).toBe(6);
+    expect(s.tower!.zone).toBe('Vila do Capi');
+    await expect(page.getByText('Faltam 4 andares para: Nuvens')).toBeVisible();
+
+    // Erra: de 5 andares em diante dá para continuar com um vídeo, uma vez.
+    await page.evaluate(() => (window as any).__bb.missTower());
+    await waitForState(page, (x) => x.tower?.gameOver === true && x.tower.canContinue, 'fim da subida');
+    await expect(page.getByText('NOVO RECORDE!')).toBeVisible();
+    await page.getByRole('button', { name: 'Continuar a subida vendo um vídeo' }).click();
+    s = await waitForState(page, (x) => x.tower?.playing === true && x.tower.gameOver === false, 'continuou', 10_000);
+    expect(s.tower!.floors).toBe(6);
+
+    for (let i = 0; i < 4; i++) await perfeito();
+    s = await state(page);
+    expect(s.tower!.floors).toBe(10);
+    expect(s.tower!.zone).toBe('Nuvens');
+
+    await page.evaluate(() => (window as any).__bb.missTower());
+    await waitForState(page, (x) => x.tower?.gameOver === true, 'fim de vez');
+    await expect(page.getByRole('button', { name: 'Subir de Novo' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continuar a subida vendo um vídeo' })).toHaveCount(0);
+  });
 });

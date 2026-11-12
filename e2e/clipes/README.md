@@ -21,7 +21,8 @@ navegador de testes não desenha 60 qps sozinho), então cada clipe leva uns
 | `partida.mp4` | Uma fase do começo, jogada pelo robô |
 | `natal.mp4` | O Capi de Natal no menu e um combo no Infinito |
 | `blitz.mp4` | O Blitz 60s aberto pelo menu, jogado em ritmo rápido |
-| `torre.mp4` | A Torre do Capi subindo andar por andar até errar |
+| `blitz-final.mp4` | Os últimos segundos de um Blitz, com um combo lendário no fim |
+| `torre.mp4` | A Torre do Capi: sequência de acertos, as Nuvens, o recorde batido e a torre inteira no fim |
 
 Cada clipe abre com uma legenda curta no alto (o gancho dos primeiros
 segundos) e mostra um dedo onde a tela é tocada, para quem assiste ver de
