@@ -1,7 +1,15 @@
 import 'dart:math';
 
 /// Where a piece of news takes the player ("Ver agora").
-enum DestinoNovidade { ranking, torre, missoes, guardaRoupa, passe, loja }
+enum DestinoNovidade {
+  ranking,
+  torre,
+  missoes,
+  guardaRoupa,
+  passe,
+  loja,
+  blitz,
+}
 
 /// One thing that is new in the game, in Portuguese (shown through `tr`).
 class Novidade {
@@ -31,6 +39,14 @@ abstract final class Novidades {
         'Torre do Capi nova',
         'A subida agora vai até a Lua, com o Capi torcendo por você.',
         DestinoNovidade.torre,
+      ),
+    ],
+    2: [
+      Novidade(
+        'Blitz com tempo extra',
+        'Jogadas grandes dão segundos a mais e, quando o tempo acaba, um '
+            'vídeo dá +10 segundos.',
+        DestinoNovidade.blitz,
       ),
     ],
   };

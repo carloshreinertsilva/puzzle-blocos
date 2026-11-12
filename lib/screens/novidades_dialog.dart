@@ -13,6 +13,7 @@ IconData iconeDaNovidade(DestinoNovidade d) => switch (d) {
   DestinoNovidade.guardaRoupa => Icons.checkroom_rounded,
   DestinoNovidade.passe => Icons.military_tech_rounded,
   DestinoNovidade.loja => Icons.storefront_rounded,
+  DestinoNovidade.blitz => Icons.bolt_rounded,
 };
 
 /// "O que há de novo": what changed in this version, each with a button

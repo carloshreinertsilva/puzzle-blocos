@@ -237,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DestinoNovidade.guardaRoupa => _openWardrobe(),
     DestinoNovidade.passe => _openPasse(),
     DestinoNovidade.loja => _openLoja(),
+    DestinoNovidade.blitz => _openBlitz(),
   };
 
   /// Whether [destino] has news the player has not opened yet.
@@ -483,12 +484,22 @@ class _HomeScreenState extends State<HomeScreen> {
       subtitle: store.blitzBestScore > 0
           ? tr('Recorde {n}', {'n': formatInt(store.blitzBestScore)})
           : tr('Corrida de 60s'),
-      badge: store.hasSeen('opened_blitz') ? null : tr('NOVO'),
-      onTap: () {
-        store.markSeen('opened_blitz');
-        _open(GameMode.blitz);
-      },
+      badge: store.hasSeen('opened_blitz') && !_pendente(DestinoNovidade.blitz)
+          ? null
+          : tr('NOVO'),
+      onTap: _openBlitz,
     );
+  }
+
+  /// The Blitz from its card or from the news (still locked: Capi says when).
+  Future<void> _openBlitz() async {
+    final store = widget.services.store;
+    if (!Onboarding.blitzUnlocked(store)) {
+      return _locked('Blitz 60s', Onboarding.blitzAt);
+    }
+    store.markSeen('opened_blitz');
+    _abriu(DestinoNovidade.blitz);
+    await _open(GameMode.blitz);
   }
 
   Widget _duelCard(ProgressStore store) {
@@ -695,7 +706,9 @@ class _HomeScreenState extends State<HomeScreen> {
   /// A mode the player has unlocked but never opened: "NOVO" on Modos.
   bool _modoNovo(ProgressStore store) =>
       (Onboarding.endlessUnlocked(store) && !store.hasSeen('opened_endless')) ||
-      (Onboarding.blitzUnlocked(store) && !store.hasSeen('opened_blitz')) ||
+      (Onboarding.blitzUnlocked(store) &&
+          (!store.hasSeen('opened_blitz') ||
+              _pendente(DestinoNovidade.blitz))) ||
       (Onboarding.duelUnlocked(store) && !store.hasSeen('opened_duel')) ||
       (Onboarding.towerUnlocked(store) && !store.hasSeen('opened_tower')) ||
       (Onboarding.obrasUnlocked(store) && !store.hasSeen('opened_obras'));

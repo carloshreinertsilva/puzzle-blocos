@@ -29,6 +29,12 @@ void main() {
       expect(todas.first, Novidades.edicoes[Novidades.atual]!.first);
     });
 
+    test('quem viu a edição 1 recebe só o Blitz da 1.12.0', () {
+      final novas = Novidades.pendentes(1);
+      expect(novas.map((n) => n.destino), [DestinoNovidade.blitz]);
+      expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
+    });
+
     test('toda novidade tem tradução em inglês e espanhol', () {
       for (final lista in Novidades.edicoes.values) {
         for (final n in lista) {
