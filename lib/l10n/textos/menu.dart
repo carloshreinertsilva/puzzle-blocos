@@ -9,6 +9,8 @@ const Map<String, String> enMenu = {
   'Ranking de todo mundo': 'One ranking for everyone',
   'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': "Android and iPhone now share the same ranking. See where you stand this week!",
   'Torre do Capi nova': "Capi's Tower, renewed",
+  'Blitz com tempo extra': 'Blitz with extra time',
+  'Jogadas grandes dão segundos a mais e, quando o tempo acaba, um vídeo dá +10 segundos.': 'Big moves give you more seconds and, when time runs out, a video gives +10 seconds.',
   'A subida agora vai até a Lua, com o Capi torcendo por você.':
       'The climb now goes all the way to the Moon, with Capi cheering you on.',
   '{n}º na semana': '#{n} this week',
@@ -305,6 +307,8 @@ const Map<String, String> esMenu = {
   'Ranking de todo mundo': 'Un ranking para todos',
   'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': 'Android y iPhone ahora compiten en el mismo ranking. ¡Mira tu posición de la semana!',
   'Torre do Capi nova': 'Nueva Torre de Capi',
+  'Blitz com tempo extra': 'Blitz con tiempo extra',
+  'Jogadas grandes dão segundos a mais e, quando o tempo acaba, um vídeo dá +10 segundos.': 'Las jugadas grandes dan más segundos y, cuando se acaba el tiempo, un video da +10 segundos.',
   'A subida agora vai até a Lua, com o Capi torcendo por você.':
       'La subida ahora llega hasta la Luna, con Capi animándote.',
   '{n}º na semana': '{n}.º en la semana',
