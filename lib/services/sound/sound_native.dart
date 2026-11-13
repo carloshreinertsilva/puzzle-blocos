@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:audioplayers_platform_interface/audioplayers_platform_interface.dart';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:flutter/foundation.dart';
 
 import 'sound_player.dart';
 
@@ -28,7 +30,12 @@ class PlatformSoundPlayer implements SoundPlayer {
     for (final file in files) {
       final lista = <AudioPlayer>[];
       for (var i = 0; i < _porSom; i++) {
-        final player = AudioPlayer()..audioCache = FlameAudio.audioCache;
+        final player = AudioPlayer()
+          ..audioCache = FlameAudio.audioCache
+          // Short sounds never need their position. Left on, it asks Android
+          // for it on every frame while the player counts as playing, and in
+          // low-latency mode Android never says a sound ended.
+          ..positionUpdater = null;
         await player.setAudioContext(_contexto);
         await player.setPlayerMode(PlayerMode.lowLatency);
         await player.setReleaseMode(ReleaseMode.stop);
@@ -38,6 +45,11 @@ class PlatformSoundPlayer implements SoundPlayer {
       _players[file] = lista;
     }
   }
+
+  /// Tests only: players for [file] without loading real sounds.
+  @visibleForTesting
+  void debugUsar(String file, List<AudioPlayer> players) =>
+      _players[file] = players;
 
   @override
   void play(String file, {double volume = 1}) {
@@ -53,17 +65,26 @@ class PlatformSoundPlayer implements SoundPlayer {
   /// The volume each player was last set to (each sound always uses the same).
   final _volumes = <AudioPlayer, double>{};
 
-  /// Stop, volume and play go out back to back: Android runs them in order,
-  /// so the sound starts after one trip instead of waiting for each answer
-  /// in turn (three trips, which a busy moment like a fast Blitz stretched
-  /// into an audible delay).
+  static AudioplayersPlatformInterface get _plataforma =>
+      AudioplayersPlatformInterface.instance;
+
+  /// Stop, volume and play go straight to Android, back to back and without
+  /// waiting for each answer (a busy moment like a fast Blitz stretched three
+  /// waits into an audible delay). Android runs them in the order sent.
+  ///
+  /// Not through [AudioPlayer.stop] and [AudioPlayer.resume]: sent together,
+  /// the player drops the stop (the play right after it wins), so the sound
+  /// did not restart, and each play started one more check of the position on
+  /// every frame that nothing turned off. Over a game the screen got slower
+  /// and slower on Android.
   void _tocar(AudioPlayer player, double volume) {
-    _semErro(player.stop());
+    final id = player.playerId;
+    _semErro(_plataforma.stop(id));
     if (_volumes[player] != volume) {
       _volumes[player] = volume;
-      _semErro(player.setVolume(volume));
+      _semErro(_plataforma.setVolume(id, volume));
     }
-    _semErro(player.resume());
+    _semErro(_plataforma.resume(id));
   }
 
   /// A sound that fails is just skipped.

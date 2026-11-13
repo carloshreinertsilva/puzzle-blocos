@@ -1,4 +1,3 @@
-New in 1.12.1:
-• Faster sounds on Android: audio no longer lags in Blitz.
-• Settings now show the right game version.
-• Tweaks and improvements.
+New in 1.12.2:
+• Fixed: on Android, Blitz got slower and choppier as the game went on.
+• Sounds play properly on every move again.
