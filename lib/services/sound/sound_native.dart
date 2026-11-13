@@ -47,16 +47,26 @@ class PlatformSoundPlayer implements SoundPlayer {
     if (lista == null || lista.isEmpty) return;
     final i = _proximo[file] ?? 0;
     _proximo[file] = (i + 1) % lista.length;
-    unawaited(_tocar(lista[i], volume));
+    _tocar(lista[i], volume);
   }
 
-  Future<void> _tocar(AudioPlayer player, double volume) async {
-    try {
-      await player.stop();
-      await player.setVolume(volume);
-      await player.resume();
-    } catch (_) {
-      // A sound that fails is just skipped.
+  /// The volume each player was last set to (each sound always uses the same).
+  final _volumes = <AudioPlayer, double>{};
+
+  /// Stop, volume and play go out back to back: Android runs them in order,
+  /// so the sound starts after one trip instead of waiting for each answer
+  /// in turn (three trips, which a busy moment like a fast Blitz stretched
+  /// into an audible delay).
+  void _tocar(AudioPlayer player, double volume) {
+    _semErro(player.stop());
+    if (_volumes[player] != volume) {
+      _volumes[player] = volume;
+      _semErro(player.setVolume(volume));
     }
+    _semErro(player.resume());
   }
+
+  /// A sound that fails is just skipped.
+  static void _semErro(Future<void> f) =>
+      unawaited(f.catchError((Object _) {}));
 }

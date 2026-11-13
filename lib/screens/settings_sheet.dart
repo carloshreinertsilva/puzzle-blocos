@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../main.dart';
 import '../services/analytics.dart';
@@ -356,9 +357,14 @@ class _SettingsState extends State<_Settings> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                'CapiBlocks v1.10.0 · CHS TECH',
-                style: bodyText(12, color: Palette.textDim),
+              FutureBuilder<String?>(
+                future: _versao,
+                builder: (context, v) => Text(
+                  v.data == null
+                      ? 'CapiBlocks · CHS TECH'
+                      : 'CapiBlocks v${v.data} · CHS TECH',
+                  style: bodyText(12, color: Palette.textDim),
+                ),
               ),
             ],
           ),
@@ -367,6 +373,12 @@ class _SettingsState extends State<_Settings> {
     );
   }
 }
+
+/// The installed version ("1.12.0"), read from the app itself so it never
+/// goes stale; null where it cannot be read (tests).
+final Future<String?> _versao = PackageInfo.fromPlatform()
+    .then<String?>((i) => i.version.isEmpty ? null : i.version)
+    .catchError((Object _) => null);
 
 /// A message above the settings sheet (a SnackBar would hide behind it).
 Future<void> _aviso(BuildContext context, String texto) => showDialog<void>(
