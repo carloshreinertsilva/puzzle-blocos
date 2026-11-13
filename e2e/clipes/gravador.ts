@@ -26,7 +26,7 @@ export const CONVITE_PADRAO = 'Vem jogar com o <b>Capi</b>!';
  * baixados das páginas de marca do Google e da Apple). Sem o selo, o cartão
  * escreve o nome da loja.
  */
-function marca(appStore = LOJAS.appStore) {
+function marca(appStore = LOJAS.appStore, semLojas = false) {
   const pasta = join(__dirname, 'marca');
   // Um nome sem extensão: vale o .png ou o .svg que existir.
   const dado = (nome: string) => {
@@ -36,6 +36,9 @@ function marca(appStore = LOJAS.appStore) {
     }
     return '';
   };
+  // A prévia da App Store não pode mostrar outra loja nem preço: o cartão
+  // final fica só com a logo, o Capi e o convite.
+  if (semLojas) return { icone: dado('icone'), googlePlay: '', appStore: '', semLojas: true };
   return {
     icone: dado('icone'),
     googlePlay: LOJAS.googlePlay ? dado('google-play') || 'texto' : '',
@@ -61,7 +64,7 @@ export class Gravador {
   // O dedo na tela: onde está, desde que quadro está apertado / foi solto.
   private dedo = { x: 0, y: 0, apertouEm: -1, soltouEm: -1 };
   // Legenda de abertura: texto e os quadros em que aparece e some.
-  private texto = { html: '', de: 0, ate: -1 };
+  private texto = { html: '', de: 0, ate: -1, topo: '21%' };
   // Quadro em que o vídeo começa (a logo entra aí) e em que o cartão final
   // de convite aparece (-1: ainda não).
   private inicio = 0;
@@ -71,6 +74,8 @@ export class Gravador {
     private page: Page,
     private nome: string,
     private saida = join(__dirname, 'saida'),
+    /** Tamanho do MP4 e se o cartão final mostra as lojas. */
+    private formato = { largura: 1080, altura: 1920, semLojas: false },
   ) {
     this.pasta = join(this.saida, `.quadros-${nome}`);
   }
@@ -96,7 +101,7 @@ export class Gravador {
       }
     }
     await this.page.evaluate(CAMADA);
-    await this.page.evaluate((m) => (window as any).__clipe.marca(m), marca());
+    await this.page.evaluate((m) => (window as any).__clipe.marca(m), marca(LOJAS.appStore, this.formato.semLojas));
     // A fonte do jogo, para a legenda (carrega em tempo real).
     await this.page.evaluate(() => (window as any).__clipe.fonte);
     this.inicio = this.n;
@@ -205,9 +210,13 @@ export class Gravador {
     this.dedo.soltouEm = this.n;
   }
 
-  /** Uma legenda grande no alto do vídeo por [ms] (aceita <b>destaque</b>; sem emoji, a fonte do jogo não tem). */
-  legenda(html: string, ms = 2600) {
-    this.texto = { html, de: this.n, ate: this.n + Math.round((ms * FPS) / 1000) };
+  /**
+   * Uma legenda grande no alto do vídeo por [ms] (aceita <b>destaque</b>;
+   * sem emoji, a fonte do jogo não tem). [topo]: a altura na tela, para não
+   * cobrir o que a cena mostra.
+   */
+  legenda(html: string, ms = 2600, topo = '21%') {
+    this.texto = { html, de: this.n, ate: this.n + Math.round((ms * FPS) / 1000), topo };
   }
 
   /** Põe o dedo e a legenda no quadro atual (animados pelo número do quadro). */
@@ -237,7 +246,7 @@ export class Gravador {
     const intro = seg(this.n - this.inicio);
     const fim = this.fim.de >= 0 ? seg(this.n - this.fim.de) : -1;
     await this.page.evaluate((c) => (window as any).__clipe.desenhar(c), {
-      x, y, dedo, escala, html, legenda: fim >= 0 ? 0 : legenda,
+      x, y, dedo, escala, html, legenda: fim >= 0 ? 0 : legenda, topo: this.texto.topo,
       intro, fim, convite: this.fim.convite,
     });
   }
@@ -254,7 +263,7 @@ export class Gravador {
     execFileSync('ffmpeg', [
       '-y', '-loglevel', 'error',
       '-framerate', String(FPS), '-i', join(this.pasta, '%05d.jpg'),
-      '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x1b2440,format=yuv420p',
+      '-vf', `scale=${this.formato.largura}:${this.formato.altura}:force_original_aspect_ratio=decrease,pad=${this.formato.largura}:${this.formato.altura}:(ow-iw)/2:(oh-ih)/2:color=0x1b2440,format=yuv420p`,
       '-r', String(FPS),
       '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-movflags', '+faststart',
       mp4,
@@ -343,7 +352,7 @@ const CAMADA = `(() => {
       marcaEl.innerHTML = '<div class="caixa">' + icone + titulo + '</div>';
       const selos = [m.googlePlay && loja(m.googlePlay, 'Google Play'),
         m.appStore && loja(m.appStore, 'App Store')].filter(Boolean).join('');
-      fim.dataset.gratis = m.appStore ? 'Grátis no Android e no iPhone' : 'Grátis no Android';
+      fim.dataset.gratis = m.semLojas ? '' : m.appStore ? 'Grátis no Android e no iPhone' : 'Grátis no Android';
       fim.innerHTML = '<div class="caixa">'
         + (m.icone ? '<img class="icone" src="' + m.icone + '" alt="">' : '')
         + titulo
@@ -351,7 +360,7 @@ const CAMADA = `(() => {
         + '<div class="convite"></div>'
         + '<div class="gratis">' + fim.dataset.gratis + '</div>'
         + '<div class="selos">' + selos + '</div>'
-        + '<div class="bio">link na bio</div></div>';
+        + '<div class="bio">' + (m.semLojas ? '' : 'link na bio') + '</div></div>';
     },
     desenhar(c) {
       // A logo na abertura: entra com um pulo, brilha e sobe sumindo; o
@@ -405,6 +414,7 @@ const CAMADA = `(() => {
       const html = '<span>' + c.html + '</span>';
       if (legenda.innerHTML !== html) legenda.innerHTML = html;
       legenda.style.opacity = c.legenda;
+      legenda.style.top = c.topo;
       legenda.style.transform = 'scale(' + (0.88 + 0.12 * c.legenda) + ')';
     },
   };
