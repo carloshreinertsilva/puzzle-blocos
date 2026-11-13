@@ -24,8 +24,17 @@ Feito no App Store Connect (salvo, **sem reenviar**):
   gravada por `e2e/clipes/apple.spec.ts`, também no campo **Anexo** das
   informações para a revisão.
 
-Falta: colar a resposta abaixo na mensagem da revisão e clicar em
-"Reenviar para Revisão do app" (depois do OK do Carlos).
+**Reenviado em 13/11** (com o OK do Carlos): a resposta abaixo foi
+mandada na mensagem da revisão e o envio voltou para "Aguardando
+revisão", com a 1.12.2 e as compras. Se a Apple aprovar, a versão é
+lançada sozinha.
+
+A App Store recusa prévia sem faixa de áudio ("Não foi possível salvar
+seu arquivo"). O vídeo que sobe na ficha leva um áudio mudo:
+
+```bash
+ffmpeg -i previa-apple.mp4 -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -shortest -map 0:v -map 1:a -c:v libx264 -profile:v high -pix_fmt yuv420p -r 30 -b:v 3M -maxrate 4M -bufsize 6M -c:a aac -b:a 128k -movflags +faststart previa-apple-loja.mp4
+```
 
 ## Passo a passo
 
