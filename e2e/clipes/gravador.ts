@@ -22,20 +22,24 @@ export const CONVITE_PADRAO = 'Vem jogar com o <b>Capi</b>!';
 
 /**
  * Arquivos da marca, em e2e/clipes/marca/: o ícone do jogo e, se
- * existirem, os selos oficiais das lojas (google-play.png, app-store.png,
+ * existirem, os selos oficiais das lojas (google-play.png, app-store.svg,
  * baixados das páginas de marca do Google e da Apple). Sem o selo, o cartão
  * escreve o nome da loja.
  */
-function marca() {
+function marca(appStore = LOJAS.appStore) {
   const pasta = join(__dirname, 'marca');
-  const dado = (arq: string) => {
-    const f = join(pasta, arq);
-    return existsSync(f) ? `data:image/png;base64,${readFileSync(f).toString('base64')}` : '';
+  // Um nome sem extensão: vale o .png ou o .svg que existir.
+  const dado = (nome: string) => {
+    for (const [ext, tipo] of [['png', 'image/png'], ['svg', 'image/svg+xml']]) {
+      const f = join(pasta, `${nome}.${ext}`);
+      if (existsSync(f)) return `data:${tipo};base64,${readFileSync(f).toString('base64')}`;
+    }
+    return '';
   };
   return {
-    icone: dado('icone.png'),
-    googlePlay: LOJAS.googlePlay ? dado('google-play.png') || 'texto' : '',
-    appStore: LOJAS.appStore ? dado('app-store.png') || 'texto' : '',
+    icone: dado('icone'),
+    googlePlay: LOJAS.googlePlay ? dado('google-play') || 'texto' : '',
+    appStore: appStore ? dado('app-store') || 'texto' : '',
   };
 }
 
@@ -307,7 +311,8 @@ const CAMADA = `(() => {
     #clipe-fim .convite b { color: #ffc94d; font-weight: normal; }
     #clipe-fim .gratis { font: 20px 'Lilita One', sans-serif; color: #8ce99a; }
     #clipe-fim .selos { display: flex; gap: 10px; margin-top: 4px; }
-    #clipe-fim .selos img { height: 46px; }
+    #clipe-fim .selos { align-items: center; }
+    #clipe-fim .selos img { height: 44px; }
     #clipe-fim .selo-texto { font: 17px/1.1 'Lilita One', sans-serif;
       color: #fff; background: #000; border: 2px solid #9aa0a6;
       border-radius: 10px; padding: 8px 12px; }
@@ -404,3 +409,7 @@ const CAMADA = `(() => {
     },
   };
 })()`;
+
+/** Para a prévia do cartão sem o jogo (clipes/previa.ts). */
+export const marcaParaPrevia = (appStore: boolean) => marca(appStore);
+export const CAMADA_PARA_PREVIA = CAMADA;

@@ -35,7 +35,7 @@ por trás, então o gancho não espera a marca. No fim, um cartão de convite de
 3 segundos: a logo, o Capi comemorando, o convite do clipe, "Grátis no
 Android", os selos das lojas e "link na bio". Os arquivos ficam em
 `clipes/marca/`: `icone.png` (o ícone do jogo) e, quando forem baixados das
-páginas de marca do Google e da Apple, `google-play.png` e `app-store.png`
+páginas de marca do Google e da Apple, `google-play.png` e `app-store.svg`
 (sem eles, o cartão escreve o nome da loja). O selo da App Store só pode
 aparecer com o app já na loja: até a Apple aprovar, fica desligado
 (`LOJAS` em `gravador.ts`, ou `APP_STORE=1` para ligar).
