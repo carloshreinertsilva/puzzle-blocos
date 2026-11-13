@@ -1,5 +1,4 @@
-New in 1.12.0:
-• Blitz with extra time: big moves give you more seconds, and the clock shows how many.
-• When Blitz time runs out, a video gives +10 seconds, once per game.
-• Safer purchases: a payment approved while the game was closed arrives the next time you open it.
+New in 1.12.1:
+• Faster sounds on Android: audio no longer lags in Blitz.
+• Settings now show the right game version.
 • Tweaks and improvements.

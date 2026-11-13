@@ -1105,10 +1105,14 @@ class _Hud extends StatelessWidget {
           ),
           if (controller.isBlitz) ...[
             const SizedBox(height: 4),
-            _BlitzTimerChip(
-              secondsLeft: controller.blitzSecondsLeft,
-              bonus: controller.blitzLastBonus,
-              bonusTick: controller.blitzBonusTick,
+            // Its "+3s" animates for a second after each clear: kept on its
+            // own layer so the rest of the screen is not repainted with it.
+            RepaintBoundary(
+              child: _BlitzTimerChip(
+                secondsLeft: controller.blitzSecondsLeft,
+                bonus: controller.blitzLastBonus,
+                bonusTick: controller.blitzBonusTick,
+              ),
             ),
           ],
           if (controller.isChallenge) ...[
