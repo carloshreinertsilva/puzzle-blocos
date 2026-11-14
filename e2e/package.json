@@ -7,7 +7,8 @@
     "test": "playwright test",
     "report": "playwright show-report",
     "clipes": "playwright test -c playwright.clipes.config.ts",
-    "loja": "playwright test -c playwright.loja.config.ts"
+    "loja": "playwright test -c playwright.loja.config.ts",
+    "clipes:semana": "playwright test -c playwright.clipes.config.ts -g \"^(desafio|combos|blitz-bonus|dica|blitz-10s|torre|natal)$\""
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",

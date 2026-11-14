@@ -23,6 +23,25 @@ navegador de testes não desenha 60 qps sozinho), então cada clipe leva uns
 | `blitz.mp4` | O Blitz 60s aberto pelo menu, jogado em ritmo rápido |
 | `blitz-final.mp4` | Os últimos segundos de um Blitz, com um combo lendário no fim |
 | `torre.mp4` | A Torre do Capi: sequência de acertos, as Nuvens, o recorde batido e a torre inteira no fim |
+| `desafio.mp4` | "Você consegue?": o tabuleiro para, contagem 3-2-1 e a peça que limpa 2 linhas e 3 colunas |
+| `combos.mp4` | Três combos grandes seguidos, numerados para o pessoal votar no melhor |
+| `blitz-bonus.mp4` | O relógio do Blitz ganhando "+5s" a cada limpeza grande (1.12.0) |
+| `blitz-10s.mp4` | O tempo do Blitz acaba, o "+10 segundos" salva a partida (1.12.0; o anúncio de teste fica fora) |
+| `dica.mp4` | A lâmpada da dica pisca quando o jogador trava e mostra a jogada |
+
+**Marca em todos os clipes.** No primeiro segundo a logo do CapiBlocks entra
+no meio da tela com um pulo e um brilho e sobe sumindo; o jogo já aparece
+por trás, então o gancho não espera a marca. No fim, um cartão de convite de
+3 segundos: a logo, o Capi comemorando, o convite do clipe, "Grátis no
+Android", os selos das lojas e "link na bio". Os arquivos ficam em
+`clipes/marca/`: `icone.png` (o ícone do jogo) e, quando forem baixados das
+páginas de marca do Google e da Apple, `google-play.png` e `app-store.svg`
+(sem eles, o cartão escreve o nome da loja). O selo da App Store só pode
+aparecer com o app já na loja: até a Apple aprovar, fica desligado
+(`LOJAS` em `gravador.ts`, ou `APP_STORE=1` para ligar).
+
+Os 7 clipes da semana gravam de uma vez com `npm run clipes:semana`
+(calendário, textos e horários em `docs/divulgacao/semana-1.md`).
 
 Cada clipe abre com uma legenda curta no alto (o gancho dos primeiros
 segundos) e mostra um dedo onde a tela é tocada, para quem assiste ver de

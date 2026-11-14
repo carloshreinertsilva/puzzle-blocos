@@ -34,6 +34,41 @@ const JOGADAS_COMBO = [
   { slot: 2, row: 5, col: 0 },
 ];
 
+// "Você consegue?": as três primeiras colunas estão cheias até a linha 5 e
+// as duas últimas linhas só têm o canto esquerdo vazio. A peça 2x3 (o
+// retângulo do meio) no canto fecha 2 linhas e 3 colunas de uma vez.
+const DESAFIO = {
+  board: [
+    'bbb.b..b',
+    'bbbb..b.',
+    'bgb..b..',
+    'bbb.bb..',
+    'bbg..b.b',
+    'bbb...b.',
+    '...bbbbb',
+    '...bbgbb',
+  ],
+  tray: ['i40', 'r60', 'dot0'],
+};
+const RESPOSTA_DESAFIO = { slot: 1, row: 6, col: 0 };
+
+// A coluna da direita vazia nas 4 primeiras linhas, que estão cheias no
+// resto: a peça de 4 em pé limpa 4 linhas de uma vez.
+const COLUNA = {
+  board: [
+    'bbbbbbb.',
+    'bbgbbbb.',
+    'bbbbbgb.',
+    'bgbbbbb.',
+    'b..b..b.',
+    '..b...b.',
+    '.b...b..',
+    'b....b..',
+  ],
+  tray: ['i41', 'o20', 'dot0'],
+};
+const RESPOSTA_COLUNA = { slot: 0, row: 0, col: 7 };
+
 /** Uma jogada, arrastando a peça como um dedo, e o que vem depois. */
 async function jogar(
   g: Gravador,
@@ -90,14 +125,56 @@ async function abrirInfinito(page: Page) {
 
 const naTela = (page: Page, cond: (s: GameState) => boolean) => async () => cond(await state(page));
 
-/** Sugestão de texto para o post de cada clipe (fica ao lado do MP4). */
-const POSTS: Record<string, string> = {
-  combo: 'Esse combo foi LENDÁRIO 🤯🧩 Você consegue? #capiblocks #jogodeblocos #capivara #puzzle #jogosmobile',
-  partida: 'Só mais uma fase… 🦫🧩 Baixe grátis: procure CapiBlocks na Play Store #capiblocks #capivara #jogodeblocos #jogosmobile',
-  natal: 'O Capi já entrou no clima de Natal 🎄🦫 #capiblocks #capivara #natal #jogosmobile',
-  blitz: 'Quantos pontos você faz em 60 segundos? ⏱️ Comenta aí! #capiblocks #blitz #desafio #jogodeblocos',
-  torre: 'Até onde a torre do Capi chega? 🏗️🦫 #capiblocks #capivara #jogosmobile #satisfatorio',
-  'blitz-final': 'Últimos segundos do Blitz… e o combo salvou! 😱⏱️🧩 #capiblocks #blitz #combo #jogodeblocos #capivara',
+/**
+ * Cada clipe: o texto do post (fica ao lado do MP4, num .txt) e o convite
+ * do cartão final. O calendário da semana está em docs/divulgacao/.
+ */
+const TAGS = '#capiblocks #capivara #jogodeblocos #jogosmobile';
+const CLIPES: Record<string, { post: string; convite: string }> = {
+  combo: {
+    post: `Esse combo foi LENDÁRIO 🤯🧩 Você consegue? Grátis na Play Store, link na bio! ${TAGS} #puzzle`,
+    convite: 'Consegue fazer um <b>combo</b> assim?',
+  },
+  partida: {
+    post: `Só mais uma fase… 🦫🧩 O jogo de blocos da capivara é grátis: link na bio! ${TAGS}`,
+    convite: 'Baixe <b>grátis</b> e venha jogar!',
+  },
+  natal: {
+    post: `O Capi já entrou no clima de Natal 🎄🦫 Gorro, cachecol e muito combo. Link na bio! ${TAGS} #natal`,
+    convite: 'Venha montar o <b>Natal do Capi</b>!',
+  },
+  blitz: {
+    post: `Quantos pontos você faz em 60 segundos? ⏱️ Comenta aí e baixa pra tentar (link na bio)! ${TAGS} #desafio #blitz`,
+    convite: 'Quantos pontos <b>você</b> faz?',
+  },
+  torre: {
+    post: `Até onde a torre do Capi chega? 🏗️🦫 Da vila até a Lua. Link na bio! ${TAGS} #satisfatorio`,
+    convite: 'Até onde <b>você</b> sobe?',
+  },
+  'blitz-final': {
+    post: `Últimos segundos do Blitz… e o combo salvou! 😱⏱️🧩 Link na bio! ${TAGS} #blitz #combo`,
+    convite: 'Bate esse <b>recorde</b>?',
+  },
+  desafio: {
+    post: `Onde você colocaria a peça? 🤔🧩 Responde nos comentários ANTES de ver! Link na bio. ${TAGS} #desafio #puzzle #raciocinio`,
+    convite: 'Acertou? Então vem <b>jogar</b>!',
+  },
+  combos: {
+    post: `Só combos satisfatórios 😌🧩 Qual foi o melhor: 1, 2 ou 3? Link na bio! ${TAGS} #satisfatorio #asmr`,
+    convite: 'Venha fazer os <b>seus combos</b>!',
+  },
+  'blitz-bonus': {
+    post: `No Blitz, cada combo dá TEMPO EXTRA ⏱️➕ Quanto mais linhas, mais segundos! Link na bio. ${TAGS} #blitz #combo`,
+    convite: 'Combo = <b>mais tempo</b>. Vem testar!',
+  },
+  'blitz-10s': {
+    post: `O tempo acabou… ou não? 😱 No Blitz dá pra ganhar +10 segundos e continuar! Link na bio. ${TAGS} #blitz`,
+    convite: 'Bate esse <b>recorde</b>?',
+  },
+  dica: {
+    post: `Travou? A lâmpada mostra a jogada 💡🧩 Até quem está começando faz combo. Link na bio! ${TAGS} #dica #puzzle`,
+    convite: 'Venha se <b>divertir</b> com o Capi!',
+  },
 };
 
 async function gravar(page: Page, nome: string, cena: (g: Gravador) => Promise<void>) {
@@ -105,8 +182,8 @@ async function gravar(page: Page, nome: string, cena: (g: Gravador) => Promise<v
   const t0 = Date.now();
   await g.comecar();
   await cena(g);
-  const mp4 = await g.terminar();
-  if (POSTS[nome]) writeFileSync(mp4.replace(/\.mp4$/, '.txt'), `${POSTS[nome]}\n`);
+  const mp4 = await g.terminar(CLIPES[nome]?.convite);
+  if (CLIPES[nome]) writeFileSync(mp4.replace(/\.mp4$/, '.txt'), `${CLIPES[nome].post}\n`);
   console.log(`Clipe (${FPS} qps, ${Math.round((Date.now() - t0) / 1000)} s para gravar): ${mp4}`);
 }
 
@@ -288,5 +365,140 @@ test('torre', async ({ page }) => {
       }
     }
     await g.esperar(4200);
+  });
+});
+
+/** Abre o Blitz pelo menu fora do vídeo (as novidades não aparecem) e volta. */
+async function prepararBlitz(page: Page) {
+  await openApp(page, { level: 30, seen_opened_blitz: true });
+  await page.getByRole('button', { name: 'Modos' }).click();
+  await page.getByRole('button', { name: /^Blitz 60s/ }).click();
+  await waitForState(page, (s) => s.mode === 'blitz', 'blitz aberto');
+  await fecharApresentacoes(page);
+  await voltarAoMenu(page);
+}
+
+/** Entra no Blitz pelo menu, já gravando. */
+async function entrarNoBlitz(g: Gravador, page: Page) {
+  await g.tocar(page.getByRole('button', { name: 'Modos' }), 500);
+  await g.tocar(page.getByRole('button', { name: /^Blitz 60s/ }));
+  await g.ate(naTela(page, (s) => s.mode === 'blitz' && s.status === 'playing' && s.intros!.length === 0));
+  await g.esperar(500);
+}
+
+// Dia 1 · "Você consegue?": o tabuleiro para, a pergunta fica no ar com
+// uma contagem e só então vem a resposta, que limpa 2 linhas e 3 colunas.
+// Feito para render comentários ("eu sabia!").
+test('desafio', async ({ page }) => {
+  await openApp(page, { level: 30 });
+  await abrirInfinito(page);
+  await loadScenario(page, DESAFIO);
+  await page.waitForTimeout(400);
+  await gravar(page, 'desafio', async (g) => {
+    g.legenda('Onde você colocaria <b>uma peça</b> pra limpar TUDO?', 3200);
+    await g.esperar(3300);
+    for (const n of ['3', '2', '1']) {
+      g.legenda(`Pensa rápido… <b>${n}</b>`, 1000);
+      await g.esperar(1000);
+    }
+    g.legenda('<b>Aqui!</b>', 1400);
+    await jogar(g, page, RESPOSTA_DESAFIO, 1800, 700);
+    g.legenda('Acertou? <b>Comenta aí!</b>', 2200);
+    await g.esperar(2200);
+  });
+});
+
+// Dia 2 · Só combos: três tabuleiros preparados, um combo grande em cada,
+// com o número do combo na tela para o pessoal votar no melhor.
+test('combos', async ({ page }) => {
+  await openApp(page, { level: 30 });
+  await abrirInfinito(page);
+  await loadScenario(page, COLUNA);
+  await page.waitForTimeout(400);
+  await gravar(page, 'combos', async (g) => {
+    g.legenda('Só combos <b>satisfatórios</b>', 2000);
+    await g.esperar(600);
+    g.legenda('Combo <b>1</b>', 1600);
+    await jogar(g, page, RESPOSTA_COLUNA, 1600);
+    await loadScenario(page, DESAFIO);
+    await g.esperar(400);
+    g.legenda('Combo <b>2</b>', 1600);
+    await jogar(g, page, RESPOSTA_DESAFIO, 1600);
+    await loadScenario(page, COMBO);
+    await g.esperar(400);
+    g.legenda('Combo <b>3</b>', 1600);
+    for (const m of JOGADAS_COMBO) await jogar(g, page, m, 900);
+    g.legenda('Qual foi o melhor? <b>1, 2 ou 3?</b>', 2400);
+    await g.esperar(2400);
+  });
+});
+
+// Dia 3 · O bônus de tempo do Blitz (1.12.0): limpezas grandes fazem o
+// relógio piscar verde e soltar "+5s".
+test('blitz-bonus', async ({ page }) => {
+  await prepararBlitz(page);
+  await gravar(page, 'blitz-bonus', async (g) => {
+    g.legenda('No Blitz, combo vale <b>tempo extra</b>', 2600);
+    await entrarNoBlitz(g, page);
+    await jogarSozinho(g, page, 4, 220, 360);
+    await loadScenario(page, COLUNA);
+    await g.esperar(300);
+    g.legenda('4 linhas de uma vez = <b>+5 segundos</b>', 2600);
+    await jogar(g, page, RESPOSTA_COLUNA, 1400, 420);
+    await loadScenario(page, DESAFIO);
+    await g.esperar(300);
+    g.legenda('E esse? <b>Olha o relógio!</b>', 2400);
+    await jogar(g, page, RESPOSTA_DESAFIO, 1400, 420);
+    await jogarSozinho(g, page, 6, 220, 360);
+  });
+});
+
+// Dia 5 · O tempo acaba, o cartão oferece "+10 segundos" (1.12.0) e a
+// partida continua. O anúncio de teste fica fora do vídeo (corte).
+test('blitz-10s', async ({ page }) => {
+  await prepararBlitz(page);
+  await gravar(page, 'blitz-10s', async (g) => {
+    g.legenda('O tempo acabou… <b>ou não?</b>', 2600);
+    await entrarNoBlitz(g, page);
+    await jogarSozinho(g, page, 3, 200, 340);
+    await page.evaluate(() => (window as any).__bb.blitzSeconds(3));
+    await jogarSozinho(g, page, 6, 200, 340);
+    await g.ate(naTela(page, (s) => s.status !== 'playing'), 8000);
+    const extra = page.getByRole('button', { name: '+10 segundos' });
+    await g.ate(async () => extra.isVisible(), 6000);
+    await g.esperar(900);
+    await g.tocar(extra, 200);
+    // O vídeo (um anúncio de teste aqui) não entra no clipe.
+    await g.pular(20_000, naTela(page, (s) => s.status === 'playing'));
+    g.legenda('<b>+10 segundos!</b>', 1800);
+    await g.esperar(800);
+    await loadScenario(page, COLUNA);
+    await g.esperar(300);
+    await jogar(g, page, RESPOSTA_COLUNA, 900, 380);
+    await jogarSozinho(g, page, 10, 200, 340);
+    await g.ate(naTela(page, (s) => s.status !== 'playing'), 12_000);
+    await g.esperar(1600);
+  });
+});
+
+// Dia 4 · A lâmpada da dica (1.11.0): o jogador fica parado, a lâmpada
+// pisca, um toque mostra a jogada. A espera de 10 s vira um corte.
+test('dica', async ({ page }) => {
+  await openApp(page, { level: 14 });
+  await page.getByRole('button', { name: /^Jogar · Fase/ }).click();
+  await waitForState(page, (s) => s.screen === 'game', 'fase aberta');
+  await fecharApresentacoes(page);
+  await gravar(page, 'dica', async (g) => {
+    g.legenda('Travou na fase? <b>Calma…</b>', 2400);
+    await jogarSozinho(g, page, 2);
+    await g.esperar(800);
+    // Parado: a lâmpada começa a piscar depois de uns 10 segundos.
+    await g.pular(10_500);
+    g.legenda('A <b>lâmpada</b> mostra a jogada', 2600);
+    await g.esperar(1400);
+    await g.tocar(page.getByRole('button', { name: 'Dica' }), 1800);
+    await jogarSozinho(g, page, 1, 900);
+    g.legenda('Agora é com <b>você</b>!', 2000);
+    await jogarSozinho(g, page, 5);
   });
 });
