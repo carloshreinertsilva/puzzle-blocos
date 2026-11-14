@@ -1,19 +1,25 @@
+import { writeFileSync } from 'node:fs';
 import { test, type Page } from '@playwright/test';
 import { loadScenario, openApp, state, waitForState, type GameState } from '../tests/helpers';
 import { FPS, Gravador } from './gravador';
 
 /**
- * Prévia em vídeo da App Store (886x1920, de 15 a 30 s) e o vídeo que vai
- * junto da resposta à revisão da Apple: o que é só do CapiBlocks (a Vila,
- * as Obras, a Torre, o guarda-roupa do Capi) e um combo no fim. Sem selo de
- * loja nem preço no cartão final (regra da Apple para prévias).
- *   npx playwright test -c playwright.clipes.config.ts apple
- * Sai em e2e/clipes/saida/previa-apple.mp4.
+ * Um passeio pelo jogo: o que é só do CapiBlocks (a Vila, as Obras, a
+ * Torre, o guarda-roupa do Capi) e um combo no fim. Grava duas versões:
+ *
+ * - `previa-apple`: a prévia em vídeo da App Store (886x1920, 30 qps, de
+ *   15 a 30 s), também anexada à revisão. Sem selo de loja nem preço no
+ *   cartão final (regra da Apple). Antes de subir, ganha um áudio mudo
+ *   (docs/loja/ios/revisao-4.3.md).
+ *     FPS=30 npx playwright test -c playwright.clipes.config.ts apple -g previa
+ * - `tour`: o mesmo passeio para Reels e TikTok (1080x1920, 60 qps), com o
+ *   cartão de convite das redes.
+ *     npx playwright test -c playwright.clipes.config.ts apple -g tour
+ *
+ * Saem em e2e/clipes/saida/.
  */
 
 test.setTimeout(30 * 60_000);
-// 443x960 a 2x = 886x1920, o tamanho da prévia para iPhone de 6,5" e 6,9".
-test.use({ viewport: { width: 443, height: 960 }, deviceScaleFactor: 2 });
 test.beforeEach(async ({ page }) => Gravador.prepararRelogio(page));
 
 const COMBO = {
@@ -45,7 +51,11 @@ async function cortar(g: Gravador, page: Page, nome: string | RegExp, cond: (s: 
   await g.pular(6000, naTela(page, cond));
 }
 
-test('previa-apple', async ({ page }) => {
+type Formato = { largura: number; altura: number; semLojas: boolean };
+/** Altura de cada legenda na tela (muda com a proporção da tela). */
+type Alturas = { obra: string; torre: string; combo: string };
+
+async function passeio(page: Page, nome: string, formato: Formato, alturas: Alturas, convite: string) {
   page.setDefaultTimeout(20_000);
   await openApp(page, {
     level: 60,
@@ -75,7 +85,7 @@ test('previa-apple', async ({ page }) => {
   await waitForState(page, (s) => s.screen === 'home', 'menu');
   await page.waitForTimeout(1500);
 
-  const g = new Gravador(page, 'previa-apple', undefined, { largura: 886, altura: 1920, semLojas: true });
+  const g = new Gravador(page, nome, undefined, formato);
   const t0 = Date.now();
   await g.comecar();
 
@@ -95,7 +105,7 @@ test('previa-apple', async ({ page }) => {
   await g.pular(1200);
   await cortar(g, page, /^Obras/, (s) => s.screen === 'obra');
   await g.pular(600);
-  g.legenda('Monte cada <b>obra</b>', 3600, '60%');
+  g.legenda('Monte cada <b>obra</b>', 3600, alturas.obra);
   const total = (await state(page)).obra!.pieces;
   for (let i = 0; i < Math.min(total, 6); i++) {
     const path = JSON.parse(await page.evaluate((p) => (window as any).__bb.obraDrag(p), i));
@@ -112,10 +122,11 @@ test('previa-apple', async ({ page }) => {
   await g.pular(1200);
   await cortar(g, page, /^Torre do Capi/, (s) => s.screen === 'tower');
   await g.pular(800);
-  g.legenda('Empilhe a <b>Torre</b> até a Lua', 3200, '30%');
+  g.legenda('Empilhe a <b>Torre</b> até a Lua', 3200, alturas.torre);
+  const tela = page.viewportSize()!;
   for (let i = 0; i < 7; i++) {
     await g.esperar(250);
-    await g.apertar(221, 520, async () => {
+    await g.apertar(tela.width / 2, tela.height * 0.54, async () => {
       await page.evaluate(() => (window as any).__bb.placeTower(true));
       await g.esperar(120);
     });
@@ -139,7 +150,7 @@ test('previa-apple', async ({ page }) => {
   await g.pular(2600);
   await loadScenario(page, COMBO);
   await g.pular(300);
-  g.legenda('E faça <b>combos</b> incríveis!', 2600, '9%');
+  g.legenda('E faça <b>combos</b> incríveis!', 2600, alturas.combo);
   for (const m of JOGADAS_COMBO) {
     const path = JSON.parse(await page.evaluate(([s, r, c]) => (window as any).__bb.dragPath(s, r, c), [m.slot, m.row, m.col]));
     const antes = JSON.stringify((await state(page)).board);
@@ -148,6 +159,40 @@ test('previa-apple', async ({ page }) => {
     await g.esperar(m.slot === 2 ? 1700 : 250);
   }
 
-  const mp4 = await g.terminar('Vem jogar com o <b>Capi</b>!', 2600);
-  console.log(`Prévia (${FPS} qps, ${Math.round((Date.now() - t0) / 1000)} s para gravar): ${mp4}`);
+  const mp4 = await g.terminar(convite, 2600);
+  console.log(`${nome} (${FPS} qps, ${Math.round((Date.now() - t0) / 1000)} s para gravar): ${mp4}`);
+  return mp4;
+}
+
+test.describe('previa-apple', () => {
+  // 443x960 a 2x = 886x1920, o tamanho da prévia para iPhone de 6,5" e 6,9".
+  test.use({ viewport: { width: 443, height: 960 }, deviceScaleFactor: 2 });
+  test('previa-apple', async ({ page }) => {
+    await passeio(
+      page,
+      'previa-apple',
+      { largura: 886, altura: 1920, semLojas: true },
+      { obra: '60%', torre: '30%', combo: '9%' },
+      'Vem jogar com o <b>Capi</b>!',
+    );
+  });
+});
+
+test.describe('tour', () => {
+  // O tamanho dos clipes das redes (360x640 a 3x, do playwright.clipes.config).
+  test('tour', async ({ page }) => {
+    const mp4 = await passeio(
+      page,
+      'tour',
+      { largura: 1080, altura: 1920, semLojas: false },
+      // Na tela 9:16 o tabuleiro e o Capi sobem: as legendas vão para baixo.
+      { obra: '80%', torre: '62%', combo: '66%' },
+      'Qual modo você <b>jogaria primeiro</b>?',
+    );
+    writeFileSync(
+      mp4.replace(/\.mp4$/, '.txt'),
+      'Vila, obras, torre até a Lua, roupinhas e muito combo: tudo isso num jogo de blocos com uma capivara 🦫🧩 ' +
+        'Qual modo você jogaria primeiro? Link na bio! #capiblocks #capivara #jogodeblocos #jogosmobile #puzzle\n',
+    );
+  });
 });
