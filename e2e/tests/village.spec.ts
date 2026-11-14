@@ -13,9 +13,23 @@ test('vila: com estrelas, monta a obra e constrói o item; sem, o botão leva a 
   await waitForState(page, (x) => x.screen === 'obra', 'obra aberta');
   expect((await state(page)).stars, 'só paga ao terminar').toBe(24);
   await page.evaluate(() => (window as any).__bb.win());
+  // The item drops from the sky in view (the village clock was paused under
+  // the obra: the drop used to start already over). Watched from inside the
+  // page, since the drop takes under 2 s.
+  const caindo = page.evaluate(async () => {
+    const quedas: number[] = [];
+    for (let t = Date.now(); Date.now() - t < 30_000; ) {
+      const drop = JSON.parse((window as any).__bb.state()).villageDrop;
+      if (typeof drop === 'number') quedas.push(drop);
+      if (drop === 1 || (drop == null && quedas.length > 0)) break;
+      await new Promise((r) => setTimeout(r, 30));
+    }
+    return quedas;
+  });
   await page.getByRole('button', { name: 'Construir na vila' }).click();
+  const [quedas] = await Promise.all([caindo, expect(page.getByText(/Agora a vila tem: canteiro de flores/)).toBeVisible()]);
+  expect(quedas.some((q) => q > 0.05 && q < 0.9), `queda vista: ${quedas.join(', ')}`).toBe(true);
   await waitForState(page, (x) => x.screen === 'village' && x.stars === 6, 'gastou 18 estrelas');
-  await expect(page.getByText(/Agora a vila tem: canteiro de flores/)).toBeVisible();
 
   // The fence costs 18 too: not enough, so the button says "Jogar".
   await expect(page.getByRole('button', { name: /^Cerquinha, 18 estrelas/ })).toBeVisible();

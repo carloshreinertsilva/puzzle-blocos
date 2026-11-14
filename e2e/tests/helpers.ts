@@ -7,6 +7,7 @@ export type GameState = {
   screen: 'home' | 'game' | 'village' | 'obra' | 'tower';
   stars?: number;
   villageItems?: string[];
+  villageDrop?: number | null;
   obra?: {
     id: string;
     pieces: number;

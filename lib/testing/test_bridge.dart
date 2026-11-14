@@ -81,6 +81,10 @@ class TestBridge {
     },
   };
   Map<String, Object?>? Function(int piece)? obraDrag;
+
+  /// How far the item being built in the village has dropped (0 to 1), or
+  /// null when nothing is being built.
+  double? Function()? villageDrop;
   final praises = <String>[];
 
   void install() => installJsBridge(this);
@@ -169,6 +173,7 @@ class TestBridge {
         'dailyChestAvailable': chestAvail,
         'dailyChestClaimed': chestDone,
         if (sStore != null) 'villageItems': sStore.villageItems,
+        'villageDrop': villageDrop?.call(),
         if (sStore != null)
           'passe': {
             'nivel': PasseDoCapi.nivel(sStore, DateTime.now()),

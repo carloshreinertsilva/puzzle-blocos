@@ -40,12 +40,15 @@ class VillageModel {
   final Map<String, double> pokes = {};
 
   bool get cheering => building != null;
+
+  /// How long (clock seconds) an item takes to drop in and settle.
+  static const buildTime = 1.6;
 }
 
 const _n = Village.island;
 const _cliff = 1.1;
 const _lagoonX = 5.8, _lagoonY = 5.0;
-const _buildTime = 1.6;
+const _buildTime = VillageModel.buildTime;
 const _pokeTime = 0.6;
 
 double _lagoonR(double a) =>
