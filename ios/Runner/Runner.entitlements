@@ -5,5 +5,12 @@
 	<!-- Leaderboards (lib/services/placares.dart). -->
 	<key>com.apple.developer.game-center</key>
 	<true/>
+	<!-- Universal Links: a challenge or invite link opens the game when it is
+	     installed (web/.well-known/apple-app-site-association); otherwise the
+	     link opens the web page. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:capiblocks.vercel.app</string>
+	</array>
 </dict>
 </plist>

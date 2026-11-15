@@ -6,7 +6,8 @@
 `criar` makes a fresh key and, through the App Store Connect API, an Apple
 Distribution certificate and an App Store profile named "CapiBlocks CI" for
 com.capiblocks.app (the Release build of ios/Runner is set to sign with
-them). It writes key.pem, cert.der, perfil.mobileprovision and ids.txt to
+them), after turning on the App ID capabilities the app needs
+(CAPACIDADES). It writes key.pem, cert.der, perfil.mobileprovision and ids.txt to
 <pasta>. `revogar` revokes that certificate and deletes the profile once the
 build is uploaded: no private key outlives the run, and builds already sent
 are not affected (Apple re-signs them).
@@ -63,6 +64,33 @@ def _apagar_perfis():
         _api("DELETE", f"/profiles/{p['id']}")
 
 
+# What ios/Runner/Runner.entitlements asks for beyond the defaults: the
+# profile only carries a capability the App ID has turned on.
+CAPACIDADES = ["ASSOCIATED_DOMAINS"]
+
+
+def _capacidades(bundle_id):
+    tem = {
+        c["attributes"]["capabilityType"]
+        for c in _api("GET", f"/bundleIds/{bundle_id}/bundleIdCapabilities")["data"]
+    }
+    for tipo in CAPACIDADES:
+        if tipo in tem:
+            continue
+        _api(
+            "POST",
+            "/bundleIdCapabilities",
+            {
+                "data": {
+                    "type": "bundleIdCapabilities",
+                    "attributes": {"capabilityType": tipo},
+                    "relationships": {"bundleId": {"data": {"type": "bundleIds", "id": bundle_id}}},
+                }
+            },
+        )
+        print(f"capacidade {tipo} ligada no App ID")
+
+
 def criar(pasta):
     os.makedirs(pasta, exist_ok=True)
     chave = os.path.join(pasta, "key.pem")
@@ -85,6 +113,7 @@ def criar(pasta):
 
     bundles = _api("GET", f"/bundleIds?filter[identifier]={BUNDLE}")["data"]
     bundle = next(b for b in bundles if b["attributes"]["identifier"] == BUNDLE)
+    _capacidades(bundle["id"])
     _apagar_perfis()
     perfil = _api(
         "POST",
