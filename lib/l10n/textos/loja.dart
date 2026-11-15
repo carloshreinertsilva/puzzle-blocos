@@ -410,6 +410,27 @@ const Map<String, String> enLoja = {
   'Oferta de boas-vindas: acaba em {n} dias': 'Welcome offer: ends in {n} days',
   'Oferta de boas-vindas: acaba em {n} h': 'Welcome offer: ends in {n} h',
 
+  // --- Piggy bank and offers ---
+  'Cofrinho do Capi': "Capi's Piggy Bank",
+  'Quebre o cofrinho e leve todas as estrelas guardadas.':
+      'Break the piggy bank and take every star inside.',
+  'Cheio! Quebre para levar tudo.': 'Full! Break it to take everything.',
+  'Cada estrela que você ganha jogando, o Capi guarda outra aqui.':
+      'For every star you earn playing, Capi saves another one here.',
+  '{n} de {max} estrelas guardadas': '{n} of {max} stars saved',
+  'Quebrar o cofrinho por {preco}': 'Break the piggy bank for {preco}',
+  'Quebrar: {n} ★ por {preco}': 'Break: {n} ★ for {preco}',
+  'Junte {n} para quebrar': 'Save {n} to break it',
+  'Oferta de boas-vindas': 'Welcome offer',
+  '200 estrelas + o Capacete Fundador. Só uma vez, por pouco tempo.':
+      "200 stars + the Founder's Helmet. Just once, for a short time.",
+  'Um presente de boas-vindas!': 'A welcome gift!',
+  '{n} estrelas + o Capacete Fundador por só {preco}. Oferta única, por 48 horas.': "{n} stars + the Founder's Helmet for just {preco}. One-time offer, for 48 hours.",
+  'Ver oferta': 'See offer',
+  'Ou complete agora: {n} ★ por {preco}':
+      'Or complete it now: {n} ★ for {preco}',
+  'Oba! Agora dá para construir.': 'Yay! Now you can build it.',
+
   // --- Ads (test placeholders and messages) ---
   'Anúncio com recompensa (teste)': 'Rewarded ad (test)',
   'Anúncio entre fases (teste)': 'Between-levels ad (test)',
@@ -839,6 +860,27 @@ const Map<String, String> esLoja = {
       'Oferta de bienvenida: termina en {n} días',
   'Oferta de boas-vindas: acaba em {n} h':
       'Oferta de bienvenida: termina en {n} h',
+
+  // --- Piggy bank and offers ---
+  'Cofrinho do Capi': 'Alcancía del Capi',
+  'Quebre o cofrinho e leve todas as estrelas guardadas.':
+      'Rompe la alcancía y llévate todas las estrellas guardadas.',
+  'Cheio! Quebre para levar tudo.': '¡Llena! Rómpela para llevarte todo.',
+  'Cada estrela que você ganha jogando, o Capi guarda outra aqui.':
+      'Por cada estrella que ganas jugando, el Capi guarda otra aquí.',
+  '{n} de {max} estrelas guardadas': '{n} de {max} estrellas guardadas',
+  'Quebrar o cofrinho por {preco}': 'Romper la alcancía por {preco}',
+  'Quebrar: {n} ★ por {preco}': 'Romper: {n} ★ por {preco}',
+  'Junte {n} para quebrar': 'Junta {n} para romperla',
+  'Oferta de boas-vindas': 'Oferta de bienvenida',
+  '200 estrelas + o Capacete Fundador. Só uma vez, por pouco tempo.':
+      '200 estrellas + el Casco Fundador. Solo una vez, por poco tiempo.',
+  'Um presente de boas-vindas!': '¡Un regalo de bienvenida!',
+  '{n} estrelas + o Capacete Fundador por só {preco}. Oferta única, por 48 horas.': '{n} estrellas + el Casco Fundador por solo {preco}. Oferta única, por 48 horas.',
+  'Ver oferta': 'Ver oferta',
+  'Ou complete agora: {n} ★ por {preco}':
+      'O complétalo ahora: {n} ★ por {preco}',
+  'Oba! Agora dá para construir.': '¡Bien! Ahora puedes construirlo.',
 
   // --- Ads (test placeholders and messages) ---
   'Anúncio com recompensa (teste)': 'Anuncio con recompensa (prueba)',

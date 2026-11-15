@@ -1,4 +1,5 @@
 import '../core/hats.dart';
+import '../core/ofertas.dart';
 import '../core/passe.dart';
 import '../core/wardrobe.dart';
 import '../l10n/idioma.dart';
@@ -34,6 +35,18 @@ enum Produto {
     'Kit de ferramentas',
     '3 martelos, 3 pás e 3 trocas de peças.',
     'R\$ 4,90',
+  ),
+  cofrinho(
+    'cofrinho_capi',
+    'Cofrinho do Capi',
+    'Quebre o cofrinho e leve todas as estrelas guardadas.',
+    'R\$ 4,90',
+  ),
+  ofertaBoasVindas(
+    'oferta_boas_vindas',
+    'Oferta de boas-vindas',
+    '200 estrelas + o Capacete Fundador. Só uma vez, por pouco tempo.',
+    'R\$ 2,90',
   ),
   passeCapi(
     'passe_capi',
@@ -122,7 +135,10 @@ enum Produto {
   /// Star packs, the tool kit and the pass (once per season) can be bought
   /// again; the rest once, and come back with "Restaurar compras".
   bool get consumivel =>
-      estrelas > 0 || this == kitFerramentas || this == passeCapi;
+      estrelas > 0 ||
+      this == kitFerramentas ||
+      this == passeCapi ||
+      this == cofrinho;
 
   static Produto? porId(String id) {
     for (final p in values) {
@@ -149,6 +165,9 @@ abstract final class Entrega {
       if (compraId != null && store.purchaseDelivered(compraId)) return;
       if (produto.estrelas > 0) {
         await store.addBoughtStars(produto.estrelas);
+      } else if (produto == Produto.cofrinho) {
+        await store.addBoughtStars(Cofrinho.conteudo(store));
+        await store.esvaziarCofrinho();
       } else if (produto == Produto.passeCapi) {
         // The premium track of the season it was bought in, and that
         // month's exclusive item at once (worn straight away).
@@ -168,6 +187,12 @@ abstract final class Entrega {
     final primeiraVez = !store.owns(produto.id);
     if (produto.item case final id?) {
       await _vestir(store, id);
+      await store.addOwnedProduct(produto.id);
+      return;
+    }
+    if (produto == Produto.ofertaBoasVindas) {
+      await _vestir(store, CapiHat.fundador.id);
+      if (primeiraVez) await store.addBoughtStars(OfertaBoasVindas.estrelas);
       await store.addOwnedProduct(produto.id);
       return;
     }

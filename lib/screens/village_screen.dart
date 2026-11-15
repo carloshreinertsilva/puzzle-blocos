@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../core/village.dart';
+import '../services/analytics.dart';
+import '../shop/loja_service.dart';
+import '../shop/produtos.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
@@ -412,16 +415,74 @@ class _VillageScreenState extends State<VillageScreen>
               textColor: const Color(0xFF0B3B16),
               onTap: _model.building == null ? () => _build(sel) : null,
             )
-          else
+          else ...[
             ChunkyButton(
               label: tr('Faltam {n} ★ · Jogar', {'n': sel.cost - _stars}),
               semanticLabel: tr('Jogar'),
               icon: Icons.play_arrow_rounded,
               onTap: () => Navigator.of(context).pop(true),
             ),
+            if (_pacotePara(sel.cost - _stars) case final pacote?)
+              _completar(pacote),
+          ],
         ],
       ),
     );
+  }
+
+  /// The smallest star pack that covers [faltam], when the shop is open.
+  Produto? _pacotePara(int faltam) {
+    if (!widget.services.loja.disponivel) return null;
+    for (final p in const [
+      Produto.estrelas150,
+      Produto.estrelas400,
+      Produto.estrelas1000,
+    ]) {
+      if (p.estrelas >= faltam) return p;
+    }
+    return null;
+  }
+
+  bool _comprando = false;
+
+  /// Below "Jogar": the stars that are missing, bought at once.
+  Widget _completar(Produto pacote) {
+    final preco = widget.services.loja.preco(pacote);
+    final rotulo = tr('Ou complete agora: {n} ★ por {preco}', {
+      'n': formatInt(pacote.estrelas),
+      'preco': preco,
+    });
+    return Semantics(
+      button: true,
+      label: rotulo,
+      excludeSemantics: true,
+      onTap: _comprando ? null : () => _comprarPacote(pacote),
+      child: TextButton.icon(
+        onPressed: _comprando ? null : () => _comprarPacote(pacote),
+        icon: const Icon(Icons.star_rounded, color: Palette.accent, size: 18),
+        label: Text(
+          _comprando ? tr('Abrindo…') : rotulo,
+          style: bodyText(13, color: Palette.accent, weight: 700),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _comprarPacote(Produto pacote) async {
+    widget.services.feedback.click();
+    Analytics.event('oferta', {'tipo': 'vila', 'produto': pacote.id});
+    setState(() => _comprando = true);
+    final r = await widget.services.loja.comprar(pacote);
+    if (!mounted) return;
+    setState(() => _comprando = false);
+    if (r == ResultadoCompra.ok) {
+      widget.services.feedback.praise(3);
+      _say(tr('Oba! Agora dá para construir.'));
+    } else if (r == ResultadoCompra.pendente) {
+      _say(
+        tr('Pagamento pendente. Assim que for aprovado, entregamos na hora.'),
+      );
+    }
   }
 
   Widget _done() => CardPanel(

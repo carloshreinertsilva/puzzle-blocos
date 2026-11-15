@@ -2,7 +2,9 @@ import 'dart:math';
 import 'dart:async';
 
 import '../core/convites.dart';
+import '../core/hats.dart';
 import '../core/novidades.dart';
+import '../core/ofertas.dart';
 import '../core/passe.dart';
 import '../core/presente_diario.dart';
 import '../core/wardrobe.dart';
@@ -80,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await _presenteDoDia();
       await _novidadesDaVersao();
       await _conviteNaAbertura();
+      await _ofertaBoasVindas();
       if (mounted) {
         await Avisos.verificarAtualizacao(context, widget.services.store);
       }
@@ -89,6 +92,77 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       await oferecerProgressoDaNuvem(context, widget.services.store, nuvem);
     });
+  }
+
+  /// Once, for players who never bought anything and are into the game:
+  /// a cheap first purchase, told on the menu and then kept in the shop
+  /// for [OfertaBoasVindas.duracao].
+  Future<void> _ofertaBoasVindas() async {
+    final store = widget.services.store;
+    final agora = DateTime.now();
+    if (!mounted || !widget.services.loja.disponivel) return;
+    // Browser tests keep the menu clear, except the one about the offer.
+    if (kTestBridge && !store.hasSeen('testar_oferta')) return;
+    if (!OfertaBoasVindas.podeComecar(
+      store,
+      agora,
+      pacoteInicialNoAr: Entrega.mostraPacoteInicial(store, agora),
+    )) {
+      return;
+    }
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    await store.comecarOfertaBoasVindas(agora);
+    Analytics.event('oferta', {'tipo': 'boas_vindas'});
+    if (!mounted) return;
+    setState(() {});
+    final preco = widget.services.loja.preco(Produto.ofertaBoasVindas);
+    final ver = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF141938),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0x33FFFFFF)),
+        ),
+        title: Text(
+          tr('Um presente de boas-vindas!'),
+          style: displayText(22),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Capi(size: 96, hat: CapiHat.fundador),
+            const SizedBox(height: 10),
+            Text(
+              tr(
+                '{n} estrelas + o Capacete Fundador por só {preco}. '
+                'Oferta única, por 48 horas.',
+                {'n': OfertaBoasVindas.estrelas, 'preco': preco},
+              ),
+              textAlign: TextAlign.center,
+              style: bodyText(15),
+            ),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              tr('Agora não'),
+              style: displayText(16, color: Palette.textDim),
+            ),
+          ),
+          ChunkyButton(
+            label: tr('Ver oferta'),
+            icon: Icons.card_giftcard_rounded,
+            onTap: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (ver == true && mounted) await _openLoja();
   }
 
   /// A friend's invite from the Play Store (first run on Android), then the
@@ -955,9 +1029,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               _LojaBotao(
                                 badge:
                                     Entrega.mostraPacoteInicial(
-                                      store,
-                                      DateTime.now(),
-                                    )
+                                          store,
+                                          DateTime.now(),
+                                        ) ||
+                                        OfertaBoasVindas.noAr(
+                                          store,
+                                          DateTime.now(),
+                                        ) ||
+                                        Cofrinho.cheio(store)
                                     ? '!'
                                     : null,
                                 onTap: _openLoja,

@@ -22,6 +22,8 @@ void main() {
       'estrelas_400',
       'estrelas_1000',
       'kit_ferramentas',
+      'cofrinho_capi',
+      'oferta_boas_vindas',
       'passe_capi',
       'lendario_mascara_heroi',
       'lendario_asinhas',

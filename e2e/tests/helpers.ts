@@ -8,6 +8,7 @@ export type GameState = {
   stars?: number;
   villageItems?: string[];
   villageDrop?: number | null;
+  cofrinho?: number;
   obra?: {
     id: string;
     pieces: number;
@@ -96,7 +97,7 @@ export type GameState = {
 type Saved = Record<string, string | number | boolean>;
 
 /** A returning player: tutorial done, menu unlocked, Capi's news seen. */
-const VETERAN: Saved = {
+export const VETERAN: Saved = {
   seen_tutorial: true,
   seen_menu: true,
   seen_news_welcome: true,

@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import '../core/ofertas.dart' show Cofrinho, OfertaBoasVindas;
 import '../core/passe.dart' show PasseDoCapi;
 import '../core/wardrobe.dart' show Slot;
 import '../l10n/idioma.dart';
@@ -200,6 +203,10 @@ class ProgressStore {
     if (n <= 0) return;
     await _prefs.setInt('stars', stars + n);
     await _prefs.setInt('starsEarned', starsEarned + n);
+    // Capi keeps one more in the piggy bank for each star earned.
+    if (cofrinho < Cofrinho.capacidade) {
+      await _prefs.setInt('cofrinho', min(Cofrinho.capacidade, cofrinho + n));
+    }
     // Stars earned by playing are also the Passe do Capi's points.
     final t = PasseDoCapi.temporada(DateTime.now());
     await _prefs.setInt('passPoints_$t', passPoints(t) + n);
@@ -371,6 +378,24 @@ class ProgressStore {
     if (n <= 0) return;
     await _prefs.setInt('stars', stars + n);
   }
+
+  /// Stars in Capi's piggy bank (see [Cofrinho]).
+  int get cofrinho => _prefs.getInt('cofrinho') ?? 0;
+  Future<void> esvaziarCofrinho() => _prefs.setInt('cofrinho', 0);
+
+  /// When the welcome offer started (see [OfertaBoasVindas]).
+  DateTime? get ofertaBoasVindasInicio {
+    final ms = _prefs.getInt('ofertaBoasVindas');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> comecarOfertaBoasVindas(DateTime agora) =>
+      _prefs.setInt('ofertaBoasVindas', agora.millisecondsSinceEpoch);
+
+  /// Whether anything was ever bought in the shop.
+  bool get jaComprou =>
+      ownedProducts.isNotEmpty ||
+      (_prefs.getStringList('deliveredPurchases') ?? []).isNotEmpty;
 
   /// One-time purchases already delivered (product ids).
   List<String> get ownedProducts => _prefs.getStringList('ownedProducts') ?? [];

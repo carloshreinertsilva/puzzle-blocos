@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openApp, startLevel, state, waitForState } from './helpers';
+import { VETERAN, openApp, openFresh, startLevel, state, waitForState } from './helpers';
 
 // The browser tests use the simulated shop: purchases go through at once.
 test.describe('Loja do Capi', () => {
@@ -68,4 +68,51 @@ test.describe('Loja do Capi', () => {
     // Once a day: the button is gone.
     await expect(bau).toHaveCount(0);
   });
+});
+
+test.describe('Cofrinho e ofertas', () => {
+  test('o cofrinho enche jogando e quebra na loja', async ({ page }) => {
+    await openApp(page, { stars: 5, cofrinho: 180 });
+    await page.getByRole('button', { name: 'Loja' }).click();
+    await expect(page.getByText('Cofrinho do Capi').first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('180 de 400 estrelas guardadas')).toBeVisible();
+    await page.getByRole('button', { name: /^Quebrar o cofrinho por/ }).click();
+    await expect.poll(async () => (await state(page)).stars).toBe(185);
+    expect((await state(page)).cofrinho).toBe(0);
+    await expect(page.getByText('0 de 400 estrelas guardadas')).toBeVisible();
+  });
+
+  test('na vila, compra as estrelas que faltam e constrói', async ({ page }) => {
+    await openApp(page, { level: 5, stars: 10 });
+    await page.getByRole('button', { name: /^Vila do Capi/ }).click();
+    await waitForState(page, (x) => x.screen === 'village', 'vila aberta');
+    await page.getByRole('button', { name: /^Ou complete agora: 150 ★ por/ }).click();
+    await expect.poll(async () => (await state(page)).stars).toBe(160);
+    await expect(page.getByRole('button', { name: 'Construir Canteiro de flores' })).toBeVisible();
+  });
+});
+
+test('oferta de boas-vindas: aparece uma vez e vende o pacote', async ({ page }) => {
+  // A player from before: the starter pack's days are over.
+  // openApp waits for a clear menu; the offer opens over it first.
+  const d = new Date();
+  await openFresh(page, {
+    ...VETERAN,
+    giftShown: d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(),
+    level: 12,
+    stars: 0,
+    seen_testar_oferta: true,
+    firstOpenAt: Date.now() - 10 * 86_400_000,
+  });
+  // A player from before sees what's new first, then the offer.
+  await page.getByRole('button', { name: 'Ver agora: Cofrinho do Capi' }).waitFor({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Fechar' }).click();
+  await expect(page.getByText('Um presente de boas-vindas!')).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Ver oferta' }).click();
+  await expect(page.getByText('Loja do Capi')).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: /^Comprar Oferta de boas-vindas por/ }).click();
+  await expect.poll(async () => (await state(page)).stars).toBe(200);
+  const chapeus = await page.evaluate(() => localStorage.getItem('flutter.unlockedHats') ?? '');
+  expect(chapeus).toContain('fundador');
+  await expect(page.getByRole('button', { name: /^Comprar Oferta de boas-vindas por/ })).toHaveCount(0);
 });
