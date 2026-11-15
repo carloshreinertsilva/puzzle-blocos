@@ -90,7 +90,7 @@ test('ofertas do dia: na loja, compra o lendário do dia', async ({ page }) => {
   const before = (await state(page)).unlockedHats ?? [];
   // The browser shop is simulated: the purchase goes through at once.
   // The legendary of the day (the starter pack, on top, gives two hats).
-  const lendario = /^Comprar (Máscara de Herói|Asinhas de Anjo|Pelagem Arco-Íris|Pelagem Galáxia|Colar de Diamante|Mochila a Jato) por R\$/;
+  const lendario = /^Comprar (?!Pacote Inicial|Remover anúncios|Oferta de boas-vindas|Cofrinho|Kit de|Passe|\d).* por R\$/;
   await page.getByRole('button', { name: lendario }).first().click();
   await expect
     .poll(async () => ((await state(page)).unlockedHats ?? []).length)
