@@ -18,7 +18,8 @@ enum Produto {
   pacoteInicial(
     'pacote_inicial',
     'Pacote Inicial',
-    'Sem anúncios entre fases + 300 estrelas + o Capacete Fundador.',
+    'Sem anúncios + 500 estrelas + Capacete Fundador + Cartola VIP + '
+        'kit de ferramentas.',
     'R\$ 24,90',
   ),
   estrelas150('estrelas_150', '150 estrelas', '', 'R\$ 4,90', estrelas: 150),
@@ -45,7 +46,7 @@ enum Produto {
   ofertaBoasVindas(
     'oferta_boas_vindas',
     'Oferta de boas-vindas',
-    '200 estrelas + o Capacete Fundador. Só uma vez, por pouco tempo.',
+    '100 estrelas + 1 martelo, 1 pá e 1 troca de peças. Só uma vez.',
     'R\$ 2,90',
   ),
   passeCapi(
@@ -177,9 +178,7 @@ abstract final class Entrega {
           await _vestir(store, id);
         }
       } else {
-        await store.addTool(CapiTool.hammer, 3);
-        await store.addTool(CapiTool.shovel, 3);
-        await store.addTool(CapiTool.reroll, 3);
+        await _kit(store);
       }
       if (compraId != null) await store.markPurchaseDelivered(compraId);
       return;
@@ -191,8 +190,13 @@ abstract final class Entrega {
       return;
     }
     if (produto == Produto.ofertaBoasVindas) {
-      await _vestir(store, CapiHat.fundador.id);
-      if (primeiraVez) await store.addBoughtStars(OfertaBoasVindas.estrelas);
+      // Just a start: nothing the starter pack's buyers have.
+      if (primeiraVez) {
+        await store.addBoughtStars(OfertaBoasVindas.estrelas);
+        for (final t in [CapiTool.hammer, CapiTool.shovel, CapiTool.reroll]) {
+          await store.addTool(t, OfertaBoasVindas.ferramentas);
+        }
+      }
       await store.addOwnedProduct(produto.id);
       return;
     }
@@ -201,12 +205,34 @@ abstract final class Entrega {
       case Produto.removerAnuncios:
         await _vestir(store, CapiHat.vip.id);
       case Produto.pacoteInicial:
+        await _vestir(store, CapiHat.vip.id);
         await _vestir(store, CapiHat.fundador.id);
-        if (primeiraVez) await store.addBoughtStars(300);
+        if (primeiraVez) {
+          await store.addBoughtStars(PacoteInicial.estrelas);
+          await _kit(store);
+          await store.markSeen(PacoteInicial.bonusVisto);
+        }
       default:
         break;
     }
     await store.addOwnedProduct(produto.id);
+  }
+
+  /// Players who bought the starter pack when it had 300 stars and no VIP
+  /// hat or tool kit get the difference once, so they never have less than
+  /// a new buyer. Returns whether it was given now.
+  static Future<bool> bonusFundador(ProgressStore store) async {
+    if (!store.owns(Produto.pacoteInicial.id) ||
+        store.hasSeen(PacoteInicial.bonusVisto)) {
+      return false;
+    }
+    await store.markSeen(PacoteInicial.bonusVisto);
+    await store.addBoughtStars(PacoteInicial.estrelas - 300);
+    await _kit(store);
+    if (!store.unlockedHats.contains(CapiHat.vip.id)) {
+      await store.unlockHat(CapiHat.vip.id);
+    }
+    return true;
   }
 
   /// The starter pack shows for the first days, for players who still see
@@ -218,6 +244,18 @@ abstract final class Entrega {
         !store.owns(Produto.pacoteInicial.id) &&
         agora.difference(inicio) < ofertaPacoteInicial;
   }
+}
+
+/// What the starter pack gives besides removing ads and the two hats.
+abstract final class PacoteInicial {
+  static const estrelas = 500;
+  static const bonusVisto = 'bonus_fundador_2';
+}
+
+Future<void> _kit(ProgressStore store) async {
+  await store.addTool(CapiTool.hammer, 3);
+  await store.addTool(CapiTool.shovel, 3);
+  await store.addTool(CapiTool.reroll, 3);
 }
 
 /// A bought item is given and put on at once: the player paid to see Capi

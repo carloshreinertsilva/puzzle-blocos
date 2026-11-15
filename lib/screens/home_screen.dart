@@ -82,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await _presenteDoDia();
       await _novidadesDaVersao();
       await _conviteNaAbertura();
+      await _bonusFundador();
       await _ofertaBoasVindas();
       if (mounted) {
         await Avisos.verificarAtualizacao(context, widget.services.store);
@@ -92,6 +93,56 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       await oferecerProgressoDaNuvem(context, widget.services.store, nuvem);
     });
+  }
+
+  /// The starter pack grew: players who bought it before get the
+  /// difference once, and are told so.
+  Future<void> _bonusFundador() async {
+    final store = widget.services.store;
+    if (!mounted || !await Entrega.bonusFundador(store)) return;
+    Analytics.event('oferta', {'tipo': 'bonus_fundador'});
+    if (!mounted) return;
+    setState(() {});
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF141938),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0x33FFFFFF)),
+        ),
+        title: Text(
+          tr('Presente para os Fundadores!'),
+          style: displayText(22),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Capi(size: 96, hat: CapiHat.vip, mood: CapiMood.cheer),
+            const SizedBox(height: 10),
+            Text(
+              tr(
+                'O Pacote Inicial ficou maior, e quem já tinha comprado '
+                'ganha a diferença: +{n} estrelas, a Cartola VIP e um kit '
+                'de ferramentas. Obrigado por apoiar o CapiBlocks!',
+                {'n': PacoteInicial.estrelas - 300},
+              ),
+              textAlign: TextAlign.center,
+              style: bodyText(15),
+            ),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ChunkyButton(
+            label: tr('Legal!'),
+            icon: Icons.favorite_rounded,
+            onTap: () => Navigator.of(ctx).pop(),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Once, for players who never bought anything and are into the game:
@@ -132,12 +183,12 @@ class _HomeScreenState extends State<HomeScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Capi(size: 96, hat: CapiHat.fundador),
+            const Capi(size: 96, mood: CapiMood.cheer),
             const SizedBox(height: 10),
             Text(
               tr(
-                '{n} estrelas + o Capacete Fundador por só {preco}. '
-                'Oferta única, por 48 horas.',
+                '{n} estrelas + 1 martelo, 1 pá e 1 troca de peças por só '
+                '{preco}. Oferta única, por 48 horas.',
                 {'n': OfertaBoasVindas.estrelas, 'preco': preco},
               ),
               textAlign: TextAlign.center,

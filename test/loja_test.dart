@@ -60,15 +60,35 @@ void main() {
   );
 
   test(
-    'the starter pack pays its 300 stars once, even when restored',
+    'the starter pack pays its 500 stars once, even when restored',
     () async {
       final store = await _store({'stars': 10});
       await Entrega.aplicar(store, Produto.pacoteInicial, compraId: 'x');
       // "Restaurar compras" brings it back.
       await Entrega.aplicar(store, Produto.pacoteInicial, compraId: 'x');
-      expect(store.stars, 310);
+      expect(store.stars, 510);
       expect(store.adsRemoved, isTrue);
-      expect(store.unlockedHats, contains('fundador'));
+      expect(store.unlockedHats, containsAll(['fundador', 'vip']));
+      expect(store.toolCount(CapiTool.hammer), 2 + 3);
+      // A new buyer already has everything: no founders' bonus on top.
+      expect(await Entrega.bonusFundador(store), isFalse);
+    },
+  );
+
+  test(
+    'players who bought the old starter pack get the difference once',
+    () async {
+      final store = await _store({
+        'stars': 10,
+        'ownedProducts': ['pacote_inicial'],
+      });
+      expect(await Entrega.bonusFundador(store), isTrue);
+      expect(await Entrega.bonusFundador(store), isFalse);
+      expect(store.stars, 10 + PacoteInicial.estrelas - 300);
+      expect(store.unlockedHats, contains('vip'));
+      expect(store.toolCount(CapiTool.shovel), 1 + 3);
+      final outro = await _store({'stars': 10});
+      expect(await Entrega.bonusFundador(outro), isFalse);
     },
   );
 

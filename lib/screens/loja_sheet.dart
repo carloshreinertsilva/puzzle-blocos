@@ -146,7 +146,7 @@ class _LojaState extends State<_Loja> {
                   produto: Produto.ofertaBoasVindas,
                   preco: _loja.preco(Produto.ofertaBoasVindas),
                   etiqueta: _acabaEm(OfertaBoasVindas.restante(_store, agora)),
-                  chapeu: CapiHat.fundador,
+                  chapeu: null,
                   comprando: _comprando == Produto.ofertaBoasVindas,
                   onComprar: () => _comprar(Produto.ofertaBoasVindas),
                 ),
@@ -295,7 +295,7 @@ class _Destaque extends StatelessWidget {
 
   final Produto produto;
   final String preco;
-  final CapiHat chapeu;
+  final CapiHat? chapeu;
   final bool comprando;
   final VoidCallback onComprar;
   final String? etiqueta;

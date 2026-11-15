@@ -364,8 +364,10 @@ const Map<String, String> enLoja = {
   'Sem anúncios entre fases, para sempre. De presente: a Cartola VIP.':
       'No ads between levels, forever. Bonus gift: the VIP Top Hat.',
   'Pacote Inicial': 'Starter Pack',
-  'Sem anúncios entre fases + 300 estrelas + o Capacete Fundador.':
-      "No ads between levels + 300 stars + the Founder's Helmet.",
+  'Sem anúncios + 500 estrelas + Capacete Fundador + Cartola VIP + kit de ferramentas.':
+      "No ads + 500 stars + Founder's Helmet + VIP Top Hat + tool kit.",
+  'Presente para os Fundadores!': 'A gift for our Founders!',
+  'O Pacote Inicial ficou maior, e quem já tinha comprado ganha a diferença: +{n} estrelas, a Cartola VIP e um kit de ferramentas. Obrigado por apoiar o CapiBlocks!': 'The Starter Pack got bigger, and everyone who already bought it gets the difference: +{n} stars, the VIP Top Hat and a tool kit. Thanks for supporting CapiBlocks!',
   '150 estrelas': '150 stars',
   '400 estrelas': '400 stars',
   '1.000 estrelas': '1,000 stars',
@@ -422,10 +424,10 @@ const Map<String, String> enLoja = {
   'Quebrar: {n} ★ por {preco}': 'Break: {n} ★ for {preco}',
   'Junte {n} para quebrar': 'Save {n} to break it',
   'Oferta de boas-vindas': 'Welcome offer',
-  '200 estrelas + o Capacete Fundador. Só uma vez, por pouco tempo.':
-      "200 stars + the Founder's Helmet. Just once, for a short time.",
+  '100 estrelas + 1 martelo, 1 pá e 1 troca de peças. Só uma vez.':
+      '100 stars + 1 hammer, 1 shovel and 1 piece swap. Just once.',
   'Um presente de boas-vindas!': 'A welcome gift!',
-  '{n} estrelas + o Capacete Fundador por só {preco}. Oferta única, por 48 horas.': "{n} stars + the Founder's Helmet for just {preco}. One-time offer, for 48 hours.",
+  '{n} estrelas + 1 martelo, 1 pá e 1 troca de peças por só {preco}. Oferta única, por 48 horas.': '{n} stars + 1 hammer, 1 shovel and 1 piece swap for just {preco}. One-time offer, for 48 hours.',
   'Ver oferta': 'See offer',
   'Ou complete agora: {n} ★ por {preco}':
       'Or complete it now: {n} ★ for {preco}',
@@ -813,8 +815,9 @@ const Map<String, String> esLoja = {
   'Sem anúncios entre fases, para sempre. De presente: a Cartola VIP.':
       'Sin anuncios entre fases, para siempre. De regalo: la Chistera VIP.',
   'Pacote Inicial': 'Paquete Inicial',
-  'Sem anúncios entre fases + 300 estrelas + o Capacete Fundador.':
-      'Sin anuncios entre fases + 300 estrellas + el Casco Fundador.',
+  'Sem anúncios + 500 estrelas + Capacete Fundador + Cartola VIP + kit de ferramentas.': 'Sin anuncios + 500 estrellas + Casco Fundador + Chistera VIP + kit de herramientas.',
+  'Presente para os Fundadores!': '¡Un regalo para los Fundadores!',
+  'O Pacote Inicial ficou maior, e quem já tinha comprado ganha a diferença: +{n} estrelas, a Cartola VIP e um kit de ferramentas. Obrigado por apoiar o CapiBlocks!': 'El Paquete Inicial creció, y quien ya lo había comprado recibe la diferencia: +{n} estrellas, la Chistera VIP y un kit de herramientas. ¡Gracias por apoyar CapiBlocks!',
   '150 estrelas': '150 estrellas',
   '400 estrelas': '400 estrellas',
   '1.000 estrelas': '1.000 estrellas',
@@ -873,10 +876,10 @@ const Map<String, String> esLoja = {
   'Quebrar: {n} ★ por {preco}': 'Romper: {n} ★ por {preco}',
   'Junte {n} para quebrar': 'Junta {n} para romperla',
   'Oferta de boas-vindas': 'Oferta de bienvenida',
-  '200 estrelas + o Capacete Fundador. Só uma vez, por pouco tempo.':
-      '200 estrellas + el Casco Fundador. Solo una vez, por poco tiempo.',
+  '100 estrelas + 1 martelo, 1 pá e 1 troca de peças. Só uma vez.':
+      '100 estrellas + 1 martillo, 1 pala y 1 cambio de piezas. Solo una vez.',
   'Um presente de boas-vindas!': '¡Un regalo de bienvenida!',
-  '{n} estrelas + o Capacete Fundador por só {preco}. Oferta única, por 48 horas.': '{n} estrellas + el Casco Fundador por solo {preco}. Oferta única, por 48 horas.',
+  '{n} estrelas + 1 martelo, 1 pá e 1 troca de peças por só {preco}. Oferta única, por 48 horas.': '{n} estrellas + 1 martillo, 1 pala y 1 cambio de piezas por solo {preco}. Oferta única, por 48 horas.',
   'Ver oferta': 'Ver oferta',
   'Ou complete agora: {n} ★ por {preco}':
       'O complétalo ahora: {n} ★ por {preco}',

@@ -83,13 +83,17 @@ void main() {
       );
     });
 
-    test('gives the stars and the founder helmet once, and ends', () async {
+    test('gives a few stars and tools once, nothing exclusive', () async {
       final store = await _store({'level': 12});
       await store.comecarOfertaBoasVindas(agora);
       await Entrega.aplicar(store, Produto.ofertaBoasVindas, compraId: 'o');
       await Entrega.aplicar(store, Produto.ofertaBoasVindas, compraId: 'o');
       expect(store.stars, OfertaBoasVindas.estrelas);
-      expect(store.unlockedHats, contains('fundador'));
+      expect(
+        store.toolCount(CapiTool.hammer),
+        2 + OfertaBoasVindas.ferramentas,
+      );
+      expect(store.unlockedHats, isNot(contains('fundador')));
       expect(store.adsRemoved, isFalse);
       expect(OfertaBoasVindas.noAr(store, agora), isFalse);
     });

@@ -21,13 +21,17 @@ abstract final class Cofrinho {
       store.cofrinho < minimo ? minimo : store.cofrinho;
 }
 
-/// A cheap first purchase for players who never bought anything: offered
-/// once, for [duracao], after the starter pack's days are over.
+/// A cheap first purchase for players who never bought anything: just a
+/// start, with nothing exclusive (the starter pack stays the good deal),
+/// offered once, for [duracao], after the starter pack's days are over.
 abstract final class OfertaBoasVindas {
   /// Players who got this far like the game.
   static const nivelMinimo = 8;
   static const duracao = Duration(hours: 48);
-  static const estrelas = 200;
+  static const estrelas = 100;
+
+  /// One hammer, one shovel and one piece swap.
+  static const ferramentas = 1;
 
   /// Whether the offer may start now (it starts once, and then runs for
   /// [duracao]).

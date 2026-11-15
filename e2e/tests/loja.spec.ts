@@ -111,7 +111,7 @@ test('oferta de boas-vindas: aparece uma vez e vende o pacote', async ({ page })
   await page.getByRole('button', { name: 'Ver oferta' }).click();
   await expect(page.getByText('Loja do Capi')).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: /^Comprar Oferta de boas-vindas por/ }).click();
-  await expect.poll(async () => (await state(page)).stars).toBe(200);
+  await expect.poll(async () => (await state(page)).stars).toBe(100);
   const chapeus = await page.evaluate(() => localStorage.getItem('flutter.unlockedHats') ?? '');
   expect(chapeus).toContain('fundador');
   await expect(page.getByRole('button', { name: /^Comprar Oferta de boas-vindas por/ })).toHaveCount(0);
