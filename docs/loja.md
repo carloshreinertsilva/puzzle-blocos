@@ -12,11 +12,13 @@ criado.
 | ID do produto | Nome | Descrição | Preço (BRL) |
 |---|---|---|---|
 | `remover_anuncios` | Remover anúncios | Sem anúncios entre fases, para sempre. De presente: a Cartola VIP. | R$ 19,90 (US$ 3,99) |
-| `pacote_inicial` | Pacote Inicial | Sem anúncios entre fases + 300 estrelas + o Capacete Fundador. | R$ 24,90 (US$ 4,99) |
+| `pacote_inicial` | Pacote Inicial | Sem anúncios + 500 estrelas + Capacete Fundador + Cartola VIP + kit de ferramentas (3 de cada). Quem comprou quando eram 300 estrelas recebe a diferença uma vez (`Entrega.bonusFundador`). | R$ 24,90 (US$ 4,99) |
 | `estrelas_150` | 150 estrelas | 150 estrelas para a vila, ferramentas e chapéus. | R$ 4,90 |
 | `estrelas_400` | 400 estrelas | 400 estrelas para a vila, ferramentas e chapéus. | R$ 9,90 |
 | `estrelas_1000` | 1.000 estrelas | 1.000 estrelas para a vila, ferramentas e chapéus. | R$ 19,90 |
 | `kit_ferramentas` | Kit de ferramentas | 3 martelos, 3 pás e 3 trocas de peças. | R$ 4,90 |
+| `cofrinho_capi` | Cofrinho do Capi | Quebre o cofrinho e leve todas as estrelas guardadas. | R$ 4,90 (US$ 0,99) |
+| `oferta_boas_vindas` | Oferta de boas-vindas | 100 estrelas + 1 martelo, 1 pá e 1 troca de peças. Só um começo: nada exclusivo, para não competir com o Pacote Inicial. | R$ 2,90 (US$ 0,99) |
 | `passe_capi` | Passe do Capi premium | Trilha premium da temporada: 1 lendário exclusivo, 2 raros exclusivos, 140 estrelas e ferramentas. | R$ 9,90 na temporada 1 (lançamento); R$ 14,90 a partir de 01/12/2026 |
 | `lendario_mascara_heroi` | Máscara de Herói | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
 | `lendario_asinhas` | Asinhas de Anjo | Item lendário do Capi. | R$ 9,90 (US$ 1,99) |
@@ -39,6 +41,17 @@ criado.
   (30 dias). Na Play Console ele é um produto comum, como as estrelas: o app
   consome a compra, e o jogador pode comprar de novo na temporada seguinte.
   Regras e prêmios: `lib/core/passe.dart` e `docs/passe.md`.
+- **Cofrinho do Capi** (`lib/core/ofertas.dart`): cada estrela ganha jogando
+  (não as compradas) põe outra no cofrinho, até 400. A partir de 150 ele
+  pode ser quebrado na loja por um preço fixo e entrega tudo o que tem
+  (nunca menos de 150, mesmo se o pagamento for aprovado depois). É
+  **consumível**: depois de quebrar, volta a encher. Cheio, o botão da Loja
+  ganha um "!".
+- **Oferta de boas-vindas**: compra **única** e barata para quem nunca
+  comprou nada, da fase 8 em diante e depois dos dias do Pacote Inicial. O
+  Capi avisa uma vez no menu e ela fica 48 horas na loja.
+- **Na Vila**, quando faltam estrelas para o item escolhido, aparece "Ou
+  complete agora" com o menor pacote de estrelas que cobre a diferença.
 - O Pacote Inicial aparece só nos **3 primeiros dias** desde que o jogador
   abriu a versão com a loja, e só para quem ainda vê anúncios.
 

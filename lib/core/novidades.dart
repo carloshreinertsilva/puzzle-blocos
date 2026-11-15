@@ -49,6 +49,14 @@ abstract final class Novidades {
         DestinoNovidade.blitz,
       ),
     ],
+    3: [
+      Novidade(
+        'Cofrinho do Capi',
+        'Cada estrela que você ganha jogando, o Capi guarda outra no '
+            'cofrinho. Quando encher, quebre e leve todas!',
+        DestinoNovidade.loja,
+      ),
+    ],
   };
 
   /// How many are shown at once.

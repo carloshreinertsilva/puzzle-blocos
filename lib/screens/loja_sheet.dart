@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/hats.dart';
+import '../core/ofertas.dart';
 import '../core/passe.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
@@ -102,6 +103,7 @@ class _LojaState extends State<_Loja> {
   Widget build(BuildContext context) {
     final agora = DateTime.now();
     final pacote = Entrega.mostraPacoteInicial(_store, agora);
+    final boasVindas = !pacote && OfertaBoasVindas.noAr(_store, agora);
     final semAnuncios = _store.adsRemoved;
     return SafeArea(
       child: ConstrainedBox(
@@ -139,6 +141,24 @@ class _LojaState extends State<_Loja> {
                 ),
                 const SizedBox(height: 12),
               ],
+              if (boasVindas) ...[
+                _Destaque(
+                  produto: Produto.ofertaBoasVindas,
+                  preco: _loja.preco(Produto.ofertaBoasVindas),
+                  etiqueta: _acabaEm(OfertaBoasVindas.restante(_store, agora)),
+                  chapeu: null,
+                  comprando: _comprando == Produto.ofertaBoasVindas,
+                  onComprar: () => _comprar(Produto.ofertaBoasVindas),
+                ),
+                const SizedBox(height: 12),
+              ],
+              _Cofrinho(
+                guardadas: _store.cofrinho,
+                preco: _loja.preco(Produto.cofrinho),
+                comprando: _comprando == Produto.cofrinho,
+                onQuebrar: () => _comprar(Produto.cofrinho),
+              ),
+              const SizedBox(height: 12),
               // Today's offers: the legendary item of the day on top.
               OfertasDoDia(services: widget.services),
               const SizedBox(height: 12),
@@ -246,7 +266,10 @@ class _LojaState extends State<_Loja> {
 
   String _restante(DateTime agora) {
     final inicio = _store.firstOpenAt ?? agora;
-    final falta = inicio.add(ofertaPacoteInicial).difference(agora);
+    return _acabaEm(inicio.add(ofertaPacoteInicial).difference(agora));
+  }
+
+  static String _acabaEm(Duration falta) {
     final horas = falta.inHours;
     return horas >= 24
         ? tr('Oferta de boas-vindas: acaba em {n} dias', {
@@ -272,7 +295,7 @@ class _Destaque extends StatelessWidget {
 
   final Produto produto;
   final String preco;
-  final CapiHat chapeu;
+  final CapiHat? chapeu;
   final bool comprando;
   final VoidCallback onComprar;
   final String? etiqueta;
@@ -450,4 +473,111 @@ class _Linha extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// Capi's piggy bank: how full it is, and breaking it open once it holds
+/// enough.
+class _Cofrinho extends StatelessWidget {
+  const _Cofrinho({
+    required this.guardadas,
+    required this.preco,
+    required this.comprando,
+    required this.onQuebrar,
+  });
+
+  final int guardadas;
+  final String preco;
+  final bool comprando;
+  final VoidCallback onQuebrar;
+
+  @override
+  Widget build(BuildContext context) {
+    final pode = guardadas >= Cofrinho.minimo;
+    final cheio = guardadas >= Cofrinho.capacidade;
+    final quebrar = pode && !comprando ? onQuebrar : null;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Palette.emptyCell,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: pode ? Palette.accent : Palette.panelEdge,
+          width: pode ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.savings_rounded,
+                color: Color(0xFFFF9EC4),
+                size: 40,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tr('Cofrinho do Capi'), style: displayText(20)),
+                    Text(
+                      cheio
+                          ? tr('Cheio! Quebre para levar tudo.')
+                          : tr(
+                              'Cada estrela que você ganha jogando, o Capi '
+                              'guarda outra aqui.',
+                            ),
+                      style: bodyText(12, color: Palette.textDim),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: guardadas / Cofrinho.capacidade,
+              minHeight: 12,
+              backgroundColor: Palette.panel,
+              color: Palette.accent,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            tr('{n} de {max} estrelas guardadas', {
+              'n': formatInt(guardadas),
+              'max': formatInt(Cofrinho.capacidade),
+            }),
+            style: bodyText(13, color: Palette.textDim),
+          ),
+          const SizedBox(height: 10),
+          Semantics(
+            button: true,
+            label: pode
+                ? tr('Quebrar o cofrinho por {preco}', {'preco': preco})
+                : tr('Cofrinho do Capi'),
+            excludeSemantics: true,
+            onTap: quebrar,
+            child: ChunkyButton(
+              label: comprando
+                  ? tr('Abrindo…')
+                  : pode
+                  ? tr('Quebrar: {n} ★ por {preco}', {
+                      'n': formatInt(guardadas),
+                      'preco': preco,
+                    })
+                  : tr('Junte {n} para quebrar', {
+                      'n': formatInt(Cofrinho.minimo),
+                    }),
+              icon: Icons.savings_rounded,
+              onTap: quebrar,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

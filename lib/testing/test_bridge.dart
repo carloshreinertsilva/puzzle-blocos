@@ -173,6 +173,7 @@ class TestBridge {
         'dailyChestAvailable': chestAvail,
         'dailyChestClaimed': chestDone,
         if (sStore != null) 'villageItems': sStore.villageItems,
+        if (sStore != null) 'cofrinho': sStore.cofrinho,
         'villageDrop': villageDrop?.call(),
         if (sStore != null)
           'passe': {

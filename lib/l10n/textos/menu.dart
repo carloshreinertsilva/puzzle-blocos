@@ -10,6 +10,7 @@ const Map<String, String> enMenu = {
   'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': "Android and iPhone now share the same ranking. See where you stand this week!",
   'Torre do Capi nova': "Capi's Tower, renewed",
   'Blitz com tempo extra': 'Blitz with extra time',
+  'Cada estrela que você ganha jogando, o Capi guarda outra no cofrinho. Quando encher, quebre e leve todas!': 'For every star you earn playing, Capi saves another one in the piggy bank. When it fills up, break it and take them all!',
   'Jogadas grandes dão segundos a mais e, quando o tempo acaba, um vídeo dá +10 segundos.': 'Big moves give you more seconds and, when time runs out, a video gives +10 seconds.',
   'A subida agora vai até a Lua, com o Capi torcendo por você.':
       'The climb now goes all the way to the Moon, with Capi cheering you on.',
@@ -308,6 +309,7 @@ const Map<String, String> esMenu = {
   'Android e iPhone agora disputam o mesmo ranking. Veja a sua posição na semana!': 'Android y iPhone ahora compiten en el mismo ranking. ¡Mira tu posición de la semana!',
   'Torre do Capi nova': 'Nueva Torre de Capi',
   'Blitz com tempo extra': 'Blitz con tiempo extra',
+  'Cada estrela que você ganha jogando, o Capi guarda outra no cofrinho. Quando encher, quebre e leve todas!': 'Por cada estrella que ganas jugando, el Capi guarda otra en la alcancía. Cuando se llene, ¡rómpela y llévatelas todas!',
   'Jogadas grandes dão segundos a mais e, quando o tempo acaba, um vídeo dá +10 segundos.': 'Las jugadas grandes dan más segundos y, cuando se acaba el tiempo, un video da +10 segundos.',
   'A subida agora vai até a Lua, com o Capi torcendo por você.':
       'La subida ahora llega hasta la Luna, con Capi animándote.',

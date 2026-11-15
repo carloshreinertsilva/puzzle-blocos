@@ -29,10 +29,17 @@ void main() {
       expect(todas.first, Novidades.edicoes[Novidades.atual]!.first);
     });
 
-    test('quem viu a edição 1 recebe só o Blitz da 1.12.0', () {
+    test('quem viu a edição 1 recebe o Cofrinho e o Blitz da 1.12.0', () {
       final novas = Novidades.pendentes(1);
-      expect(novas.map((n) => n.destino), [DestinoNovidade.blitz]);
+      expect(novas.map((n) => n.destino), [
+        DestinoNovidade.loja,
+        DestinoNovidade.blitz,
+      ]);
       expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
+    });
+
+    test('quem viu a edição 2 recebe só o Cofrinho', () {
+      expect(Novidades.pendentes(2).map((n) => n.titulo), ['Cofrinho do Capi']);
     });
 
     test('toda novidade tem tradução em inglês e espanhol', () {
