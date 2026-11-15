@@ -34,6 +34,11 @@ class _VillageScreenState extends State<VillageScreen>
   final _model = VillageModel();
   final _cache = VillageCache();
   late final Ticker _ticker;
+
+  /// Set when an item is built: the next tick starts its drop. The ticker
+  /// is muted while the obra covers the village, so [_clock] is stale right
+  /// after it closes (and jumps on the next tick).
+  Completer<void>? _dropStart;
   late String _line = _idleLine();
   Timer? _lineTimer;
 
@@ -80,15 +85,30 @@ class _VillageScreenState extends State<VillageScreen>
     });
     _ticker = createTicker((elapsed) {
       _clock.value = elapsed.inMicroseconds / 1e6;
+      final start = _dropStart;
+      if (start != null) {
+        _dropStart = null;
+        _model.buildStart = _clock.value;
+        start.complete();
+      }
     })..start();
-    if (kTestBridge) TestBridge.instance.screen = 'village';
+    if (kTestBridge) {
+      TestBridge.instance
+        ..screen = 'village'
+        ..villageDrop = () => _model.building == null
+            ? null
+            : ((_clock.value - _model.buildStart) / VillageModel.buildTime)
+                  .clamp(0.0, 1.0);
+    }
   }
 
   @override
   void dispose() {
     // The next screen may already have opened (the game, on "Jogar").
     if (kTestBridge && TestBridge.instance.screen == 'village') {
-      TestBridge.instance.screen = 'home';
+      TestBridge.instance
+        ..screen = 'home'
+        ..villageDrop = null;
     }
     _lineTimer?.cancel();
     _ticker.dispose();
@@ -176,11 +196,17 @@ class _VillageScreenState extends State<VillageScreen>
     if (!await store.spendStars(item.cost)) return;
     await store.addVillageItem(item.id);
     if (!mounted) return;
+    // Let the obra fade out first, so the drop is seen from the top.
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+    final started = _dropStart = Completer<void>();
     _model
       ..built = _built.toSet()
       ..selected = Village.suggestion(_built)?.id
       ..building = item.id
-      ..buildStart = _clock.value;
+      ..buildStart = double.infinity;
+    await started.future;
+    if (!mounted) return;
     const cheers = [
       'Ficou lindo!',
       'Uhul! A vila tá crescendo!',
