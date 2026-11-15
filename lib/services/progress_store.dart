@@ -687,6 +687,13 @@ class ProgressStore {
   Future<void> setRankingVisto(String quadro, int semana, int posicao) =>
       _prefs.setString('rkVisto_$quadro', '$semana:$posicao');
 
+  // --- Duels against friends (core/duelos.dart) ---
+
+  /// Every duel result with a friend, as JSON (Duelos reads it).
+  String? get duelosResultados => _prefs.getString('duelosResultados');
+  Future<void> setDuelosResultados(String json) =>
+      _prefs.setString('duelosResultados', json);
+
   // --- What is new (core/novidades.dart) ---
 
   /// The newest edition of news already told to the player (-1: none).

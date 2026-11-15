@@ -9,6 +9,8 @@ import '../game/game_controller.dart';
 import '../core/passe.dart';
 import '../core/ranking.dart';
 import '../services/ranking_servidor.dart';
+import '../services/duelos_servidor.dart';
+import '../core/duelos.dart';
 import '../game/obra_controller.dart';
 import '../tower/tower_controller.dart';
 import '../game/puzzle_game.dart';
@@ -36,6 +38,51 @@ class TestBridge {
   /// The ranking of the browser tests: in memory, with a few rivals on
   /// every board (this week's and the all-time one).
   late final RankingDeTeste ranking = _rankingComRivais();
+
+  /// The duels of the browser tests: in memory, with one challenge from a
+  /// friend ready (`/duelo?s=7777&p=300&d=testeBia&n=Bia`).
+  late final DuelosDeTeste duelos = DuelosDeTeste()
+    ..duelos['testeBia'] = const DueloNoServidor(
+      id: 'testeBia',
+      dono: 'bia',
+      nome: 'Bia',
+      pontos: 300,
+    );
+
+  /// A friend answers the player's latest challenge with [pontos].
+  Future<bool> amigoResponde(String nome, int pontos) async {
+    final meus = duelos.duelos.values.where((d) => d.dono == duelos.uid);
+    if (meus.isEmpty) return false;
+    final d = meus.last;
+    await duelos.responder(
+      RespostaDuelo(
+        duelo: d.id,
+        dono: d.dono,
+        uid: 'amigo_$nome',
+        nome: nome,
+        pontos: pontos,
+        meta: d.pontos,
+      ),
+    );
+    return true;
+  }
+
+  Map<String, Object?> _meusDuelos() => {
+    'criados': [
+      for (final d in duelos.duelos.values)
+        if (d.dono == duelos.uid)
+          {'id': d.id, 'nome': d.nome, 'pontos': d.pontos},
+    ],
+    'respostas': [
+      for (final r in duelos.respostas.values)
+        {'duelo': r.duelo, 'nome': r.nome, 'pontos': r.pontos},
+    ],
+    'placar': [
+      if ((store ?? controller?.store) case final s?)
+        for (final p in Duelos.placar(s))
+          {'nome': p.nome, 'v': p.vitorias, 'd': p.derrotas},
+    ],
+  };
 
   static RankingDeTeste _rankingComRivais() {
     final r = RankingDeTeste();
@@ -98,7 +145,9 @@ class TestBridge {
   int Function()? wallet;
   ProgressStore? store;
 
-  Map<String, Object?> state() {
+  Map<String, Object?> state() => {..._estado(), 'duelos': _meusDuelos()};
+
+  Map<String, Object?> _estado() {
     final sStore = store ?? controller?.store;
     final today = DateTime.now();
     final dMissions = sStore != null

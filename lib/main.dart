@@ -22,6 +22,8 @@ import 'services/feedback.dart';
 import 'services/musica.dart';
 import 'services/sound/music_player.dart';
 import 'services/convites_servidor.dart';
+import 'services/duelos_servidor.dart';
+import 'services/firebase_config.dart';
 import 'services/placares.dart';
 import 'services/ranking_servidor.dart';
 import 'testing/test_bridge.dart';
@@ -48,6 +50,11 @@ Future<void> main() async {
           defaultTargetPlatform == TargetPlatform.iOS);
   if (ConvitesServidor.ativo) RankingServidor.atual = RankingFirebase();
   if (kTestBridge) RankingServidor.atual = TestBridge.instance.ranking;
+  // Duels also on the web: a friend often answers in the browser.
+  if (ConvitesServidor.ativo || FirebaseConfig.web != null) {
+    DuelosServidor.atual = DuelosFirebase();
+  }
+  if (kTestBridge) DuelosServidor.atual = TestBridge.instance.duelos;
   CapiArte.ativa = true;
   if (kIsWeb) {
     // The page's own loading screen (web/index.html) covers the start.
@@ -274,7 +281,8 @@ class App extends StatelessWidget {
             mode: convite.blitz ? GameMode.blitz : GameMode.duel,
             duelSeed: convite.semente,
             duelTargetScore: convite.meta,
-            duelRivalName: tr('Amigo'),
+            duelRivalName: convite.nome ?? tr('Amigo'),
+            dueloId: convite.id,
           ),
         );
       },

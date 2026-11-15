@@ -14,6 +14,7 @@ IconData iconeDaNovidade(DestinoNovidade d) => switch (d) {
   DestinoNovidade.passe => Icons.military_tech_rounded,
   DestinoNovidade.loja => Icons.storefront_rounded,
   DestinoNovidade.blitz => Icons.bolt_rounded,
+  DestinoNovidade.duelo => Icons.sports_kabaddi_rounded,
 };
 
 /// "O que há de novo": what changed in this version, each with a button

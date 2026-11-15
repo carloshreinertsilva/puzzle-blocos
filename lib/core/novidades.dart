@@ -9,6 +9,7 @@ enum DestinoNovidade {
   passe,
   loja,
   blitz,
+  duelo,
 }
 
 /// One thing that is new in the game, in Portuguese (shown through `tr`).
@@ -55,6 +56,14 @@ abstract final class Novidades {
         'Cada estrela que você ganha jogando, o Capi guarda outra no '
             'cofrinho. Quando encher, quebre e leve todas!',
         DestinoNovidade.loja,
+      ),
+    ],
+    4: [
+      Novidade(
+        'Placar dos duelos',
+        'Quando um amigo joga o seu desafio, você fica sabendo se ele passou '
+            'você. E o placar com cada amigo fica guardado.',
+        DestinoNovidade.duelo,
       ),
     ],
   };

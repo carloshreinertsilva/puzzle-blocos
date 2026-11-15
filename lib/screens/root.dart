@@ -49,7 +49,8 @@ class _RootState extends State<Root> {
             mode: mode,
             duelSeed: seed,
             duelTargetScore: target,
-            duelRivalName: tr('Amigo'),
+            duelRivalName: convite.nome ?? tr('Amigo'),
+            dueloId: convite.id,
           ),
         ),
       );

@@ -32,10 +32,26 @@ abstract final class FirebaseConfig {
     iosBundleId: _iosBundleId,
   );
 
-  /// This platform's app, or null where Firebase is off (web, desktop, or
-  /// a platform not configured yet).
+  // The web app (capiblocks.vercel.app), only for duels: a friend who gets
+  // a challenge link often plays it in the browser.
+  static const _webApiKey = 'AIzaSyDnNa0zwT0Omin6SrJST2vesOxv1LXwiok';
+  static const _webAppId = '1:731810631964:web:b9743b848884f0304e6ad9';
+
+  /// Null while the web app isn't configured.
+  static FirebaseOptions? get web => _webApiKey.isEmpty || _webAppId.isEmpty
+      ? null
+      : const FirebaseOptions(
+          apiKey: _webApiKey,
+          appId: _webAppId,
+          messagingSenderId: _messagingSenderId,
+          projectId: _projectId,
+          authDomain: '$_projectId.firebaseapp.com',
+        );
+
+  /// This platform's app, or null where Firebase is off (desktop, or a
+  /// platform not configured yet).
   static FirebaseOptions? get atual {
-    if (kIsWeb) return null;
+    if (kIsWeb) return web;
     final opcoes = switch (defaultTargetPlatform) {
       TargetPlatform.android => android,
       TargetPlatform.iOS => ios,

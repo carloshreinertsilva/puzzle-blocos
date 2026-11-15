@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../core/hats.dart';
-import '../core/nome_filtro.dart';
 import '../core/ranking.dart';
 import '../core/wardrobe.dart';
 import '../l10n/idioma.dart';
@@ -11,6 +10,7 @@ import '../services/placares.dart';
 import '../services/progress_store.dart';
 import '../services/ranking_servidor.dart';
 import '../ui/capi.dart';
+import '../ui/nome_dialog.dart';
 import '../ui/palette.dart';
 import '../ui/premio.dart';
 import '../ui/typography.dart';
@@ -117,7 +117,7 @@ class _RankingScreenState extends State<RankingScreen> {
   Future<void> _escolherNome() async {
     final nome = await showDialog<String>(
       context: context,
-      builder: (_) => _NomeDialog(atual: _store.rankingNome),
+      builder: (_) => NomeDialog(atual: _store.rankingNome),
     );
     if (nome == null || !mounted) return;
     await _store.setRankingNome(nome);
@@ -700,114 +700,4 @@ class _Linha extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Asks for the name shown on the ranking. Returns it, or null.
-class _NomeDialog extends StatefulWidget {
-  const _NomeDialog({this.atual});
-  final String? atual;
-
-  @override
-  State<_NomeDialog> createState() => _NomeDialogState();
-}
-
-class _NomeDialogState extends State<_NomeDialog> {
-  late final _campo = TextEditingController(text: widget.atual ?? '');
-  String? _erro;
-
-  @override
-  void dispose() {
-    _campo.dispose();
-    super.dispose();
-  }
-
-  void _salvar() {
-    final recusa = NomeFiltro.recusar(_campo.text);
-    if (recusa == null) {
-      Navigator.pop(context, NomeFiltro.limpar(_campo.text));
-      return;
-    }
-    setState(() {
-      _erro = switch (recusa) {
-        NomeRecusado.curto => tr('O nome precisa de pelo menos 3 letras.'),
-        NomeRecusado.longo => tr('O nome pode ter até 16 letras.'),
-        NomeRecusado.caracteres => tr(
-          'Use só letras, números, espaço, ponto, traço ou _.',
-        ),
-        NomeRecusado.improprio => tr(
-          'Esse nome não pode. Escolha outro, por favor.',
-        ),
-      };
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => Dialog(
-    backgroundColor: Colors.transparent,
-    insetPadding: const EdgeInsets.all(20),
-    child: SingleChildScrollView(
-      child: CardPanel(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            OutlinedTitle(tr('Seu nome no ranking'), size: 22),
-            const SizedBox(height: 8),
-            Text(
-              tr(
-                'Todo mundo vê esse nome nas listas. Pode ser um apelido: '
-                'não use nome completo nem dados pessoais.',
-              ),
-              textAlign: TextAlign.center,
-              style: bodyText(14, color: Palette.textDim),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _campo,
-              autofocus: true,
-              maxLength: NomeFiltro.maximo,
-              textCapitalization: TextCapitalization.words,
-              style: displayText(18, color: Palette.text),
-              decoration: InputDecoration(
-                counterText: '',
-                labelText: tr('Nome no ranking'),
-                labelStyle: bodyText(13, color: Palette.textDim),
-                filled: true,
-                fillColor: const Color(0x22FFFFFF),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              onSubmitted: (_) => _salvar(),
-            ),
-            if (_erro != null) ...[
-              const SizedBox(height: 8),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  _erro!,
-                  textAlign: TextAlign.center,
-                  style: bodyText(13, color: const Color(0xFFFF8A8A)),
-                ),
-              ),
-            ],
-            const SizedBox(height: 14),
-            ChunkyButton(
-              label: tr('Salvar'),
-              semanticLabel: tr('Salvar meu nome no ranking'),
-              icon: Icons.check_rounded,
-              onTap: _salvar,
-            ),
-            const SizedBox(height: 8),
-            ChunkyButton(
-              label: tr('Agora não'),
-              color: Palette.panelEdge,
-              textColor: Colors.white,
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
 }

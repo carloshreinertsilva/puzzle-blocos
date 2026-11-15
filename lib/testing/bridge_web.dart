@@ -58,6 +58,12 @@ void installJsBridge(TestBridge bridge) {
           .toJS;
   api['claimDailyChest'] =
       (() => bridge.claimDailyChest().then((v) => v?.toJS).toJS).toJS;
+  api['amigoResponde'] =
+      ((JSString nome, JSNumber pontos) => bridge
+              .amigoResponde(nome.toDart, pontos.toDartInt)
+              .then((v) => v.toJS)
+              .toJS)
+          .toJS;
   api['abrirRota'] = ((JSString rota) {
     bridge.abrirRota?.call(rota.toDart);
     return true.toJS;

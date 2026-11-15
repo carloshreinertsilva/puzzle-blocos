@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 
 import '../core/convites.dart';
+import '../core/duelos.dart';
 import '../core/hats.dart';
 import '../core/novidades.dart';
 import '../core/ofertas.dart';
@@ -23,6 +24,7 @@ import '../main.dart';
 import '../services/analytics.dart';
 import '../services/avisos.dart';
 import '../services/convites_servidor.dart';
+import '../services/duelos_servidor.dart';
 import '../services/jogo_salvo.dart';
 import '../services/musica.dart';
 import '../services/placares.dart';
@@ -34,6 +36,7 @@ import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/oferta_nuvem.dart';
 import '../ui/palette.dart';
+import '../ui/placar_duelos.dart';
 import '../ui/premio.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -83,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await _novidadesDaVersao();
       await _conviteNaAbertura();
       await _bonusFundador();
+      await _resultadosDuelo();
       await _ofertaBoasVindas();
       if (mounted) {
         await Avisos.verificarAtualizacao(context, widget.services.store);
@@ -93,6 +97,18 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       await oferecerProgressoDaNuvem(context, widget.services.store, nuvem);
     });
+  }
+
+  /// Friends who played the player's challenges since the last time: who
+  /// beat whom, and the score with each of them.
+  Future<void> _resultadosDuelo() async {
+    final store = widget.services.store;
+    final novos = await DuelosSync.buscar(store);
+    if (!mounted || novos.isEmpty) return;
+    await Duelos.marcarVistos(store);
+    Analytics.event('duelo_resultado', {'n': novos.length});
+    if (!mounted) return;
+    await mostrarResultadosDuelo(context, store, novos);
   }
 
   /// The starter pack grew: players who bought it before get the
@@ -363,6 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DestinoNovidade.passe => _openPasse(),
     DestinoNovidade.loja => _openLoja(),
     DestinoNovidade.blitz => _openBlitz(),
+    DestinoNovidade.duelo => _openDuelo(),
   };
 
   /// Whether [destino] has news the player has not opened yet.
@@ -533,6 +550,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
     unawaited(_lerPosicao());
+    // A friend may have answered a challenge in the meantime.
+    if (mode == GameMode.duel || mode == GameMode.blitz) {
+      unawaited(_resultadosDuelo());
+    }
   }
 
   Future<void> _openTower() async {
@@ -646,12 +667,22 @@ class _HomeScreenState extends State<HomeScreen> {
       subtitle: store.duelsWon > 0
           ? tr('{n} vitórias', {'n': store.duelsWon})
           : tr('Desafie amigos'),
-      badge: store.hasSeen('opened_duel') ? null : tr('NOVO'),
-      onTap: () {
-        store.markSeen('opened_duel');
-        _openDuelDialog();
-      },
+      badge: store.hasSeen('opened_duel') && !_pendente(DestinoNovidade.duelo)
+          ? null
+          : tr('NOVO'),
+      onTap: _openDuelo,
     );
+  }
+
+  /// The Duel from its card or from the news (still locked: Capi says when).
+  Future<void> _openDuelo() async {
+    final store = widget.services.store;
+    if (!Onboarding.duelUnlocked(store)) {
+      return _locked('Duelo', Onboarding.duelAt);
+    }
+    store.markSeen('opened_duel');
+    _abriu(DestinoNovidade.duelo);
+    _openDuelDialog();
   }
 
   void _openDuelDialog() {
@@ -692,6 +723,7 @@ class _HomeScreenState extends State<HomeScreen> {
               tr('Jogue e faça a sua pontuação.'),
               tr('No fim, toque em Desafiar Amigo e mande o link.'),
               tr('Seu amigo joga as mesmas peças e tenta passar você.'),
+              tr('Quando ele jogar, você vê o resultado e o placar de vocês.'),
             ].indexed)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -721,8 +753,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+            if (Duelos.placar(widget.services.store).isNotEmpty) ...[
+              const SizedBox(height: 10),
+              ListaPlacarDuelos(store: widget.services.store),
+            ],
           ],
         ),
+        scrollable: true,
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
@@ -834,7 +871,9 @@ class _HomeScreenState extends State<HomeScreen> {
       (Onboarding.blitzUnlocked(store) &&
           (!store.hasSeen('opened_blitz') ||
               _pendente(DestinoNovidade.blitz))) ||
-      (Onboarding.duelUnlocked(store) && !store.hasSeen('opened_duel')) ||
+      (Onboarding.duelUnlocked(store) &&
+          (!store.hasSeen('opened_duel') ||
+              _pendente(DestinoNovidade.duelo))) ||
       (Onboarding.towerUnlocked(store) && !store.hasSeen('opened_tower')) ||
       (Onboarding.obrasUnlocked(store) && !store.hasSeen('opened_obras'));
 

@@ -29,17 +29,28 @@ void main() {
       expect(todas.first, Novidades.edicoes[Novidades.atual]!.first);
     });
 
-    test('quem viu a edição 1 recebe o Cofrinho e o Blitz da 1.12.0', () {
-      final novas = Novidades.pendentes(1);
-      expect(novas.map((n) => n.destino), [
-        DestinoNovidade.loja,
-        DestinoNovidade.blitz,
-      ]);
-      expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
-    });
+    test(
+      'quem viu a edição 1 recebe o placar dos duelos, o Cofrinho e o Blitz',
+      () {
+        final novas = Novidades.pendentes(1);
+        expect(novas.map((n) => n.destino), [
+          DestinoNovidade.duelo,
+          DestinoNovidade.loja,
+          DestinoNovidade.blitz,
+        ]);
+        expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
+        expect(
+          iconeDaNovidade(DestinoNovidade.duelo),
+          Icons.sports_kabaddi_rounded,
+        );
+      },
+    );
 
-    test('quem viu a edição 2 recebe só o Cofrinho', () {
-      expect(Novidades.pendentes(2).map((n) => n.titulo), ['Cofrinho do Capi']);
+    test('quem viu a edição 2 recebe o placar dos duelos e o Cofrinho', () {
+      expect(Novidades.pendentes(2).map((n) => n.titulo), [
+        'Placar dos duelos',
+        'Cofrinho do Capi',
+      ]);
     });
 
     test('toda novidade tem tradução em inglês e espanhol', () {
