@@ -113,6 +113,7 @@ test('oferta de boas-vindas: aparece uma vez e vende o pacote', async ({ page })
   await page.getByRole('button', { name: /^Comprar Oferta de boas-vindas por/ }).click();
   await expect.poll(async () => (await state(page)).stars).toBe(100);
   const chapeus = await page.evaluate(() => localStorage.getItem('flutter.unlockedHats') ?? '');
-  expect(chapeus).toContain('fundador');
+  // Just a start: nothing exclusive of the starter pack.
+  expect(chapeus).not.toContain('fundador');
   await expect(page.getByRole('button', { name: /^Comprar Oferta de boas-vindas por/ })).toHaveCount(0);
 });
