@@ -9,6 +9,11 @@ export type GameState = {
   villageItems?: string[];
   villageDrop?: number | null;
   cofrinho?: number;
+  duelos: {
+    criados: { id: string; nome: string; pontos: number }[];
+    respostas: { duelo: string; nome: string; pontos: number }[];
+    placar: { nome: string; v: number; d: number }[];
+  };
   obra?: {
     id: string;
     pieces: number;

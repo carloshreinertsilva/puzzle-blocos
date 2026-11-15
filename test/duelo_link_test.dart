@@ -34,4 +34,23 @@ void main() {
     expect(DueloConvite.ler(Uri.parse('/privacidade/')), isNull);
     expect(DueloConvite.ler(Uri.parse('/duelo')), isNull);
   });
+
+  test('a link with an id and a name brings both back', () {
+    const c = DueloConvite(
+      semente: 9,
+      meta: 1240,
+      id: 'abc123',
+      nome: 'Ana Lu',
+    );
+    final lido = DueloConvite.ler(c.link)!;
+    expect((lido.id, lido.nome, lido.meta), ('abc123', 'Ana Lu', 1240));
+  });
+
+  test('a strange id is dropped and a long name is cut', () {
+    final c = DueloConvite.ler(
+      Uri.parse('/duelo?s=1&p=2&d=..%2Fx&n=Um+nome+comprido+demais+aqui'),
+    )!;
+    expect(c.id, isNull);
+    expect(c.nome, 'Um nome comprido');
+  });
 }

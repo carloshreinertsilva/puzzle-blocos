@@ -9,8 +9,12 @@ import 'package:share_plus/share_plus.dart';
 import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
+import '../core/duelos.dart';
 import '../core/game_session.dart';
 import '../core/ranking.dart';
+import '../services/duelos_servidor.dart';
+import '../ui/nome_dialog.dart';
+import '../ui/placar_duelos.dart';
 import '../services/musica.dart';
 import '../services/ajustes.dart';
 import '../services/analytics.dart';
@@ -50,12 +54,16 @@ class GameScreen extends StatefulWidget {
     this.duelSeed,
     this.duelTargetScore,
     this.duelRivalName,
+    this.dueloId,
   });
   final AppServices services;
   final GameMode mode;
   final int? duelSeed;
   final int? duelTargetScore;
   final String? duelRivalName;
+
+  /// A friend's challenge on the server: the result goes back to them.
+  final String? dueloId;
 
   /// An earlier level, played again for its missing stars.
   final int? replayLevel;
@@ -148,8 +156,59 @@ class _GameScreenState extends State<GameScreen> {
       widget.services.store.videosToday('dobrar', DateTime.now()) <
           Ajustes.atuais.dobrarPorDia;
 
+  /// The match whose result already went back to the friend.
+  GameSession? _respondidoDe;
+  bool _nomePedido = false;
+
+  /// Shown on the end card once the friend's challenge was answered.
+  PlacarAmigo? _placarDuelo;
+  bool _duelEnviado = false;
+
+  /// A friend's challenge (with an id on the server) ended: the score goes
+  /// back to them, once per attempt (the best one counts).
+  void _responderDuelo() {
+    final id = widget.dueloId;
+    if (id == null || !controller.showOutcome) return;
+    if (identical(_respondidoDe, controller.session)) return;
+    _respondidoDe = controller.session;
+    unawaited(_enviarDuelo(id, controller.session.score));
+  }
+
+  Future<void> _enviarDuelo(String id, int pontos) async {
+    final store = widget.services.store;
+    if (store.rankingNome == null &&
+        !_nomePedido &&
+        DuelosServidor.atual != null) {
+      _nomePedido = true;
+      await _pedirNomeDuelo(
+        tr(
+          '{rival} vai ver o seu resultado com esse nome. É o mesmo nome do '
+          'ranking. Pode ser um apelido: não use nome completo nem dados '
+          'pessoais.',
+          {'rival': widget.duelRivalName ?? tr('Amigo')},
+        ),
+      );
+      if (!mounted) return;
+    }
+    final r = await DuelosSync.responder(store, id, pontos);
+    if (r == null || !mounted) return;
+    setState(() {
+      _duelEnviado = true;
+      _placarDuelo = Duelos.contra(store, r.rival);
+    });
+  }
+
+  Future<void> _pedirNomeDuelo(String texto) async {
+    final nome = await showDialog<String>(
+      context: context,
+      builder: (_) => NomeDialog(titulo: tr('Seu nome no duelo'), texto: texto),
+    );
+    if (nome != null) await widget.services.store.setRankingNome(nome);
+  }
+
   void _aoMudar() {
     _registrarOfertas();
+    _responderDuelo();
     if (!_comDesafios || !controller.playing) return;
     if (identical(_desafiosDe, controller.session)) return;
     _desafiosDe = controller.session;
@@ -176,6 +235,10 @@ class _GameScreenState extends State<GameScreen> {
     widget.services.feedback.musica.entrarNoJogo(
       controller.isBlitz ? Trilha.blitz : Trilha.fases,
     );
+    // A challenge can be sent from the end of these: signed in by then.
+    if (controller.isDuel || controller.isBlitz || controller.isChallenge) {
+      unawaited(DuelosSync.preparar());
+    }
     if (kTestBridge) {
       TestBridge.instance
         ..screen = 'game'
@@ -535,14 +598,33 @@ class _GameScreenState extends State<GameScreen> {
   /// the link.
   Future<void> _shareDuelLink(int score) async {
     widget.services.feedback.click();
-    final convite = DueloConvite(
+    final store = widget.services.store;
+    if (store.rankingNome == null &&
+        !_nomePedido &&
+        DuelosServidor.atual != null) {
+      _nomePedido = true;
+      await _pedirNomeDuelo(
+        tr(
+          'Seu amigo vê esse nome no desafio, e você fica sabendo se ele '
+          'passou a sua pontuação. É o mesmo nome do ranking. Pode ser um '
+          'apelido: não use nome completo nem dados pessoais.',
+        ),
+      );
+      if (!mounted) return;
+    }
+    final simples = DueloConvite(
       semente:
           controller.level.seed ??
           (DateTime.now().millisecondsSinceEpoch % 1000000),
       meta: score,
       blitz: controller.isBlitz,
     );
-    Analytics.event('duel_share', {'mode': controller.mode.name});
+    // With an id on the server, the friend's result comes back.
+    final convite = DuelosSync.criar(store, simples) ?? simples;
+    Analytics.event('duel_share', {
+      'mode': controller.mode.name,
+      'retorno': convite.id != null ? 1 : 0,
+    });
     if (!kIsWeb) {
       try {
         await SharePlus.instance.share(
@@ -583,6 +665,8 @@ class _GameScreenState extends State<GameScreen> {
       rivalScore: controller.duelTargetScore ?? 1000,
       rivalName: controller.duelRivalName ?? tr('Rival'),
       starsGained: controller.starsGained,
+      enviado: _duelEnviado,
+      placar: _placarDuelo,
       onRetry: _retry,
       onExit: _exit,
       onShareDuel: () => _shareDuelLink(score),
@@ -2510,6 +2594,8 @@ class _DuelOutcomeCard extends StatelessWidget {
     required this.onRetry,
     required this.onExit,
     required this.onShareDuel,
+    this.enviado = false,
+    this.placar,
   });
 
   final bool won;
@@ -2517,6 +2603,12 @@ class _DuelOutcomeCard extends StatelessWidget {
   final int rivalScore;
   final String rivalName;
   final int starsGained;
+
+  /// The result went back to the friend who sent the challenge.
+  final bool enviado;
+
+  /// Every duel with this friend so far.
+  final PlacarAmigo? placar;
   final VoidCallback onRetry;
   final VoidCallback onExit;
   final VoidCallback onShareDuel;
@@ -2592,6 +2684,15 @@ class _DuelOutcomeCard extends StatelessWidget {
             style: bodyText(15, color: Palette.textDim),
             textAlign: TextAlign.center,
           ),
+          if (enviado) ...[
+            const SizedBox(height: 10),
+            PlacarDoAmigo(
+              placar: placar,
+              aviso: tr('{rival} vai saber do seu resultado.', {
+                'rival': rivalName,
+              }),
+            ),
+          ],
           if (won && starsGained > 0) ...[
             const SizedBox(height: 12),
             Row(

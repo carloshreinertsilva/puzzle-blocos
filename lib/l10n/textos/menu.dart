@@ -298,6 +298,26 @@ const Map<String, String> enMenu = {
   'Maravilha!': 'Awesome!',
   '{feitas} de {n} estrelas': '{feitas} of {n} stars',
   'Amigo': 'Friend',
+  // Retorno do duelo e placar por amigo.
+  'Quando um amigo joga o seu desafio, você fica sabendo se ele passou você. E o placar com cada amigo fica guardado.': 'When a friend plays your challenge, you find out if they beat you. And your score with each friend is kept.',
+  'Seu nome no duelo': 'Your name in duels',
+  '{rival} vai ver o seu resultado com esse nome. É o mesmo nome do ranking. Pode ser um apelido: não use nome completo nem dados pessoais.': "{rival} will see your result under this name. It's the same name as in the ranking. A nickname is fine: don't use your full name or personal details.",
+  'Seu amigo vê esse nome no desafio, e você fica sabendo se ele passou a sua pontuação. É o mesmo nome do ranking. Pode ser um apelido: não use nome completo nem dados pessoais.': "Your friend sees this name on the challenge, and you'll find out if they beat your score. It's the same name as in the ranking. A nickname is fine: don't use your full name or personal details.",
+  '{rival} vai saber do seu resultado.': '{rival} will hear about your result.',
+  'Você {v} × {d} {rival}': 'You {v} × {d} {rival}',
+  'Placar: {placar}': 'Score: {placar}',
+  'Placar dos duelos': 'Duel scoreboard',
+  'Resultado do duelo': 'Duel result',
+  'E mais {n} duelo.': 'And {n} more duel.',
+  'E mais {n} duelos.': 'And {n} more duels.',
+  '{rival} não passou você: {ele} × {eu}.':
+      "{rival} didn't beat you: {ele} × {eu}.",
+  '{rival} passou você: {ele} × {eu}. Revanche?':
+      '{rival} beat you: {ele} × {eu}. Rematch?',
+  '{rival} empatou com você: {eu} pontos.':
+      '{rival} tied with you: {eu} points.',
+  'Quando ele jogar, você vê o resultado e o placar de vocês.':
+      "When they play, you'll see the result and your scoreboard.",
 };
 
 const Map<String, String> esMenu = {
@@ -606,4 +626,24 @@ const Map<String, String> esMenu = {
   'Maravilha!': '¡Genial!',
   '{feitas} de {n} estrelas': '{feitas} de {n} estrellas',
   'Amigo': 'Amigo',
+  // Retorno do duelo e placar por amigo.
+  'Quando um amigo joga o seu desafio, você fica sabendo se ele passou você. E o placar com cada amigo fica guardado.': 'Cuando un amigo juega tu desafío, sabes si te superó. Y el marcador con cada amigo queda guardado.',
+  'Seu nome no duelo': 'Tu nombre en los duelos',
+  '{rival} vai ver o seu resultado com esse nome. É o mesmo nome do ranking. Pode ser um apelido: não use nome completo nem dados pessoais.': '{rival} verá tu resultado con este nombre. Es el mismo nombre del ranking. Puede ser un apodo: no uses tu nombre completo ni datos personales.',
+  'Seu amigo vê esse nome no desafio, e você fica sabendo se ele passou a sua pontuação. É o mesmo nome do ranking. Pode ser um apelido: não use nome completo nem dados pessoais.': 'Tu amigo ve este nombre en el desafío, y sabrás si superó tu puntuación. Es el mismo nombre del ranking. Puede ser un apodo: no uses tu nombre completo ni datos personales.',
+  '{rival} vai saber do seu resultado.': '{rival} sabrá tu resultado.',
+  'Você {v} × {d} {rival}': 'Tú {v} × {d} {rival}',
+  'Placar: {placar}': 'Marcador: {placar}',
+  'Placar dos duelos': 'Marcador de duelos',
+  'Resultado do duelo': 'Resultado del duelo',
+  'E mais {n} duelo.': 'Y {n} duelo más.',
+  'E mais {n} duelos.': 'Y {n} duelos más.',
+  '{rival} não passou você: {ele} × {eu}.':
+      '{rival} no te superó: {ele} × {eu}.',
+  '{rival} passou você: {ele} × {eu}. Revanche?':
+      '{rival} te superó: {ele} × {eu}. ¿Revancha?',
+  '{rival} empatou com você: {eu} pontos.':
+      '{rival} empató contigo: {eu} puntos.',
+  'Quando ele jogar, você vê o resultado e o placar de vocês.':
+      'Cuando juegue, verás el resultado y el marcador entre ustedes.',
 };
