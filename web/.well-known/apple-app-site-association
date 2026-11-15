@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["AJJKP7NQYU.com.capiblocks.app"],
+        "components": [
+          { "/": "/duelo", "comment": "Desafio de um amigo" },
+          { "/": "/convite", "comment": "Convite de um amigo" }
+        ]
+      }
+    ]
+  }
+}

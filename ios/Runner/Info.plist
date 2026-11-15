@@ -80,5 +80,8 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<!-- A link (Universal Link) reaches Flutter as a route (App.onGenerateRoute). -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 </dict>
 </plist>
