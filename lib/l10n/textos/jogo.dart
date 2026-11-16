@@ -116,6 +116,18 @@ const Map<String, String> enJogo = {
   // Blitz e Duelo
   'SUPEROU {rival}!': 'BEAT {rival}!',
   'Meta do {rival}: {meta}': "{rival}'s goal: {meta}",
+  'Você foi desafiado!': "You've been challenged!",
+  'Um amigo te desafiou no CapiBlocks.':
+      'A friend challenged you on CapiBlocks.',
+  '{rival} te desafiou no CapiBlocks.': '{rival} challenged you on CapiBlocks.',
+  'Mesmo tabuleiro, mesmas peças. Faça mais pontos para vencer.':
+      'Same board, same pieces. Score more to win.',
+  'Mesmo tabuleiro, mesmas peças. Faça mais pontos que {rival} para vencer.':
+      'Same board, same pieces. Score more than {rival} to win.',
+  'Pontuação a bater': 'Score to beat',
+  'Pontuação a bater: {meta}': 'Score to beat: {meta}',
+  'Você tem 60 segundos.': 'You have 60 seconds.',
+  'Topar o desafio': 'Accept the challenge',
   'Novo Recorde Blitz!': 'New Blitz Record!',
   'Fim do Blitz!': 'Blitz Over!',
   'MELHOR PLACAR BLITZ!': 'BEST BLITZ SCORE!',
@@ -383,6 +395,17 @@ const Map<String, String> esJogo = {
   // Blitz e Duelo
   'SUPEROU {rival}!': '¡SUPERASTE A {rival}!',
   'Meta do {rival}: {meta}': 'Meta de {rival}: {meta}',
+  'Você foi desafiado!': '¡Te desafiaron!',
+  'Um amigo te desafiou no CapiBlocks.': 'Un amigo te desafió en CapiBlocks.',
+  '{rival} te desafiou no CapiBlocks.': '{rival} te desafió en CapiBlocks.',
+  'Mesmo tabuleiro, mesmas peças. Faça mais pontos para vencer.':
+      'Mismo tablero, mismas piezas. Haz más puntos para ganar.',
+  'Mesmo tabuleiro, mesmas peças. Faça mais pontos que {rival} para vencer.':
+      'Mismo tablero, mismas piezas. Haz más puntos que {rival} para ganar.',
+  'Pontuação a bater': 'Puntos a superar',
+  'Pontuação a bater: {meta}': 'Puntos a superar: {meta}',
+  'Você tem 60 segundos.': 'Tienes 60 segundos.',
+  'Topar o desafio': 'Aceptar el desafío',
   'Novo Recorde Blitz!': '¡Nuevo récord Blitz!',
   'Fim do Blitz!': '¡Fin del Blitz!',
   'MELHOR PLACAR BLITZ!': '¡MEJOR PUNTAJE BLITZ!',

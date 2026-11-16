@@ -262,3 +262,11 @@ export function overlap(
 ) {
   return a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.5 && a.y < b.y + b.height - 0.5 && b.y < a.y + a.height - 0.5;
 }
+
+/** A friend's challenge opens on "Você foi desafiado!": accepts it. */
+export async function toparDesafio(page: Page) {
+  const topar = page.getByRole('button', { name: 'Topar o desafio' });
+  await expect(topar).toBeVisible({ timeout: 15_000 });
+  await topar.click();
+  await waitForState(page, (s) => s.paused === false, 'desafio aceito');
+}

@@ -66,6 +66,14 @@ abstract final class Novidades {
         DestinoNovidade.duelo,
       ),
     ],
+    5: [
+      Novidade(
+        'Você foi desafiado!',
+        'Ao abrir o link de um amigo, você vê quem desafiou e quantos pontos '
+            'precisa bater antes de começar.',
+        DestinoNovidade.duelo,
+      ),
+    ],
   };
 
   /// How many are shown at once.

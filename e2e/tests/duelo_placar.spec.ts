@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadScenario, openApp, state, waitForState } from './helpers';
+import { loadScenario, openApp, state, toparDesafio, waitForState } from './helpers';
 
 const CHECKER = Array.from({ length: 8 }, (_, r) => (r % 2 ? '.b.b.b.b' : 'b.b.b.b.'));
 
@@ -24,6 +24,8 @@ test.describe('Retorno do duelo e placar dos duelos', () => {
     await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
     const s = await waitForState(page, (x) => x.mode === 'duel' && x.status === 'playing', 'desafio da Bia');
     expect(s.duelRivalName).toBe('Bia');
+    await expect(page.getByText('Bia te desafiou no CapiBlocks.')).toBeVisible({ timeout: 15_000 });
+    await toparDesafio(page);
     await expect(page.getByText(/Meta do Bia: 300/)).toBeVisible();
 
     await page.evaluate(() => (window as any).__bb.win());
