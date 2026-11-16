@@ -71,7 +71,13 @@ class TestBridge {
     'criados': [
       for (final d in duelos.duelos.values)
         if (d.dono == duelos.uid)
-          {'id': d.id, 'nome': d.nome, 'pontos': d.pontos},
+          {
+            'id': d.id,
+            'nome': d.nome,
+            'pontos': d.pontos,
+            'semente': d.semente,
+            'para': duelos.revanches[d.id]?.para,
+          },
     ],
     'respostas': [
       for (final r in duelos.respostas.values)

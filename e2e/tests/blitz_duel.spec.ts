@@ -148,7 +148,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await waitForState(page, (x) => x.status === 'lost' && x.showOutcome === true, 'fim do duelo');
     await expect(page.getByText('Sua marca', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Desafiar Amigo' })).toBeVisible();
-    await expect(page.getByText(/Quase!|Você venceu!/)).toHaveCount(0);
+    await expect(page.getByText(/venceu desta vez|Você venceu!/)).toHaveCount(0);
   });
 
   test('desafio de amigo perdido: mostra o placar e a Revanche joga o mesmo tabuleiro', async ({ page }) => {
@@ -159,7 +159,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
 
     await loadScenario(page, { board: CHECKER, tray: ['o20', 'o20', 'o20'] });
     await waitForState(page, (x) => x.status === 'lost' && x.showOutcome === true, 'perdeu o desafio');
-    await expect(page.getByText('Quase!', { exact: true })).toBeVisible();
+    await expect(page.getByText('Amigo venceu desta vez', { exact: true })).toBeVisible();
     await expect(page.getByText('5.000', { exact: true })).toBeVisible();
     await expect(page.getByText(/Faltaram 5\.000 pontos/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Desafiar Amigo' })).toBeVisible();

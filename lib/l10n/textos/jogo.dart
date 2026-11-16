@@ -139,7 +139,8 @@ const Map<String, String> enJogo = {
   'Sua marca': 'Your score',
   'Mande este tabuleiro para um amigo: ele joga as mesmas peças e tenta passar você.': 'Send this board to a friend: they get the same pieces and try to beat you.',
   'Você venceu!': 'You won!',
-  'Quase!': 'So close!',
+  '{rival} venceu desta vez': '{rival} won this time',
+  '{rival} recebeu o desafio de volta.': '{rival} got the challenge back.',
   'Você': 'You',
   'Devolva o desafio: agora é a vez de {rival} passar você.':
       "Send the challenge back: now it's {rival}'s turn to beat you.",
@@ -417,7 +418,9 @@ const Map<String, String> esJogo = {
   'Sua marca': 'Tu marca',
   'Mande este tabuleiro para um amigo: ele joga as mesmas peças e tenta passar você.': 'Envía este tablero a un amigo: juega las mismas piezas e intenta superarte.',
   'Você venceu!': '¡Ganaste!',
-  'Quase!': '¡Casi!',
+  '{rival} venceu desta vez': '{rival} ganó esta vez',
+  '{rival} recebeu o desafio de volta.':
+      '{rival} recibió el desafío de vuelta.',
   'Você': 'Tú',
   'Devolva o desafio: agora é a vez de {rival} passar você.':
       'Devuelve el reto: ahora le toca a {rival} superarte.',

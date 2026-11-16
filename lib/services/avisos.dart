@@ -7,6 +7,8 @@ import 'progress_store.dart';
 /// - daily reminders scheduled on the phone (opt-in, no server): the gift,
 ///   the missions, the village;
 /// - messages sent from the Firebase console (news, a new version), free;
+/// - duels: a friend answered a challenge or challenged back
+///   (services/duelo_aviso.dart);
 /// - Google Play's "update available" offer inside the game.
 abstract final class Avisos {
   /// Whether this platform can show notifications at all.
@@ -20,6 +22,14 @@ abstract final class Avisos {
   /// Returns whether reminders are on.
   static Future<bool> lembretes(ProgressStore store, bool ligar) =>
       impl.lembretes(store, ligar);
+
+  /// Asks Android for permission (13+) to show notifications, when the
+  /// player starts or answers a duel: the friend's answer comes as one.
+  static Future<void> pedirParaDuelos() => impl.pedirParaDuelos();
+
+  /// Opens a game route (`/duelo?…`) from a tapped notification. Set by
+  /// the app, which owns the navigator.
+  static void Function(String rota)? abrir;
 
   /// Offers a new version from Google Play each time the game opens; a
   /// version below the minimum set in Firebase must be updated to play.

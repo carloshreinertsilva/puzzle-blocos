@@ -63,7 +63,8 @@ test.describe('Retorno do duelo e placar dos duelos', () => {
     await page.getByRole('button', { name: 'Menu' }).click();
 
     await expect(page.getByText('Resultado do duelo')).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(/^Zeca passou você: 99\.999 × \d+\. Revanche\? Você 0 × 1 Zeca$/)).toBeVisible();
+    await expect(page.getByText(/^Zeca passou você: 99\.999 × \d+\. Você 0 × 1 Zeca$/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Revanche contra Zeca' })).toBeVisible();
     await page.getByRole('button', { name: 'Legal!' }).click();
     await expect(page.getByText('Resultado do duelo')).toHaveCount(0);
 
@@ -71,5 +72,37 @@ test.describe('Retorno do duelo e placar dos duelos', () => {
     await page.getByRole('button', { name: /^Duelo/ }).click();
     await expect(page.getByText('Placar dos duelos')).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText('Você 0 × 1 Zeca', { exact: true })).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('quem perdeu pede revanche, joga o mesmo tabuleiro e, vencendo, desafia o amigo de volta', async ({ page }) => {
+    await openApp(page, { level: 10, seen_opened_duel: true, rankingNome: JSON.stringify('Ana') });
+    await page.getByRole('button', { name: 'Modos' }).click();
+    await page.getByRole('button', { name: /^Duelo/ }).click();
+    await page.getByRole('button', { name: 'Começar Duelo' }).click();
+    const inicio = await waitForState(page, (x) => x.mode === 'duel' && x.status === 'playing', 'duelo aberto');
+
+    await loadScenario(page, { board: CHECKER, tray: ['o20', 'o20', 'o20'] });
+    await waitForState(page, (x) => x.status === 'lost' && x.showOutcome === true, 'fim do duelo');
+    await page.getByRole('button', { name: 'Desafiar Amigo' }).click();
+    await expect
+      .poll(async () => (await state(page)).duelos.criados.length, { message: 'desafio no servidor' })
+      .toBe(1);
+    expect(await page.evaluate(() => (window as any).__bb.amigoResponde('Zeca', 500))).toBe(true);
+    await page.getByRole('button', { name: 'Menu' }).click();
+
+    await page.getByRole('button', { name: 'Revanche contra Zeca' }).click({ timeout: 10_000 });
+    // Sem a tela de "Você foi desafiado!": a revanche começa direto.
+    const s = await waitForState(page, (x) => x.mode === 'duel' && x.status === 'playing', 'revanche aberta');
+    expect(s.duelSeed).toBe(inicio.duelSeed);
+    expect(s.duelTargetScore).toBe(500);
+    expect(s.duelRivalName).toBe('Zeca');
+    await expect(page.getByRole('button', { name: 'Topar o desafio' })).toHaveCount(0);
+
+    await page.evaluate(() => (window as any).__bb.win());
+    await expect(page.getByText('Você venceu!', { exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/^Zeca recebeu o desafio de volta\./)).toBeVisible({ timeout: 10_000 });
+    const criados = (await state(page)).duelos.criados;
+    expect(criados).toHaveLength(2);
+    expect(criados[1]).toMatchObject({ para: 'amigo_Zeca', semente: inicio.duelSeed });
   });
 });
