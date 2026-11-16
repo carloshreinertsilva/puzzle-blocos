@@ -173,6 +173,21 @@ uma única vez por semente, e duelos começados no menu são treino (sem
 estrelas). As missões diárias e o baú têm sequência de dias própria,
 separada da do Desafio diário.
 
+## Avisos dos duelos
+
+Quando um amigo joga o desafio de alguém (ou quem perdeu vence a revanche e
+desafia de volta), o outro recebe uma notificação no celular. Quem envia é a
+função `api/duelo-aviso.js`, publicada na Vercel junto com o site. Ela confere
+tudo no Firestore e manda pelo Firebase Cloud Messaging. O endereço de
+notificação de cada celular fica em `aparelhos/{uid}` (`firestore.rules`).
+
+- **Na Vercel:** a variável `FIREBASE_SERVICE_ACCOUNT` (Settings →
+  Environment Variables, Production) guarda o JSON inteiro da conta de
+  serviço do Firebase (Configurações do projeto → Contas de serviço). Esse
+  arquivo nunca entra no repositório.
+- **Por enquanto, só no Android.** O iPhone precisa da chave APNs no Firebase
+  e da permissão de notificações no app.
+
 ## Publicação Android
 
 Identificador `com.capiblocks.app` (não muda depois do primeiro envio). O CI

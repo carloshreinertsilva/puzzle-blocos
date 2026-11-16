@@ -136,12 +136,13 @@ class ListaPlacarDuelos extends StatelessWidget {
 }
 
 /// Friends answered the player's challenges: who beat whom, and the score
-/// with each of them now.
-Future<void> mostrarResultadosDuelo(
+/// with each of them now. A friend who beat the player gets a "Revanche":
+/// the chosen result comes back, to play that board again.
+Future<ResultadoDuelo?> mostrarResultadosDuelo(
   BuildContext context,
   ProgressStore store,
   List<ResultadoDuelo> novos,
-) => showDialog<void>(
+) => showDialog<ResultadoDuelo>(
   context: context,
   builder: (ctx) => AlertDialog(
     backgroundColor: const Color(0xFF141938),
@@ -165,7 +166,11 @@ Future<void> mostrarResultadosDuelo(
         mainAxisSize: MainAxisSize.min,
         children: [
           for (final r in novos.take(4)) ...[
-            _LinhaResultado(r: r, placar: Duelos.contra(store, r.rival)),
+            _LinhaResultado(
+              r: r,
+              placar: Duelos.contra(store, r.rival),
+              onRevanche: r.perdi ? () => Navigator.of(ctx).pop(r) : null,
+            ),
             const SizedBox(height: 10),
           ],
           if (novos.length > 4)
@@ -188,9 +193,10 @@ Future<void> mostrarResultadosDuelo(
 );
 
 class _LinhaResultado extends StatelessWidget {
-  const _LinhaResultado({required this.r, this.placar});
+  const _LinhaResultado({required this.r, this.placar, this.onRevanche});
   final ResultadoDuelo r;
   final PlacarAmigo? placar;
+  final VoidCallback? onRevanche;
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +207,7 @@ class _LinhaResultado extends StatelessWidget {
             'eu': formatInt(r.eu),
           })
         : r.perdi
-        ? tr('{rival} passou você: {ele} × {eu}. Revanche?', {
+        ? tr('{rival} passou você: {ele} × {eu}.', {
             'rival': r.nome,
             'ele': formatInt(r.ele),
             'eu': formatInt(r.eu),
@@ -211,7 +217,7 @@ class _LinhaResultado extends StatelessWidget {
             'eu': formatInt(r.eu),
           });
     final p = placar;
-    return Semantics(
+    final linha = Semantics(
       container: true,
       label: [titulo, if (p != null) textoPlacar(p)].join(' '),
       child: ExcludeSemantics(
@@ -249,6 +255,19 @@ class _LinhaResultado extends StatelessWidget {
           ),
         ),
       ),
+    );
+    final revanche = onRevanche;
+    if (revanche == null) return linha;
+    return Column(
+      children: [
+        linha,
+        const SizedBox(height: 8),
+        ChunkyButton(
+          label: tr('Revanche contra {rival}', {'rival': r.nome}),
+          icon: Icons.refresh_rounded,
+          onTap: revanche,
+        ),
+      ],
     );
   }
 }

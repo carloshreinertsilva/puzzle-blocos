@@ -108,7 +108,41 @@ class _HomeScreenState extends State<HomeScreen> {
     await Duelos.marcarVistos(store);
     Analytics.event('duelo_resultado', {'n': novos.length});
     if (!mounted) return;
-    await mostrarResultadosDuelo(context, store, novos);
+    final revanche = await mostrarResultadosDuelo(context, store, novos);
+    if (revanche != null && mounted) await _jogarRevanche(revanche);
+  }
+
+  /// The player's challenge, which this friend beat, played again on the
+  /// same board; beating the friend's score sends it back to them.
+  Future<void> _jogarRevanche(ResultadoDuelo r) async {
+    final duelo = await DuelosSync.ler(r.duelo);
+    if (!mounted) return;
+    final seed = duelo?.semente;
+    Analytics.event('duel_rematch', {'ok': seed != null ? 1 : 0});
+    if (seed == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr(
+              'Não deu para abrir esse duelo agora. Tente de novo mais tarde.',
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => GameScreen(
+          services: widget.services,
+          mode: duelo!.blitz ? GameMode.blitz : GameMode.duel,
+          duelSeed: seed,
+          duelTargetScore: r.ele,
+          duelRivalName: r.nome,
+          revanche: r,
+        ),
+      ),
+    );
   }
 
   /// The starter pack grew: players who bought it before get the

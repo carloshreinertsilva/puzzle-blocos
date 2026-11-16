@@ -74,6 +74,15 @@ abstract final class Novidades {
         DestinoNovidade.duelo,
       ),
     ],
+    6: [
+      Novidade(
+        'Revanche com aviso',
+        'Seu amigo passou você? Peça revanche no mesmo tabuleiro. Se '
+            'vencer, ele recebe um aviso no celular. E você fica sabendo na '
+            'hora quando alguém joga o seu desafio.',
+        DestinoNovidade.duelo,
+      ),
+    ],
   };
 
   /// How many are shown at once.

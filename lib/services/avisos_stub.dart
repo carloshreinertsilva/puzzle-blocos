@@ -8,6 +8,8 @@ Future<void> iniciar(ProgressStore store) async {}
 
 Future<bool> lembretes(ProgressStore store, bool ligar) async => false;
 
+Future<void> pedirParaDuelos() async {}
+
 Future<void> verificarAtualizacao(
   BuildContext context,
   ProgressStore store,

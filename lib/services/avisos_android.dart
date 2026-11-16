@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -13,6 +14,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../l10n/idioma.dart';
 import 'avisos.dart';
 import 'config_remota_firebase.dart';
+import 'duelo_aviso.dart';
 import 'firebase_app.dart';
 import 'progress_store.dart';
 
@@ -35,6 +37,13 @@ AndroidNotificationChannel get _canalNovidades => AndroidNotificationChannel(
   importance: Importance.high,
 );
 
+AndroidNotificationChannel get _canalDuelos => AndroidNotificationChannel(
+  'duelos',
+  tr('Duelos'),
+  description: tr('Quando um amigo joga ou devolve o seu desafio.'),
+  importance: Importance.high,
+);
+
 /// The hour the reminders ring (local time).
 const _hora = 19;
 
@@ -52,6 +61,8 @@ Future<void> _preparar() async {
     settings: const InitializationSettings(
       android: AndroidInitializationSettings('ic_notificacao'),
     ),
+    // A duel notification shown with the game open: its route.
+    onDidReceiveNotificationResponse: (r) => _abrir(r.payload),
   );
   final android = _plugin
       .resolvePlatformSpecificImplementation<
@@ -59,6 +70,14 @@ Future<void> _preparar() async {
       >();
   await android?.createNotificationChannel(_canalLembretes);
   await android?.createNotificationChannel(_canalNovidades);
+  await android?.createNotificationChannel(_canalDuelos);
+}
+
+/// A route from a notification (`/` is just the game: the menu fetches
+/// the duels' results by itself).
+void _abrir(String? rota) {
+  if (rota == null || rota.isEmpty || rota == '/') return;
+  Avisos.abrir?.call(rota);
 }
 
 Future<void> iniciar(ProgressStore store) async {
@@ -73,30 +92,67 @@ Future<void> iniciar(ProgressStore store) async {
 }
 
 /// Firebase Cloud Messaging: every phone listens to the "novidades" topic,
-/// so a message sent from the Firebase console reaches everyone. With the
-/// game open, the message shows as a local notification.
+/// so a message sent from the Firebase console reaches everyone, and leaves
+/// its own address for the duels' notifications. With the game open, a
+/// message shows as a local notification; tapping one opens its route.
 Future<void> _mensagens() async {
   if (!await firebasePronto()) return;
   final fcm = FirebaseMessaging.instance;
   await fcm.subscribeToTopic('novidades');
+  // The registration token, which the function on Vercel sends to (FCM
+  // HTTP v1 `message.token`). The newer register()/onRegistered gives an
+  // installation id instead, for a different way of sending.
+  // ignore: deprecated_member_use
+  final token = await fcm.getToken();
+  if (token != null) unawaited(DueloAviso.registrarAparelho(token));
+  // ignore: deprecated_member_use
+  fcm.onTokenRefresh.listen(DueloAviso.registrarAparelho);
+  FirebaseMessaging.onMessageOpenedApp.listen(
+    (m) => _abrir(m.data['rota'] as String?),
+  );
+  final inicial = await fcm.getInitialMessage();
+  if (inicial != null) {
+    // The game was closed: let the menu come up first.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _abrir(inicial.data['rota'] as String?),
+    );
+  }
   FirebaseMessaging.onMessage.listen((m) {
     final n = m.notification;
     if (n == null) return;
+    final rota = m.data['rota'] as String?;
+    final canal = rota != null ? _canalDuelos : _canalNovidades;
     _plugin.show(
       id: m.hashCode,
       title: n.title,
       body: n.body,
+      payload: rota,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
-          _canalNovidades.id,
-          _canalNovidades.name,
-          channelDescription: _canalNovidades.description,
+          canal.id,
+          canal.name,
+          channelDescription: canal.description,
+          importance: Importance.high,
           icon: 'ic_notificacao',
           color: const Color(0xFFFFC94D),
         ),
       ),
     );
   });
+}
+
+Future<void> pedirParaDuelos() async {
+  if (!suportado) return;
+  try {
+    await _preparar();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await android?.requestNotificationsPermission();
+  } catch (_) {
+    // Never stops the game.
+  }
 }
 
 /// Schedules the next days' reminders (1, 2 and 3 days from now at 19h),
