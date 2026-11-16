@@ -95,6 +95,33 @@ class _GameScreenState extends State<GameScreen> {
 
   bool get _onboarding => widget.onDone != null;
 
+  /// A friend's challenge opens on a card that says who sent it and the
+  /// score to beat; the board (and the Blitz clock) waits for "Topar".
+  late bool _abertura = controller.isChallenge && !_onboarding;
+
+  void _toparDesafio() {
+    widget.services.feedback.click();
+    Analytics.event('duel_intro', {'aceitou': true});
+    setState(() => _abertura = false);
+    controller.setPaused(false);
+  }
+
+  void _recusarDesafio() {
+    Analytics.event('duel_intro', {'aceitou': false});
+    _exit();
+  }
+
+  /// The score with the friend who sent the challenge, matched by the name
+  /// in the link (the link carries no id of theirs).
+  PlacarAmigo? _placarComQuemDesafiou() {
+    final nome = widget.duelRivalName?.trim().toLowerCase();
+    if (nome == null || nome.isEmpty) return null;
+    for (final p in Duelos.placar(widget.services.store)) {
+      if (p.nome.trim().toLowerCase() == nome) return p;
+    }
+    return null;
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -230,6 +257,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void initState() {
     super.initState();
+    if (_abertura) controller.paused = true;
     controller.addListener(_aoMudar);
     WidgetsBinding.instance.addPostFrameCallback((_) => _aoMudar());
     widget.services.feedback.musica.entrarNoJogo(
@@ -733,7 +761,17 @@ class _GameScreenState extends State<GameScreen> {
   Widget _overlay() {
     Widget? card;
     final s = controller.session;
-    if (controller.tutorialFinished) {
+    if (_abertura) {
+      card = _DuelIntroCard(
+        key: const ValueKey('duel-intro'),
+        rivalName: widget.duelRivalName,
+        target: controller.duelTargetScore ?? 1000,
+        blitz: controller.isBlitz,
+        placar: _placarComQuemDesafiou(),
+        onAccept: _toparDesafio,
+        onDecline: _recusarDesafio,
+      );
+    } else if (controller.tutorialFinished) {
       card = Padding(
         key: const ValueKey('tutorial-done'),
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2584,6 +2622,139 @@ class _DuelMarkCard extends StatelessWidget {
 /// The end of a friend's challenge: both scores side by side, who won, and
 /// the way back at them (send the challenge back, or a rematch on the same
 /// board).
+/// Before a friend's challenge: who sent it, the score to beat and, when
+/// there were duels with them before, the score so far.
+class _DuelIntroCard extends StatelessWidget {
+  const _DuelIntroCard({
+    super.key,
+    required this.rivalName,
+    required this.target,
+    required this.blitz,
+    required this.onAccept,
+    required this.onDecline,
+    this.placar,
+  });
+
+  /// Null (or the "Amigo" stand-in) when the link carried no name.
+  final String? rivalName;
+  final int target;
+  final bool blitz;
+  final PlacarAmigo? placar;
+  final VoidCallback onAccept;
+  final VoidCallback onDecline;
+
+  @override
+  Widget build(BuildContext context) {
+    final nome = rivalName?.trim();
+    final semNome = nome == null || nome.isEmpty || nome == tr('Amigo');
+    final quem = semNome
+        ? tr('Um amigo te desafiou no CapiBlocks.')
+        : tr('{rival} te desafiou no CapiBlocks.', {'rival': nome});
+    final meta = formatInt(target);
+    final regra = semNome
+        ? tr('Mesmo tabuleiro, mesmas peças. Faça mais pontos para vencer.')
+        : tr(
+            'Mesmo tabuleiro, mesmas peças. Faça mais pontos que {rival} para '
+            'vencer.',
+            {'rival': nome},
+          );
+    final p = placar;
+    return CardPanel(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          blitz ? const BlitzIcon(size: 64) : const DuelIcon(size: 64),
+          const SizedBox(height: 8),
+          Semantics(
+            header: true,
+            child: OutlinedTitle(
+              tr('Você foi desafiado!'),
+              size: 30,
+              colors: const [Color(0xFFFFFFFF), Color(0xFFFFD43B)],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            quem,
+            style: bodyText(16, color: Palette.text),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          Semantics(
+            container: true,
+            label: tr('Pontuação a bater: {meta}', {'meta': meta}),
+            child: ExcludeSemantics(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0x33FFD43B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFFFFD43B),
+                    width: 1.5,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      tr('Pontuação a bater'),
+                      style: bodyText(13, color: Palette.textDim),
+                    ),
+                    Text(
+                      meta,
+                      style: displayText(34, color: const Color(0xFFFFE066)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            regra,
+            style: bodyText(15, color: Palette.textDim),
+            textAlign: TextAlign.center,
+          ),
+          if (blitz) ...[
+            const SizedBox(height: 4),
+            Text(
+              tr('Você tem 60 segundos.'),
+              style: bodyText(15, color: Palette.textDim),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          if (p != null && p.duelos > 0) ...[
+            const SizedBox(height: 10),
+            Text(
+              tr('Placar: {placar}', {'placar': textoPlacar(p)}),
+              style: displayText(15, color: Palette.text),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 20),
+          ChunkyButton(
+            label: tr('Topar o desafio'),
+            icon: Icons.play_arrow_rounded,
+            big: true,
+            onTap: onAccept,
+          ),
+          TextButton(
+            onPressed: onDecline,
+            child: Text(
+              tr('Agora não'),
+              style: displayText(18, color: Palette.textDim),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DuelOutcomeCard extends StatelessWidget {
   const _DuelOutcomeCard({
     required this.won,

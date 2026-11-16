@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { state, waitForState } from './helpers';
+import { openApp, state, toparDesafio, waitForState } from './helpers';
 
 async function abrir(page: import('@playwright/test').Page, url: string) {
   await page.goto(url);
@@ -15,6 +15,29 @@ test('o link novo /duelo abre o desafio e volta ao endereço simples', async ({ 
   // Fora do Android, nada de convite: joga direto.
   await expect(page.getByRole('dialog', { name: 'Desafio no CapiBlocks' })).toBeHidden();
   expect(new URL(page.url()).pathname).toBe('/');
+});
+
+test('o desafio abre com quem desafiou e a meta, e o tabuleiro espera o Topar', async ({ page }) => {
+  await abrir(page, '/duelo?s=7777&p=865&n=Van');
+  const titulo = page.getByRole('heading', { name: 'Você foi desafiado!', level: 2 });
+  await expect(titulo).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Van te desafiou no CapiBlocks.')).toBeVisible();
+  await expect(page.getByText('Pontuação a bater: 865')).toBeVisible();
+  expect((await state(page)).paused, 'o jogo espera').toBe(true);
+  await toparDesafio(page);
+  await expect(titulo).toBeHidden();
+});
+
+test('no Blitz sem nome: um amigo, 60 segundos, e Agora não volta ao menu', async ({ page }) => {
+  await openApp(page, { level: 10 });
+  await abrir(page, '/duelo?s=4242&p=1500&m=blitz');
+  await expect(page.getByText('Um amigo te desafiou no CapiBlocks.')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Você tem 60 segundos.')).toBeVisible();
+  const antes = (await state(page)).blitzSecondsLeft;
+  await page.waitForTimeout(2_000);
+  expect((await state(page)).blitzSecondsLeft, 'o relógio não corre').toBe(antes);
+  await page.getByRole('button', { name: 'Agora não' }).click();
+  await waitForState(page, (s) => s.screen === 'home', 'voltou ao menu');
 });
 
 test.describe('no Android sem o app', () => {
@@ -35,5 +58,6 @@ test.describe('no Android sem o app', () => {
     await convite.getByRole('button', { name: 'Jogar aqui no navegador' }).click();
     await expect(convite).toBeHidden();
     await waitForState(page, (s) => s.mode === 'blitz', 'entrou no desafio de Blitz');
+    await toparDesafio(page);
   });
 });

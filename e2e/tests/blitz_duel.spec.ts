@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { dragPiece, loadScenario, openApp, playMove, state, waitForState } from './helpers';
+import { dragPiece, loadScenario, openApp, playMove, state, toparDesafio, waitForState } from './helpers';
 
 const CHECKER = Array.from({ length: 8 }, (_, r) => (r % 2 ? '.b.b.b.b' : 'b.b.b.b.'));
 
@@ -99,6 +99,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     expect(s.duelSeed).toBe(7777);
     expect(s.duelTargetScore).toBe(300);
 
+    await toparDesafio(page);
     // O HUD deve mostrar a meta do rival
     await expect(page.getByText(/Meta do Amigo: 300/i)).toBeVisible();
 
@@ -117,6 +118,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
     await waitForState(page, (s) => s.mode === 'duel', 'entrou no duelo via URL');
     expect(page.url()).not.toContain('duelo=');
+    await toparDesafio(page);
 
     await page.getByRole('button', { name: 'Pausar' }).click();
     await page.getByRole('button', { name: 'Menu' }).click();
@@ -153,6 +155,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await page.goto('/duelo?s=7777&p=5000');
     await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
     await waitForState(page, (s) => s.mode === 'duel' && s.status === 'playing', 'entrou no desafio');
+    await toparDesafio(page);
 
     await loadScenario(page, { board: CHECKER, tray: ['o20', 'o20', 'o20'] });
     await waitForState(page, (x) => x.status === 'lost' && x.showOutcome === true, 'perdeu o desafio');

@@ -30,13 +30,14 @@ void main() {
     });
 
     test(
-      'quem viu a edição 1 recebe o placar dos duelos, o Cofrinho e o Blitz',
+      'quem viu a edição 1 recebe a abertura do desafio, o placar dos duelos '
+      'e o Cofrinho',
       () {
         final novas = Novidades.pendentes(1);
         expect(novas.map((n) => n.destino), [
           DestinoNovidade.duelo,
+          DestinoNovidade.duelo,
           DestinoNovidade.loja,
-          DestinoNovidade.blitz,
         ]);
         expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
         expect(
@@ -46,10 +47,18 @@ void main() {
       },
     );
 
-    test('quem viu a edição 2 recebe o placar dos duelos e o Cofrinho', () {
+    test('quem viu a edição 2 recebe a abertura do desafio, o placar dos '
+        'duelos e o Cofrinho', () {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
+        'Você foi desafiado!',
         'Placar dos duelos',
         'Cofrinho do Capi',
+      ]);
+    });
+
+    test('quem viu a edição 4 recebe só a abertura do desafio', () {
+      expect(Novidades.pendentes(4).map((n) => n.titulo), [
+        'Você foi desafiado!',
       ]);
     });
 
