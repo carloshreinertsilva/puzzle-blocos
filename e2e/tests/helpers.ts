@@ -37,6 +37,8 @@ export type GameState = {
   status?: 'playing' | 'won' | 'lost';
   showOutcome?: boolean;
   paused?: boolean;
+  /** Tray slot being dragged, if any. */
+  arrastando?: number | null;
   intros?: string[];
   score?: number;
   revived?: boolean;

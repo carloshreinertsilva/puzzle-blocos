@@ -14,6 +14,9 @@ void installJsBridge(TestBridge bridge) {
   ).toJS).toJS;
   api['load'] = ((JSString json) => bridge.load(json.toDart).toJS).toJS;
   api['win'] = (() => bridge.win().toJS).toJS;
+  api['prenderArrasto'] = ((
+    JSNumber slot,
+  ) => bridge.prenderArrasto(slot.toDartInt).toJS).toJS;
   api['blitzSeconds'] = ((
     JSNumber n,
   ) => bridge.blitzSeconds(n.toDartInt).toJS).toJS;

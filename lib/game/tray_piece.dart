@@ -176,6 +176,23 @@ class TrayPiece extends PositionComponent
     _release();
   }
 
+  /// Drops the drag without placing the piece: it goes back to the tray.
+  /// For a drag whose finger is gone (see [PuzzleGame.soltarArrastoPreso]).
+  void cancelarArrasto() {
+    _snap = null;
+    _release();
+  }
+
+  /// Test bridge: a drag left behind, as when the phone never tells the game
+  /// that the finger was lifted.
+  void prenderParaTeste() {
+    if (piece == null) return;
+    _dragging = true;
+    game.activeDrag = this;
+    _center = Vector2(size.x / 2, -size.y);
+    priority = 10;
+  }
+
   void _release() {
     if (!_dragging) return;
     _dragging = false;
