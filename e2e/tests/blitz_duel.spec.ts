@@ -135,7 +135,7 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await page.getByRole('button', { name: 'Modos' }).click();
     await page.getByRole('button', { name: /^Duelo/ }).click();
     await expect(page.getByText('No fim, toque em Desafiar Amigo e mande o link.')).toBeVisible();
-    await expect(page.getByText('As mesmas 30 peças, na mesma ordem, para os dois.')).toBeVisible();
+    await expect(page.getByText('30 peças para cada um, começando pelas mesmas.')).toBeVisible();
     await expect(page.getByText(/Semente/)).toHaveCount(0);
     await page.getByRole('button', { name: 'Começar Duelo' }).click();
 

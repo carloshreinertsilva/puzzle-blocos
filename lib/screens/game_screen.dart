@@ -527,8 +527,8 @@ class _GameScreenState extends State<GameScreen> {
           SnackBar(
             content: Text(
               tr(
-                'No Duelo não vale usar ferramentas: os dois jogam com as '
-                'mesmas peças e nada mais.',
+                'No Duelo não vale usar ferramentas: vence quem joga melhor, '
+                'não quem tem mais ferramentas.',
               ),
             ),
             duration: const Duration(seconds: 3),

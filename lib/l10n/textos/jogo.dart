@@ -127,11 +127,10 @@ const Map<String, String> enJogo = {
   '60 segundos no relógio.': '60 seconds on the clock.',
   'Limpar linhas dá segundos a mais.': 'Clearing lines adds seconds.',
   'Começa com as mesmas peças.': 'You start with the same pieces.',
-  'As mesmas {n} peças, na mesma ordem, para os dois.':
-      'The same {n} pieces, in the same order, for both of you.',
+  '{n} peças para cada um, começando pelas mesmas.':
+      '{n} pieces each, starting with the same ones.',
   'Sem ferramentas: só você e as peças.': 'No tools: just you and the pieces.',
-  'No Duelo não vale usar ferramentas: os dois jogam com as mesmas peças e nada mais.':
-      'No tools in a Duel: you both play the same pieces and nothing else.',
+  'No Duelo não vale usar ferramentas: vence quem joga melhor, não quem tem mais ferramentas.': 'No tools in a Duel: the better player wins, not the one with more tools.',
   'Vai até a última peça, mesmo depois de passar a meta.':
       'It goes on to the last piece, even after you pass the target.',
   'Se nenhuma peça couber, a partida acaba antes.':
@@ -422,11 +421,11 @@ const Map<String, String> esJogo = {
   '60 segundos no relógio.': '60 segundos en el reloj.',
   'Limpar linhas dá segundos a mais.': 'Limpiar líneas suma segundos.',
   'Começa com as mesmas peças.': 'Empiezas con las mismas piezas.',
-  'As mesmas {n} peças, na mesma ordem, para os dois.':
-      'Las mismas {n} piezas, en el mismo orden, para los dos.',
+  '{n} peças para cada um, começando pelas mesmas.':
+      '{n} piezas para cada uno, empezando por las mismas.',
   'Sem ferramentas: só você e as peças.':
       'Sin herramientas: solo tú y las piezas.',
-  'No Duelo não vale usar ferramentas: os dois jogam com as mesmas peças e nada mais.': 'En el Duelo no se usan herramientas: los dos juegan con las mismas piezas y nada más.',
+  'No Duelo não vale usar ferramentas: vence quem joga melhor, não quem tem mais ferramentas.': 'En el Duelo no se usan herramientas: gana quien juega mejor, no quien tiene más herramientas.',
   'Vai até a última peça, mesmo depois de passar a meta.':
       'Sigue hasta la última pieza, aunque ya hayas superado la meta.',
   'Se nenhuma peça couber, a partida acaba antes.':

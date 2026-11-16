@@ -33,7 +33,7 @@ class RegrasDuelo extends StatelessWidget {
     return [
       (
         Icons.extension_rounded,
-        tr('As mesmas {n} peças, na mesma ordem, para os dois.', {
+        tr('{n} peças para cada um, começando pelas mesmas.', {
           'n': LevelConfig.duelPieces,
         }),
       ),
