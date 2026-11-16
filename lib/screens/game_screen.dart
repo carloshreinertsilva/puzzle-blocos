@@ -520,6 +520,22 @@ class _GameScreenState extends State<GameScreen> {
 
   void _openToolsSheet() {
     widget.services.feedback.click();
+    if (!controller.toolsAllowed) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              tr(
+                'No Duelo não vale usar ferramentas: os dois jogam com as '
+                'mesmas peças e nada mais.',
+              ),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,

@@ -126,9 +126,12 @@ const Map<String, String> enJogo = {
       'Score more than {rival} to win.',
   '60 segundos no relógio.': '60 seconds on the clock.',
   'Limpar linhas dá segundos a mais.': 'Clearing lines adds seconds.',
-  'As peças saem do mesmo sorteio.': 'Pieces come from the same draw.',
-  '{n} peças para cada um, do mesmo sorteio.':
-      '{n} pieces each, from the same draw.',
+  'Começa com as mesmas peças.': 'You start with the same pieces.',
+  'As mesmas {n} peças, na mesma ordem, para os dois.':
+      'The same {n} pieces, in the same order, for both of you.',
+  'Sem ferramentas: só você e as peças.': 'No tools: just you and the pieces.',
+  'No Duelo não vale usar ferramentas: os dois jogam com as mesmas peças e nada mais.':
+      'No tools in a Duel: you both play the same pieces and nothing else.',
   'Vai até a última peça, mesmo depois de passar a meta.':
       'It goes on to the last piece, even after you pass the target.',
   'Se nenhuma peça couber, a partida acaba antes.':
@@ -418,9 +421,12 @@ const Map<String, String> esJogo = {
       'Haz más puntos que {rival} para ganar.',
   '60 segundos no relógio.': '60 segundos en el reloj.',
   'Limpar linhas dá segundos a mais.': 'Limpiar líneas suma segundos.',
-  'As peças saem do mesmo sorteio.': 'Las piezas salen del mismo sorteo.',
-  '{n} peças para cada um, do mesmo sorteio.':
-      '{n} piezas para cada uno, del mismo sorteo.',
+  'Começa com as mesmas peças.': 'Empiezas con las mismas piezas.',
+  'As mesmas {n} peças, na mesma ordem, para os dois.':
+      'Las mismas {n} piezas, en el mismo orden, para los dos.',
+  'Sem ferramentas: só você e as peças.':
+      'Sin herramientas: solo tú y las piezas.',
+  'No Duelo não vale usar ferramentas: os dois jogam com as mesmas peças e nada mais.': 'En el Duelo no se usan herramientas: los dos juegan con las mismas piezas y nada más.',
   'Vai até a última peça, mesmo depois de passar a meta.':
       'Sigue hasta la última pieza, aunque ya hayas superado la meta.',
   'Se nenhuma peça couber, a partida acaba antes.':

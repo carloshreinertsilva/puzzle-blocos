@@ -313,6 +313,56 @@ void main() {
       expect(s.goalsMet, isFalse, reason: 'a meta não encerra o duelo');
     });
 
+    test('jogadas diferentes, mesmas peças na mesma ordem', () {
+      List<String> jogar(int Function(int jogada) escolha) {
+        final s = GameSession(
+          LevelConfig.duel(seed: 777, targetScore: 100),
+          rng: Random(),
+        );
+        final vistas = <String>[for (final p in s.tray) p!.shape.id];
+        var jogada = 0;
+        while (s.status == SessionStatus.playing) {
+          // Each player picks a different fitting spot.
+          final lances = <(int, int, int)>[
+            for (var slot = 0; slot < 3; slot++)
+              if (s.tray[slot] case final p?)
+                for (var r = 0; r < Board.size; r++)
+                  for (var c = 0; c < Board.size; c++)
+                    if (s.board.canPlace(p.shape, r, c)) (slot, r, c),
+          ];
+          if (lances.isEmpty) break;
+          final l = lances[escolha(jogada++) % lances.length];
+          if (s.place(l.$1, l.$2, l.$3).newTray) {
+            vistas.addAll([for (final p in s.tray) p!.shape.id]);
+          }
+        }
+        return vistas;
+      }
+
+      final a = jogar((j) => 0);
+      final b = jogar((j) => j * 7 + 3);
+      final n = min(a.length, b.length);
+      expect(n, greaterThanOrEqualTo(6));
+      expect(a.take(n), b.take(n));
+    });
+
+    test('no Duelo não vale ferramenta', () async {
+      SharedPreferences.setMockInitialValues({'level': 10, 'tool_reroll': 3});
+      final store = await ProgressStore.load();
+      await store.addTool(CapiTool.reroll, 3);
+      final c = GameController(
+        store: store,
+        feedback: GameFeedback(store),
+        mode: GameMode.duel,
+        duelSeed: 5,
+      );
+      final antes = [for (final p in c.session.tray) p?.shape.id];
+      expect(c.toolsAllowed, isFalse);
+      expect(await c.selectTool(CapiTool.reroll), isFalse);
+      expect([for (final p in c.session.tray) p?.shape.id], antes);
+      c.dispose();
+    });
+
     test('outros modos não têm limite de peças', () {
       expect(LevelConfig.blitz(seed: 1).pieceLimit, isNull);
       expect(LevelConfig.endless().pieceLimit, isNull);

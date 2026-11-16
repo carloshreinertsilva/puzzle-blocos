@@ -86,8 +86,8 @@ abstract final class Novidades {
     7: [
       Novidade(
         'Duelo de 30 peças',
-        'Agora cada duelo tem 30 peças para cada um, e o contador mostra '
-            'quantas faltam. Quem fizer mais pontos vence.',
+        'Agora os dois jogam as mesmas 30 peças, na mesma ordem, e o '
+            'contador mostra quantas faltam. Quem fizer mais pontos vence.',
         DestinoNovidade.duelo,
       ),
     ],

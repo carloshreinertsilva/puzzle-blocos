@@ -659,8 +659,12 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// No tools in a Duel: both players get the same pieces and nothing
+  /// else, so stocked tools give no one an edge.
+  bool get toolsAllowed => !isDuel;
+
   Future<bool> selectTool(CapiTool tool) async {
-    if (!playing || store.toolCount(tool) <= 0) return false;
+    if (!playing || !toolsAllowed || store.toolCount(tool) <= 0) return false;
     Analytics.event('tool_use', {'tool': tool.name});
     if (tool == CapiTool.reroll) {
       final ok = await store.useTool(CapiTool.reroll);

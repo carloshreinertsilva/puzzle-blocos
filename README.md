@@ -175,13 +175,16 @@ separada da do Desafio diário.
 
 ## Regras do Duelo
 
-O Duelo clássico tem 30 peças para cada jogador (`LevelConfig.duelPieces`),
-com a mesma semente; passar a pontuação do amigo não encerra a partida, e
-ela só acaba antes se nenhuma peça couber. Quem fizer mais pontos vence. O
-Duelo Blitz é por tempo: 60 segundos, com os segundos extras do Blitz. As
-regras aparecem na entrada do modo e na tela "Você foi desafiado!"
-(`lib/ui/regras_duelo.dart`). Com o robô do simulador, 30 peças dão
-mediana de ~3.200 pontos, e ~11% das partidas travam antes do fim.
+O Duelo clássico tem 30 peças (`LevelConfig.duelPieces`), as mesmas e na
+mesma ordem para os dois jogadores: elas saem de uma sequência própria da
+semente que não olha o tabuleiro (`PieceGenerator.dealFixed`), e ferramentas
+não valem no Duelo. Passar a pontuação do amigo não encerra a partida; ela
+só acaba antes se nenhuma peça couber. Quem fizer mais pontos vence. O Duelo
+Blitz é por tempo: 60 segundos, com os segundos extras do Blitz (as peças
+dele ainda se ajustam ao tabuleiro). As regras aparecem na entrada do modo e
+na tela "Você foi desafiado!" (`lib/ui/regras_duelo.dart`). Com o robô do
+simulador, 30 peças dão mediana de ~2.800 pontos, e ~15% das partidas travam
+antes do fim.
 
 ## Avisos dos duelos
 

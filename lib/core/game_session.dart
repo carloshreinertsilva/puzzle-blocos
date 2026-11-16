@@ -29,7 +29,10 @@ class PlaceResult {
 class GameSession {
   GameSession(this.level, {Random? rng, this.failStreak = 0})
     : rng = rng ?? Random(),
-      board = level.buildBoard() {
+      board = level.buildBoard(),
+      _sequencia = level.isDuel && level.seed != null
+          ? PieceGenerator(Random(level.seed! * 31 + 7))
+          : null {
     generator = PieceGenerator(this.rng);
     rocksAtStart = board.rockCount;
     _deal(extraMercy: level.isRelief ? 0.15 : 0);
@@ -42,6 +45,10 @@ class GameSession {
   /// Consecutive losses on this level before this attempt; eases the deal.
   final int failStreak;
   late final PieceGenerator generator;
+
+  /// A Duel deals from its own stream, seeded by the duel and blind to the
+  /// board, so both players get exactly the same pieces in the same order.
+  final PieceGenerator? _sequencia;
   late final int rocksAtStart;
 
   late List<Piece?> tray;
@@ -61,6 +68,10 @@ class GameSession {
   SessionStatus status = SessionStatus.playing;
 
   static const comboGrace = 3;
+
+  /// The mix of the Duel's fixed stream: a little gentler than a level,
+  /// since its trays cannot be checked against each player's board.
+  static const duelDifficulty = 0.05;
   static const boardClearBonus = 1500;
 
   int get rocksLeft => board.rockCount;
@@ -240,6 +251,10 @@ class GameSession {
   }
 
   void _deal({double extraMercy = 0}) {
+    if (_sequencia case final fila?) {
+      tray = List<Piece?>.of(fila.dealFixed(difficulty: duelDifficulty));
+      return;
+    }
     final gemChance = level.gemsTarget > gems ? level.gemChance : 0.0;
     tray = List<Piece?>.of(
       generator.deal(

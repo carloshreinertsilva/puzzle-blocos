@@ -48,6 +48,13 @@ class PieceGenerator {
     return _withGems(_fallback(board, masks, sticky), gemChance);
   }
 
+  /// Three pieces from the stream alone, never looking at a board: the
+  /// same seed deals the same trays in the same order to everyone (the
+  /// Duel). A tray may not fit; then the run ends, the same for both.
+  List<Piece> dealFixed({required double difficulty}) => [
+    for (var i = 0; i < traySize; i++) Piece(_pick(difficulty)),
+  ];
+
   Shape _pick(double d) {
     final weights = [
       _lerp(1.0, 0.3, d),

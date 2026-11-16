@@ -26,17 +26,18 @@ class RegrasDuelo extends StatelessWidget {
       return [
         (Icons.timer_rounded, tr('60 segundos no relógio.')),
         (Icons.add_alarm_rounded, tr('Limpar linhas dá segundos a mais.')),
-        (Icons.extension_rounded, tr('As peças saem do mesmo sorteio.')),
+        (Icons.extension_rounded, tr('Começa com as mesmas peças.')),
         (Icons.emoji_events_rounded, vence),
       ];
     }
     return [
       (
         Icons.extension_rounded,
-        tr('{n} peças para cada um, do mesmo sorteio.', {
+        tr('As mesmas {n} peças, na mesma ordem, para os dois.', {
           'n': LevelConfig.duelPieces,
         }),
       ),
+      (Icons.construction_rounded, tr('Sem ferramentas: só você e as peças.')),
       (
         Icons.flag_rounded,
         tr('Vai até a última peça, mesmo depois de passar a meta.'),
