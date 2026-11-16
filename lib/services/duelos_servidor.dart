@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../core/duelos.dart';
 import '../l10n/idioma.dart';
+import 'duelo_aviso.dart';
 import 'duelo_link.dart';
 import 'firebase_app.dart';
 import 'progress_store.dart';
@@ -15,11 +18,17 @@ class DueloNoServidor {
     required this.dono,
     required this.nome,
     required this.pontos,
+    this.semente,
+    this.blitz = false,
   });
   final String id;
   final String dono;
   final String nome;
   final int pontos;
+
+  /// The board (null in challenges saved before it was kept).
+  final int? semente;
+  final bool blitz;
 }
 
 /// A friend's answer to a challenge: their best score on that board.
@@ -85,7 +94,8 @@ abstract class DuelosServidor {
   /// A new challenge id, made on the phone (no wait).
   String novoId();
 
-  /// Registers the challenge [id].
+  /// Registers the challenge [id]. A challenge back names the friend it
+  /// is [para] and the challenge of theirs it answers ([origem]).
   Future<void> criar({
     required String id,
     required String dono,
@@ -93,6 +103,8 @@ abstract class DuelosServidor {
     required int pontos,
     required int semente,
     required bool blitz,
+    String? para,
+    String? origem,
   });
 
   Future<DueloNoServidor?> ler(String id);
@@ -136,12 +148,16 @@ class DuelosFirebase implements DuelosServidor {
     required int pontos,
     required int semente,
     required bool blitz,
+    String? para,
+    String? origem,
   }) => _db.collection('duelos').doc(id).set({
     'dono': dono,
     'nome': nome,
     'pontos': pontos,
     'semente': semente,
     'blitz': blitz,
+    'para': ?para,
+    'origem': ?origem,
     'criadoEm': FieldValue.serverTimestamp(),
   });
 
@@ -151,11 +167,14 @@ class DuelosFirebase implements DuelosServidor {
     if (d == null) return null;
     final dono = d['dono'], nome = d['nome'], pontos = d['pontos'];
     if (dono is! String || nome is! String || pontos is! num) return null;
+    final semente = d['semente'];
     return DueloNoServidor(
       id: id,
       dono: dono,
       nome: nome,
       pontos: pontos.toInt(),
+      semente: semente is num ? semente.toInt() : null,
+      blitz: d['blitz'] == true,
     );
   }
 
@@ -203,14 +222,22 @@ class DuelosDeTeste implements DuelosServidor {
     required int pontos,
     required int semente,
     required bool blitz,
+    String? para,
+    String? origem,
   }) async {
     duelos[id] = DueloNoServidor(
       id: id,
       dono: dono,
       nome: nome,
       pontos: pontos,
+      semente: semente,
+      blitz: blitz,
     );
+    if (para != null) revanches[id] = (para: para, origem: origem ?? '');
   }
+
+  /// The challenges back: to whom, answering which challenge.
+  final revanches = <String, ({String para, String origem})>{};
 
   @override
   Future<DueloNoServidor?> ler(String id) async => duelos[id];
@@ -320,6 +347,7 @@ abstract final class DuelosSync {
           meta: duelo.pontos,
         ),
       );
+      unawaited(DueloAviso.resposta('${id}_$uid'));
       final r = ResultadoDuelo(
         duelo: id,
         rival: duelo.dono,
@@ -333,6 +361,54 @@ abstract final class DuelosSync {
       return r;
     } catch (e) {
       debugPrint('Duelos: responder: $e');
+      return null;
+    }
+  }
+
+  /// The player lost to a friend's answer [r] (to the player's challenge)
+  /// and beat it on the same board with [pontos]: a challenge back goes to
+  /// that friend, who is told on their phone. Returns whether it was sent.
+  static Future<bool> revanche(
+    ProgressStore store, {
+    required ResultadoDuelo r,
+    required int semente,
+    required bool blitz,
+    required int pontos,
+  }) async {
+    final s = DuelosServidor.atual;
+    final nome = store.rankingNome;
+    if (s == null || nome == null || !r.meu) return false;
+    try {
+      final uid = await preparar();
+      if (uid == null) return false;
+      final id = s.novoId();
+      await s.criar(
+        id: id,
+        dono: uid,
+        nome: nome,
+        pontos: pontos,
+        semente: semente,
+        blitz: blitz,
+        para: r.rival,
+        origem: r.duelo,
+      );
+      unawaited(DueloAviso.revanche(id));
+      return true;
+    } catch (e) {
+      debugPrint('Duelos: revanche: $e');
+      return false;
+    }
+  }
+
+  /// The board of the player's challenge [id], to play it again.
+  static Future<DueloNoServidor?> ler(String id) async {
+    final s = DuelosServidor.atual;
+    if (s == null) return null;
+    try {
+      if (await preparar() == null) return null;
+      return await s.ler(id);
+    } catch (e) {
+      debugPrint('Duelos: ler: $e');
       return null;
     }
   }

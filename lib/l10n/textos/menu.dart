@@ -308,13 +308,20 @@ const Map<String, String> enMenu = {
   'Placar: {placar}': 'Score: {placar}',
   'Placar dos duelos': 'Duel scoreboard',
   'Ao abrir o link de um amigo, você vê quem desafiou e quantos pontos precisa bater antes de começar.': "When you open a friend's link, you see who challenged you and the score to beat before you start.",
+  'Revanche com aviso': 'Rematch with a heads-up',
+  'Seu amigo passou você? Peça revanche no mesmo tabuleiro. Se vencer, ele recebe um aviso no celular. E você fica sabendo na hora quando alguém joga o seu desafio.': "Did your friend beat you? Ask for a rematch on the same board. If you win, they get a notification on their phone. And you find out right away when someone plays your challenge.",
   'Resultado do duelo': 'Duel result',
   'E mais {n} duelo.': 'And {n} more duel.',
   'E mais {n} duelos.': 'And {n} more duels.',
   '{rival} não passou você: {ele} × {eu}.':
       "{rival} didn't beat you: {ele} × {eu}.",
-  '{rival} passou você: {ele} × {eu}. Revanche?':
-      '{rival} beat you: {ele} × {eu}. Rematch?',
+  '{rival} passou você: {ele} × {eu}.': '{rival} beat you: {ele} × {eu}.',
+  'Revanche contra {rival}': 'Rematch {rival}',
+  'Não deu para abrir esse duelo agora. Tente de novo mais tarde.':
+      "Couldn't open this duel right now. Try again later.",
+  'Duelos': 'Duels',
+  'Quando um amigo joga ou devolve o seu desafio.':
+      'When a friend plays or returns your challenge.',
   '{rival} empatou com você: {eu} pontos.':
       '{rival} tied with you: {eu} points.',
   'Quando ele jogar, você vê o resultado e o placar de vocês.':
@@ -637,13 +644,20 @@ const Map<String, String> esMenu = {
   'Placar: {placar}': 'Marcador: {placar}',
   'Placar dos duelos': 'Marcador de duelos',
   'Ao abrir o link de um amigo, você vê quem desafiou e quantos pontos precisa bater antes de começar.': 'Al abrir el enlace de un amigo, ves quién te desafió y cuántos puntos debes superar antes de empezar.',
+  'Revanche com aviso': 'Revancha con aviso',
+  'Seu amigo passou você? Peça revanche no mesmo tabuleiro. Se vencer, ele recebe um aviso no celular. E você fica sabendo na hora quando alguém joga o seu desafio.': '¿Tu amigo te superó? Pide la revancha en el mismo tablero. Si ganas, recibe un aviso en el móvil. Y te enteras al momento cuando alguien juega tu desafío.',
   'Resultado do duelo': 'Resultado del duelo',
   'E mais {n} duelo.': 'Y {n} duelo más.',
   'E mais {n} duelos.': 'Y {n} duelos más.',
   '{rival} não passou você: {ele} × {eu}.':
       '{rival} no te superó: {ele} × {eu}.',
-  '{rival} passou você: {ele} × {eu}. Revanche?':
-      '{rival} te superó: {ele} × {eu}. ¿Revancha?',
+  '{rival} passou você: {ele} × {eu}.': '{rival} te superó: {ele} × {eu}.',
+  'Revanche contra {rival}': 'Revancha contra {rival}',
+  'Não deu para abrir esse duelo agora. Tente de novo mais tarde.':
+      'No se pudo abrir este duelo ahora. Inténtalo más tarde.',
+  'Duelos': 'Duelos',
+  'Quando um amigo joga ou devolve o seu desafio.':
+      'Cuando un amigo juega o devuelve tu desafío.',
   '{rival} empatou com você: {eu} pontos.':
       '{rival} empató contigo: {eu} puntos.',
   'Quando ele jogar, você vê o resultado e o placar de vocês.':

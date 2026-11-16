@@ -12,6 +12,7 @@ import '../ads/ad_service.dart';
 import '../core/duelos.dart';
 import '../core/game_session.dart';
 import '../core/ranking.dart';
+import '../services/avisos.dart';
 import '../services/duelos_servidor.dart';
 import '../ui/nome_dialog.dart';
 import '../ui/placar_duelos.dart';
@@ -55,6 +56,7 @@ class GameScreen extends StatefulWidget {
     this.duelTargetScore,
     this.duelRivalName,
     this.dueloId,
+    this.revanche,
   });
   final AppServices services;
   final GameMode mode;
@@ -64,6 +66,11 @@ class GameScreen extends StatefulWidget {
 
   /// A friend's challenge on the server: the result goes back to them.
   final String? dueloId;
+
+  /// The player's own challenge, which this friend beat: played again on
+  /// the same board against the friend's score. Beating it challenges the
+  /// friend back (they are told on their phone).
+  final ResultadoDuelo? revanche;
 
   /// An earlier level, played again for its missing stars.
   final int? replayLevel;
@@ -97,7 +104,8 @@ class _GameScreenState extends State<GameScreen> {
 
   /// A friend's challenge opens on a card that says who sent it and the
   /// score to beat; the board (and the Blitz clock) waits for "Topar".
-  late bool _abertura = controller.isChallenge && !_onboarding;
+  late bool _abertura =
+      controller.isChallenge && !_onboarding && widget.revanche == null;
 
   void _toparDesafio() {
     widget.services.feedback.click();
@@ -219,6 +227,8 @@ class _GameScreenState extends State<GameScreen> {
     }
     final r = await DuelosSync.responder(store, id, pontos);
     if (r == null || !mounted) return;
+    // A challenge back from this friend comes as a notification.
+    unawaited(Avisos.pedirParaDuelos());
     setState(() {
       _duelEnviado = true;
       _placarDuelo = Duelos.contra(store, r.rival);
@@ -233,9 +243,38 @@ class _GameScreenState extends State<GameScreen> {
     if (nome != null) await widget.services.store.setRankingNome(nome);
   }
 
+  /// The challenge back went to the friend.
+  bool _revancheEnviada = false;
+  bool _revancheEnviando = false;
+
+  /// A rematch on the player's own challenge was won: the friend gets the
+  /// board back, with the new score to beat.
+  void _devolverRevanche() {
+    final r = widget.revanche;
+    final seed = widget.duelSeed;
+    if (r == null || seed == null) return;
+    if (!controller.showOutcome || !controller.duelWon) return;
+    if (_revancheEnviada || _revancheEnviando) return;
+    _revancheEnviando = true;
+    unawaited(() async {
+      final ok = await DuelosSync.revanche(
+        widget.services.store,
+        r: r,
+        semente: seed,
+        blitz: controller.isBlitz,
+        pontos: controller.session.score,
+      );
+      _revancheEnviando = false;
+      if (!mounted) return;
+      Analytics.event('duel_rematch_sent', {'ok': ok ? 1 : 0});
+      if (ok) setState(() => _revancheEnviada = true);
+    }());
+  }
+
   void _aoMudar() {
     _registrarOfertas();
     _responderDuelo();
+    _devolverRevanche();
     if (!_comDesafios || !controller.playing) return;
     if (identical(_desafiosDe, controller.session)) return;
     _desafiosDe = controller.session;
@@ -692,6 +731,8 @@ class _GameScreenState extends State<GameScreen> {
             subject: tr('Desafio no CapiBlocks'),
           ),
         );
+        // The friend's answer comes back as a notification.
+        if (convite.id != null) unawaited(Avisos.pedirParaDuelos());
         return;
       } catch (_) {
         // No share sheet: copy instead.
@@ -724,8 +765,18 @@ class _GameScreenState extends State<GameScreen> {
       rivalScore: controller.duelTargetScore ?? 1000,
       rivalName: controller.duelRivalName ?? tr('Rival'),
       starsGained: controller.starsGained,
-      enviado: _duelEnviado,
-      placar: _placarDuelo,
+      enviado: _duelEnviado || _revancheEnviada,
+      aviso: _revancheEnviada
+          ? tr('{rival} recebeu o desafio de volta.', {
+              'rival': controller.duelRivalName ?? tr('Rival'),
+            })
+          : null,
+      revanche: widget.revanche != null,
+      placar:
+          _placarDuelo ??
+          (widget.revanche == null
+              ? null
+              : Duelos.contra(widget.services.store, widget.revanche!.rival)),
       onRetry: _retry,
       onExit: _exit,
       onShareDuel: () => _shareDuelLink(score),
@@ -2803,10 +2854,19 @@ class _DuelOutcomeCard extends StatelessWidget {
     required this.onExit,
     required this.onShareDuel,
     this.enviado = false,
+    this.aviso,
+    this.revanche = false,
     this.placar,
   });
 
   final bool won;
+
+  /// What the friend was told, when not the plain "will know your result".
+  final String? aviso;
+
+  /// A rematch on the player's own challenge: winning sends it back by
+  /// itself, so there is no link to share.
+  final bool revanche;
   final int score;
   final int rivalScore;
   final String rivalName;
@@ -2862,7 +2922,9 @@ class _DuelOutcomeCard extends StatelessWidget {
           const DuelIcon(size: 64),
           const SizedBox(height: 8),
           OutlinedTitle(
-            won ? tr('Você venceu!') : tr('Quase!'),
+            won
+                ? tr('Você venceu!')
+                : tr('{rival} venceu desta vez', {'rival': rivalName}),
             size: 30,
             colors: won
                 ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
@@ -2896,9 +2958,11 @@ class _DuelOutcomeCard extends StatelessWidget {
             const SizedBox(height: 10),
             PlacarDoAmigo(
               placar: placar,
-              aviso: tr('{rival} vai saber do seu resultado.', {
-                'rival': rivalName,
-              }),
+              aviso:
+                  aviso ??
+                  tr('{rival} vai saber do seu resultado.', {
+                    'rival': rivalName,
+                  }),
             ),
           ],
           if (won && starsGained > 0) ...[
@@ -2916,7 +2980,14 @@ class _DuelOutcomeCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          if (won) ...[
+          if (won && revanche) ...[
+            ChunkyButton(
+              label: tr('Jogar de novo'),
+              icon: Icons.refresh_rounded,
+              big: true,
+              onTap: onRetry,
+            ),
+          ] else if (won) ...[
             ChunkyButton(
               label: tr('Devolver o Desafio'),
               icon: Icons.share_rounded,

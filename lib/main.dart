@@ -249,6 +249,8 @@ class App extends StatelessWidget {
       TestBridge.instance.abrirRota = (rota) =>
           navegador.currentState?.pushNamed(rota);
     }
+    // A duel notification opens its challenge over wherever the player is.
+    Avisos.abrir = (rota) => navegador.currentState?.pushNamed(rota);
     return MaterialApp(
       navigatorKey: navegador,
       title: appTitle,

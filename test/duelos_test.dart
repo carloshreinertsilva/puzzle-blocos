@@ -81,6 +81,46 @@ void main() {
     expect(await DuelosSync.buscar(ana), isEmpty);
   });
 
+  test(
+    'revanche: quem perdeu joga o mesmo tabuleiro e desafia o amigo de volta',
+    () async {
+      var ana = await _celular(servidor, 'ana');
+      await ana.setRankingNome('Ana');
+      await DuelosSync.preparar();
+      final convite = DuelosSync.criar(
+        ana,
+        const DueloConvite(semente: 7, meta: 1000, blitz: true),
+      )!;
+      await Future<void>.delayed(Duration.zero);
+      final dadosAna = ana.exportar();
+
+      final bia = await _celular(servidor, 'bia');
+      await bia.setRankingNome('Bia');
+      await DuelosSync.responder(bia, convite.id!, 1500);
+
+      ana = await _celular(servidor, 'ana', dadosAna);
+      final perdido = (await DuelosSync.buscar(ana)).single;
+      // O tabuleiro do desafio volta do servidor.
+      final duelo = (await DuelosSync.ler(perdido.duelo))!;
+      expect((duelo.semente, duelo.blitz), (7, true));
+
+      expect(
+        await DuelosSync.revanche(
+          ana,
+          r: perdido,
+          semente: 7,
+          blitz: true,
+          pontos: 1800,
+        ),
+        isTrue,
+      );
+      final id = servidor.revanches.keys.single;
+      expect(servidor.revanches[id], (para: 'bia', origem: convite.id!));
+      expect(servidor.duelos[id]!.pontos, 1800);
+      expect(servidor.duelos[id]!.semente, 7);
+    },
+  );
+
   test('o próprio desafio não conta como resposta', () async {
     final ana = await _celular(servidor, 'ana');
     await ana.setRankingNome('Ana');

@@ -113,13 +113,20 @@ service cloud.firestore {
 
     // --- Os duelos entre amigos (lib/services/duelos_servidor.dart) ---
     // duelos/{id}: um desafio, com o dono, o nome dele e a pontuação a
-    // bater. Só o dono cria; quem tem o link (o id) lê; ninguém lista.
+    // bater (e, numa revanche, para quem e de qual desafio veio). Só o dono
+    // cria; quem tem o link (o id) lê; ninguém lista.
     match /duelos/{id} {
       allow get: if request.auth != null;
       allow create: if request.auth != null
         && id.matches('^[A-Za-z0-9]{1,40}$')
-        && request.resource.data.keys().hasOnly(['dono', 'nome', 'pontos', 'semente', 'blitz', 'criadoEm'])
+        && request.resource.data.keys().hasOnly(['dono', 'nome', 'pontos', 'semente', 'blitz', 'criadoEm', 'para', 'origem'])
         && request.resource.data.dono == request.auth.uid
+        // Uma revanche: para quem (um amigo que jogou o desafio origem).
+        && (!('para' in request.resource.data)
+          || (request.resource.data.para is string
+            && request.resource.data.para.size() <= 128
+            && request.resource.data.origem is string
+            && request.resource.data.origem.size() <= 40))
         && nomeValido(request.resource.data.nome)
         && request.resource.data.pontos is int
         && request.resource.data.pontos >= 0
@@ -165,6 +172,22 @@ service cloud.firestore {
         && request.resource.data.pontos <= 5000000
         && request.resource.data.em == request.time;
       allow delete: if false;
+    }
+
+    // aparelhos/{uid}: o endereço de notificação do celular do jogador e o
+    // idioma, para a função da Vercel (api/duelo-aviso.js) avisar dos
+    // duelos. Cada um só grava o próprio; ninguém lê pelo jogo (a função
+    // lê como servidor). avisos/{id}, da função, fica fechado aqui.
+    match /aparelhos/{uid} {
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['token', 'idioma', 'em'])
+        && request.resource.data.token is string
+        && request.resource.data.token.size() <= 4096
+        && request.resource.data.idioma in ['pt', 'en', 'es']
+        && request.resource.data.em == request.time;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow read: if false;
     }
 
     // Todo o resto: fechado.

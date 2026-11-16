@@ -29,36 +29,32 @@ void main() {
       expect(todas.first, Novidades.edicoes[Novidades.atual]!.first);
     });
 
-    test(
-      'quem viu a edição 1 recebe a abertura do desafio, o placar dos duelos '
-      'e o Cofrinho',
-      () {
-        final novas = Novidades.pendentes(1);
-        expect(novas.map((n) => n.destino), [
-          DestinoNovidade.duelo,
-          DestinoNovidade.duelo,
-          DestinoNovidade.loja,
-        ]);
-        expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
-        expect(
-          iconeDaNovidade(DestinoNovidade.duelo),
-          Icons.sports_kabaddi_rounded,
-        );
-      },
-    );
+    test('quem viu a edição 1 recebe a revanche, a abertura do desafio e o '
+        'placar dos duelos', () {
+      final novas = Novidades.pendentes(1);
+      expect(novas.map((n) => n.destino), [
+        DestinoNovidade.duelo,
+        DestinoNovidade.duelo,
+        DestinoNovidade.duelo,
+      ]);
+      expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
+      expect(
+        iconeDaNovidade(DestinoNovidade.duelo),
+        Icons.sports_kabaddi_rounded,
+      );
+    });
 
-    test('quem viu a edição 2 recebe a abertura do desafio, o placar dos '
-        'duelos e o Cofrinho', () {
+    test('quem viu a edição 2 recebe as três mais novas', () {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
+        'Revanche com aviso',
         'Você foi desafiado!',
         'Placar dos duelos',
-        'Cofrinho do Capi',
       ]);
     });
 
-    test('quem viu a edição 4 recebe só a abertura do desafio', () {
-      expect(Novidades.pendentes(4).map((n) => n.titulo), [
-        'Você foi desafiado!',
+    test('quem viu a edição 5 recebe só a revanche', () {
+      expect(Novidades.pendentes(5).map((n) => n.titulo), [
+        'Revanche com aviso',
       ]);
     });
 
