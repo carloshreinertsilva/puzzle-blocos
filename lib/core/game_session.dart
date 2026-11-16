@@ -68,9 +68,10 @@ class GameSession {
   int get pupsLeft => board.pupCount;
 
   bool get goalsMet {
-    // Endless and Blitz have no goal: they end when the pieces (or, in
-    // Blitz, the time) run out.
-    if (level.isEndless || level.isBlitz) return false;
+    // Endless, Blitz and Duel have no goal: they end when the pieces (or,
+    // in Blitz, the time) run out. The rival's score is not a goal either:
+    // a Duel goes on to its last piece.
+    if (level.isEndless || level.isBlitz || level.isDuel) return false;
     if (level.targetScore > 0 && score < level.targetScore) return false;
     if (level.gemsTarget > 0 && gems < level.gemsTarget) return false;
     if (level.hasRockGoal && rocksLeft > 0) return false;
@@ -88,7 +89,9 @@ class GameSession {
       if (level.hasPupGoal && pupsSaved + pupsLeft > 0)
         pupsSaved / (pupsSaved + pupsLeft),
     ];
-    if (level.isEndless || level.isBlitz || partes.isEmpty) return 0;
+    if (level.isEndless || level.isBlitz || level.isDuel || partes.isEmpty) {
+      return 0;
+    }
     final soma = partes.fold(0.0, (a, b) => a + b.clamp(0.0, 1.0));
     return (100 * soma / partes.length).floor();
   }
@@ -252,8 +255,17 @@ class GameSession {
   /// (test scenarios).
   void refreshStatus() => _updateStatus();
 
+  /// Pieces still to play in a run with a piece limit (the Duel), else null.
+  int? get piecesLeft {
+    final limite = level.pieceLimit;
+    return limite == null ? null : max(0, limite - moves);
+  }
+
   void _updateStatus() {
-    if (goalsMet) {
+    if (piecesLeft == 0) {
+      // Every piece played: the run is over, and that is a finish.
+      status = SessionStatus.won;
+    } else if (goalsMet) {
       status = SessionStatus.won;
     } else if (!tray.any((p) => p != null && board.fitsAnywhere(p.shape))) {
       status = SessionStatus.lost;

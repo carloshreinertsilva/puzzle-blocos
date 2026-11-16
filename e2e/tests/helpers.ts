@@ -34,6 +34,8 @@ export type GameState = {
   duelTargetScore?: number | null;
   duelRivalName?: string | null;
   duelWon?: boolean;
+  /** Classic Duel: pieces still to play (of 30). */
+  piecesLeft?: number;
   status?: 'playing' | 'won' | 'lost';
   showOutcome?: boolean;
   paused?: boolean;

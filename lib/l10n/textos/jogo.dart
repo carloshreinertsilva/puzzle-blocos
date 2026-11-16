@@ -120,13 +120,28 @@ const Map<String, String> enJogo = {
   'Um amigo te desafiou no CapiBlocks.':
       'A friend challenged you on CapiBlocks.',
   '{rival} te desafiou no CapiBlocks.': '{rival} challenged you on CapiBlocks.',
-  'Mesmo tabuleiro, mesmas peças. Faça mais pontos para vencer.':
-      'Same board, same pieces. Score more to win.',
-  'Mesmo tabuleiro, mesmas peças. Faça mais pontos que {rival} para vencer.':
-      'Same board, same pieces. Score more than {rival} to win.',
+  'Como funciona': 'How it works',
+  'Quem fizer mais pontos vence.': 'Whoever scores more wins.',
+  'Faça mais pontos que {rival} para vencer.':
+      'Score more than {rival} to win.',
+  '60 segundos no relógio.': '60 seconds on the clock.',
+  'Limpar linhas dá segundos a mais.': 'Clearing lines adds seconds.',
+  'As peças saem do mesmo sorteio.': 'Pieces come from the same draw.',
+  '{n} peças para cada um, do mesmo sorteio.':
+      '{n} pieces each, from the same draw.',
+  'Vai até a última peça, mesmo depois de passar a meta.':
+      'It goes on to the last piece, even after you pass the target.',
+  'Se nenhuma peça couber, a partida acaba antes.':
+      'If no piece fits, the game ends early.',
+  'Acabaram as peças': 'Out of pieces',
+  'Falta 1 peça': '1 piece left',
+  'Faltam {n} peças': '{n} pieces left',
+  '1 peça': '1 piece',
+  '{n} peças': '{n} pieces',
+  '{texto} de {total}': '{texto} of {total}',
+  'Faça sua marca!': 'Set your score!',
   'Pontuação a bater': 'Score to beat',
   'Pontuação a bater: {meta}': 'Score to beat: {meta}',
-  'Você tem 60 segundos.': 'You have 60 seconds.',
   'Topar o desafio': 'Accept the challenge',
   'Novo Recorde Blitz!': 'New Blitz Record!',
   'Fim do Blitz!': 'Blitz Over!',
@@ -134,10 +149,8 @@ const Map<String, String> enJogo = {
   'Recorde: {pontos} pontos': 'Best: {pontos} points',
   '+{n} estrelas': '+{n} stars',
   'Desafiar Amigo': 'Challenge a Friend',
-  'Faça sua marca e desafie um amigo no fim':
-      'Set your score and challenge a friend at the end',
   'Sua marca': 'Your score',
-  'Mande este tabuleiro para um amigo: ele joga as mesmas peças e tenta passar você.': 'Send this board to a friend: they get the same pieces and try to beat you.',
+  'Mande este tabuleiro para um amigo: ele joga as mesmas {n} peças e tenta passar você.': 'Send this board to a friend: they get the same {n} pieces and try to beat you.',
   'Você venceu!': 'You won!',
   '{rival} venceu desta vez': '{rival} won this time',
   '{rival} recebeu o desafio de volta.': '{rival} got the challenge back.',
@@ -399,13 +412,28 @@ const Map<String, String> esJogo = {
   'Você foi desafiado!': '¡Te desafiaron!',
   'Um amigo te desafiou no CapiBlocks.': 'Un amigo te desafió en CapiBlocks.',
   '{rival} te desafiou no CapiBlocks.': '{rival} te desafió en CapiBlocks.',
-  'Mesmo tabuleiro, mesmas peças. Faça mais pontos para vencer.':
-      'Mismo tablero, mismas piezas. Haz más puntos para ganar.',
-  'Mesmo tabuleiro, mesmas peças. Faça mais pontos que {rival} para vencer.':
-      'Mismo tablero, mismas piezas. Haz más puntos que {rival} para ganar.',
+  'Como funciona': 'Cómo funciona',
+  'Quem fizer mais pontos vence.': 'Gana quien haga más puntos.',
+  'Faça mais pontos que {rival} para vencer.':
+      'Haz más puntos que {rival} para ganar.',
+  '60 segundos no relógio.': '60 segundos en el reloj.',
+  'Limpar linhas dá segundos a mais.': 'Limpiar líneas suma segundos.',
+  'As peças saem do mesmo sorteio.': 'Las piezas salen del mismo sorteo.',
+  '{n} peças para cada um, do mesmo sorteio.':
+      '{n} piezas para cada uno, del mismo sorteo.',
+  'Vai até a última peça, mesmo depois de passar a meta.':
+      'Sigue hasta la última pieza, aunque ya hayas superado la meta.',
+  'Se nenhuma peça couber, a partida acaba antes.':
+      'Si ninguna pieza cabe, la partida termina antes.',
+  'Acabaram as peças': 'Se acabaron las piezas',
+  'Falta 1 peça': 'Falta 1 pieza',
+  'Faltam {n} peças': 'Faltan {n} piezas',
+  '1 peça': '1 pieza',
+  '{n} peças': '{n} piezas',
+  '{texto} de {total}': '{texto} de {total}',
+  'Faça sua marca!': '¡Haz tu marca!',
   'Pontuação a bater': 'Puntos a superar',
   'Pontuação a bater: {meta}': 'Puntos a superar: {meta}',
-  'Você tem 60 segundos.': 'Tienes 60 segundos.',
   'Topar o desafio': 'Aceptar el desafío',
   'Novo Recorde Blitz!': '¡Nuevo récord Blitz!',
   'Fim do Blitz!': '¡Fin del Blitz!',
@@ -413,10 +441,8 @@ const Map<String, String> esJogo = {
   'Recorde: {pontos} pontos': 'Récord: {pontos} puntos',
   '+{n} estrelas': '+{n} estrellas',
   'Desafiar Amigo': 'Retar a un amigo',
-  'Faça sua marca e desafie um amigo no fim':
-      'Haz tu marca y reta a un amigo al final',
   'Sua marca': 'Tu marca',
-  'Mande este tabuleiro para um amigo: ele joga as mesmas peças e tenta passar você.': 'Envía este tablero a un amigo: juega las mismas piezas e intenta superarte.',
+  'Mande este tabuleiro para um amigo: ele joga as mesmas {n} peças e tenta passar você.': 'Envía este tablero a un amigo: juega las mismas {n} piezas e intenta superarte.',
   'Você venceu!': '¡Ganaste!',
   '{rival} venceu desta vez': '{rival} ganó esta vez',
   '{rival} recebeu o desafio de volta.':

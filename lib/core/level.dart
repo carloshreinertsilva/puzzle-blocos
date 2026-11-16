@@ -56,7 +56,13 @@ class LevelConfig {
       pattern = null,
       rivalName = null;
 
-  /// Duel mode: deterministic challenge comparing scores on the exact same piece seed.
+  /// Pieces a classic Duel lasts: ten trays. Whoever scores more with them
+  /// wins (the Blitz duel is timed instead).
+  static const duelPieces = 30;
+
+  /// Duel mode: deterministic challenge comparing scores on the exact same
+  /// piece seed. It ends after [duelPieces] pieces (or when none fits);
+  /// passing the rival's score does not end it.
   LevelConfig.duel({
     required this.seed,
     required this.targetScore,
@@ -94,6 +100,9 @@ class LevelConfig {
   bool get isDaily => kind == LevelKind.daily;
   bool get isBlitz => kind == LevelKind.blitz;
   bool get isDuel => kind == LevelKind.duel;
+
+  /// Pieces the run lasts, or null when it has no such limit.
+  int? get pieceLimit => isDuel ? duelPieces : null;
   int get rockCount =>
       initialCells.values.where((c) => c.type == CellType.rock).length;
   bool get hasRockGoal => rockCount > 0;

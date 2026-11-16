@@ -105,7 +105,7 @@ test('oferta de boas-vindas: aparece uma vez e vende o pacote', async ({ page })
     firstOpenAt: Date.now() - 10 * 86_400_000,
   });
   // A player from before sees what's new first, then the offer.
-  await page.getByRole('button', { name: 'Ver agora: Revanche com aviso' }).waitFor({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Ver agora: Duelo de 30 peças' }).waitFor({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Fechar' }).click();
   await expect(page.getByText('Um presente de boas-vindas!')).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Ver oferta' }).click();

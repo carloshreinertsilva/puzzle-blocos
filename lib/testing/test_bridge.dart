@@ -307,6 +307,7 @@ class TestBridge {
         'duelTargetScore': c.duelTargetScore,
         'duelRivalName': c.duelRivalName,
         'duelWon': c.duelWon,
+        'piecesLeft': c.session.piecesLeft,
       },
       'praises': praises,
       'stars': wallet?.call(),

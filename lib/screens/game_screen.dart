@@ -38,6 +38,8 @@ import '../services/progress_store.dart';
 import '../ui/tool_painter.dart';
 import '../ui/widgets.dart';
 import '../ui/premio.dart';
+import '../ui/regras_duelo.dart';
+import '../core/level.dart';
 
 /// "Dobrar com vídeo" at most this many times a day, so watching every
 /// video doesn't double the whole star economy.
@@ -1332,10 +1334,11 @@ class _Hud extends StatelessWidget {
               target: controller.duelTargetScore ?? 1000,
               rivalName: controller.duelRivalName ?? tr('Rival'),
               won: controller.duelWon,
+              faltam: s.piecesLeft,
             ),
           ] else if (controller.isDuel) ...[
             const SizedBox(height: 4),
-            const _DuelHowChip(),
+            _PecasRestantes(faltam: s.piecesLeft ?? 0, comDica: true),
           ] else if (!level.isEndless && !controller.isBlitz) ...[
             const SizedBox(height: 6),
             _Goals(
@@ -2424,47 +2427,89 @@ class _DuelTargetChip extends StatelessWidget {
     required this.target,
     required this.rivalName,
     required this.won,
+    this.faltam,
   });
   final int score;
   final int target;
   final String rivalName;
   final bool won;
 
+  /// Pieces left in a classic duel (null in a Blitz one).
+  final int? faltam;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: won ? const Color(0x4451CF66) : const Color(0x442A3356),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: won ? const Color(0xFF51CF66) : const Color(0x66339AF0),
-          width: 1.5,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: won ? const Color(0x4451CF66) : const Color(0x442A3356),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: won ? const Color(0xFF51CF66) : const Color(0x66339AF0),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const DuelIcon(size: 20),
+            const SizedBox(width: 8),
+            Text(
+              won
+                  ? tr('SUPEROU {rival}!', {'rival': rivalName.toUpperCase()})
+                  : tr('Meta do {rival}: {meta}', {
+                      'rival': rivalName,
+                      'meta': formatInt(target),
+                    }),
+              style: displayText(
+                14,
+                color: won ? const Color(0xFF8CE99A) : Colors.white,
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (faltam case final n?)
+              _PecasNoChip(faltam: n)
+            else
+              Text(
+                '(${formatInt(score)}/${formatInt(target)})',
+                style: displayText(12, color: Palette.textDim),
+              ),
+          ],
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const DuelIcon(size: 20),
-          const SizedBox(width: 8),
-          Text(
-            won
-                ? tr('SUPEROU {rival}!', {'rival': rivalName.toUpperCase()})
-                : tr('Meta do {rival}: {meta}', {
-                    'rival': rivalName,
-                    'meta': formatInt(target),
-                  }),
-            style: displayText(
-              14,
-              color: won ? const Color(0xFF8CE99A) : Colors.white,
+    );
+  }
+}
+
+/// The pieces left, at the end of a friend's duel chip (the score is right
+/// above it, so this is what the chip has room for).
+class _PecasNoChip extends StatelessWidget {
+  const _PecasNoChip({required this.faltam});
+  final int faltam;
+
+  @override
+  Widget build(BuildContext context) {
+    final cor = faltam <= 3 ? Palette.danger : const Color(0xFF74C0FC);
+    return Semantics(
+      label: faltam == 0
+          ? tr('Acabaram as peças')
+          : trN(faltam, 'Falta 1 peça', 'Faltam {n} peças'),
+      child: ExcludeSemantics(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 1.5, height: 16, color: const Color(0x66FFFFFF)),
+            const SizedBox(width: 8),
+            Icon(Icons.extension_rounded, color: cor, size: 16),
+            const SizedBox(width: 3),
+            Text(
+              trN(faltam, '1 peça', '{n} peças'),
+              style: displayText(14, color: cor),
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '(${formatInt(score)}/${formatInt(target)})',
-            style: displayText(12, color: Palette.textDim),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2612,32 +2657,68 @@ class _BlitzWinCard extends StatelessWidget {
 
 /// Under the score in a duel started from the menu: there is no one to beat
 /// yet, so it says what the match is for.
-class _DuelHowChip extends StatelessWidget {
-  const _DuelHowChip();
+/// How many pieces a Duel has left, with a "make your mark" nudge in a
+/// duel started from the menu. Turns red for the last tray.
+class _PecasRestantes extends StatelessWidget {
+  const _PecasRestantes({required this.faltam, this.comDica = false});
+  final int faltam;
+  final bool comDica;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-    decoration: BoxDecoration(
-      color: const Color(0x442A3356),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: const Color(0x66339AF0), width: 1.5),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const DuelIcon(size: 20),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            tr('Faça sua marca e desafie um amigo no fim'),
-            style: displayText(13, color: Colors.white),
-            textAlign: TextAlign.center,
+  Widget build(BuildContext context) {
+    final fim = faltam <= 3;
+    final cor = fim ? Palette.danger : const Color(0xFF339AF0);
+    final texto = faltam == 0
+        ? tr('Acabaram as peças')
+        : trN(faltam, 'Falta 1 peça', 'Faltam {n} peças');
+    return Semantics(
+      container: true,
+      label: tr('{texto} de {total}', {
+        'texto': texto,
+        'total': LevelConfig.duelPieces,
+      }),
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0x442A3356),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: cor.withValues(alpha: 0.7), width: 1.5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (comDica) ...[
+                const DuelIcon(size: 20),
+                const SizedBox(width: 8),
+              ] else ...[
+                Icon(Icons.extension_rounded, color: cor, size: 18),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                texto,
+                style: displayText(14, color: fim ? cor : Colors.white),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '(${LevelConfig.duelPieces - faltam}/${LevelConfig.duelPieces})',
+                style: displayText(12, color: Palette.textDim),
+              ),
+              if (comDica) ...[
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    tr('Faça sua marca!'),
+                    style: displayText(13, color: Palette.textDim),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 /// The end of a duel started from the menu: the score just set, and the
@@ -2672,8 +2753,9 @@ class _DuelMarkCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             tr(
-              'Mande este tabuleiro para um amigo: ele joga as mesmas peças '
-              'e tenta passar você.',
+              'Mande este tabuleiro para um amigo: ele joga as mesmas {n} '
+              'peças e tenta passar você.',
+              {'n': LevelConfig.duelPieces},
             ),
             style: bodyText(15, color: Palette.textDim),
             textAlign: TextAlign.center,
@@ -2739,13 +2821,6 @@ class _DuelIntroCard extends StatelessWidget {
         ? tr('Um amigo te desafiou no CapiBlocks.')
         : tr('{rival} te desafiou no CapiBlocks.', {'rival': nome});
     final meta = formatInt(target);
-    final regra = semNome
-        ? tr('Mesmo tabuleiro, mesmas peças. Faça mais pontos para vencer.')
-        : tr(
-            'Mesmo tabuleiro, mesmas peças. Faça mais pontos que {rival} para '
-            'vencer.',
-            {'rival': nome},
-          );
     final p = placar;
     return CardPanel(
       child: Column(
@@ -2802,19 +2877,7 @@ class _DuelIntroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            regra,
-            style: bodyText(15, color: Palette.textDim),
-            textAlign: TextAlign.center,
-          ),
-          if (blitz) ...[
-            const SizedBox(height: 4),
-            Text(
-              tr('Você tem 60 segundos.'),
-              style: bodyText(15, color: Palette.textDim),
-              textAlign: TextAlign.center,
-            ),
-          ],
+          RegrasDuelo(blitz: blitz, rival: semNome ? null : nome),
           if (p != null && p.duelos > 0) ...[
             const SizedBox(height: 10),
             Text(

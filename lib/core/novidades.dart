@@ -83,6 +83,14 @@ abstract final class Novidades {
         DestinoNovidade.duelo,
       ),
     ],
+    7: [
+      Novidade(
+        'Duelo de 30 peças',
+        'Agora cada duelo tem 30 peças para cada um, e o contador mostra '
+            'quantas faltam. Quem fizer mais pontos vence.',
+        DestinoNovidade.duelo,
+      ),
+    ],
   };
 
   /// How many are shown at once.

@@ -37,7 +37,9 @@ import '../ui/menu_widgets.dart';
 import '../ui/oferta_nuvem.dart';
 import '../ui/palette.dart';
 import '../ui/placar_duelos.dart';
+import '../core/level.dart';
 import '../ui/premio.dart';
+import '../ui/regras_duelo.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import '../shop/produtos.dart';
@@ -748,13 +750,18 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               tr(
-                'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!',
+                'Você e um amigo jogam as mesmas {n} peças. Quem fizer mais pontos vence!',
+                {'n': LevelConfig.duelPieces},
               ),
               style: bodyText(15, color: Palette.textDim),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            const RegrasDuelo(),
+            const SizedBox(height: 12),
             for (final (i, passo) in [
-              tr('Jogue e faça a sua pontuação.'),
+              tr('Jogue as {n} peças e faça a sua pontuação.', {
+                'n': LevelConfig.duelPieces,
+              }),
               tr('No fim, toque em Desafiar Amigo e mande o link.'),
               tr('Seu amigo joga as mesmas peças e tenta passar você.'),
               tr('Quando ele jogar, você vê o resultado e o placar de vocês.'),
