@@ -1,4 +1,5 @@
-New in 1.14.0:
-• Duel scoreboard: when a friend plays your challenge, you find out if they beat you, and your score with each friend is kept.
-• Whoever gets a challenge sees who sent it, and the result goes back to them.
-• Rematch time? Your scoreboard shows up at the end of every duel.
+New in 1.15.0:
+• You've been challenged! Open a friend's link to see who challenged you and the score to beat before you start.
+• Rematch with a heads-up: did a friend beat you? Play the same board and, if you win, they get a notification on their phone.
+• Find out right away when someone plays your challenge.
+• Fix: a piece that got stuck mid-drag now goes back to the tray.
