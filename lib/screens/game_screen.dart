@@ -617,6 +617,37 @@ class _GameScreenState extends State<GameScreen> {
     controller.restart();
   }
 
+  /// Fingers on the board right now, seen straight from Flutter (not
+  /// through Flame's drag events, which is what can go missing).
+  final _dedos = <int>{};
+
+  void _dedoDesceu(PointerDownEvent e) {
+    // A fresh touch with no other finger down: any drag still going is
+    // left over from a lift the game never heard about.
+    if (_dedos.isEmpty) _destravar('toque');
+    _dedos.add(e.pointer);
+  }
+
+  void _dedoSubiu(PointerEvent e) {
+    _dedos.remove(e.pointer);
+    if (_dedos.isNotEmpty) return;
+    // Flame ends the drag right after this listener, in the same event:
+    // check once it had its turn.
+    scheduleMicrotask(() {
+      if (mounted && _dedos.isEmpty) _destravar('soltou');
+    });
+  }
+
+  void _destravar(String quando) {
+    if (game?.soltarArrastoPreso() ?? false) {
+      Analytics.event('drag_stuck', {
+        'quando': quando,
+        'mode': controller.mode.name,
+        'level': controller.level.number,
+      });
+    }
+  }
+
   void _exit() {
     widget.services.feedback.click();
     Navigator.of(context).pop();
@@ -709,7 +740,13 @@ class _GameScreenState extends State<GameScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            GameWidget(game: game!),
+            Listener(
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: _dedoDesceu,
+              onPointerUp: _dedoSubiu,
+              onPointerCancel: _dedoSubiu,
+              child: GameWidget(game: game!),
+            ),
             ListenableBuilder(
               listenable: controller,
               builder: (context, _) => _buildToolModeOverlay(),

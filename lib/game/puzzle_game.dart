@@ -51,6 +51,19 @@ class PuzzleGame extends FlameGame {
   Sparks? sparks;
   TrayPiece? activeDrag;
 
+  /// A piece still "in the finger" with no finger on the screen: the phone
+  /// lost the lift (a system gesture, a notification, a hiccup). Without
+  /// this the piece floats over the board and every other drag is refused.
+  /// Puts it back in the tray; returns whether one was stuck.
+  bool soltarArrastoPreso() {
+    final d = activeDrag;
+    if (d == null) return false;
+    d.cancelarArrasto();
+    activeDrag = null;
+    boardView.preview = null;
+    return true;
+  }
+
   /// Build with --dart-define=DEMO_PRAISE=true to cycle through the praise
   /// tiers every few seconds (for checking the effects without playing).
   static const _demoPraise = bool.fromEnvironment('DEMO_PRAISE');

@@ -255,6 +255,7 @@ class TestBridge {
       'status': s.status.name,
       'showOutcome': c.showOutcome,
       'paused': c.paused,
+      'arrastando': game?.activeDrag?.slot,
       'intros': [for (final i in c.intros) i.name],
       'score': s.score,
       'combo': s.combo,
@@ -328,6 +329,14 @@ class TestBridge {
     final p = controller?.session.tray[slot];
     if (g == null || p == null) return null;
     return g.dragPath(slot, p.shape, row, col);
+  }
+
+  /// Leaves tray [slot] stuck mid-drag, with no finger down.
+  bool prenderArrasto(int slot) {
+    final g = game;
+    if (g == null) return false;
+    g.trays[slot].prenderParaTeste();
+    return g.activeDrag != null;
   }
 
   /// Wins the current attempt (to reach later screens quickly).
