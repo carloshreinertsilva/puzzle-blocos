@@ -135,13 +135,15 @@ test.describe('Modo Blitz 60s e Duelo', () => {
     await page.getByRole('button', { name: 'Modos' }).click();
     await page.getByRole('button', { name: /^Duelo/ }).click();
     await expect(page.getByText('No fim, toque em Desafiar Amigo e mande o link.')).toBeVisible();
+    await expect(page.getByText('30 peças para cada um, começando pelas mesmas.')).toBeVisible();
     await expect(page.getByText(/Semente/)).toHaveCount(0);
     await page.getByRole('button', { name: 'Começar Duelo' }).click();
 
     const s = await waitForState(page, (x) => x.mode === 'duel' && x.status === 'playing', 'duelo aberto');
     expect(s.duelTargetScore, 'sem rival, sem meta').toBeNull();
     expect(s.duelRivalName).toBeNull();
-    await expect(page.getByText('Faça sua marca e desafie um amigo no fim')).toBeVisible();
+    expect(s.piecesLeft, 'começa com 30 peças').toBe(30);
+    await expect(page.getByText(/^Faltam 30 peças/)).toBeVisible();
     await expect(page.getByText(/Meta do/)).toHaveCount(0);
 
     await loadScenario(page, { board: CHECKER, tray: ['o20', 'o20', 'o20'] });

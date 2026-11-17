@@ -293,6 +293,50 @@ void main() {
     });
   });
 
+  group('Duelo de 30 peças', () {
+    test('passar a meta não encerra; acaba na 30ª peça', () {
+      final s = GameSession(
+        LevelConfig.duel(seed: 4242, targetScore: 100),
+        rng: Random(4242),
+      );
+      expect(s.piecesLeft, LevelConfig.duelPieces);
+      final ponto = allShapes.firstWhere((x) => x.id == 'dot0');
+      for (var i = 0; i < LevelConfig.duelPieces; i++) {
+        expect(s.status, SessionStatus.playing, reason: 'peça ${i + 1}');
+        // A single dot always fits somewhere.
+        s.tray = [Piece(ponto), null, null];
+        s.score = 500 + i;
+        s.place(0, i ~/ Board.size, i % Board.size);
+      }
+      expect(s.piecesLeft, 0);
+      expect(s.status, SessionStatus.won, reason: 'fim das peças');
+      expect(s.goalsMet, isFalse, reason: 'a meta não encerra o duelo');
+    });
+
+    test('no Duelo não vale ferramenta', () async {
+      SharedPreferences.setMockInitialValues({'level': 10, 'tool_reroll': 3});
+      final store = await ProgressStore.load();
+      await store.addTool(CapiTool.reroll, 3);
+      final c = GameController(
+        store: store,
+        feedback: GameFeedback(store),
+        mode: GameMode.duel,
+        duelSeed: 5,
+      );
+      final antes = [for (final p in c.session.tray) p?.shape.id];
+      expect(c.toolsAllowed, isFalse);
+      expect(await c.selectTool(CapiTool.reroll), isFalse);
+      expect([for (final p in c.session.tray) p?.shape.id], antes);
+      c.dispose();
+    });
+
+    test('outros modos não têm limite de peças', () {
+      expect(LevelConfig.blitz(seed: 1).pieceLimit, isNull);
+      expect(LevelConfig.endless().pieceLimit, isNull);
+      expect(LevelGenerator.build(5).pieceLimit, isNull);
+    });
+  });
+
   group('GameController Duel mode', () {
     test('detects rival score passed and awards win and stars', () async {
       SharedPreferences.setMockInitialValues({'level': 10, 'stars': 10});

@@ -93,8 +93,10 @@ const Map<String, String> enMenu = {
   '{n} vitórias': '{n} wins',
   'Desafie amigos': 'Challenge friends',
   'Modo Duelo': 'Duel Mode',
-  'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!': 'In a Duel, two players get the exact same sequence of pieces to see who scores more!',
-  'Jogue e faça a sua pontuação.': 'Play and set your score.',
+  'Você e um amigo jogam as mesmas {n} peças. Quem fizer mais pontos vence!':
+      'You and a friend play the same {n} pieces. Whoever scores more wins!',
+  'Jogue as {n} peças e faça a sua pontuação.':
+      'Play the {n} pieces and set your score.',
   'No fim, toque em Desafiar Amigo e mande o link.':
       'At the end, tap Challenge a Friend and send the link.',
   'Seu amigo joga as mesmas peças e tenta passar você.':
@@ -309,6 +311,8 @@ const Map<String, String> enMenu = {
   'Placar dos duelos': 'Duel scoreboard',
   'Ao abrir o link de um amigo, você vê quem desafiou e quantos pontos precisa bater antes de começar.': "When you open a friend's link, you see who challenged you and the score to beat before you start.",
   'Revanche com aviso': 'Rematch with a heads-up',
+  'Duelo de 30 peças': '30-piece Duel',
+  'Agora cada duelo tem 30 peças para cada um, sem ferramentas, e o contador mostra quantas faltam. Quem fizer mais pontos vence.': 'Every duel now has 30 pieces for each player, no tools, and a counter shows how many are left. Whoever scores more wins.',
   'Seu amigo passou você? Peça revanche no mesmo tabuleiro. Se vencer, ele recebe um aviso no celular. E você fica sabendo na hora quando alguém joga o seu desafio.': "Did your friend beat you? Ask for a rematch on the same board. If you win, they get a notification on their phone. And you find out right away when someone plays your challenge.",
   'Resultado do duelo': 'Duel result',
   'E mais {n} duelo.': 'And {n} more duel.',
@@ -426,8 +430,9 @@ const Map<String, String> esMenu = {
   '{n} vitórias': '{n} victorias',
   'Desafie amigos': 'Reta a tus amigos',
   'Modo Duelo': 'Modo Duelo',
-  'No Duelo, dois jogadores jogam exatamente a mesma sequência de peças para ver quem pontua mais!': '¡En el Duelo, dos jugadores juegan exactamente la misma secuencia de piezas para ver quién suma más puntos!',
-  'Jogue e faça a sua pontuação.': 'Juega y haz tu puntuación.',
+  'Você e um amigo jogam as mesmas {n} peças. Quem fizer mais pontos vence!': '¡Tú y un amigo juegan las mismas {n} piezas. Gana quien haga más puntos!',
+  'Jogue as {n} peças e faça a sua pontuação.':
+      'Juega las {n} piezas y haz tu puntuación.',
   'No fim, toque em Desafiar Amigo e mande o link.':
       'Al final, toca Retar a un amigo y envía el enlace.',
   'Seu amigo joga as mesmas peças e tenta passar você.':
@@ -645,6 +650,8 @@ const Map<String, String> esMenu = {
   'Placar dos duelos': 'Marcador de duelos',
   'Ao abrir o link de um amigo, você vê quem desafiou e quantos pontos precisa bater antes de começar.': 'Al abrir el enlace de un amigo, ves quién te desafió y cuántos puntos debes superar antes de empezar.',
   'Revanche com aviso': 'Revancha con aviso',
+  'Duelo de 30 peças': 'Duelo de 30 piezas',
+  'Agora cada duelo tem 30 peças para cada um, sem ferramentas, e o contador mostra quantas faltam. Quem fizer mais pontos vence.': 'Ahora cada duelo tiene 30 piezas para cada uno, sin herramientas, y el contador muestra cuántas faltan. Gana quien haga más puntos.',
   'Seu amigo passou você? Peça revanche no mesmo tabuleiro. Se vencer, ele recebe um aviso no celular. E você fica sabendo na hora quando alguém joga o seu desafio.': '¿Tu amigo te superó? Pide la revancha en el mismo tablero. Si ganas, recibe un aviso en el móvil. Y te enteras al momento cuando alguien juega tu desafío.',
   'Resultado do duelo': 'Resultado del duelo',
   'E mais {n} duelo.': 'Y {n} duelo más.',

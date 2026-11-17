@@ -32,7 +32,7 @@ test('no Blitz sem nome: um amigo, 60 segundos, e Agora não volta ao menu', asy
   await openApp(page, { level: 10 });
   await abrir(page, '/duelo?s=4242&p=1500&m=blitz');
   await expect(page.getByText('Um amigo te desafiou no CapiBlocks.')).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText('Você tem 60 segundos.')).toBeVisible();
+  await expect(page.getByText('60 segundos no relógio.')).toBeVisible();
   const antes = (await state(page)).blitzSecondsLeft;
   await page.waitForTimeout(2_000);
   expect((await state(page)).blitzSecondsLeft, 'o relógio não corre').toBe(antes);

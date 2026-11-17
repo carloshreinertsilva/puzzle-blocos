@@ -46,15 +46,15 @@ void main() {
 
     test('quem viu a edição 2 recebe as três mais novas', () {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
+        'Duelo de 30 peças',
         'Revanche com aviso',
         'Você foi desafiado!',
-        'Placar dos duelos',
       ]);
     });
 
-    test('quem viu a edição 5 recebe só a revanche', () {
-      expect(Novidades.pendentes(5).map((n) => n.titulo), [
-        'Revanche com aviso',
+    test('quem viu a edição 6 recebe só o duelo de 30 peças', () {
+      expect(Novidades.pendentes(6).map((n) => n.titulo), [
+        'Duelo de 30 peças',
       ]);
     });
 
