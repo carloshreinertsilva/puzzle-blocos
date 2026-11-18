@@ -138,6 +138,18 @@ void _depoisDeAbrir(AppServices services) {
   unawaited(Placares.iniciar(services.store));
 }
 
+/// The route name for a link, as MaterialApp makes it when it opens one.
+@visibleForTesting
+String rotaDoLink(Uri uri) => Uri.decodeComponent(
+  Uri(
+    path: uri.path.isEmpty ? '/' : uri.path,
+    queryParameters: uri.queryParametersAll.isEmpty
+        ? null
+        : uri.queryParametersAll,
+    fragment: uri.fragment.isEmpty ? null : uri.fragment,
+  ).toString(),
+);
+
 /// Shows the opening screen ([Abertura]) while the game loads, for at least
 /// a moment so it doesn't just flash, then fades into the game.
 class Inicio extends StatefulWidget {
@@ -150,15 +162,48 @@ class Inicio extends StatefulWidget {
   State<Inicio> createState() => _InicioState();
 }
 
-class _InicioState extends State<Inicio> {
+class _InicioState extends State<Inicio> with WidgetsBindingObserver {
   AppServices? _services;
   bool _erro = false;
   final _pronto = ValueNotifier(false);
 
+  /// A link that arrived while the opening screen was still up.
+  String? _linkPendente;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pronto.dispose();
     super.dispose();
+  }
+
+  /// On the iPhone a challenge link (Universal Link) reaches the app as soon
+  /// as the opening screen shows, before the game has a navigator. If nobody
+  /// takes it, iOS hands the link to Safari and the challenge is lost; so it
+  /// waits here and opens once the game is up. After that, the game's own
+  /// navigator (MaterialApp) takes links.
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation informacao) async {
+    if (App.navegador.currentState != null) return false;
+    _linkPendente = rotaDoLink(informacao.uri);
+    return true;
+  }
+
+  void _abrirLinkPendente() {
+    final rota = _linkPendente;
+    if (rota == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navegador = App.navegador.currentState;
+      if (navegador == null || _linkPendente != rota) return;
+      _linkPendente = null;
+      navegador.pushNamed(rota);
+    });
   }
 
   /// The opening art, decoded before the clock starts, so it always shows
@@ -191,6 +236,7 @@ class _InicioState extends State<Inicio> {
       // The bar runs to the end while the game fades in.
       _pronto.value = true;
       setState(() => _services = services);
+      _abrirLinkPendente();
       _depoisDeAbrir(services);
     } catch (e, pilha) {
       FlutterError.reportError(
