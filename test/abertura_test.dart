@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_blocos/ads/ad_service.dart';
 import 'package:puzzle_blocos/main.dart';
+import 'package:puzzle_blocos/screens/game_screen.dart';
 import 'package:puzzle_blocos/services/feedback.dart';
 import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:puzzle_blocos/ui/abertura.dart';
@@ -32,6 +34,42 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(App), findsOneWidget);
     expect(find.byType(Abertura), findsNothing);
+  });
+
+  testWidgets('a challenge link that arrives during the opening opens after '
+      'it (iPhone)', (tester) async {
+    final services = await _servicos();
+    await tester.pumpWidget(Inicio(carregar: () async => services));
+    expect(find.byType(Abertura), findsOneWidget);
+    // iOS sends the Universal Link as soon as the first frame shows; if the
+    // app answers "not handled", iOS opens it in Safari instead.
+    bool? tratado;
+    await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+      'flutter/navigation',
+      const JSONMethodCodec().encodeMethodCall(
+        const MethodCall('pushRouteInformation', {
+          'location': 'https://capiblocks.vercel.app/duelo?s=42&p=1500&n=Ana',
+        }),
+      ),
+      (resposta) =>
+          tratado = const JSONMethodCodec().decodeEnvelope(resposta!) as bool,
+    );
+    await tester.pump();
+    expect(tratado, isTrue);
+    await tester.pump(Inicio.tempoMinimo);
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    final jogo = tester.widget<GameScreen>(find.byType(GameScreen));
+    expect(jogo.duelSeed, 42);
+    expect(jogo.duelTargetScore, 1500);
+    expect(jogo.duelRivalName, 'Ana');
+  });
+
+  test('a link becomes the route MaterialApp would open', () {
+    expect(
+      rotaDoLink(Uri.parse('https://capiblocks.vercel.app/duelo?s=7&p=900')),
+      '/duelo?s=7&p=900',
+    );
   });
 
   testWidgets('a loading failure offers to try again instead of hanging', (
