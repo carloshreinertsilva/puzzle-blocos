@@ -334,6 +334,71 @@ void main() {
     expect(loja.disponivel, isTrue);
     expect(await loja.comprar(Produto.estrelas150), ResultadoCompra.erro);
   });
+
+  test('a store that does not answer at the opening keeps the shop on the '
+      'menu and is asked again', () async {
+    final lenta = _PlataformaSemResposta();
+    InAppPurchasePlatform.instance = lenta;
+    final loja = LojaPlay(store, android: false);
+    await loja.iniciar();
+    expect(loja.disponivel, isFalse);
+    expect(loja.existe, isTrue);
+    expect(loja.carregando, isFalse);
+
+    lenta.responde = true;
+    await loja.iniciar();
+    expect(loja.disponivel, isTrue);
+    expect(lenta.consultas, 2);
+  });
+
+  test('buying asks the store again when the products had not come', () async {
+    final lenta = _PlataformaSemResposta();
+    InAppPurchasePlatform.instance = lenta;
+    final loja = LojaPlay(store, android: false);
+    await loja.iniciar();
+    lenta.responde = true;
+    await loja.comprar(Produto.estrelas150);
+    expect(loja.disponivel, isTrue);
+    expect(lenta.compradas, 1);
+  });
+
+  test('asking twice at once makes a single question', () async {
+    final lenta = _PlataformaSemResposta()..responde = true;
+    InAppPurchasePlatform.instance = lenta;
+    final loja = LojaPlay(store, android: false);
+    final primeira = loja.iniciar();
+    expect(loja.carregando, isTrue);
+    await Future.wait([primeira, loja.iniciar()]);
+    expect(lenta.consultas, 1);
+    expect(loja.carregando, isFalse);
+  });
+}
+
+/// The App Review sandbox at its worst: no products until [responde].
+class _PlataformaSemResposta extends _Plataforma {
+  var responde = false;
+  var compradas = 0;
+
+  @override
+  Future<ProductDetailsResponse> queryProductDetails(
+    Set<String> identifiers,
+  ) async {
+    consultas++;
+    if (responde) return super.queryProductDetails(identifiers);
+    return ProductDetailsResponse(
+      productDetails: const [],
+      notFoundIDs: identifiers.toList(),
+    );
+  }
+
+  @override
+  Future<bool> buyConsumable({
+    required PurchaseParam purchaseParam,
+    bool autoConsume = true,
+  }) async {
+    compradas++;
+    return false;
+  }
 }
 
 class _PlataformaQueFalha extends _Plataforma {

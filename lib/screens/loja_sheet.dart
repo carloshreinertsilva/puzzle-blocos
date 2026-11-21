@@ -51,6 +51,8 @@ class _LojaState extends State<_Loja> {
   void initState() {
     super.initState();
     _loja.addListener(_mudou);
+    // The store did not answer at the opening: ask again now.
+    if (!_loja.disponivel) _loja.iniciar();
   }
 
   @override
@@ -118,6 +120,7 @@ class _LojaState extends State<_Loja> {
             children: [
               OutlinedTitle(tr('Loja do Capi'), size: 28),
               const SizedBox(height: 6),
+              if (!_loja.disponivel) _semResposta(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -253,6 +256,49 @@ class _LojaState extends State<_Loja> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// The store has not answered: the items stay listed, with our prices,
+  /// and the player can ask again.
+  Widget _semResposta() {
+    final carregando = _loja.carregando;
+    final texto = carregando
+        ? tr('Conectando à loja...')
+        : noIPhone
+        ? tr(
+            'A App Store não respondeu agora. Confira a internet e tente de novo.',
+          )
+        : tr(
+            'O Google Play não respondeu agora. Confira a internet e tente de novo.',
+          );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        children: [
+          Semantics(
+            container: true,
+            label: texto,
+            excludeSemantics: true,
+            child: Text(
+              texto,
+              textAlign: TextAlign.center,
+              style: bodyText(13, color: Palette.textDim),
+            ),
+          ),
+          if (!carregando)
+            TextButton(
+              onPressed: () {
+                widget.services.feedback.click();
+                _loja.iniciar();
+              },
+              child: Text(
+                tr('Tentar de novo'),
+                style: displayText(16, color: Palette.accent),
+              ),
+            ),
+        ],
       ),
     );
   }

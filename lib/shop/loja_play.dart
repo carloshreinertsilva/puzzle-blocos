@@ -29,13 +29,32 @@ class LojaPlay extends LojaService {
   final _esperando = <String, Completer<ResultadoCompra>>{};
   StreamSubscription<List<PurchaseDetails>>? _assinatura;
   Future<void> _fila = Future.value();
+  Future<void>? _consulta;
   bool _disponivel = false;
 
   @override
   bool get disponivel => _disponivel;
 
   @override
-  Future<void> iniciar() async {
+  bool get existe => true;
+
+  @override
+  bool get carregando => _consulta != null;
+
+  /// The store may not answer at the opening (no connection, or the App
+  /// Review sandbox being slow): the shop stays on the menu and asks again
+  /// when opened or when a purchase is tried. One question at a time.
+  @override
+  Future<void> iniciar() {
+    if (_disponivel) return Future.value();
+    return _consulta ??= _consultar().whenComplete(() {
+      _consulta = null;
+      notifyListeners();
+    });
+  }
+
+  Future<void> _consultar() async {
+    notifyListeners();
     _assinatura ??= _iap.purchaseStream.listen(
       // One list at a time: two reports of the same purchase running together
       // would both find it undelivered and pay twice.
@@ -58,7 +77,6 @@ class LojaPlay extends LojaService {
     } catch (_) {
       _disponivel = _detalhes.isNotEmpty;
     }
-    notifyListeners();
   }
 
   @override
@@ -67,6 +85,7 @@ class LojaPlay extends LojaService {
 
   @override
   Future<ResultadoCompra> comprar(Produto produto) async {
+    if (!_detalhes.containsKey(produto.id)) await iniciar();
     final detalhes = _detalhes[produto.id];
     if (detalhes == null) return ResultadoCompra.indisponivel;
     final espera = _esperando[produto.id] = Completer<ResultadoCompra>();

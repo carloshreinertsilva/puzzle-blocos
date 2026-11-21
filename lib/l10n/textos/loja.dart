@@ -293,9 +293,13 @@ const Map<String, String> enLoja = {
   'Ofertas de hoje · mudam em {h} h {min} min':
       "Today's deals · change in {h} h {min} min",
   'O pagamento é feito pela App Store. Nada aqui é sorteio: você sempre sabe o que está comprando.': 'Payment is handled by the App Store. Nothing here is random: you always know what you are buying.',
-  'A trilha premium ainda não está à venda no iPhone.':
-      'The premium track is not for sale on iPhone yet.',
-  'Ainda não está à venda no iPhone': 'Not for sale on iPhone yet',
+  'A loja não respondeu agora. Tente de novo daqui a pouco.':
+      "The shop didn't answer right now. Try again in a moment.",
+  'Loja sem resposta agora': 'Shop not answering right now',
+  'Conectando à loja...': 'Connecting to the shop...',
+  'A App Store não respondeu agora. Confira a internet e tente de novo.': "The App Store didn't answer right now. Check your internet and try again.",
+  'O Google Play não respondeu agora. Confira a internet e tente de novo.':
+      "Google Play didn't answer right now. Check your internet and try again.",
   'À venda no app Android': 'For sale in the Android app',
   'de {preco}': 'was {preco}',
   'Todo dia tem ofertas novas, na mesma ordem para todos: '
@@ -744,9 +748,12 @@ const Map<String, String> esLoja = {
   'Ofertas de hoje · mudam em {h} h {min} min':
       'Ofertas de hoy · cambian en {h} h {min} min',
   'O pagamento é feito pela App Store. Nada aqui é sorteio: você sempre sabe o que está comprando.': 'El pago se hace con la App Store. Nada aquí es al azar: siempre sabes lo que compras.',
-  'A trilha premium ainda não está à venda no iPhone.':
-      'La ruta premium aún no está a la venta en iPhone.',
-  'Ainda não está à venda no iPhone': 'Aún no está a la venta en iPhone',
+  'A loja não respondeu agora. Tente de novo daqui a pouco.':
+      'La tienda no respondió ahora. Inténtalo de nuevo en un rato.',
+  'Loja sem resposta agora': 'Tienda sin respuesta ahora',
+  'Conectando à loja...': 'Conectando con la tienda...',
+  'A App Store não respondeu agora. Confira a internet e tente de novo.': 'La App Store no respondió ahora. Revisa tu conexión e inténtalo de nuevo.',
+  'O Google Play não respondeu agora. Confira a internet e tente de novo.': 'Google Play no respondió ahora. Revisa tu conexión e inténtalo de nuevo.',
   'À venda no app Android': 'A la venta en la app de Android',
   'de {preco}': 'antes {preco}',
   'Todo dia tem ofertas novas, na mesma ordem para todos: '
