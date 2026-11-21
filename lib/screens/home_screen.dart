@@ -1155,7 +1155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : null,
                               onTap: _openDailyMissions,
                             ),
-                            if (widget.services.loja.disponivel) ...[
+                            if (widget.services.loja.existe) ...[
                               SizedBox(width: buttonGap),
                               _LojaBotao(
                                 badge:

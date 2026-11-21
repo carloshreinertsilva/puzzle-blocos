@@ -7,17 +7,27 @@ import 'produtos.dart';
 enum ResultadoCompra { ok, cancelada, pendente, erro, indisponivel }
 
 /// Sells [Produto]s and delivers them into the [ProgressStore]
-/// ([Entrega]). Google Play on Android; a simulator in browser tests and
-/// web debug; nothing elsewhere (the shop button hides).
+/// ([Entrega]). Google Play on Android, the App Store on iPhone; a simulator
+/// in browser tests and web debug; nothing elsewhere (the shop button hides).
 abstract class LojaService extends ChangeNotifier {
   LojaService(this.store);
 
   final ProgressStore store;
 
+  /// The products came from the store: prices known, purchases go through.
   bool get disponivel;
 
+  /// This device has a store, even while it has not answered yet. The shop
+  /// button shows whenever this is true, so App Review (and a player with a
+  /// bad connection at the opening) always finds the purchases.
+  bool get existe => disponivel;
+
+  /// Asking the store for the products right now.
+  bool get carregando => false;
+
   /// Starts listening for purchases, including ones that finished while
-  /// the game was closed (a pending payment approved later).
+  /// the game was closed (a pending payment approved later). Called again,
+  /// asks the store for the products once more if they did not come.
   Future<void> iniciar();
 
   /// The store's price, in the player's currency, once known.

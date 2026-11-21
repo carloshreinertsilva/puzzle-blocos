@@ -4,7 +4,6 @@ import '../core/mercado.dart';
 import '../core/wardrobe.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
-import '../services/plataforma.dart';
 import '../services/progress_store.dart';
 import '../shop/loja_service.dart';
 import 'capi.dart';
@@ -101,8 +100,8 @@ class _OfertasDoDiaState extends State<OfertasDoDia> {
               : null,
           rotulo: _loja.disponivel
               ? null
-              : noIPhone
-              ? tr('Ainda não está à venda no iPhone')
+              : _loja.existe
+              ? tr('Loja sem resposta agora')
               : tr('À venda no app Android'),
           onComprar: _loja.disponivel && !_comprando
               ? () => _comprarLendario(lendario)
