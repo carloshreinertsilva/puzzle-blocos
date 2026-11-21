@@ -17,7 +17,7 @@ mandou mostra a primeira fase do jogo, em inglês.
 - Quem acabou de instalar começa direto na Fase 1 (o tutorial), então o
   revisor também precisa saber como chegar ao menu.
 
-## O que mudou na 1.15.2 (build 29)
+## O que mudou na 1.15.2 (build 25 no TestFlight)
 
 - O botão **Loja** fica sempre no menu do celular (`LojaService.existe`).
 - Ao abrir a loja ou o Passe, se os produtos não vieram, o jogo pergunta de
@@ -27,10 +27,13 @@ mandou mostra a primeira fase do jogo, em inglês.
 
 ## Reenvio
 
-1. Mandar a 1.15.2 (29) ao TestFlight.
+1. Mandar a 1.15.2 ao TestFlight (execução 25 do workflow, então build 25).
 2. No App Store Connect, trocar o número da versão de 1.12.2 para **1.15.2**
-   e escolher o build **29**.
-3. Colar a resposta abaixo em "Responda à equipe de revisão de apps" e
+   e escolher o build **25**.
+3. Clicar em "Adicionar para revisão" no **Cofrinho do Capi** e na **Oferta
+   de boas-vindas**, as duas compras novas desta versão (já têm preço,
+   descrição e captura).
+4. Colar a resposta abaixo em "Responda à equipe de revisão de apps" e
    reenviar.
 
 ## Resposta à Apple
@@ -40,7 +43,7 @@ mandou mostra a primeira fase do jogo, em inglês.
 > Thank you for the review. We found the cause: in build 17, the Shop button
 > only appeared after the App Store returned the product list. When the
 > sandbox did not answer in time, the button was hidden, so there was no way
-> to reach the In-App Purchases. We have submitted build 1.15.2 (29), where
+> to reach the In-App Purchases. We have submitted build 1.15.2 (25), where
 > the Shop is always on the main menu and asks the App Store again when it is
 > opened. There are no storefront or device restrictions on the purchases.
 >
@@ -56,13 +59,25 @@ mandou mostra a primeira fase do jogo, em inglês.
 >    - **Passe do Capi premium** (Capi Pass premium track), which opens the
 >      Capi Pass;
 >    - **150 / 400 / 1.000 estrelas** (star packs);
->    - **Kit de ferramentas** (Tool Kit).
+>    - **Kit de ferramentas** (Tool Kit);
+>    - **Cofrinho do Capi** (Capi's Piggy Bank, new in this version): always
+>      in the Shop. It fills up with the stars earned while playing and can be
+>      broken open (bought) once it holds 150 stars;
+>    - **Oferta de boas-vindas** (Welcome Offer, new in this version): a
+>      one-time offer for players who have never bought anything. It appears
+>      in the Shop and on the main menu once the player reaches **Level 8**
+>      and the Starter Pack's 3 days are over, and stays for 48 hours. To see
+>      it, play up to Level 8 and move the device date forward 3 days.
 > 3. **Legendary outfits** (Máscara de Herói, Asinhas de Anjo, Pelagem
->    Arco-Íris, Pelagem Galáxia, Mochila a Jato, Colar de Diamante): one of
->    them is sold each day, in a fixed order, as the **"Legendary of the
->    day"** in the **"Today's deals"** section of the Shop (also in the
->    Wardrobe, on that item). To see the next one, move the device date
->    forward by one day; the six rotate over six days.
+>    Arco-Íris, Pelagem Galáxia, Mochila a Jato, Colar de Diamante): these
+>    six are sold **one per day, by design**. Each day the game offers a
+>    single legendary item, the same for every player, in a fixed rotation
+>    (no randomness), so only one of the six can be bought on a given day.
+>    Today's item appears as **"Legendary of the day"** in the **"Today's
+>    deals"** section of the Shop, and on that item in the Wardrobe. The
+>    offer changes at midnight, device time. To review the other five, move
+>    the iPhone's date forward one day at a time (Settings → General → Date &
+>    Time, with "Set Automatically" off) and reopen the Shop: after six days the rotation starts again.
 > 4. The **Capi Pass** can also be opened from its card on the main menu;
 >    the premium track is bought from there.
 >
@@ -77,7 +92,12 @@ teste não respondia a tempo, o botão sumia. No build 1.15.2 (29) a loja fica
 sempre no menu e pergunta de novo à App Store quando é aberta. Não há
 restrição por país nem por aparelho. Passo a passo: sair da Fase 1 pela pausa
 → Menu; tocar em Loja no topo do menu; lá estão o Pacote Inicial (3 primeiros
-dias), Remover anúncios, Passe premium, pacotes de estrelas e o Kit. Os
-lendários aparecem um por dia, em ordem fixa, em "Ofertas de hoje" (e no
-guarda-roupa, no próprio item); adiantando a data do aparelho em um dia
-aparece o próximo. O Passe também abre pelo cartão no menu.
+dias), Remover anúncios, Passe premium, pacotes de estrelas, o Kit, o
+Cofrinho (sempre na loja; enche com as estrelas ganhas e pode ser quebrado a
+partir de 150) e a oferta de boas-vindas (uma vez só, por 48 h, para quem
+nunca comprou, a partir da fase 8 e depois dos 3 dias do Pacote Inicial). Os
+lendários são vendidos um por dia, de propósito: o mesmo para todos, em ordem
+fixa e sem sorteio, então só um dos seis pode ser comprado em cada dia. O do
+dia aparece em "Ofertas de hoje" (e no guarda-roupa, no próprio item) e muda à
+meia-noite do aparelho; para ver os outros cinco, o revisor adianta a data do
+iPhone um dia de cada vez e abre a loja de novo. O Passe também abre pelo cartão no menu.
