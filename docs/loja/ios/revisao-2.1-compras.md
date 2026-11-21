@@ -30,7 +30,10 @@ mandou mostra a primeira fase do jogo, em inglês.
 1. Mandar a 1.15.2 ao TestFlight (execução 25 do workflow, então build 25).
 2. No App Store Connect, trocar o número da versão de 1.12.2 para **1.15.2**
    e escolher o build **25**.
-3. Colar a resposta abaixo em "Responda à equipe de revisão de apps" e
+3. Clicar em "Adicionar para revisão" no **Cofrinho do Capi** e na **Oferta
+   de boas-vindas**, as duas compras novas desta versão (já têm preço,
+   descrição e captura).
+4. Colar a resposta abaixo em "Responda à equipe de revisão de apps" e
    reenviar.
 
 ## Resposta à Apple
@@ -56,7 +59,15 @@ mandou mostra a primeira fase do jogo, em inglês.
 >    - **Passe do Capi premium** (Capi Pass premium track), which opens the
 >      Capi Pass;
 >    - **150 / 400 / 1.000 estrelas** (star packs);
->    - **Kit de ferramentas** (Tool Kit).
+>    - **Kit de ferramentas** (Tool Kit);
+>    - **Cofrinho do Capi** (Capi's Piggy Bank, new in this version): always
+>      in the Shop. It fills up with the stars earned while playing and can be
+>      broken open (bought) once it holds 150 stars;
+>    - **Oferta de boas-vindas** (Welcome Offer, new in this version): a
+>      one-time offer for players who have never bought anything. It appears
+>      in the Shop and on the main menu once the player reaches **Level 8**
+>      and the Starter Pack's 3 days are over, and stays for 48 hours. To see
+>      it, play up to Level 8 and move the device date forward 3 days.
 > 3. **Legendary outfits** (Máscara de Herói, Asinhas de Anjo, Pelagem
 >    Arco-Íris, Pelagem Galáxia, Mochila a Jato, Colar de Diamante): these
 >    six are sold **one per day, by design**. Each day the game offers a
@@ -81,7 +92,10 @@ teste não respondia a tempo, o botão sumia. No build 1.15.2 (29) a loja fica
 sempre no menu e pergunta de novo à App Store quando é aberta. Não há
 restrição por país nem por aparelho. Passo a passo: sair da Fase 1 pela pausa
 → Menu; tocar em Loja no topo do menu; lá estão o Pacote Inicial (3 primeiros
-dias), Remover anúncios, Passe premium, pacotes de estrelas e o Kit. Os
+dias), Remover anúncios, Passe premium, pacotes de estrelas, o Kit, o
+Cofrinho (sempre na loja; enche com as estrelas ganhas e pode ser quebrado a
+partir de 150) e a oferta de boas-vindas (uma vez só, por 48 h, para quem
+nunca comprou, a partir da fase 8 e depois dos 3 dias do Pacote Inicial). Os
 lendários são vendidos um por dia, de propósito: o mesmo para todos, em ordem
 fixa e sem sorteio, então só um dos seis pode ser comprado em cada dia. O do
 dia aparece em "Ofertas de hoje" (e no guarda-roupa, no próprio item) e muda à
