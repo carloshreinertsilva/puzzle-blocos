@@ -44,7 +44,11 @@ class _PresenteState extends State<_Presente> {
   /// Once, after the first gift: would the player like a reminder?
   Future<void> _perguntarLembretes() async {
     final store = widget.services.store;
-    if (!Avisos.suportado || store.remindersAsked || store.remindersOn) return;
+    if (!Avisos.lembretesSuportados ||
+        store.remindersAsked ||
+        store.remindersOn) {
+      return;
+    }
     await store.setRemindersAsked();
     if (!mounted) return;
     final sim = await showDialog<bool>(
@@ -57,8 +61,9 @@ class _PresenteState extends State<_Presente> {
         ),
         content: Text(
           tr(
-            'O Capi te avisa uma vez por dia, às 19h, quando o próximo '
-            'presente estiver pronto. Dá para desligar nas Configurações.',
+            'Se você sumir, o Capi te avisa às 19h do presente e do que '
+            'está esperando por você. No máximo um aviso por dia, e dá '
+            'para desligar nas Configurações.',
           ),
           style: bodyText(14, color: Palette.textDim),
         ),
@@ -77,6 +82,7 @@ class _PresenteState extends State<_Presente> {
         ],
       ),
     );
+    Analytics.event('lembretes_pergunta', {'aceitou': sim == true ? 1 : 0});
     if (sim == true) await Avisos.lembretes(store, true);
   }
 

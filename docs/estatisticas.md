@@ -52,6 +52,9 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `tower_end` | caiu a Torre do Capi | altura, maior combo |
 | `screen_open` | abriu vila, torre, obras, guarda-roupa ou missões | tela |
 | `tutorial_complete` | terminou as fases de introdução | — |
+| `lembretes_pergunta` | respondeu à pergunta dos lembretes (depois do primeiro presente) | aceitou (1/0) |
+| `lembretes` | ligou ou desligou os lembretes | ligado (1/0), permissão do celular (1/0) |
+| `lembrete_aberto` | abriu o jogo tocando num lembrete | tipo (presente_sequencia, desafio_sequencia, passe_pronto, passe_perto, vila, presente, generico), dias de ausência |
 
 O Firebase também mede sozinho: primeira abertura, sessões, retenção (quantos
 voltam no dia 1, 7 e 30), país e modelo do aparelho.
