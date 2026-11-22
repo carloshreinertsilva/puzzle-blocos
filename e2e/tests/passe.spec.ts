@@ -3,19 +3,21 @@ import { openApp, snap, state, waitForState } from './helpers';
 
 test('passe do capi: pega prêmios grátis, libera o premium e pega o lendário', async ({ page }, testInfo) => {
   await openApp(page, { level: 8, stars: 0 });
-  // 2 levels of pass points, as if earned by playing.
-  await page.evaluate(() => (window as any).__bb.earnStars(65));
-  await waitForState(page, (s) => s.stars === 65 && s.passe?.nivel === 2, 'nível 2 do passe');
+  // 2 levels of pass points (20 a level), as if earned by playing.
+  await page.evaluate(() => (window as any).__bb.earnStars(45));
+  await waitForState(page, (s) => s.stars === 45 && s.passe?.nivel === 2, 'nível 2 do passe');
 
   await page.getByRole('button', { name: 'Missões Diárias' }).click();
   await page.getByRole('button', { name: /^Passe do Capi, 2 prêmios para pegar/ }).click();
   await expect(page.getByText('Nível 2 de 30')).toBeVisible();
+  // What buying gives at once: levels 1 and 2 of the premium track.
+  await expect(page.getByText(/na hora: \+8 estrelas/)).toBeVisible();
   await page.waitForTimeout(400);
   await snap(page, testInfo, `passe-${testInfo.project.name}`);
 
   // Free track: once.
   await page.getByRole('button', { name: 'Nível 1 grátis: 3 estrelas, pegar' }).click();
-  await waitForState(page, (s) => s.stars === 68, '+3 estrelas');
+  await waitForState(page, (s) => s.stars === 48, '+3 estrelas');
   await expect(page.getByRole('button', { name: 'Nível 1 grátis: 3 estrelas, pegar' })).toHaveCount(0);
 
   // Premium: locked until bought (the browser shop is simulated).
@@ -23,6 +25,6 @@ test('passe do capi: pega prêmios grátis, libera o premium e pega o lendário'
   await page.getByRole('button', { name: /^Liberar a trilha premium do Passe/ }).click();
   await waitForState(page, (s) => s.passe?.premium === true, 'premium liberado');
   await page.getByRole('button', { name: 'Nível 1 premium: 8 estrelas, pegar' }).click();
-  await waitForState(page, (s) => s.stars === 76, '+8 estrelas');
+  await waitForState(page, (s) => s.stars === 56, '+8 estrelas');
   expect((await state(page)).passe!.premium).toBe(true);
 });

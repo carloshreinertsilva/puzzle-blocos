@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../l10n/idioma.dart';
+import '../services/ajustes.dart';
 import '../services/progress_store.dart';
 import 'wardrobe.dart';
 
@@ -67,11 +68,25 @@ class TemaTemporada {
 /// month's themed items and, at once, its exclusive one. Nothing in it is
 /// random: every reward is shown from the start. A season's items are only
 /// on offer in its month (they come back a year later); whoever has them
-/// keeps them.
+/// keeps them. While the premium track is on, the player also gets
+/// [dicasExtras] more free hint per game and the daily challenge's stars
+/// times [multiplicadorDesafio].
 abstract final class PasseDoCapi {
   /// Season 1 is November 2026; each calendar month is a season.
   static final inicio = DateTime(2026, 11, 1);
-  static const pontosPorNivel = 30;
+
+  /// Points per level, from Remote Config (`passe_pontos_nivel`). Levels
+  /// are worked out from the points every time and claims are kept per
+  /// level, so lowering it only opens levels: nothing claimed is lost.
+  static int get pontosPorNivel => Ajustes.atuais.pontosPorNivel;
+
+  /// Free hints per game the premium track adds (see GameController).
+  static const dicasExtras = 1;
+
+  /// The daily challenge's stars are multiplied by this with the premium
+  /// track. The extra ones are like bought stars: no pass points (no
+  /// loop) and nothing for the piggy bank.
+  static const multiplicadorDesafio = 2;
 
   /// The themes, by month (1 to 12). A month without one has a track of
   /// stars and tools only. New ones are added a couple of months ahead.
@@ -204,6 +219,15 @@ abstract final class PasseDoCapi {
   static int diasRestantes(DateTime agora) =>
       max(1, (fim(temporada(agora)).difference(agora).inHours + 23) ~/ 24);
 
+  /// Hours left in the season, rounded up (at least 1): what the screen
+  /// shows on the last day.
+  static int horasRestantes(DateTime agora) =>
+      max(1, (fim(temporada(agora)).difference(agora).inMinutes + 59) ~/ 60);
+
+  /// Whether the season ends within a day (count hours, not days).
+  static bool ultimoDia(DateTime agora) =>
+      fim(temporada(agora)).difference(agora) <= const Duration(days: 1);
+
   static int pontos(ProgressStore store, DateTime agora) =>
       store.passPoints(temporada(agora));
 
@@ -237,6 +261,45 @@ abstract final class PasseDoCapi {
     return n;
   }
 
+  /// What buying the premium track now gives at once: the premium rewards
+  /// of the levels already reached (not claimed yet) plus the month's item
+  /// that comes with the purchase.
+  static NaHora naHora(ProgressStore store, DateTime agora) {
+    var estrelas = 0, ferramentas = 0, itens = 0;
+    final t = temporada(agora);
+    final trilha = PasseDoCapi.trilha(agora);
+    for (var n = 1; n <= nivel(store, agora); n++) {
+      if (store.passClaimed(t, n, premium: true)) continue;
+      final r = trilha[n - 1].premium;
+      if (r.item != null) {
+        itens++;
+      } else if (r.ferramenta != null) {
+        ferramentas += r.quantidade;
+      } else {
+        estrelas += r.quantidade;
+      }
+    }
+    if (tema(agora)?.naCompra != null) itens++;
+    return NaHora(estrelas, ferramentas, itens);
+  }
+
+  /// The whole premium track of the season, summed up.
+  static NaHora totalPremium(DateTime agora) {
+    var estrelas = 0, ferramentas = 0, itens = 0;
+    for (final nivel in trilha(agora)) {
+      final r = nivel.premium;
+      if (r.item != null) {
+        itens++;
+      } else if (r.ferramenta != null) {
+        ferramentas += r.quantidade;
+      } else {
+        estrelas += r.quantidade;
+      }
+    }
+    if (tema(agora)?.naCompra != null) itens++;
+    return NaHora(estrelas, ferramentas, itens);
+  }
+
   /// Gives level [n]'s reward on that track, once.
   static Future<bool> pegar(
     ProgressStore store,
@@ -261,5 +324,35 @@ abstract final class PasseDoCapi {
       await store.addBoughtStars(r.quantidade);
     }
     return true;
+  }
+}
+
+/// A bundle of rewards, summed up: stars, tool uses and wardrobe items.
+class NaHora {
+  const NaHora(this.estrelas, this.ferramentas, this.itens);
+  final int estrelas;
+  final int ferramentas;
+  final int itens;
+
+  bool get vazio => estrelas == 0 && ferramentas == 0 && itens == 0;
+
+  /// "+48 estrelas, 6 ferramentas e 1 item".
+  String get texto {
+    final partes = [
+      if (estrelas > 0) trN(estrelas, '+{n} estrela', '+{n} estrelas'),
+      if (ferramentas > 0)
+        trN(ferramentas, '{n} ferramenta', '{n} ferramentas'),
+      if (itens > 0) trN(itens, '{n} item', '{n} itens'),
+    ];
+    return switch (partes) {
+      [final a] => a,
+      [final a, final b] => tr('{a} e {b}', {'a': a, 'b': b}),
+      [final a, final b, final c] => tr('{a}, {b} e {c}', {
+        'a': a,
+        'b': b,
+        'c': c,
+      }),
+      _ => '',
+    };
   }
 }

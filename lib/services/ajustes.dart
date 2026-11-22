@@ -10,6 +10,7 @@ class Ajustes {
     this.faseDoPrimeiroAnuncio = 6,
     this.carenciaSessaoMin = 5,
     this.dobrarPorDia = 10,
+    this.pontosPorNivel = 20,
   });
 
   /// From Remote Config values (by key, see [padroes]); a missing or
@@ -22,6 +23,7 @@ class Ajustes {
       faseDoPrimeiroAnuncio: ler(chaveFaseInicial, 3, 50),
       carenciaSessaoMin: ler(chaveCarencia, 2, 30),
       dobrarPorDia: ler(chaveDobrar, 0, 20),
+      pontosPorNivel: ler(chavePontosPasse, 10, 40),
     );
   }
 
@@ -29,6 +31,7 @@ class Ajustes {
   static const chaveFaseInicial = 'anuncio_fase_inicial';
   static const chaveCarencia = 'anuncio_carencia_min';
   static const chaveDobrar = 'dobrar_por_dia';
+  static const chavePontosPasse = 'passe_pontos_nivel';
 
   /// The values the game ships with, by Remote Config key.
   static const padroes = <String, int>{
@@ -36,6 +39,7 @@ class Ajustes {
     chaveFaseInicial: 6,
     chaveCarencia: 5,
     chaveDobrar: 10,
+    chavePontosPasse: 20,
   };
 
   /// What the game uses now. Read once when the app opens, so a value
@@ -53,6 +57,10 @@ class Ajustes {
 
   /// How many wins a day can have their stars doubled with a video.
   final int dobrarPorDia;
+
+  /// Passe do Capi points (stars earned playing) per level. Lowering it
+  /// never takes a claimed reward away (see PasseDoCapi.pontosPorNivel).
+  final int pontosPorNivel;
 
   AdPolicy get anuncios => AdPolicy(
     minInterval: Duration(minutes: intervaloAnunciosMin),

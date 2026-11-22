@@ -49,6 +49,8 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `ad_revenue` | um anúncio foi exibido e o AdMob estimou quanto pagou | tipo, onde, valor, moeda |
 | `interstitial_ad` | apareceu um anúncio entre fases | fase |
 | `fim_fase_atalho` | tocou num atalho do cartão de vitória: modo liberado, Passe ou Cofrinho | destino, fase |
+| `passe_vantagem` | o jogador com o Passe premium usou uma vantagem: a dica grátis extra ou as estrelas em dobro do Desafio diário | tipo (`dica`, `desafio`), estrelas |
+| `passe_provar` | tocou num item da temporada para ver no Capi, na tela do Passe | item |
 | `obra_end` | terminou uma obra | obra, estrelas |
 | `tower_end` | caiu a Torre do Capi | altura, maior combo |
 | `tower_wheel` | parou a seta da roleta do bônus (tocou em "Continuar" na Torre), antes do vídeo | multiplicador (1, 1.2, 1.5 ou 3), altura |
