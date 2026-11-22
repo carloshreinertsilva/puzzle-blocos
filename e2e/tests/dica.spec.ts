@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openApp, snap, waitForState } from './helpers';
+import { openApp, waitForState } from './helpers';
 
 // Capi's tip of the day: once a day, on a quiet menu, about something the
 // player never used. Browser tests only see it when they ask for it.
@@ -7,7 +7,7 @@ import { openApp, snap, waitForState } from './helpers';
 // The balloon's button: "Ver agora" with Capi's line as its hint (not the
 // news window's "Ver agora: ...").
 const DICA = /^Ver agora(?!:)/;
-test('dica do dia: o Capi aponta o Blitz, uma vez só', async ({ page }, testInfo) => {
+test('dica do dia: o Capi aponta o Blitz, uma vez só', async ({ page }) => {
   await openApp(page, {
     level: 8,
     seen_testar_dica: true,
@@ -18,9 +18,9 @@ test('dica do dia: o Capi aponta o Blitz, uma vez só', async ({ page }, testInf
   });
   const ver = page.getByRole('button', { name: DICA });
   await expect(ver).toBeVisible({ timeout: 30_000 });
-  await snap(page, testInfo, `dica-${testInfo.project.name}`);
-  expect(await page.evaluate(() => localStorage.getItem('flutter.dicaTema'))).toBe('"blitz"');
+  // The balloon goes away by itself after a few seconds: tap it first.
   await ver.click();
+  expect(await page.evaluate(() => localStorage.getItem('flutter.dicaTema'))).toBe('"blitz"');
   await waitForState(page, (s) => s.mode === 'blitz', 'blitz aberto pela dica');
 
   // Not again today, even after reopening the game.
