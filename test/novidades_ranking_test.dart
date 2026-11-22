@@ -29,33 +29,37 @@ void main() {
       expect(todas.first, Novidades.edicoes[Novidades.atual]!.first);
     });
 
-    test('quem viu a edição 1 recebe as três mais novas: os atalhos do fim '
-        'da fase e duas do duelo', () {
-      final novas = Novidades.pendentes(1);
-      expect(novas.map((n) => n.destino), [
-        DestinoNovidade.passe,
-        DestinoNovidade.duelo,
-        DestinoNovidade.duelo,
-      ]);
-      expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
-      expect(
-        iconeDaNovidade(DestinoNovidade.duelo),
-        Icons.sports_kabaddi_rounded,
-      );
-    });
+    test(
+      'quem viu a edição 1 recebe as três primeiras da edição mais nova',
+      () {
+        final novas = Novidades.pendentes(1);
+        expect(novas.map((n) => n.destino), [
+          DestinoNovidade.torre,
+          DestinoNovidade.passe,
+          DestinoNovidade.blitz,
+        ]);
+        expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
+        expect(
+          iconeDaNovidade(DestinoNovidade.duelo),
+          Icons.sports_kabaddi_rounded,
+        );
+      },
+    );
 
     test('quem viu a edição 2 recebe as três mais novas', () {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
-        'Atalhos no fim da fase',
-        'Duelo de 30 peças',
-        'Revanche com aviso',
+        'Roleta na Torre',
+        'Passe do Capi turbinado',
+        'Dobre as estrelas em todos os modos',
       ]);
     });
 
-    test('quem viu a edição 6 recebe os atalhos e o duelo de 30 peças', () {
-      expect(Novidades.pendentes(6).map((n) => n.titulo), [
-        'Atalhos no fim da fase',
-        'Duelo de 30 peças',
+    test('quem viu a edição 7 recebe só as três primeiras da edição 8', () {
+      expect(Novidades.edicoes[8]!.length, greaterThan(Novidades.porVez));
+      expect(Novidades.pendentes(7).map((n) => n.titulo), [
+        'Roleta na Torre',
+        'Passe do Capi turbinado',
+        'Dobre as estrelas em todos os modos',
       ]);
     });
 

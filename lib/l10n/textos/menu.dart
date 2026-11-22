@@ -373,6 +373,16 @@ const Map<String, String> enMenu = {
       "When they play, you'll see the result and your scoreboard.",
   'Atalhos no fim da fase': 'Shortcuts when you win',
   'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto falta para o próximo prêmio do Passe e o seu Cofrinho.': 'When you win a level, you see right away the mode you just unlocked, how far the next Pass reward is and your Piggy Bank.',
+  'Roleta na Torre': 'Tower bonus wheel',
+  'Pare a seta antes do vídeo e continue a subida com o bloco até 3x maior!': 'Stop the arrow before the video and keep climbing with a block up to 3x bigger!',
+  'Passe do Capi turbinado': 'Capi Pass, supercharged',
+  'Níveis mais rápidos, e o premium agora dá +1 dica grátis por partida e estrelas em dobro no Desafio diário.': 'Faster levels, and premium now gives +1 free hint per game and double stars in the Daily Challenge.',
+  'Dobre as estrelas em todos os modos': 'Double your stars in every mode',
+  'No Desafio diário, no Infinito, no Blitz e na Torre, um vídeo dobra as estrelas da partida.': 'In the Daily Challenge, Endless, Blitz and the Tower, a video doubles the stars you earned.',
+  'Menu mais esperto': 'A smarter menu',
+  'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Cards show what\'s new, the Shop flags today\'s deals, and Capi gives you one tip a day.',
+  'Lembretes no iPhone': 'Reminders on iPhone',
+  'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi now reminds you on iPhone too: your gift, your streak and the Pass rewards waiting.',
 };
 
 const Map<String, String> esMenu = {
@@ -752,4 +762,15 @@ const Map<String, String> esMenu = {
       'Cuando juegue, verás el resultado y el marcador entre ustedes.',
   'Atalhos no fim da fase': 'Atajos al terminar el nivel',
   'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto falta para o próximo prêmio do Passe e o seu Cofrinho.': 'Al ganar un nivel, ves al momento el modo que acabas de desbloquear, cuánto falta para el próximo premio del Pase y tu Alcancía.',
+  'Roleta na Torre': 'Ruleta en la Torre',
+  'Pare a seta antes do vídeo e continue a subida com o bloco até 3x maior!': '¡Detén la flecha antes del video y sigue subiendo con un bloque hasta 3x más grande!',
+  'Passe do Capi turbinado': 'Pase de Capi mejorado',
+  'Níveis mais rápidos, e o premium agora dá +1 dica grátis por partida e estrelas em dobro no Desafio diário.': 'Niveles más rápidos, y el premium ahora da +1 pista gratis por partida y estrellas dobles en el Desafío diario.',
+  'Dobre as estrelas em todos os modos':
+      'Duplica tus estrellas en todos los modos',
+  'No Desafio diário, no Infinito, no Blitz e na Torre, um vídeo dobra as estrelas da partida.': 'En el Desafío diario, Infinito, Blitz y la Torre, un video duplica las estrellas de la partida.',
+  'Menu mais esperto': 'Un menú más listo',
+  'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Las tarjetas muestran las novedades, la Tienda avisa las ofertas del día y Capi da un consejo al día.',
+  'Lembretes no iPhone': 'Recordatorios en iPhone',
+  'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi ahora te avisa también en iPhone: tu regalo, tu racha y los premios del Pase que te esperan.',
 };
