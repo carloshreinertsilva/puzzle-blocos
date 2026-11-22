@@ -52,6 +52,9 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `tower_end` | caiu a Torre do Capi | altura, maior combo |
 | `screen_open` | abriu vila, torre, obras, guarda-roupa ou missões | tela |
 | `tutorial_complete` | terminou as fases de introdução | — |
+| `dica_capi` | o Capi deu a dica do dia no menu (uma por dia, sobre algo liberado e nunca usado) | tema |
+| `dica_capi_ver` | tocou em "Ver agora" na dica do dia | tema |
+| `menu_abertura` | o menu abriu janelas sozinho (no máximo 2 por abertura) | dialogos (quantas abriram) |
 
 O Firebase também mede sozinho: primeira abertura, sessões, retenção (quantos
 voltam no dia 1, 7 e 30), país e modelo do aparelho.
