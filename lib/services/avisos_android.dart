@@ -11,14 +11,21 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../core/lembretes.dart';
 import '../l10n/idioma.dart';
+import 'analytics.dart';
 import 'avisos.dart';
 import 'config_remota_firebase.dart';
 import 'duelo_aviso.dart';
 import 'firebase_app.dart';
 import 'progress_store.dart';
 
-bool get suportado => Platform.isAndroid;
+/// Reminders are local notifications: Android and iPhone.
+bool get lembretesSuportados => Platform.isAndroid || Platform.isIOS;
+
+/// Firebase messages, duels and the in-game update need Google's services
+/// (on the iPhone, push would need an APNs key: not set up).
+bool get mensagensSuportadas => Platform.isAndroid;
 
 final _plugin = FlutterLocalNotificationsPlugin();
 bool _pronto = false;
@@ -44,9 +51,6 @@ AndroidNotificationChannel get _canalDuelos => AndroidNotificationChannel(
   importance: Importance.high,
 );
 
-/// The hour the reminders ring (local time).
-const _hora = 19;
-
 Future<void> _preparar() async {
   if (_pronto) return;
   _pronto = true;
@@ -60,10 +64,26 @@ Future<void> _preparar() async {
   await _plugin.initialize(
     settings: const InitializationSettings(
       android: AndroidInitializationSettings('ic_notificacao'),
+      // The iPhone asks for permission only when the player says yes to
+      // the reminders (see lembretes), not when the game opens.
+      iOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      ),
     ),
-    // A duel notification shown with the game open: its route.
-    onDidReceiveNotificationResponse: (r) => _abrir(r.payload),
+    // A duel notification shown with the game open: its route; a reminder:
+    // just counted.
+    onDidReceiveNotificationResponse: (r) => _tocou(r.payload),
   );
+  // The game was opened by tapping a reminder: counted (duels opened from
+  // a closed game come through Firebase, in _mensagens).
+  final inicio = await _plugin.getNotificationAppLaunchDetails();
+  final payload = inicio?.notificationResponse?.payload;
+  if ((inicio?.didNotificationLaunchApp ?? false) &&
+      (payload?.startsWith(_lembrete) ?? false)) {
+    _tocou(payload);
+  }
   final android = _plugin
       .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin
@@ -73,6 +93,21 @@ Future<void> _preparar() async {
   await android?.createNotificationChannel(_canalDuelos);
 }
 
+/// The payload of a reminder: `lembrete:<tipo>:<dias>`.
+const _lembrete = 'lembrete:';
+
+void _tocou(String? payload) {
+  if (payload != null && payload.startsWith(_lembrete)) {
+    final partes = payload.substring(_lembrete.length).split(':');
+    Analytics.event('lembrete_aberto', {
+      'tipo': partes.first,
+      'dias': int.tryParse(partes.last) ?? 0,
+    });
+    return;
+  }
+  _abrir(payload);
+}
+
 /// A route from a notification (`/` is just the game: the menu fetches
 /// the duels' results by itself).
 void _abrir(String? rota) {
@@ -80,12 +115,19 @@ void _abrir(String? rota) {
   Avisos.abrir?.call(rota);
 }
 
+/// Leaving the game re-schedules the reminders too: their texts then
+/// tell what is waiting by now (today's gift taken, a streak to keep...).
+AppLifecycleListener? _aoSair;
+
 Future<void> iniciar(ProgressStore store) async {
-  if (!suportado) return;
+  if (!lembretesSuportados) return;
   try {
     await _preparar();
     await _agendar(store);
-    await _mensagens();
+    _aoSair ??= AppLifecycleListener(
+      onHide: () => unawaited(_agendar(store).catchError((_) {})),
+    );
+    if (mensagensSuportadas) await _mensagens();
   } catch (_) {
     // Notifications must never stop the game.
   }
@@ -142,7 +184,7 @@ Future<void> _mensagens() async {
 }
 
 Future<void> pedirParaDuelos() async {
-  if (!suportado) return;
+  if (!mensagensSuportadas) return;
   try {
     await _preparar();
     final android = _plugin
@@ -155,27 +197,33 @@ Future<void> pedirParaDuelos() async {
   }
 }
 
-/// Schedules the next days' reminders (1, 2 and 3 days from now at 19h),
-/// replacing the old ones; with reminders off, just clears them.
+/// Schedules the reminders for the days of absence in [lembretesDias] at
+/// [lembretesHora], replacing the old ones, each with what the player has
+/// waiting (core/lembretes.dart); with reminders off, just clears them.
 Future<void> _agendar(ProgressStore store) async {
-  for (var i = 0; i < lembretesTextos.length; i++) {
+  // 100 to 103 (and 100 to 102 from before 1.16).
+  for (var i = 0; i < lembretesDias.length; i++) {
     await _plugin.cancel(id: 100 + i);
   }
   if (!store.remindersOn) return;
   final agora = tz.TZDateTime.now(tz.local);
-  for (var i = 0; i < lembretesTextos.length; i++) {
-    final (titulo, texto) = lembretesTextos[i];
+  final lembretes = escolherLembretes(
+    EstadoLembretes.doStore(store, DateTime.now()),
+  );
+  for (var i = 0; i < lembretes.length; i++) {
+    final l = lembretes[i];
     final quando = tz.TZDateTime(
       tz.local,
       agora.year,
       agora.month,
-      agora.day + i + 1,
-      _hora,
+      agora.day + l.dias,
+      lembretesHora,
     );
     await _plugin.zonedSchedule(
       id: 100 + i,
-      title: tr(titulo),
-      body: tr(texto),
+      title: l.titulo,
+      body: l.texto,
+      payload: '$_lembrete${l.tipo}:${l.dias}',
       scheduledDate: quando,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       notificationDetails: NotificationDetails(
@@ -186,33 +234,46 @@ Future<void> _agendar(ProgressStore store) async {
           icon: 'ic_notificacao',
           color: const Color(0xFFFFC94D),
         ),
+        iOS: const DarwinNotificationDetails(),
       ),
     );
   }
 }
 
 Future<bool> lembretes(ProgressStore store, bool ligar) async {
-  if (!suportado) return false;
+  if (!lembretesSuportados) return false;
   try {
     await _preparar();
-    if (ligar) {
-      final android = _plugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-      final ok = await android?.requestNotificationsPermission() ?? false;
-      if (!ok) {
-        await store.setRemindersOn(false);
-        await _agendar(store);
-        return false;
-      }
+    if (ligar && !await _pedirPermissao()) {
+      await store.setRemindersOn(false);
+      await _agendar(store);
+      Analytics.event('lembretes', {'ligado': 0, 'permissao': 0});
+      return false;
     }
     await store.setRemindersOn(ligar);
     await _agendar(store);
+    Analytics.event('lembretes', {'ligado': ligar ? 1 : 0, 'permissao': 1});
     return ligar;
   } catch (_) {
     return false;
   }
+}
+
+/// Android 13+ or the iPhone's own question (asked once by the system;
+/// after a "no", only the phone's settings can turn it back on).
+Future<bool> _pedirPermissao() async {
+  if (Platform.isIOS) {
+    final ios = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    return await ios?.requestPermissions(alert: true, sound: true) ?? false;
+  }
+  final android = _plugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
+  return await android?.requestNotificationsPermission() ?? false;
 }
 
 /// Offered once per opening of the game.
@@ -222,7 +283,7 @@ Future<void> verificarAtualizacao(
   BuildContext context,
   ProgressStore store,
 ) async {
-  if (!suportado || _oferecida) return;
+  if (!mensagensSuportadas || _oferecida) return;
   _oferecida = true;
   try {
     final info = await InAppUpdate.checkForUpdate();
