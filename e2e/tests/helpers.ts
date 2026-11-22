@@ -86,6 +86,11 @@ export type GameState = {
     canContinue: boolean;
     offset: number;
     room: number;
+    /** The bonus wheel on the end card (needle angle 0 left, pi right). */
+    roleta: { angulo: number; multiplicador: number; parada: boolean };
+    /** The bonus the last "Continuar" gave, and the top block's size. */
+    fatorContinuar: number;
+    topo: { dx: number; dy: number };
   };
   ranking?: { nome: string | null; denuncias: number; linhas: Record<string, number> };
   equippedHat?: string;

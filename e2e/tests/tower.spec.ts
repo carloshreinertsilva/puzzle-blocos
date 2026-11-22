@@ -73,9 +73,26 @@ test.describe('Torre do Capi em 2.5D', () => {
     await page.evaluate(() => (window as any).__bb.missTower());
     await waitForState(page, (x) => x.tower?.gameOver === true && x.tower.canContinue, 'fim da subida');
     await expect(page.getByText('NOVO RECORDE!')).toBeVisible();
+    // A roleta do bônus gira sobre o "Continuar"; os outros botões seguem lá.
+    await expect(page.getByRole('button', { name: 'Roleta do bônus do vídeo' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Subir de Novo' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Voltar ao Menu' })).toBeVisible();
+    s = await state(page);
+    expect(s.tower!.roleta.parada).toBe(false);
+    expect([1, 1.2, 1.5, 3]).toContain(s.tower!.roleta.multiplicador);
+    // Para a seta no meio (o 3x), como um toque naquele instante faria.
+    await page.evaluate(() => (window as any).__bb.stopTowerWheel(0.5));
+    s = await state(page);
+    expect(s.tower!.roleta.parada).toBe(true);
+    expect(s.tower!.roleta.multiplicador).toBe(3);
     await page.getByRole('button', { name: 'Continuar a subida vendo um vídeo' }).click();
     s = await waitForState(page, (x) => x.tower?.playing === true && x.tower.gameOver === false, 'continuou', 10_000);
     expect(s.tower!.floors).toBe(6);
+    // O bloco de cima cresceu pelo bônus, mas nunca passa do bloco base (3).
+    expect(s.tower!.fatorContinuar).toBe(3);
+    expect(s.tower!.topo.dx).toBeLessThanOrEqual(3.0001);
+    expect(s.tower!.topo.dy).toBeLessThanOrEqual(3.0001);
+    expect(s.tower!.roleta.parada).toBe(false);
 
     for (let i = 0; i < 4; i++) await perfeito();
     s = await state(page);
@@ -86,5 +103,20 @@ test.describe('Torre do Capi em 2.5D', () => {
     await waitForState(page, (x) => x.tower?.gameOver === true, 'fim de vez');
     await expect(page.getByRole('button', { name: 'Subir de Novo' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Continuar a subida vendo um vídeo' })).toHaveCount(0);
+  });
+
+  test('dobrar as estrelas da subida com um vídeo', async ({ page }) => {
+    await openApp(page, { level: 10, seen_opened_tower: true, stars: 0 });
+    await page.getByRole('button', { name: 'Modos' }).click();
+    await page.getByRole('button', { name: /^Torre do Capi/ }).click();
+    await waitForState(page, (s) => s.screen === 'tower', 'entrou na torre');
+    for (let i = 0; i < 5; i++) await page.evaluate(() => (window as any).__bb.placeTower(true));
+    await page.evaluate(() => (window as any).__bb.missTower());
+    const s = await waitForState(page, (x) => x.tower?.gameOver === true && x.tower.starsGained > 0, 'fim da subida');
+    await page.getByRole('button', { name: /^Dobrar: \+\d com vídeo/ }).click();
+    await expect(page.getByText(/^Estrelas dobradas/)).toBeVisible({ timeout: 10_000 });
+    await expect.poll(async () => (await state(page)).stars).toBe(2 * s.tower!.starsGained);
+    // Uma vez por subida: o botão some.
+    await expect(page.getByRole('button', { name: /^Dobrar: \+\d com vídeo/ })).toHaveCount(0);
   });
 });
