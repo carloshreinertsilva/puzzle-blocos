@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Firebase app "com.capiblocks.app" of the project "capiblocks": the
+     same values as FirebaseConfig.android (lib/services/firebase_config.dart),
+     as the resources the google-services plugin would write from
+     google-services.json. Firebase Analytics on Android reads google_app_id
+     from here when the app starts, before Dart runs: without it Analytics
+     turns itself off ("Missing google_app_id") and no statistics arrive.
+     These are identifiers, not secrets: they ship inside every app. -->
+<resources>
+    <string name="google_app_id" translatable="false">1:731810631964:android:64bfa0dded5ad8eb4e6ad9</string>
+    <string name="gcm_defaultSenderId" translatable="false">731810631964</string>
+    <string name="project_id" translatable="false">capiblocks</string>
+    <string name="google_api_key" translatable="false">AIzaSyB7HOQ_WL6Lv66YooFWmX2ls2jNhpZLe7M</string>
+</resources>

@@ -15,6 +15,26 @@ AdMob e Google Play ainda não vinculados (opcional).
    `mobilesdk_app_id`, `project_number` e `project_id`. Esses valores não são
    segredo: ficam dentro de qualquer app publicado.
 
+## Android: o arquivo `firebase.xml`
+
+O Analytics do Android liga antes do Dart e lê o app do Firebase dos
+recursos nativos. Como o projeto não usa o plugin `google-services`, esses
+valores ficam em `android/app/src/main/res/values/firebase.xml` (os mesmos
+de `FirebaseConfig.android`; o teste `test/firebase_android_test.dart`
+confere). Sem o `google_app_id` ali o Analytics se desliga sozinho e nenhum
+dado do Android chega ao Firebase: foi o que aconteceu até a 1.15.2.
+
+A coleta começa desligada no manifesto e só liga quando o jogo lê a escolha
+do jogador (Configurações → Estatísticas de uso).
+
+Para conferir num aparelho:
+
+```
+adb shell setprop debug.firebase.analytics.app com.capiblocks.app
+```
+
+e veja os eventos chegando em Firebase → Analytics → **DebugView**.
+
 ## O que é registrado
 
 | Evento | Quando | Dados |
