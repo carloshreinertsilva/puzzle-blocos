@@ -29,11 +29,11 @@ void main() {
       expect(todas.first, Novidades.edicoes[Novidades.atual]!.first);
     });
 
-    test('quem viu a edição 1 recebe a revanche, a abertura do desafio e o '
-        'placar dos duelos', () {
+    test('quem viu a edição 1 recebe as três mais novas: os atalhos do fim '
+        'da fase e duas do duelo', () {
       final novas = Novidades.pendentes(1);
       expect(novas.map((n) => n.destino), [
-        DestinoNovidade.duelo,
+        DestinoNovidade.passe,
         DestinoNovidade.duelo,
         DestinoNovidade.duelo,
       ]);
@@ -46,14 +46,15 @@ void main() {
 
     test('quem viu a edição 2 recebe as três mais novas', () {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
+        'Atalhos no fim da fase',
         'Duelo de 30 peças',
         'Revanche com aviso',
-        'Você foi desafiado!',
       ]);
     });
 
-    test('quem viu a edição 6 recebe só o duelo de 30 peças', () {
+    test('quem viu a edição 6 recebe os atalhos e o duelo de 30 peças', () {
       expect(Novidades.pendentes(6).map((n) => n.titulo), [
+        'Atalhos no fim da fase',
         'Duelo de 30 peças',
       ]);
     });

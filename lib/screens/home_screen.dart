@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 
 import '../core/convites.dart';
+import '../core/descoberta.dart';
 import '../core/duelos.dart';
 import '../core/hats.dart';
 import '../core/novidades.dart';
@@ -557,8 +558,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mode == GameMode.endless) {
       widget.services.store.markSeen('opened_endless');
     }
-    await Navigator.of(context).push(
-      PageRouteBuilder(
+    final atalho = await Navigator.of(context).push<Atalho>(
+      PageRouteBuilder<Atalho>(
         transitionDuration: const Duration(milliseconds: 280),
         pageBuilder: (_, _, _) => GameScreen(
           services: widget.services,
@@ -584,13 +585,41 @@ class _HomeScreenState extends State<HomeScreen> {
       unawaited(_sincronizarConvites());
     }
     if (!mounted) return;
+    // A mode chosen on the end-of-level card: Capi has nothing left to
+    // announce about it on the menu.
+    final falada = _noticiaDoAtalho(atalho);
+    if (falada != null) await store.markSeen(falada.key);
+    if (!mounted) return;
     setState(() => _news = Onboarding.pendingNews(widget.services.store));
     unawaited(_lerPosicao());
     // A friend may have answered a challenge in the meantime.
     if (mode == GameMode.duel || mode == GameMode.blitz) {
       unawaited(_resultadosDuelo());
     }
+    if (atalho != null) await _irParaAtalho(atalho);
   }
+
+  static MenuNews? _noticiaDoAtalho(Atalho? a) => switch (a) {
+    Atalho.infinito => MenuNews.endless,
+    Atalho.obras => MenuNews.obras,
+    Atalho.desafioDiario => MenuNews.daily,
+    Atalho.blitz => MenuNews.blitz,
+    Atalho.duelo => MenuNews.duel,
+    Atalho.torre => MenuNews.tower,
+    _ => null,
+  };
+
+  /// Where a shortcut on the end-of-level card leads.
+  Future<void> _irParaAtalho(Atalho a) => switch (a) {
+    Atalho.infinito => _open(GameMode.endless),
+    Atalho.obras => _openObras(),
+    Atalho.desafioDiario => _open(GameMode.daily),
+    Atalho.blitz => _openBlitz(),
+    Atalho.duelo => _openDuelo(),
+    Atalho.torre => _openTower(),
+    Atalho.passe => _openPasse(),
+    Atalho.loja => _openLoja(),
+  };
 
   Future<void> _openTower() async {
     _sairDaFolha();

@@ -91,6 +91,14 @@ abstract final class Novidades {
         DestinoNovidade.duelo,
       ),
     ],
+    8: [
+      Novidade(
+        'Atalhos no fim da fase',
+        'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto '
+            'falta para o próximo prêmio do Passe e o seu Cofrinho.',
+        DestinoNovidade.passe,
+      ),
+    ],
   };
 
   /// How many are shown at once.

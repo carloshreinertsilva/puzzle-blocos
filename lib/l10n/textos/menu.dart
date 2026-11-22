@@ -330,6 +330,8 @@ const Map<String, String> enMenu = {
       '{rival} tied with you: {eu} points.',
   'Quando ele jogar, você vê o resultado e o placar de vocês.':
       "When they play, you'll see the result and your scoreboard.",
+  'Atalhos no fim da fase': 'Shortcuts when you win',
+  'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto falta para o próximo prêmio do Passe e o seu Cofrinho.': 'When you win a level, you see right away the mode you just unlocked, how far the next Pass reward is and your Piggy Bank.',
 };
 
 const Map<String, String> esMenu = {
@@ -669,4 +671,6 @@ const Map<String, String> esMenu = {
       '{rival} empató contigo: {eu} puntos.',
   'Quando ele jogar, você vê o resultado e o placar de vocês.':
       'Cuando juegue, verás el resultado y el marcador entre ustedes.',
+  'Atalhos no fim da fase': 'Atajos al terminar el nivel',
+  'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto falta para o próximo prêmio do Passe e o seu Cofrinho.': 'Al ganar un nivel, ves al momento el modo que acabas de desbloquear, cuánto falta para el próximo premio del Pase y tu Alcancía.',
 };

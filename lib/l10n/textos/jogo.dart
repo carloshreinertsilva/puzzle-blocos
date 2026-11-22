@@ -291,6 +291,15 @@ const Map<String, String> enJogo = {
   'Lendário!': 'Legendary!',
   'Inacreditável!': 'Unbelievable!',
   'Imbatível!': 'Unstoppable!',
+  'Passe: {n} prêmio pronto!': 'Pass: {n} reward ready!',
+  'Passe: {n} prêmios prontos!': 'Pass: {n} rewards ready!',
+  'Passe: falta {n} ponto para {premio}': 'Pass: {n} point to {premio}',
+  'Passe: faltam {n} pontos para {premio}': 'Pass: {n} points to {premio}',
+  'Cofrinho cheio: {n} estrelas!': 'Piggy Bank full: {n} stars!',
+  'Cofrinho: {n} estrelas guardadas': 'Piggy Bank: {n} stars saved',
+  'Modo novo liberado!': 'New mode unlocked!',
+  'Modos novos liberados!': 'New modes unlocked!',
+  'Conhecer: {modo}': 'Try it: {modo}',
 };
 
 const Map<String, String> esJogo = {
@@ -589,4 +598,14 @@ const Map<String, String> esJogo = {
   'Lendário!': '¡Legendario!',
   'Inacreditável!': '¡Alucinante!',
   'Imbatível!': '¡Imparable!',
+  'Passe: {n} prêmio pronto!': 'Pase: ¡{n} premio listo!',
+  'Passe: {n} prêmios prontos!': 'Pase: ¡{n} premios listos!',
+  'Passe: falta {n} ponto para {premio}': 'Pase: falta {n} punto para {premio}',
+  'Passe: faltam {n} pontos para {premio}':
+      'Pase: faltan {n} puntos para {premio}',
+  'Cofrinho cheio: {n} estrelas!': 'Alcancía llena: ¡{n} estrellas!',
+  'Cofrinho: {n} estrelas guardadas': 'Alcancía: {n} estrellas guardadas',
+  'Modo novo liberado!': '¡Modo nuevo desbloqueado!',
+  'Modos novos liberados!': '¡Modos nuevos desbloqueados!',
+  'Conhecer: {modo}': 'Conocer: {modo}',
 };

@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../ui/blitz_duel_painter.dart';
 
 import '../ads/ad_service.dart';
+import '../core/descoberta.dart';
 import '../core/duelos.dart';
 import '../core/game_session.dart';
 import '../core/ranking.dart';
@@ -40,6 +41,8 @@ import '../ui/widgets.dart';
 import '../ui/premio.dart';
 import '../ui/regras_duelo.dart';
 import '../core/level.dart';
+import 'loja_sheet.dart';
+import 'passe_sheet.dart';
 
 /// "Dobrar com vídeo" at most this many times a day, so watching every
 /// video doesn't double the whole star economy.
@@ -710,6 +713,26 @@ class _GameScreenState extends State<GameScreen> {
     Navigator.of(context).pop();
   }
 
+  /// A shortcut on the end-of-level card: the Passe and the shop open over
+  /// the card; a game mode goes back to the menu, which opens it.
+  Future<void> _atalho(Atalho a) => _guard(() async {
+    widget.services.feedback.click();
+    Analytics.event('fim_fase_atalho', {
+      'destino': a.name,
+      'level': controller.level.number,
+    });
+    switch (a) {
+      case Atalho.passe:
+        await showPasse(context, widget.services);
+      case Atalho.loja:
+        await showLoja(context, widget.services);
+      default:
+        Navigator.of(context).pop(a);
+        return;
+    }
+    if (mounted) setState(() {});
+  });
+
   /// On the phone: the share sheet (WhatsApp & co.). On the web: copies
   /// the link.
   Future<void> _shareDuelLink(int score) async {
@@ -951,6 +974,18 @@ class _GameScreenState extends State<GameScreen> {
                 dobrado: _dobrado,
                 onDobrar: _podeDobrar ? _dobrarEstrelas : null,
                 replay: controller.isReplay,
+                // Not on the first levels, played back to back: the menu
+                // (and everything on it) comes after them.
+                liberados: _onboarding || controller.isReplay
+                    ? const []
+                    : Descoberta.liberadosAoVencer(controller.level.number),
+                passe: _onboarding
+                    ? null
+                    : Descoberta.passe(widget.services.store, DateTime.now()),
+                cofrinho: _onboarding || !widget.services.loja.existe
+                    ? null
+                    : Descoberta.cofrinho(widget.services.store),
+                onAtalho: _atalho,
                 onNext: _next,
                 onRetry: _retry,
                 onExit: _onboarding ? null : _exit,
@@ -1930,8 +1965,24 @@ class _WinCard extends StatelessWidget {
     required this.onExit,
     this.dobrado = false,
     this.onDobrar,
+    this.liberados = const [],
+    this.passe,
+    this.cofrinho,
+    this.onAtalho,
   });
   final int level;
+
+  /// Game modes this win opened, each with a button that goes to it.
+  final List<Atalho> liberados;
+
+  /// Where the player stands on the Passe do Capi, and the piggy bank once
+  /// it is worth breaking: one tappable line each.
+  final LinhaPasse? passe;
+  final String? cofrinho;
+  final void Function(Atalho)? onAtalho;
+
+  bool get _comAtalhos =>
+      liberados.isNotEmpty || passe != null || cofrinho != null;
 
   /// Watch a video to get this win's stars again (once per win).
   final bool dobrado;
@@ -1953,74 +2004,85 @@ class _WinCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CardPanel(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Capi(size: 84, mood: CapiMood.cheer),
-        OutlinedTitle(tr('Fase {n} concluída!', {'n': level}), size: 30),
-        const SizedBox(height: 10),
-        StarRow(
-          filled: [for (var i = 0; i < 3; i++) i < Missions.count(starBits)],
-          animate: true,
-        ),
-        const SizedBox(height: 10),
-        for (final m in Mission.values)
-          _MissionLine(
-            text: Missions.text(m, level),
-            done: Missions.has(starBits, m),
-            isNew: Missions.has(newBits, m),
-          ),
-        const SizedBox(height: 6),
-        Text(
-          starsGained > 0
-              ? trN(
-                  starsGained,
-                  '+{n} estrela · {pontos} pontos',
-                  '+{n} estrelas · {pontos} pontos',
-                  {'pontos': formatInt(score)},
-                )
-              : tr('{pontos} pontos', {'pontos': formatInt(score)}),
-          style: _bodyStyle,
-        ),
-        if (onDobrar != null) ...[
+    // With the shortcuts the card can be taller than a small phone.
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Capi(size: _comAtalhos ? 60 : 84, mood: CapiMood.cheer),
+          OutlinedTitle(tr('Fase {n} concluída!', {'n': level}), size: 30),
           const SizedBox(height: 10),
-          if (dobrado)
-            Text(
-              tr('Estrelas dobradas: +{n}!', {'n': starsGained}),
-              style: displayText(16, color: Palette.accent),
-            )
-          else
+          StarRow(
+            filled: [for (var i = 0; i < 3; i++) i < Missions.count(starBits)],
+            animate: true,
+          ),
+          const SizedBox(height: 10),
+          for (final m in Mission.values)
+            _MissionLine(
+              text: Missions.text(m, level),
+              done: Missions.has(starBits, m),
+              isNew: Missions.has(newBits, m),
+            ),
+          const SizedBox(height: 6),
+          Text(
+            starsGained > 0
+                ? trN(
+                    starsGained,
+                    '+{n} estrela · {pontos} pontos',
+                    '+{n} estrelas · {pontos} pontos',
+                    {'pontos': formatInt(score)},
+                  )
+                : tr('{pontos} pontos', {'pontos': formatInt(score)}),
+            style: _bodyStyle,
+          ),
+          if (onDobrar != null) ...[
+            const SizedBox(height: 10),
+            if (dobrado)
+              Text(
+                tr('Estrelas dobradas: +{n}!', {'n': starsGained}),
+                style: displayText(16, color: Palette.accent),
+              )
+            else
+              ChunkyButton(
+                label: tr('Dobrar: +{n} com vídeo', {'n': starsGained}),
+                icon: Icons.smart_display_rounded,
+                color: Palette.good,
+                textColor: const Color(0xFF0B3D1A),
+                onTap: onDobrar,
+              ),
+          ],
+          if (liberados.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _ModosLiberados(modos: liberados, onAtalho: onAtalho),
+          ],
+          if (passe != null) ...[
+            const SizedBox(height: 8),
+            _AtalhoLinha(
+              icon: Icons.military_tech_rounded,
+              cor: const Color(0xFFD0A2F7),
+              texto: passe!.texto,
+              destaque: passe!.prontas > 0,
+              onTap: () => onAtalho?.call(Atalho.passe),
+            ),
+          ],
+          if (cofrinho != null) ...[
+            const SizedBox(height: 8),
+            _AtalhoLinha(
+              icon: Icons.savings_rounded,
+              cor: Palette.accent,
+              texto: cofrinho!,
+              destaque: true,
+              onTap: () => onAtalho?.call(Atalho.loja),
+            ),
+          ],
+          const SizedBox(height: 18),
+          if (replay) ...[
             ChunkyButton(
-              label: tr('Dobrar: +{n} com vídeo', {'n': starsGained}),
-              icon: Icons.smart_display_rounded,
-              color: Palette.good,
-              textColor: const Color(0xFF0B3D1A),
-              onTap: onDobrar,
+              label: tr('Jogar de novo'),
+              icon: Icons.refresh_rounded,
+              big: true,
+              onTap: onRetry,
             ),
-        ],
-        const SizedBox(height: 18),
-        if (replay) ...[
-          ChunkyButton(
-            label: tr('Jogar de novo'),
-            icon: Icons.refresh_rounded,
-            big: true,
-            onTap: onRetry,
-          ),
-          TextButton(
-            onPressed: onExit,
-            child: Text(
-              tr('Menu'),
-              style: displayText(18, color: Palette.textDim),
-            ),
-          ),
-        ] else ...[
-          ChunkyButton(
-            label: tr('Próxima fase'),
-            icon: Icons.arrow_forward_rounded,
-            big: true,
-            onTap: onNext,
-          ),
-          if (onExit != null)
             TextButton(
               onPressed: onExit,
               child: Text(
@@ -2028,8 +2090,167 @@ class _WinCard extends StatelessWidget {
                 style: displayText(18, color: Palette.textDim),
               ),
             ),
+          ] else ...[
+            ChunkyButton(
+              label: tr('Próxima fase'),
+              icon: Icons.arrow_forward_rounded,
+              big: true,
+              onTap: onNext,
+            ),
+            if (onExit != null)
+              TextButton(
+                onPressed: onExit,
+                child: Text(
+                  tr('Menu'),
+                  style: displayText(18, color: Palette.textDim),
+                ),
+              ),
+          ],
         ],
+      ),
+    ),
+  );
+}
+
+IconData _iconeDoAtalho(Atalho a) => switch (a) {
+  Atalho.infinito => Icons.all_inclusive_rounded,
+  Atalho.obras => Icons.architecture_rounded,
+  Atalho.desafioDiario => Icons.calendar_today_rounded,
+  Atalho.blitz => Icons.bolt_rounded,
+  Atalho.duelo => Icons.sports_kabaddi_rounded,
+  Atalho.torre => Icons.layers_rounded,
+  Atalho.passe => Icons.military_tech_rounded,
+  Atalho.loja => Icons.storefront_rounded,
+};
+
+/// "Modo novo liberado!" on the end-of-level card, with a button for each
+/// mode this win opened.
+class _ModosLiberados extends StatelessWidget {
+  const _ModosLiberados({required this.modos, required this.onAtalho});
+  final List<Atalho> modos;
+  final void Function(Atalho)? onAtalho;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+    decoration: BoxDecoration(
+      color: const Color(0x22FFC94D),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Palette.accent, width: 1.5),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.lock_open_rounded,
+              color: Palette.accent,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  modos.length == 1
+                      ? tr('Modo novo liberado!')
+                      : tr('Modos novos liberados!'),
+                  style: displayText(16, color: Palette.accent),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            for (final (i, a) in modos.indexed) ...[
+              if (i > 0) const SizedBox(width: 8),
+              Expanded(
+                child: _AtalhoLinha(
+                  icon: _iconeDoAtalho(a),
+                  cor: Palette.accent,
+                  texto: a.nome,
+                  rotulo: tr('Conhecer: {modo}', {'modo': a.nome}),
+                  destaque: true,
+                  onTap: () => onAtalho?.call(a),
+                ),
+              ),
+            ],
+          ],
+        ),
       ],
+    ),
+  );
+}
+
+/// One tappable line on the end-of-level card: an icon, what is waiting
+/// there and an arrow.
+class _AtalhoLinha extends StatelessWidget {
+  const _AtalhoLinha({
+    required this.icon,
+    required this.cor,
+    required this.texto,
+    required this.onTap,
+    this.rotulo,
+    this.destaque = false,
+  });
+  final IconData icon;
+  final Color cor;
+  final String texto;
+
+  /// What a screen reader says, when it is more than [texto].
+  final String? rotulo;
+
+  /// Something is ready there now: brighter.
+  final bool destaque;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: rotulo ?? texto,
+    excludeSemantics: true,
+    onTap: onTap,
+    child: Material(
+      color: destaque ? const Color(0x33FFFFFF) : const Color(0x1AFFFFFF),
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          // 44: the smallest comfortable tap target.
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            child: Row(
+              children: [
+                Icon(icon, color: cor, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    texto,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: bodyText(
+                      13,
+                      color: destaque ? Palette.text : Palette.textDim,
+                      weight: 600,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Palette.textDim,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     ),
   );
 }
