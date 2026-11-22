@@ -538,7 +538,8 @@ class MenuCard extends StatelessWidget {
   final VoidCallback onTap;
   final String? badge;
 
-  /// Small tile (icon over the title, no subtitle), three to a row.
+  /// Small tile (icon over the title, a short line under it), three to a
+  /// row.
   final bool compact;
 
   @override
@@ -572,17 +573,39 @@ class MenuCard extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: Colors.white, size: 26),
-                const SizedBox(height: 4),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(title, style: displayText(16, shadows: textDrop)),
+          // What is going on there, under the title; everything shrinks to
+          // fit the tile rather than overflow it.
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, box) => FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                  width: box.maxWidth,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, color: Colors.white, size: 22),
+                      const SizedBox(height: 2),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          style: displayText(16, shadows: textDrop),
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          subtitle,
+                          maxLines: 1,
+                          style: bodyText(11, color: const Color(0xEEFFFFFF)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
           if (badge != null)

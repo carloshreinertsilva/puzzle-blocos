@@ -60,6 +60,9 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `lembretes_pergunta` | respondeu à pergunta dos lembretes (depois do primeiro presente) | aceitou (1/0) |
 | `lembretes` | ligou ou desligou os lembretes | ligado (1/0), permissão do celular (1/0) |
 | `lembrete_aberto` | abriu o jogo tocando num lembrete | tipo (presente_sequencia, desafio_sequencia, passe_pronto, passe_perto, vila, presente, generico), dias de ausência |
+| `dica_capi` | o Capi deu a dica do dia no menu (uma por dia, sobre algo liberado e nunca usado) | tema |
+| `dica_capi_ver` | tocou em "Ver agora" na dica do dia | tema |
+| `menu_abertura` | o menu abriu janelas sozinho (no máximo 2 por abertura) | dialogos (quantas abriram) |
 
 O Firebase também mede sozinho: primeira abertura, sessões, retenção (quantos
 voltam no dia 1, 7 e 30), país e modelo do aparelho.

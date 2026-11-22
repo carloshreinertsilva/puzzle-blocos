@@ -3,7 +3,10 @@ import 'dart:async';
 
 import '../core/convites.dart';
 import '../core/descoberta.dart';
+import '../core/dica_do_dia.dart';
 import '../core/duelos.dart';
+import '../core/fila_abertura.dart';
+import '../core/menu_estado.dart';
 import '../core/hats.dart';
 import '../core/novidades.dart';
 import '../core/ofertas.dart';
@@ -84,34 +87,84 @@ class _HomeScreenState extends State<HomeScreen> {
     _talvezSugerir();
     // Let the menu show first, then the gift (and any update) over it.
     unawaited(_lerPosicao());
-    _abertura = Timer(const Duration(milliseconds: 600), () async {
-      await _presenteDoDia();
-      await _novidadesDaVersao();
-      await _conviteNaAbertura();
-      await _bonusFundador();
-      await _resultadosDuelo();
-      await _ofertaBoasVindas();
-      if (mounted) {
+    _abertura = Timer(const Duration(milliseconds: 600), _abrirFila);
+  }
+
+  /// Whether the windows of the opening are still on their way.
+  bool _filaRodando = false;
+
+  /// What opens by itself with the menu, most important first and at most
+  /// [FilaAbertura.limitePadrao] windows (see core/fila_abertura.dart); the
+  /// others keep their conditions and come next time. The syncs behind
+  /// them (invites, duels, cloud save) run every time.
+  Future<void> _abrirFila() async {
+    _filaRodando = true;
+    final fila = FilaAbertura();
+    Future<void> passo(
+      DialogoAbertura d,
+      Future<bool> Function(bool cabe) abrir,
+    ) async {
+      if (!mounted) return;
+      if (await abrir(fila.cabe(d))) fila.mostrou(d);
+    }
+
+    try {
+      await passo(DialogoAbertura.conviteRecebido, _conviteNaAbertura);
+      await passo(DialogoAbertura.presente, _presenteDoDia);
+      await passo(DialogoAbertura.novidades, _novidadesDaVersao);
+      await passo(DialogoAbertura.nuvem, _progressoDaNuvem);
+      await passo(DialogoAbertura.resultadosDuelo, _resultadosDuelo);
+      await passo(DialogoAbertura.bonusFundador, _bonusFundador);
+      await passo(DialogoAbertura.ofertaBoasVindas, _ofertaBoasVindas);
+      await passo(DialogoAbertura.atualizacao, (_) async {
         await Avisos.verificarAtualizacao(context, widget.services.store);
-      }
-      await _convidarPlayGames();
-      if (!mounted) return;
-      final nuvem = await JogoSalvo.verificar(widget.services.store);
-      if (!mounted) return;
-      await oferecerProgressoDaNuvem(context, widget.services.store, nuvem);
-    });
+        return false;
+      });
+      await passo(DialogoAbertura.playGames, _convidarPlayGames);
+    } finally {
+      _filaRodando = false;
+    }
+    if (!mounted) return;
+    if (fila.mostrados > 0) {
+      Analytics.event('menu_abertura', {'dialogos': fila.mostrados});
+    } else {
+      // A quiet opening: room for Capi's tip of the day.
+      _talvezDica();
+    }
+  }
+
+  /// A cloud save ahead of this phone's (the check also sends this phone's
+  /// progress when there is none).
+  Future<bool> _progressoDaNuvem(bool cabe) async {
+    final store = widget.services.store;
+    final nuvem = await JogoSalvo.verificar(store);
+    if (!cabe || nuvem == null || !mounted) return false;
+    await oferecerProgressoDaNuvem(context, store, nuvem);
+    return true;
   }
 
   /// Friends who played the player's challenges since the last time: who
-  /// beat whom, and the score with each of them.
-  Future<void> _resultadosDuelo() async {
+  /// beat whom, and the score with each of them. Without room for the
+  /// window ([cabe]), they wait on the Modos card and the Duel card.
+  Future<bool> _resultadosDuelo([bool cabe = true]) async {
     final store = widget.services.store;
     final novos = await DuelosSync.buscar(store);
-    if (!mounted || novos.isEmpty) return;
+    if (!mounted) return false;
+    if (novos.isEmpty || !cabe) {
+      setState(() {});
+      return false;
+    }
+    await _mostrarResultados(novos);
+    return true;
+  }
+
+  Future<void> _mostrarResultados(List<ResultadoDuelo> novos) async {
+    final store = widget.services.store;
     await Duelos.marcarVistos(store);
     Analytics.event('duelo_resultado', {'n': novos.length});
     if (!mounted) return;
     final revanche = await mostrarResultadosDuelo(context, store, novos);
+    if (mounted) setState(() {});
     if (revanche != null && mounted) await _jogarRevanche(revanche);
   }
 
@@ -149,12 +202,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// The starter pack grew: players who bought it before get the
-  /// difference once, and are told so.
-  Future<void> _bonusFundador() async {
+  /// difference once, and are told so: only with room to tell it ([cabe]),
+  /// otherwise next time.
+  Future<bool> _bonusFundador(bool cabe) async {
     final store = widget.services.store;
-    if (!mounted || !await Entrega.bonusFundador(store)) return;
+    if (!cabe || !mounted || !await Entrega.bonusFundador(store)) return false;
     Analytics.event('oferta', {'tipo': 'bonus_fundador'});
-    if (!mounted) return;
+    if (!mounted) return false;
     setState(() {});
     await showDialog<void>(
       context: context,
@@ -196,28 +250,29 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+    return true;
   }
 
   /// Once, for players who never bought anything and are into the game:
   /// a cheap first purchase, told on the menu and then kept in the shop
   /// for [OfertaBoasVindas.duracao].
-  Future<void> _ofertaBoasVindas() async {
+  Future<bool> _ofertaBoasVindas(bool cabe) async {
     final store = widget.services.store;
     final agora = DateTime.now();
-    if (!mounted || !widget.services.loja.disponivel) return;
+    if (!cabe || !mounted || !widget.services.loja.disponivel) return false;
     // Browser tests keep the menu clear, except the one about the offer.
-    if (kTestBridge && !store.hasSeen('testar_oferta')) return;
+    if (kTestBridge && !store.hasSeen('testar_oferta')) return false;
     if (!OfertaBoasVindas.podeComecar(
       store,
       agora,
       pacoteInicialNoAr: Entrega.mostraPacoteInicial(store, agora),
     )) {
-      return;
+      return false;
     }
-    if (ModalRoute.of(context)?.isCurrent != true) return;
+    if (ModalRoute.of(context)?.isCurrent != true) return false;
     await store.comecarOfertaBoasVindas(agora);
     Analytics.event('oferta', {'tipo': 'boas_vindas'});
-    if (!mounted) return;
+    if (!mounted) return false;
     setState(() {});
     final preco = widget.services.loja.preco(Produto.ofertaBoasVindas);
     final ver = await showDialog<bool>(
@@ -267,17 +322,29 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     if (ver == true && mounted) await _openLoja();
+    return true;
   }
 
   /// A friend's invite from the Play Store (first run on Android), then the
   /// server's count of this player's friends and any reward reached.
-  Future<void> _conviteNaAbertura() async {
+  /// The invite is read (once) only with room to show it ([cabe]).
+  Future<bool> _conviteNaAbertura(bool cabe) async {
     final store = widget.services.store;
-    final codigo = await ConvitesServidor.codigoDaInstalacao(store);
-    if (codigo != null && mounted) {
-      await mostrarConviteRecebido(context, widget.services, codigo);
+    var mostrou = false;
+    if (cabe) {
+      final codigo = await ConvitesServidor.codigoDaInstalacao(store);
+      if (codigo != null &&
+          mounted &&
+          store.conviteUsado == null &&
+          codigo != store.conviteCodigo) {
+        await mostrarConviteRecebido(context, widget.services, codigo);
+        mostrou = true;
+      }
     }
-    await _sincronizarConvites();
+    // In the background: its prizes are toasts, and the gift shouldn't
+    // wait for the server.
+    unawaited(_sincronizarConvites());
+    return mostrou;
   }
 
   Future<void> _sincronizarConvites() async {
@@ -294,13 +361,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// After the first levels, twice at most: sign in to Play Games to be on
   /// the leaderboards.
-  Future<void> _convidarPlayGames() async {
+  Future<bool> _convidarPlayGames(bool cabe) async {
     final store = widget.services.store;
     final hoje = ProgressStore.dayKey(DateTime.now());
-    if (!mounted || !await Placares.deveConvidar(store, hoje)) return;
-    if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
+    if (!cabe || !mounted || !await Placares.deveConvidar(store, hoje)) {
+      return false;
+    }
+    if (!mounted || ModalRoute.of(context)?.isCurrent != true) return false;
     await store.marcarConvitePlayGames(hoje);
-    if (!mounted) return;
+    if (!mounted) return false;
     final entrar = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -348,64 +417,71 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-    if (entrar != true) return;
+    if (entrar != true) return true;
     Analytics.event('play_games_convite', {'aceitou': 1});
-    if (!await Placares.entrar(store)) return;
+    if (!await Placares.entrar(store)) return true;
     final nuvem = await JogoSalvo.verificarDeNovo(store);
-    if (!mounted) return;
+    if (!mounted) return true;
+    // The player asked for it: the cloud save may follow.
     await oferecerProgressoDaNuvem(context, store, nuvem);
+    return true;
   }
 
   /// Once a day, after the first levels, the daily gift opens by itself.
-  Future<void> _presenteDoDia() async {
+  Future<bool> _presenteDoDia(bool cabe) async {
     final store = widget.services.store;
     final agora = DateTime.now();
     final hoje = ProgressStore.dayKey(agora);
     // Not over Capi's first words on the menu: the gift waits for them.
-    if (!mounted ||
+    if (!cabe ||
+        !mounted ||
         _news.isNotEmpty ||
         !store.hasSeen('menu') ||
         !PresenteDiario.disponivel(store, agora) ||
         store.giftShownDay == hoje) {
-      return;
+      return false;
     }
     await store.setGiftShown(hoje);
-    if (!mounted) return;
+    if (!mounted) return false;
     await showPresente(context, widget.services);
     if (mounted) setState(() {});
+    return true;
   }
 
   /// The first time the game opens after an update: what is new, each
   /// with a button that goes straight to it. Whatever is not opened keeps
   /// a dot on the menu.
-  Future<void> _novidadesDaVersao() async {
+  /// Without room ([cabe]) they wait, untold, for the next opening.
+  Future<bool> _novidadesDaVersao(bool cabe) async {
     final store = widget.services.store;
-    if (!mounted || _news.isNotEmpty || !store.hasSeen('menu')) return;
+    if (!mounted || _news.isNotEmpty || !store.hasSeen('menu')) return false;
     final vistas = store.novidadesVistas;
-    if (vistas >= Novidades.atual) return;
+    if (vistas >= Novidades.atual) return false;
     // Someone who just arrived has nothing "new" to be told.
     final primeira = store.firstOpenAt;
     final novato =
         vistas < 0 &&
         (primeira == null ||
             DateTime.now().difference(primeira) < const Duration(days: 1));
+    if (!novato && !cabe) return false;
     await store.setNovidadesVistas(Novidades.atual);
-    if (novato) return;
+    if (novato) return false;
     final lista = Novidades.pendentes(vistas);
-    if (lista.isEmpty) return;
+    if (lista.isEmpty) return false;
     await store.setNovidadesPendentes(
       {
         ...store.novidadesPendentes,
         for (final n in lista) n.destino.name,
       }.toList(),
     );
-    if (!mounted) return;
+    if (!mounted) return false;
     setState(() {});
     Analytics.event('novidades', {'edicao': Novidades.atual});
     final destino = await mostrarNovidades(context, lista);
-    if (destino == null || !mounted) return;
+    if (destino == null || !mounted) return true;
     Analytics.event('novidade_aberta', {'destino': destino.name});
     await _irPara(destino);
+    return true;
   }
 
   Future<void> _irPara(DestinoNovidade destino) => switch (destino) {
@@ -459,6 +535,7 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.services.loja.removeListener(_lojaMudou);
     _abertura?.cancel();
     _sugestaoTimer?.cancel();
+    _dicaTimer?.cancel();
     super.dispose();
   }
 
@@ -468,6 +545,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _openLoja() async {
     _abriu(DestinoNovidade.loja);
+    final store = widget.services.store;
+    // Today's offers are seen: the button's mark goes away.
+    unawaited(store.markSeen(TemaDica.loja.aberto));
+    unawaited(store.setLojaVistaDia(ProgressStore.dayKey(DateTime.now())));
+    setState(() {});
     await showLoja(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -506,6 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Analytics.event('screen_open', {'screen': 'wardrobe'});
     widget.services.feedback.click();
     _abriu(DestinoNovidade.guardaRoupa);
+    unawaited(widget.services.store.markSeen(TemaDica.guardaRoupa.aberto));
     await WardrobeScreen.show(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -514,6 +597,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Analytics.event('screen_open', {'screen': 'missions'});
     widget.services.feedback.click();
     _abriu(DestinoNovidade.missoes);
+    unawaited(widget.services.store.markSeen(TemaDica.missoes.aberto));
     await DailyMissionsDialog.show(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -532,6 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openVillage() async {
     Analytics.event('screen_open', {'screen': 'village'});
     widget.services.feedback.click();
+    unawaited(widget.services.store.markSeen(TemaDica.vila.aberto));
     final play = await Navigator.of(context).push<bool>(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 280),
@@ -557,6 +642,9 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.services.feedback.click();
     if (mode == GameMode.endless) {
       widget.services.store.markSeen('opened_endless');
+    }
+    if (mode == GameMode.daily) {
+      widget.services.store.markSeen(TemaDica.desafioDiario.aberto);
     }
     final atalho = await Navigator.of(context).push<Atalho>(
       PageRouteBuilder<Atalho>(
@@ -595,6 +683,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // A friend may have answered a challenge in the meantime.
     if (mode == GameMode.duel || mode == GameMode.blitz) {
       unawaited(_resultadosDuelo());
+    } else if (atalho == null) {
+      // Back on the menu: maybe Capi's tip of the day.
+      _talvezDica();
     }
     if (atalho != null) await _irParaAtalho(atalho);
   }
@@ -724,15 +815,22 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: () => _locked('Duelo', Onboarding.duelAt),
       );
     }
+    // Friends' answers not told yet (the menu had no room for them).
+    final resultados = Duelos.novos(store).length;
     return MenuCard(
       compact: true,
       icon: Icons.sports_kabaddi_rounded,
       color: const Color(0xFF228BE6),
       title: tr('Duelo'),
-      subtitle: store.duelsWon > 0
+      subtitle: resultados > 0
+          ? trN(resultados, '{n} resultado novo', '{n} resultados novos')
+          : store.duelsWon > 0
           ? tr('{n} vitórias', {'n': store.duelsWon})
           : tr('Desafie amigos'),
-      badge: store.hasSeen('opened_duel') && !_pendente(DestinoNovidade.duelo)
+      badge:
+          resultados == 0 &&
+              store.hasSeen('opened_duel') &&
+              !_pendente(DestinoNovidade.duelo)
           ? null
           : tr('NOVO'),
       onTap: _openDuelo,
@@ -747,6 +845,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     store.markSeen('opened_duel');
     _abriu(DestinoNovidade.duelo);
+    // Answers waiting: they come first, with the rematch.
+    final novos = Duelos.novos(store);
+    if (novos.isNotEmpty) {
+      _sairDaFolha();
+      widget.services.feedback.click();
+      await _mostrarResultados(novos);
+      return;
+    }
     _openDuelDialog();
   }
 
@@ -935,8 +1041,50 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// How each mode of the Modos sheet stands, for the card's line.
+  List<EstadoModo> _estadoModos(ProgressStore store) => [
+    EstadoModo(
+      Atalho.infinito,
+      liberado: Onboarding.endlessUnlocked(store),
+      aberto: store.hasSeen('opened_endless'),
+      recorde: store.bestScore > 0 ? formatInt(store.bestScore) : null,
+    ),
+    EstadoModo(
+      Atalho.obras,
+      liberado: Onboarding.obrasUnlocked(store),
+      aberto: store.hasSeen('opened_obras'),
+    ),
+    EstadoModo(
+      Atalho.blitz,
+      liberado: Onboarding.blitzUnlocked(store),
+      aberto: store.hasSeen('opened_blitz'),
+      novidade: _pendente(DestinoNovidade.blitz),
+      recorde: store.blitzBestScore > 0
+          ? formatInt(store.blitzBestScore)
+          : null,
+    ),
+    EstadoModo(
+      Atalho.duelo,
+      liberado: Onboarding.duelUnlocked(store),
+      aberto: store.hasSeen('opened_duel'),
+      novidade: _pendente(DestinoNovidade.duelo),
+    ),
+    EstadoModo(
+      Atalho.torre,
+      liberado: Onboarding.towerUnlocked(store),
+      aberto: store.hasSeen('opened_tower'),
+      novidade: _pendente(DestinoNovidade.torre),
+      recorde: store.towerBestHeight > 0 ? '${store.towerBestHeight}' : null,
+    ),
+  ];
+
+  /// Answers to the player's duels not told yet, once the Duel is open.
+  int _resultadosDueloNovos(ProgressStore store) =>
+      Onboarding.duelUnlocked(store) ? Duelos.novos(store).length : 0;
+
   /// A mode the player has unlocked but never opened: "NOVO" on Modos.
   bool _modoNovo(ProgressStore store) =>
+      _resultadosDueloNovos(store) > 0 ||
       (Onboarding.endlessUnlocked(store) && !store.hasSeen('opened_endless')) ||
       (Onboarding.blitzUnlocked(store) &&
           (!store.hasSeen('opened_blitz') ||
@@ -1044,6 +1192,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openPasse() async {
     widget.services.feedback.click();
     _abriu(DestinoNovidade.passe);
+    unawaited(widget.services.store.markSeen(TemaDica.passe.aberto));
     await showPasse(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -1054,6 +1203,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Analytics.event('screen_open', {'screen': 'ranking'});
     widget.services.feedback.click();
     _abriu(DestinoNovidade.ranking);
+    unawaited(widget.services.store.markSeen(TemaDica.ranking.aberto));
     if (RankingServidor.atual != null) {
       await RankingScreen.show(context, widget.services);
       // The places were seen: the arrows start over from here.
@@ -1081,7 +1231,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Browser tests keep Capi as he is (they look at the menu around him).
     if (kTestBridge || _menus++ % 3 != 0) return;
     _sugestaoTimer = Timer(const Duration(seconds: 7), () {
-      if (!mounted || _capiLine != null) return;
+      if (!mounted || _capiLine != null || _dica != null) return;
       if (ModalRoute.of(context)?.isCurrent != true) return;
       final item = _escolherSugestao(widget.services.store);
       if (item == null) return;
@@ -1114,6 +1264,59 @@ class _HomeScreenState extends State<HomeScreen> {
     await _openWardrobe();
   }
 
+  /// Capi's tip of the day (core/dica_do_dia.dart): once a day, back on a
+  /// quiet menu, about something open that the player never used.
+  TemaDica? _dica;
+  Timer? _dicaTimer;
+
+  void _talvezDica() {
+    final store = widget.services.store;
+    // Browser tests keep the menu clear, except the one about the tip.
+    if (kTestBridge && !store.hasSeen('testar_dica')) return;
+    if (_filaRodando) return;
+    _dicaTimer?.cancel();
+    _dicaTimer = Timer(const Duration(milliseconds: 1200), () async {
+      if (!mounted || _capiLine != null || _sugestao != null) return;
+      if (_dica != null || ModalRoute.of(context)?.isCurrent != true) return;
+      final agora = DateTime.now();
+      final tema = DicaDoDia.paraHoje(
+        store,
+        agora,
+        lojaExiste: widget.services.loja.existe,
+      );
+      if (tema == null) return;
+      await DicaDoDia.mostrada(store, tema, agora);
+      if (!mounted) return;
+      Analytics.event('dica_capi', {'tema': tema.name});
+      setState(() => _dica = tema);
+      _dicaTimer = Timer(const Duration(seconds: 12), () {
+        if (mounted) setState(() => _dica = null);
+      });
+    });
+  }
+
+  Future<void> _verDica() async {
+    final tema = _dica;
+    _dicaTimer?.cancel();
+    setState(() => _dica = null);
+    if (tema == null) return;
+    Analytics.event('dica_capi_ver', {'tema': tema.name});
+    await switch (tema) {
+      TemaDica.guardaRoupa => _openWardrobe(),
+      TemaDica.loja => _openLoja(),
+      TemaDica.passe => _openPasse(),
+      TemaDica.blitz => _openBlitz(),
+      TemaDica.ranking => _openRanking(),
+      TemaDica.duelo => _openDuelo(),
+      TemaDica.missoes => _openDailyMissions(),
+      TemaDica.torre => _openTower(),
+      TemaDica.infinito => _open(GameMode.endless),
+      TemaDica.vila => _openVillage(),
+      TemaDica.obras => _openObras(),
+      TemaDica.desafioDiario => _open(GameMode.daily),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = widget.services.store;
@@ -1126,6 +1329,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final horizontalPadding = screenWidth < 360 ? 12.0 : 20.0;
     final buttonGap = screenWidth < 360 ? 4.0 : 6.0;
     final capiLine = _capiLine;
+    final hoje = ProgressStore.dayKey(today);
+    // Why the shop button calls: an offer, the piggy bank, today's offers.
+    final motivoLoja = MenuEstado.motivoLoja(
+      ofertaNoAr:
+          Entrega.mostraPacoteInicial(store, today) ||
+          OfertaBoasVindas.noAr(store, today),
+      cofrinhoCheio: Cofrinho.cheio(store),
+      lojaVistaDia: store.lojaVistaDia,
+      hoje: hoje,
+    );
 
     return Scaffold(
       body: DecoratedBox(
@@ -1187,17 +1400,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             if (widget.services.loja.existe) ...[
                               SizedBox(width: buttonGap),
                               _LojaBotao(
-                                badge:
-                                    Entrega.mostraPacoteInicial(
-                                          store,
-                                          DateTime.now(),
-                                        ) ||
-                                        OfertaBoasVindas.noAr(
-                                          store,
-                                          DateTime.now(),
-                                        ) ||
-                                        Cofrinho.cheio(store)
-                                    ? '!'
+                                badge: motivoLoja != null ? '!' : null,
+                                fala:
+                                    MenuEstado.lojaChama(
+                                      motivoLoja,
+                                      lojaVistaDia: store.lojaVistaDia,
+                                      hoje: hoje,
+                                    )
+                                    ? motivoLoja!.fala
                                     : null,
                                 onTap: _openLoja,
                               ),
@@ -1279,6 +1489,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   max(96.0, box.maxHeight * 0.42),
                                 );
                                 final sugestao = _sugestao;
+                                final dica = _dica;
                                 final look = sugestao == null
                                     ? CapiLook.of(store)
                                     : CapiLook.of(store).wearing(sugestao);
@@ -1307,14 +1518,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                         excludeSemantics: true,
                                         onTap: _tip,
                                         child: GestureDetector(
-                                          onTap: sugestao == null
+                                          onTap: dica != null
+                                              ? _verDica
+                                              : sugestao == null
                                               ? _tip
                                               : _verSugestao,
                                           child: Capi(size: capi, look: look),
                                         ),
                                       ),
                                     ),
-                                    if (sugestao != null)
+                                    if (dica != null)
+                                      Positioned(
+                                        left: 0,
+                                        bottom: capi * 0.98,
+                                        child: _SugestaoBalao(
+                                          key: ValueKey(dica),
+                                          texto: dica.texto,
+                                          acao: '${tr('Ver agora')} ›',
+                                          rotulo: tr('Ver agora'),
+                                          onTap: _verDica,
+                                        ),
+                                      )
+                                    else if (sugestao != null)
                                       Positioned(
                                         left: 0,
                                         bottom: capi * 0.98,
@@ -1352,14 +1577,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                           : Icons.calendar_today_rounded,
                                       color: Palette.blocks[0],
                                       title: tr('Desafio diário'),
+                                      // Not played today: said plainly.
                                       subtitle: dailyDone
                                           ? tr('Feito! Volte amanhã')
                                           : streak > 0
-                                          ? tr('Sequência: {n} dias', {
+                                          ? tr('Falta hoje · sequência {n}', {
                                               'n': streak,
                                             })
-                                          : tr('Um novo a cada dia'),
-                                      badge: dailyDone ? null : tr('NOVO'),
+                                          : tr('Ainda não jogado hoje'),
+                                      badge: dailyDone ? null : tr('HOJE'),
                                       onTap: () => _open(GameMode.daily),
                                     )
                                   : MenuCard(
@@ -1383,7 +1609,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icons.sports_esports_rounded,
                                 color: Palette.blocks[5],
                                 title: tr('Modos'),
-                                subtitle: tr('Modos de jogo'),
+                                subtitle: MenuEstado.modosSubtitulo(
+                                  _estadoModos(store),
+                                  resultadosDuelo: _resultadosDueloNovos(store),
+                                  dia: ProgressStore.dayKey(today),
+                                ),
                                 badge: _modoNovo(store) ? tr('NOVO') : null,
                                 onTap: _openModos,
                               ),
@@ -1431,9 +1661,13 @@ class _HomeScreenState extends State<HomeScreen> {
 /// The shop button: glows gold, unlike the others, and now and then Capi's
 /// balloon calls the player to it.
 class _LojaBotao extends StatefulWidget {
-  const _LojaBotao({required this.onTap, this.badge});
+  const _LojaBotao({required this.onTap, this.badge, this.fala});
   final VoidCallback onTap;
   final String? badge;
+
+  /// What the balloon says, while there is something new in the shop
+  /// (core/menu_estado.dart); null keeps it quiet.
+  final String? fala;
 
   @override
   State<_LojaBotao> createState() => _LojaBotaoState();
@@ -1441,11 +1675,8 @@ class _LojaBotao extends StatefulWidget {
 
 class _LojaBotaoState extends State<_LojaBotao>
     with SingleTickerProviderStateMixin {
-  static const _falas = [
-    'Novidades na loja!',
-    'Olha as ofertas do dia!',
-    'Tem oferta na loja!',
-  ];
+  /// Calls per visit to the menu, at most.
+  static const _maxChamadas = 3;
 
   late final AnimationController _brilho = AnimationController(
     vsync: this,
@@ -1464,16 +1695,23 @@ class _LojaBotaoState extends State<_LojaBotao>
 
   void _chamar() {
     if (!mounted) return;
+    final fala = widget.fala;
+    // Nothing new in the shop: no call this time.
+    if (fala == null) {
+      _timer = Timer(const Duration(seconds: 90), _chamar);
+      return;
+    }
+    if (_vez++ >= _maxChamadas) return;
     // The balloon goes in the overlay, above the logo under the bar.
     if (!_portal.isShowing) _portal.show();
-    setState(() => _fala = tr(_falas[_vez++ % _falas.length]));
+    setState(() => _fala = fala);
     _timer = Timer(const Duration(seconds: 4), () {
       if (!mounted) return;
       setState(() => _fala = null);
       // The overlay closes once the balloon has shrunk away.
       _timer = Timer(const Duration(milliseconds: 300), () {
         if (mounted && _fala == null && _portal.isShowing) _portal.hide();
-        _timer = Timer(const Duration(seconds: 40), _chamar);
+        _timer = Timer(const Duration(seconds: 90), _chamar);
       });
     });
   }
@@ -1741,15 +1979,29 @@ class _BolinhaPainter extends BoxPainter {
 }
 
 class _SugestaoBalao extends StatelessWidget {
-  const _SugestaoBalao({required this.texto, required this.onTap});
+  const _SugestaoBalao({
+    super.key,
+    required this.texto,
+    required this.onTap,
+    this.acao,
+    this.rotulo,
+  });
   final String texto;
   final VoidCallback onTap;
+
+  /// The line under the text (by default, to the wardrobe).
+  final String? acao;
+
+  /// The button's name for screen readers (the text goes as its hint);
+  /// by default the text itself.
+  final String? rotulo;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: texto,
+      label: rotulo ?? texto,
+      hint: rotulo == null ? null : texto,
       excludeSemantics: true,
       onTap: onTap,
       child: GestureDetector(
@@ -1783,7 +2035,7 @@ class _SugestaoBalao extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  tr('Ver no guarda-roupa ›'),
+                  acao ?? tr('Ver no guarda-roupa ›'),
                   style: bodyText(11, color: const Color(0xFF7048E8)),
                 ),
               ],
@@ -1822,21 +2074,24 @@ class _ConviteFaixaState extends State<_ConviteFaixa>
   String? _lembrete;
   int _vez = 0;
 
+  /// Shakes per visit to the menu, at most: a reminder, not a nag.
+  static const _maxLembretes = 2;
+
   @override
   void initState() {
     super.initState();
-    // After the shop's balloon (4 s), then every so often.
-    _timer = Timer(const Duration(seconds: 14), _lembrar);
+    // Well after the shop's balloon (4 s), then seldom.
+    _timer = Timer(const Duration(seconds: 25), _lembrar);
   }
 
   void _lembrar() {
-    if (!mounted) return;
+    if (!mounted || _vez >= _maxLembretes) return;
     setState(() => _lembrete = tr(_lembretes[_vez++ % _lembretes.length]));
     _balanco.forward(from: 0);
     _timer = Timer(const Duration(seconds: 5), () {
       if (!mounted) return;
       setState(() => _lembrete = null);
-      _timer = Timer(const Duration(seconds: 45), _lembrar);
+      _timer = Timer(const Duration(minutes: 2), _lembrar);
     });
   }
 
