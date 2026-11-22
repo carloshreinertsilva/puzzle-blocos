@@ -18,7 +18,6 @@ import '../services/duelos_servidor.dart';
 import '../ui/nome_dialog.dart';
 import '../ui/placar_duelos.dart';
 import '../services/musica.dart';
-import '../services/ajustes.dart';
 import '../services/analytics.dart';
 import '../services/duelo_link.dart';
 import '../core/missions.dart';
@@ -31,6 +30,7 @@ import '../testing/test_bridge.dart';
 import '../ui/level_text.dart';
 import '../ui/capi.dart';
 import '../ui/dica_paga.dart';
+import '../ui/dobrar_estrelas.dart';
 import '../ui/palette.dart';
 import '../ui/posicao_ranking.dart';
 import '../ui/typography.dart';
@@ -177,11 +177,8 @@ class _GameScreenState extends State<GameScreen> {
       'level': controller.level.number,
       'progress': controller.progressPercent,
     };
-    if (s.status == SessionStatus.won) {
-      if (controller.mode == GameMode.levels && _podeDobrar) {
-        ads.offered(RewardPlacement.doubleStars, dados);
-      }
-    } else if (controller.canRevive &&
+    if (s.status == SessionStatus.lost &&
+        controller.canRevive &&
         !controller.isChallenge &&
         !controller.isDuel &&
         !controller.isBlitz) {
@@ -189,12 +186,49 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  /// Whether this win's stars can still be doubled with a video today.
+  /// The result card on screen that can double its stars with a video
+  /// (its mode, for the statistics), or null.
+  String? get _modoDobrar {
+    if (!controller.showOutcome ||
+        controller.isChallenge ||
+        controller.isDuel) {
+      return null;
+    }
+    final won = controller.session.status == SessionStatus.won;
+    if (controller.isBlitz) return 'blitz';
+    if (won && controller.level.isDaily) return 'daily';
+    if (won && controller.mode == GameMode.levels) return 'levels';
+    if (!won && controller.endless) return 'endless';
+    return null;
+  }
+
+  /// Whether this result's stars can still be doubled with a video: once
+  /// per run (a revived or extended run does not double again) and within
+  /// the day's limit.
   bool get _podeDobrar =>
-      widget.services.ads.hasVideoAds &&
-      controller.starsGained > 0 &&
-      widget.services.store.videosToday('dobrar', DateTime.now()) <
-          Ajustes.atuais.dobrarPorDia;
+      !_dobradoNaPartida &&
+      _modoDobrar != null &&
+      DobrarEstrelas.pode(widget.services, controller.starsGained);
+
+  /// Whether the doubling offer on the card on screen was counted.
+  bool _ofertaDobrarVista = false;
+
+  /// Counts the doubling offer once each time it shows (the Blitz stars
+  /// come a moment after its card, so this is checked on every change).
+  void _registrarOfertaDobrar() {
+    if (!controller.showOutcome) {
+      _ofertaDobrarVista = false;
+      _dobradasAgora = null;
+      return;
+    }
+    if (_ofertaDobrarVista || !_podeDobrar) return;
+    _ofertaDobrarVista = true;
+    DobrarEstrelas.oferecer(widget.services, {
+      'mode': _modoDobrar!,
+      'level': controller.level.number,
+      'stars': controller.starsGained,
+    });
+  }
 
   /// The match whose result already went back to the friend.
   GameSession? _respondidoDe;
@@ -278,6 +312,7 @@ class _GameScreenState extends State<GameScreen> {
 
   void _aoMudar() {
     _registrarOfertas();
+    _registrarOfertaDobrar();
     _responderDuelo();
     _devolverRevanche();
     if (!_comDesafios || !controller.playing) return;
@@ -343,32 +378,38 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  /// Whether this win's stars were already doubled with a video.
-  bool _dobrado = false;
+  /// Whether this run's stars were already doubled with a video, and how
+  /// many the card on screen got (null: none, or another card).
+  bool _dobradoNaPartida = false;
+  int? _dobradasAgora;
 
   Future<void> _dobrarEstrelas() => _guard(() async {
+    final modo = _modoDobrar;
     final ganhas = controller.starsGained;
-    if (_dobrado || ganhas <= 0) return;
-    final ok = await widget.services.ads.rewarded(
+    if (modo == null || !_podeDobrar) return;
+    final ok = await DobrarEstrelas.dobrar(
       context,
-      RewardPlacement.doubleStars,
+      widget.services,
+      ganhas,
+      modo: modo,
     );
     if (!ok || !mounted) return;
-    await widget.services.store.addVideoToday('dobrar', DateTime.now());
-    await widget.services.store.addStars(ganhas);
-    widget.services.feedback.praise(3);
-    if (mounted) {
-      mostrarPremio(
-        context,
-        tr('+{n} ★ pelo vídeo!', {'n': ganhas}),
-        icon: Icons.star_rounded,
-      );
-    }
-    setState(() => _dobrado = true);
+    setState(() {
+      _dobradoNaPartida = true;
+      _dobradasAgora = ganhas;
+    });
   });
 
+  /// The doubling offer (or what it gave) for the card on screen.
+  Widget _botaoDobrar({double espaco = 10}) => BotaoDobrar(
+    estrelas: controller.starsGained,
+    dobradas: _dobradasAgora,
+    onDobrar: _podeDobrar ? _dobrarEstrelas : null,
+    espaco: espaco,
+  );
+
   Future<void> _next() => _guard(() async {
-    _dobrado = false;
+    _dobradoNaPartida = false;
     widget.services.feedback.click();
     await widget.services.ads.betweenLevels(context, controller.level.number);
     if (_onboarding && controller.level.number >= Onboarding.railLevels) {
@@ -672,7 +713,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _retry() {
-    _dobrado = false;
+    _dobradoNaPartida = false;
     widget.services.feedback.click();
     controller.restart();
   }
@@ -948,6 +989,7 @@ class _GameScreenState extends State<GameScreen> {
           starsGained: controller.starsGained,
           onExtraTime: controller.canBlitzExtraTime ? _blitzExtraTime : null,
           videoExtra: widget.services.ads.hasVideoAds,
+          dobrar: _botaoDobrar(),
           ranking: PosicaoNoRanking(
             key: ValueKey(s),
             store: widget.services.store,
@@ -963,6 +1005,7 @@ class _GameScreenState extends State<GameScreen> {
                 score: s.score,
                 starsGained: controller.starsGained,
                 streak: widget.services.store.dailyStreak(controller.today),
+                dobrar: _botaoDobrar(),
                 onExit: _exit,
               )
             : _WinCard(
@@ -971,8 +1014,7 @@ class _GameScreenState extends State<GameScreen> {
                 starBits: controller.starBits | controller.previousStarBits,
                 newBits: controller.starBits & ~controller.previousStarBits,
                 starsGained: controller.starsGained,
-                dobrado: _dobrado,
-                onDobrar: _podeDobrar ? _dobrarEstrelas : null,
+                dobrar: _botaoDobrar(),
                 replay: controller.isReplay,
                 // Not on the first levels, played back to back: the menu
                 // (and everything on it) comes after them.
@@ -1002,6 +1044,7 @@ class _GameScreenState extends State<GameScreen> {
           starsGained: controller.starsGained,
           onExtraTime: controller.canBlitzExtraTime ? _blitzExtraTime : null,
           videoExtra: widget.services.ads.hasVideoAds,
+          dobrar: _botaoDobrar(),
           ranking: PosicaoNoRanking(
             key: ValueKey(s),
             store: widget.services.store,
@@ -1020,6 +1063,7 @@ class _GameScreenState extends State<GameScreen> {
           newBest: controller.newBest,
           canRevive: controller.canRevive,
           videoRevive: widget.services.ads.hasVideoAds,
+          dobrar: controller.endless ? _botaoDobrar(espaco: 8) : null,
           ranking: controller.endless
               ? PosicaoNoRanking(
                   key: ValueKey(s),
@@ -1963,8 +2007,7 @@ class _WinCard extends StatelessWidget {
     required this.onNext,
     required this.onRetry,
     required this.onExit,
-    this.dobrado = false,
-    this.onDobrar,
+    this.dobrar,
     this.liberados = const [],
     this.passe,
     this.cofrinho,
@@ -1984,9 +2027,8 @@ class _WinCard extends StatelessWidget {
   bool get _comAtalhos =>
       liberados.isNotEmpty || passe != null || cofrinho != null;
 
-  /// Watch a video to get this win's stars again (once per win).
-  final bool dobrado;
-  final VoidCallback? onDobrar;
+  /// Watch a video to get this win's stars again ([BotaoDobrar]).
+  final Widget? dobrar;
   final int score;
 
   /// Missions done on this level so far, and the ones this win added.
@@ -2035,22 +2077,7 @@ class _WinCard extends StatelessWidget {
                 : tr('{pontos} pontos', {'pontos': formatInt(score)}),
             style: _bodyStyle,
           ),
-          if (onDobrar != null) ...[
-            const SizedBox(height: 10),
-            if (dobrado)
-              Text(
-                tr('Estrelas dobradas: +{n}!', {'n': starsGained}),
-                style: displayText(16, color: Palette.accent),
-              )
-            else
-              ChunkyButton(
-                label: tr('Dobrar: +{n} com vídeo', {'n': starsGained}),
-                icon: Icons.smart_display_rounded,
-                color: Palette.good,
-                textColor: const Color(0xFF0B3D1A),
-                onTap: onDobrar,
-              ),
-          ],
+          ?dobrar,
           if (liberados.isNotEmpty) ...[
             const SizedBox(height: 12),
             _ModosLiberados(modos: liberados, onAtalho: onAtalho),
@@ -2309,54 +2336,61 @@ class _DailyWinCard extends StatelessWidget {
     required this.starsGained,
     required this.streak,
     required this.onExit,
+    this.dobrar,
   });
   final int score;
   final int starsGained;
   final int streak;
   final VoidCallback onExit;
 
+  /// Double the stars with a video ([BotaoDobrar]).
+  final Widget? dobrar;
+
   @override
-  Widget build(BuildContext context) => CardPanel(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(
-          Icons.local_fire_department_rounded,
-          color: Palette.accentDeep,
-          size: 72,
-        ),
-        OutlinedTitle(tr('Desafio do dia\nconcluído!'), size: 32),
-        const SizedBox(height: 8),
-        Text(
-          streak > 1
-              ? tr('{n} dias seguidos!', {'n': streak})
-              : tr('Volte amanhã para outro!'),
-          style: displayText(20, color: Palette.accent),
-        ),
-        const SizedBox(height: 4),
-        if (starsGained > 0) ...[
-          StarRow(filled: const [true, true, true], size: 34, animate: true),
+  Widget build(BuildContext context) => CabeNaAltura(
+    child: CardPanel(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.local_fire_department_rounded,
+            color: Palette.accentDeep,
+            size: 72,
+          ),
+          OutlinedTitle(tr('Desafio do dia\nconcluído!'), size: 32),
+          const SizedBox(height: 8),
+          Text(
+            streak > 1
+                ? tr('{n} dias seguidos!', {'n': streak})
+                : tr('Volte amanhã para outro!'),
+            style: displayText(20, color: Palette.accent),
+          ),
           const SizedBox(height: 4),
-          Text(
-            tr('+{n} estrelas · {pontos} pontos', {
-              'n': starsGained,
-              'pontos': formatInt(score),
-            }),
-            style: _bodyStyle,
+          if (starsGained > 0) ...[
+            StarRow(filled: const [true, true, true], size: 34, animate: true),
+            const SizedBox(height: 4),
+            Text(
+              tr('+{n} estrelas · {pontos} pontos', {
+                'n': starsGained,
+                'pontos': formatInt(score),
+              }),
+              style: _bodyStyle,
+            ),
+          ] else
+            Text(
+              tr('{pontos} pontos', {'pontos': formatInt(score)}),
+              style: _bodyStyle,
+            ),
+          ?dobrar,
+          const SizedBox(height: 24),
+          ChunkyButton(
+            label: tr('Voltar ao menu'),
+            icon: Icons.home_rounded,
+            big: true,
+            onTap: onExit,
           ),
-        ] else
-          Text(
-            tr('{pontos} pontos', {'pontos': formatInt(score)}),
-            style: _bodyStyle,
-          ),
-        const SizedBox(height: 24),
-        ChunkyButton(
-          label: tr('Voltar ao menu'),
-          icon: Icons.home_rounded,
-          big: true,
-          onTap: onExit,
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }
@@ -2374,10 +2408,14 @@ class _LoseCard extends StatelessWidget {
     required this.onExit,
     this.videoRevive = true,
     this.ranking,
+    this.dobrar,
   });
 
   /// The player's place on the week's board, under the score.
   final Widget? ranking;
+
+  /// Endless: double the run's stars with a video ([BotaoDobrar]).
+  final Widget? dobrar;
 
   final bool endless;
 
@@ -2395,83 +2433,90 @@ class _LoseCard extends StatelessWidget {
   final VoidCallback? onExit;
 
   @override
-  Widget build(BuildContext context) => CardPanel(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Capi(size: 84, mood: newBest ? CapiMood.cheer : CapiMood.sad),
-        OutlinedTitle(
-          newBest ? tr('Novo recorde!') : tr('Sem espaço!'),
-          size: 36,
-          colors: newBest
-              ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
-              : const [Color(0xFFFFFFFF), Color(0xFFFFB3B3)],
-        ),
-        const SizedBox(height: 8),
-        if (starsGained > 0)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star_rounded, color: Palette.accent, size: 24),
-                const SizedBox(width: 4),
-                Text(
-                  '+$starsGained',
-                  style: displayText(20, color: Palette.accent),
-                ),
-              ],
-            ),
+  Widget build(BuildContext context) => CabeNaAltura(
+    child: CardPanel(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Capi(size: 84, mood: newBest ? CapiMood.cheer : CapiMood.sad),
+          OutlinedTitle(
+            newBest ? tr('Novo recorde!') : tr('Sem espaço!'),
+            size: 36,
+            colors: newBest
+                ? const [Color(0xFFFFFFFF), Color(0xFFFFD43B)]
+                : const [Color(0xFFFFFFFF), Color(0xFFFFB3B3)],
           ),
-        Text(
-          endless
-              ? tr('{pontos} pontos · recorde {recorde}', {
-                  'pontos': formatInt(score),
-                  'recorde': formatInt(best),
-                })
-              : tr('Quase lá! Quer mais uma chance?'),
-          style: _bodyStyle,
-          textAlign: TextAlign.center,
-        ),
-        ?ranking,
-        const SizedBox(height: 24),
-        if (canRevive) ...[
+          const SizedBox(height: 8),
+          if (starsGained > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.star_rounded,
+                    color: Palette.accent,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '+$starsGained',
+                    style: displayText(20, color: Palette.accent),
+                  ),
+                ],
+              ),
+            ),
+          Text(
+            endless
+                ? tr('{pontos} pontos · recorde {recorde}', {
+                    'pontos': formatInt(score),
+                    'recorde': formatInt(best),
+                  })
+                : tr('Quase lá! Quer mais uma chance?'),
+            style: _bodyStyle,
+            textAlign: TextAlign.center,
+          ),
+          ?ranking,
+          ?dobrar,
+          const SizedBox(height: 24),
+          if (canRevive) ...[
+            ChunkyButton(
+              label: tr('Continuar'),
+              icon: videoRevive
+                  ? Icons.smart_display_rounded
+                  : Icons.play_arrow_rounded,
+              color: Palette.good,
+              textColor: const Color(0xFF0B3B16),
+              big: true,
+              onTap: onRevive,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 14),
+              child: Text(
+                videoRevive
+                    ? tr('Assista a um vídeo curto')
+                    : tr('Uma chance extra por partida'),
+                style: bodyText(13, color: Palette.textDim, weight: 500),
+              ),
+            ),
+          ],
           ChunkyButton(
-            label: tr('Continuar'),
-            icon: videoRevive
-                ? Icons.smart_display_rounded
-                : Icons.play_arrow_rounded,
-            color: Palette.good,
-            textColor: const Color(0xFF0B3B16),
-            big: true,
-            onTap: onRevive,
+            label: tr('Jogar de novo'),
+            icon: Icons.refresh_rounded,
+            color: canRevive ? Palette.panelEdge : Palette.accent,
+            textColor: canRevive ? Palette.text : const Color(0xFF3A2200),
+            onTap: onRetry,
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 6, bottom: 14),
-            child: Text(
-              videoRevive
-                  ? tr('Assista a um vídeo curto')
-                  : tr('Uma chance extra por partida'),
-              style: bodyText(13, color: Palette.textDim, weight: 500),
+          if (onExit != null)
+            TextButton(
+              onPressed: onExit,
+              child: Text(
+                tr('Menu'),
+                style: displayText(18, color: Palette.textDim),
+              ),
             ),
-          ),
         ],
-        ChunkyButton(
-          label: tr('Jogar de novo'),
-          icon: Icons.refresh_rounded,
-          color: canRevive ? Palette.panelEdge : Palette.accent,
-          textColor: canRevive ? Palette.text : const Color(0xFF3A2200),
-          onTap: onRetry,
-        ),
-        if (onExit != null)
-          TextButton(
-            onPressed: onExit,
-            child: Text(
-              tr('Menu'),
-              style: displayText(18, color: Palette.textDim),
-            ),
-          ),
-      ],
+      ),
     ),
   );
 }
@@ -2767,7 +2812,11 @@ class _BlitzWinCard extends StatelessWidget {
     required this.onShareDuel,
     this.onExtraTime,
     this.videoExtra = true,
+    this.dobrar,
   });
+
+  /// Double the run's stars with a video ([BotaoDobrar]).
+  final Widget? dobrar;
 
   final int score;
   final int best;
@@ -2785,108 +2834,118 @@ class _BlitzWinCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CardPanel(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const BlitzIcon(size: 72),
-          const SizedBox(height: 8),
-          OutlinedTitle(
-            newBest ? tr('Novo Recorde Blitz!') : tr('Fim do Blitz!'),
-            size: 30,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            tr('{pontos} pontos', {'pontos': formatInt(score)}),
-            style: displayText(26, color: Palette.accent),
-          ),
-          if (newBest) ...[
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0x33FFD95A),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Palette.accent),
-              ),
-              child: Text(
-                tr('MELHOR PLACAR BLITZ!'),
-                style: displayText(12, color: Palette.accent),
-              ),
+    return CabeNaAltura(
+      child: CardPanel(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const BlitzIcon(size: 72),
+            const SizedBox(height: 8),
+            OutlinedTitle(
+              newBest ? tr('Novo Recorde Blitz!') : tr('Fim do Blitz!'),
+              size: 30,
             ),
-          ] else ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
-              tr('Recorde: {pontos} pontos', {'pontos': formatInt(best)}),
-              style: bodyText(14, color: Palette.textDim),
+              tr('{pontos} pontos', {'pontos': formatInt(score)}),
+              style: displayText(26, color: Palette.accent),
             ),
-          ],
-          ?ranking,
-          if (starsGained > 0) ...[
-            const SizedBox(height: 10),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star_rounded, color: Palette.accent, size: 22),
-                const SizedBox(width: 4),
-                Text(
-                  tr('+{n} estrelas', {'n': starsGained}),
-                  style: displayText(16, color: Palette.accent),
+            if (newBest) ...[
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
                 ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 20),
-          if (onExtraTime case final extra?) ...[
+                decoration: BoxDecoration(
+                  color: const Color(0x33FFD95A),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Palette.accent),
+                ),
+                child: Text(
+                  tr('MELHOR PLACAR BLITZ!'),
+                  style: displayText(12, color: Palette.accent),
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 4),
+              Text(
+                tr('Recorde: {pontos} pontos', {'pontos': formatInt(best)}),
+                style: bodyText(14, color: Palette.textDim),
+              ),
+            ],
+            ?ranking,
+            if (starsGained > 0) ...[
+              const SizedBox(height: 10),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.star_rounded,
+                    color: Palette.accent,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    tr('+{n} estrelas', {'n': starsGained}),
+                    style: displayText(16, color: Palette.accent),
+                  ),
+                ],
+              ),
+            ],
+            ?dobrar,
+            const SizedBox(height: 20),
+            if (onExtraTime case final extra?) ...[
+              ChunkyButton(
+                label: tr('+{n} segundos', {
+                  'n': GameController.blitzExtraSeconds,
+                }),
+                icon: videoExtra
+                    ? Icons.smart_display_rounded
+                    : Icons.timer_rounded,
+                color: Palette.good,
+                textColor: const Color(0xFF0B3B16),
+                big: true,
+                onTap: extra,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 6, bottom: 14),
+                child: Text(
+                  videoExtra
+                      ? tr('Assista a um vídeo e continue')
+                      : tr('Uma vez por partida'),
+                  style: bodyText(13, color: Palette.textDim, weight: 500),
+                ),
+              ),
+            ],
             ChunkyButton(
-              label: tr('+{n} segundos', {
-                'n': GameController.blitzExtraSeconds,
-              }),
-              icon: videoExtra
-                  ? Icons.smart_display_rounded
-                  : Icons.timer_rounded,
-              color: Palette.good,
-              textColor: const Color(0xFF0B3B16),
-              big: true,
-              onTap: extra,
+              label: tr('Jogar de novo'),
+              icon: Icons.refresh_rounded,
+              big: onExtraTime == null,
+              color: onExtraTime == null ? Palette.accent : Palette.panelEdge,
+              textColor: onExtraTime == null
+                  ? const Color(0xFF3A2200)
+                  : Palette.text,
+              onTap: onRetry,
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 6, bottom: 14),
+            const SizedBox(height: 10),
+            ChunkyButton(
+              label: tr('Desafiar Amigo'),
+              icon: Icons.share_rounded,
+              color: const Color(0xFF339AF0),
+              textColor: Colors.white,
+              onTap: onShareDuel,
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: onExit,
               child: Text(
-                videoExtra
-                    ? tr('Assista a um vídeo e continue')
-                    : tr('Uma vez por partida'),
-                style: bodyText(13, color: Palette.textDim, weight: 500),
+                tr('Menu'),
+                style: displayText(16, color: Palette.textDim),
               ),
             ),
           ],
-          ChunkyButton(
-            label: tr('Jogar de novo'),
-            icon: Icons.refresh_rounded,
-            big: onExtraTime == null,
-            color: onExtraTime == null ? Palette.accent : Palette.panelEdge,
-            textColor: onExtraTime == null
-                ? const Color(0xFF3A2200)
-                : Palette.text,
-            onTap: onRetry,
-          ),
-          const SizedBox(height: 10),
-          ChunkyButton(
-            label: tr('Desafiar Amigo'),
-            icon: Icons.share_rounded,
-            color: const Color(0xFF339AF0),
-            textColor: Colors.white,
-            onTap: onShareDuel,
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: onExit,
-            child: Text(
-              tr('Menu'),
-              style: displayText(16, color: Palette.textDim),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

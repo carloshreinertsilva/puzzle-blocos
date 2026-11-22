@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_blocos/game/onboarding.dart';
 import 'package:puzzle_blocos/services/feedback.dart';
 import 'package:puzzle_blocos/services/progress_store.dart';
+import 'package:puzzle_blocos/tower/roleta.dart';
 import 'package:puzzle_blocos/tower/tower_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -172,6 +173,71 @@ void main() {
       expect(c.continueClimb(), isFalse);
     },
   );
+
+  Future<TowerController> caiuNoAndar(int andares, {double corte = 0}) async {
+    final c = TowerController(store: store, feedback: feedback);
+    for (var i = 0; i < andares; i++) {
+      if (i == 0 && corte > 0) {
+        c.debugPlace(perfect: false, offset: corte);
+      } else {
+        c.debugPlace(perfect: true);
+      }
+    }
+    c.debugPlace(perfect: false, offset: 9.0);
+    await pumpEventQueue();
+    return c;
+  }
+
+  test('Continuar com bônus: o bloco de cima cresce pelo fator', () async {
+    // The first floor is cut 1.5 short on x; perfect floors keep the size.
+    final c = await caiuNoAndar(6, corte: 1.5);
+    final antes = c.blocks.last;
+    expect(antes.dx, lessThan(2));
+    final meio = antes.x + antes.dx / 2;
+
+    expect(c.continueClimb(1.5), isTrue);
+    final depois = c.blocks.last;
+    expect(depois.dx, closeTo(antes.dx * 1.5, 0.01));
+    expect(depois.dy, closeTo(TowerController.baseSize, 0.01));
+    expect(depois.x + depois.dx / 2, closeTo(meio, 0.01), reason: 'no meio');
+    expect(c.continueFactor, 1.5);
+    expect(c.floors, 6);
+    // The next block comes at the new size.
+    expect(c.currentDx, closeTo(antes.dx * 1.5, 0.01));
+  });
+
+  test('Continuar com 3x nunca passa do tamanho do bloco base', () async {
+    final c = await caiuNoAndar(6, corte: 1.5);
+    expect(c.continueClimb(3), isTrue);
+    expect(c.blocks.last.dx, closeTo(TowerController.baseSize, 0.001));
+    expect(c.blocks.last.dy, closeTo(TowerController.baseSize, 0.001));
+  });
+
+  test('Continuar com 1x deixa o bloco como estava', () async {
+    final c = await caiuNoAndar(6, corte: 1.5);
+    final antes = c.blocks.last.dx;
+    expect(c.continueClimb(), isTrue);
+    expect(c.blocks.last.dx, antes);
+  });
+
+  test('Roleta: para onde está, e solta de novo sem o vídeo', () async {
+    final c = await caiuNoAndar(6);
+    expect(c.wheelStoppedAt, isNull);
+    final t = c.wheelTime;
+    final fator = c.stopWheel();
+    expect(fator, Roleta.multiplicadorEm(t));
+    c.tick(0.5);
+    expect(c.wheelFactor, fator, reason: 'parada, a seta não anda');
+    expect(c.wheelAngle, Roleta.angulo(t));
+    c.releaseWheel();
+    expect(c.wheelStoppedAt, isNull);
+    expect(c.wheelAngle, Roleta.angulo(c.wheelTime));
+    // A new climb starts with the wheel free.
+    c.stopWheel();
+    c.reset();
+    expect(c.wheelStoppedAt, isNull);
+    expect(c.continueFactor, 1);
+  });
 
   test('Desbloqueio no Onboarding ocorre na fase 9', () async {
     await store.setLevel(8);

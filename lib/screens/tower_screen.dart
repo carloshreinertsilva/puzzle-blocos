@@ -1,17 +1,23 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../ads/ad_service.dart';
 import '../core/ranking.dart';
+import '../services/analytics.dart';
 import '../services/musica.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
+import '../tower/roleta.dart';
 import '../tower/tower_controller.dart';
 import '../ui/capi.dart';
+import '../ui/dobrar_estrelas.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/palette.dart';
 import '../ui/posicao_ranking.dart';
+import '../ui/premio.dart';
 import '../ui/tower_painter.dart';
 import '../ui/typography.dart';
 import '../ui/widgets.dart';
@@ -76,25 +82,79 @@ class _TowerScreenState extends State<TowerScreen>
     setState(() {
       _lastTick = Duration.zero;
       _ofertaContada = false;
+      _ofertaDobrarContada = false;
+      _dobradoNaSubida = false;
+      _dobradasAgora = null;
       _controller.reset();
     });
   }
 
-  /// The climb's one second chance, after a video.
+  /// The climb's one second chance, after a video. The tap stops the bonus
+  /// wheel: where its needle lands is how much the top block grows once the
+  /// video was watched to the end. Without that, nothing happens and the
+  /// wheel spins again.
   Future<void> _continue() async {
-    if (_continuing || !_controller.canContinue) return;
+    final c = _controller;
+    if (_continuing || !c.canContinue) return;
+    final fator = c.stopWheel();
+    Analytics.event('tower_wheel', {
+      'multiplicador': fator,
+      'height': c.floors,
+    });
     setState(() => _continuing = true);
     final ok = await widget.services.ads.rewarded(
       context,
       RewardPlacement.revive,
     );
     if (!mounted) return;
+    final antes = c.blocks.last;
     setState(() {
       _continuing = false;
       if (ok) {
         _lastTick = Duration.zero;
-        _controller.continueClimb();
+        _ofertaDobrarContada = false;
+        _dobradasAgora = null;
+        c.continueClimb(fator);
+      } else {
+        c.releaseWheel();
       }
+    });
+    final depois = c.blocks.last;
+    if (ok && (depois.dx > antes.dx || depois.dy > antes.dy)) {
+      mostrarPremio(
+        context,
+        tr('Bônus {valor}: bloco maior!', {'valor': _rotulo(fator)}),
+        icon: Icons.open_in_full_rounded,
+      );
+    }
+  }
+
+  /// Whether this climb's stars were already doubled with a video (once a
+  /// climb), and how many the card on screen got.
+  bool _dobradoNaSubida = false;
+  int? _dobradasAgora;
+  bool _ofertaDobrarContada = false;
+  bool _dobrando = false;
+
+  bool get _podeDobrar =>
+      !_dobradoNaSubida &&
+      DobrarEstrelas.pode(widget.services, _controller.starsGained);
+
+  Future<void> _dobrar() async {
+    if (_dobrando || !_podeDobrar) return;
+    _dobrando = true;
+    final ganhas = _controller.starsGained;
+    final ok = await DobrarEstrelas.dobrar(
+      context,
+      widget.services,
+      ganhas,
+      modo: 'tower',
+    );
+    _dobrando = false;
+    if (!ok || !mounted) return;
+    setState(() {
+      _dobradoNaSubida = true;
+      _dobradasAgora = ganhas;
     });
   }
 
@@ -303,7 +363,7 @@ class _TowerScreenState extends State<TowerScreen>
                     child: SafeArea(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 380),
-                        child: SingleChildScrollView(child: _fim(floors)),
+                        child: CabeNaAltura(child: _fim(floors)),
                       ),
                     ),
                   ),
@@ -326,6 +386,15 @@ class _TowerScreenState extends State<TowerScreen>
       widget.services.ads.offered(RewardPlacement.revive, {
         'mode': 'tower',
         'level': floors,
+      });
+    }
+    final dobrar = _podeDobrar;
+    if (dobrar && !_ofertaDobrarContada) {
+      _ofertaDobrarContada = true;
+      DobrarEstrelas.oferecer(widget.services, {
+        'mode': 'tower',
+        'level': floors,
+        'stars': c.starsGained,
       });
     }
     return CardPanel(
@@ -410,8 +479,22 @@ class _TowerScreenState extends State<TowerScreen>
               style: displayText(16, color: const Color(0xFFFDE047)),
             ),
           ],
-          const SizedBox(height: 16),
+          BotaoDobrar(
+            estrelas: c.starsGained,
+            dobradas: _dobradasAgora,
+            onDobrar: dobrar ? _dobrar : null,
+            espaco: 8,
+          ),
+          SizedBox(height: video ? 10 : 16),
           if (video) ...[
+            _Roleta(
+              angulo: c.wheelAngle,
+              fator: c.wheelFactor,
+              parada: c.wheelStoppedAt != null,
+              rotulo: _rotulo,
+              onTap: _continuing ? null : _continue,
+            ),
+            const SizedBox(height: 6),
             ChunkyButton(
               label: tr('Continuar'),
               semanticLabel: tr('Continuar a subida vendo um vídeo'),
@@ -422,23 +505,208 @@ class _TowerScreenState extends State<TowerScreen>
             ),
             const SizedBox(height: 10),
           ],
-          ChunkyButton(
-            label: tr('Subir de Novo'),
-            icon: Icons.refresh_rounded,
-            onTap: _retry,
-          ),
-          const SizedBox(height: 10),
-          ChunkyButton(
-            label: tr('Voltar ao Menu'),
-            icon: Icons.home_rounded,
-            color: Palette.panelEdge,
-            textColor: Colors.white,
-            onTap: _exit,
-          ),
+          if (video)
+            Row(
+              children: [
+                Expanded(
+                  child: ChunkyButton(
+                    label: tr('Subir de Novo'),
+                    icon: Icons.refresh_rounded,
+                    onTap: _retry,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  width: 64,
+                  child: ChunkyButton(
+                    label: '',
+                    semanticLabel: tr('Voltar ao Menu'),
+                    icon: Icons.home_rounded,
+                    color: Palette.panelEdge,
+                    textColor: Colors.white,
+                    onTap: _exit,
+                  ),
+                ),
+              ],
+            )
+          else ...[
+            ChunkyButton(
+              label: tr('Subir de Novo'),
+              icon: Icons.refresh_rounded,
+              onTap: _retry,
+            ),
+            const SizedBox(height: 10),
+            ChunkyButton(
+              label: tr('Voltar ao Menu'),
+              icon: Icons.home_rounded,
+              color: Palette.panelEdge,
+              textColor: Colors.white,
+              onTap: _exit,
+            ),
+          ],
         ],
       ),
     );
   }
+
+  /// "1,5x" ("1.5x" in English).
+  static String _rotulo(double m) =>
+      Roleta.rotulo(m, virgula: Lingua.idioma != Idioma.en);
+}
+
+/// The bonus wheel over "Continuar": a needle sweeps a half circle of
+/// [Roleta.multiplicadores]; a tap (here or on the button) stops it.
+class _Roleta extends StatelessWidget {
+  const _Roleta({
+    required this.angulo,
+    required this.fator,
+    required this.parada,
+    required this.rotulo,
+    required this.onTap,
+  });
+  final double angulo;
+  final double fator;
+  final bool parada;
+  final String Function(double) rotulo;
+  final VoidCallback? onTap;
+
+  static const raio = 62.0;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: tr('Roleta do bônus do vídeo'),
+    excludeSemantics: true,
+    onTap: onTap,
+    child: GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: raio * 2 + 8,
+            height: raio + 18,
+            child: CustomPaint(
+              painter: _RoletaPainter(
+                angulo: angulo,
+                parada: parada,
+                rotulo: rotulo,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              parada
+                  ? tr('Bônus: {valor}', {'valor': rotulo(fator)})
+                  : tr('Pare a seta: o bloco cresce até 3x'),
+              maxLines: 1,
+              style: bodyText(
+                13,
+                color: parada ? Palette.accent : Palette.textDim,
+                weight: 600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _RoletaPainter extends CustomPainter {
+  _RoletaPainter({
+    required this.angulo,
+    required this.parada,
+    required this.rotulo,
+  });
+  final double angulo;
+  final bool parada;
+  final String Function(double) rotulo;
+
+  static const _cores = [
+    Color(0xFF64748B),
+    Color(0xFF14B8A6),
+    Color(0xFFFFD43B),
+    Color(0xFF8B5CF6),
+    Color(0xFF64748B),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const r = _Roleta.raio;
+    final centro = Offset(size.width / 2, size.height - 4);
+    final rect = Rect.fromCircle(center: centro, radius: r);
+    final escolhido = Roleta.setorEm(angulo / pi);
+    for (var i = 0; i < Roleta.multiplicadores.length; i++) {
+      final (a, b) = Roleta.limites(i);
+      final cor = _cores[i];
+      final destaque = parada && i == escolhido;
+      canvas.drawArc(
+        rect,
+        pi + a * pi,
+        (b - a) * pi,
+        true,
+        Paint()
+          ..color = destaque
+              ? Palette.lighten(cor, 0.25)
+              : cor.withValues(alpha: parada ? 0.45 : 0.9),
+      );
+      canvas.drawArc(
+        rect,
+        pi + a * pi,
+        (b - a) * pi,
+        true,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = Palette.panel,
+      );
+      // The label: inside its sector, or over the rim for the narrow 3x.
+      final meio = (a + b) / 2 * pi;
+      final estreito = b - a < 0.12;
+      final dist = estreito ? r + 9 : r * 0.68;
+      final p = centro + Offset(-cos(meio) * dist, -sin(meio) * dist);
+      final texto = TextPainter(
+        text: TextSpan(
+          text: rotulo(Roleta.multiplicadores[i]),
+          style: displayText(
+            estreito ? 13 : 11,
+            color: estreito ? Palette.accent : Colors.white,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      texto.paint(canvas, p - Offset(texto.width / 2, texto.height / 2));
+    }
+    // The needle.
+    final ponta =
+        centro + Offset(-cos(angulo) * r * 0.95, -sin(angulo) * r * 0.95);
+    canvas.drawLine(
+      centro,
+      ponta,
+      Paint()
+        ..color = const Color(0xFF1E1B4B)
+        ..strokeWidth = 6
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawLine(
+      centro,
+      ponta,
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(centro, 7, Paint()..color = Colors.white);
+    canvas.drawCircle(centro, 4, Paint()..color = const Color(0xFF1E1B4B));
+  }
+
+  @override
+  bool shouldRepaint(_RoletaPainter old) =>
+      old.angulo != angulo || old.parada != parada;
 }
 
 /// The run of perfect floors; from 3 on, Capi is "on fire".

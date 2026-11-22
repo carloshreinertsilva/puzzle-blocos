@@ -183,6 +183,16 @@ class TestBridge {
           'floors': t.floors,
           'zone': t.zone.name,
           'canContinue': t.canContinue,
+          // The bonus wheel on the end card: the needle's angle (0 left,
+          // pi right), the bonus under it, and whether it was stopped.
+          'roleta': {
+            'angulo': t.wheelAngle,
+            'multiplicador': t.wheelFactor,
+            'parada': t.wheelStoppedAt != null,
+          },
+          // The bonus the last "Continuar" gave, and the top block now.
+          'fatorContinuar': t.continueFactor,
+          'topo': {'dx': t.blocks.last.dx, 'dy': t.blocks.last.dy},
           // How far the moving block is from a perfect fit, and the room
           // there is (the size of the block below, along the same axis).
           'offset': t.isAxisX
@@ -376,6 +386,15 @@ class TestBridge {
     final t = tower;
     if (t == null) return false;
     t.debugPlace(perfect: perfect);
+    return true;
+  }
+
+  /// Stops the Tower's bonus wheel as a tap [t] seconds after the climb
+  /// ended would ([Roleta]): the next "Continuar" uses that bonus.
+  bool stopTowerWheel(double t) {
+    final c = tower;
+    if (c == null || !c.gameOver) return false;
+    c.wheelStoppedAt = t;
     return true;
   }
 
