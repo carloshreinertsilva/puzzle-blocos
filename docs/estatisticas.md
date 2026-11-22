@@ -47,6 +47,7 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `reward_ad` | pediu um vídeo com recompensa | onde, ganhou (1/0) |
 | `ad_revenue` | um anúncio foi exibido e o AdMob estimou quanto pagou | tipo, onde, valor, moeda |
 | `interstitial_ad` | apareceu um anúncio entre fases | fase |
+| `fim_fase_atalho` | tocou num atalho do cartão de vitória: modo liberado, Passe ou Cofrinho | destino, fase |
 | `obra_end` | terminou uma obra | obra, estrelas |
 | `tower_end` | caiu a Torre do Capi | altura, maior combo |
 | `screen_open` | abriu vila, torre, obras, guarda-roupa ou missões | tela |
