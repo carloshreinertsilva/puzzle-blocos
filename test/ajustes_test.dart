@@ -33,6 +33,7 @@ void main() {
     expect(a.anuncios.firstLevel, 6);
     expect(a.anuncios.sessionGrace, const Duration(minutes: 5));
     expect(a.dobrarPorDia, 10);
+    expect(a.pontosPorNivel, 20);
   });
 
   test('um valor errado no console nunca enche o jogo de anúncios', () {
@@ -41,11 +42,17 @@ void main() {
       Ajustes.chaveFaseInicial: -4,
       Ajustes.chaveCarencia: 0,
       Ajustes.chaveDobrar: 999,
+      Ajustes.chavePontosPasse: 0,
     });
     expect(a.intervaloAnunciosMin, 3);
     expect(a.faseDoPrimeiroAnuncio, 3);
     expect(a.carenciaSessaoMin, 2);
     expect(a.dobrarPorDia, 20);
+    expect(a.pontosPorNivel, 10);
+    expect(
+      Ajustes.de(const {Ajustes.chavePontosPasse: 999}).pontosPorNivel,
+      40,
+    );
   });
 
   test('o coordenador segue os ajustes atuais', () async {

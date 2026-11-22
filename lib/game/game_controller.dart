@@ -10,6 +10,7 @@ import '../core/game_session.dart';
 import '../core/hint.dart';
 import '../core/level.dart';
 import '../core/missions.dart';
+import '../core/passe.dart';
 import '../core/ranking.dart';
 import '../core/shapes.dart';
 import '../l10n/idioma.dart';
@@ -180,8 +181,13 @@ class GameController extends ChangeNotifier {
   /// The hint lamp is open, asking (until the player moves).
   bool hintOffer = false;
 
+  /// Free hints this game: one more with the Passe do Capi premium.
+  int get freeHints =>
+      freeIdleHints +
+      (PasseDoCapi.premium(store, today) ? PasseDoCapi.dicasExtras : 0);
+
   /// Whether this game's free hint is still there.
-  bool get freeHintLeft => idleHints < freeIdleHints;
+  bool get freeHintLeft => idleHints < freeHints;
 
   /// The first levels teach the game: there Capi shows the move by
   /// himself instead of waiting to be asked.
@@ -266,7 +272,13 @@ class GameController extends ChangeNotifier {
 
   /// The hint lamp was tapped: shows this game's free hint, if it is
   /// still there. False when a hint now has to be paid for.
-  bool showFreeHint() => freeHintLeft && showPaidHint();
+  bool showFreeHint() {
+    if (!freeHintLeft) return false;
+    final extra = idleHints >= freeIdleHints;
+    if (!showPaidHint()) return false;
+    if (extra) Analytics.event('passe_vantagem', {'tipo': 'dica'});
+    return true;
+  }
 
   void _showHint((int, int, int) move) {
     idleHints++;
@@ -540,7 +552,19 @@ class GameController extends ChangeNotifier {
       case GameMode.daily when won:
         if (!store.dailyDone(today)) {
           starsGained = Missions.daily;
-          store.addStars(starsGained);
+          final base = store.addStars(starsGained);
+          // Passe premium: double stars, the extra ones like bought stars
+          // (no pass points, no piggy bank).
+          if (PasseDoCapi.premium(store, today)) {
+            final extra =
+                Missions.daily * (PasseDoCapi.multiplicadorDesafio - 1);
+            starsGained += extra;
+            base.then((_) => store.addBoughtStars(extra));
+            Analytics.event('passe_vantagem', {
+              'tipo': 'desafio',
+              'estrelas': extra,
+            });
+          }
         }
         store.completeDaily(today);
       case GameMode.blitz:

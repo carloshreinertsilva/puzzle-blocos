@@ -12,6 +12,7 @@ no Android e no iOS; na web valem os números de fábrica.
 | `anuncio_fase_inicial` | fase a partir da qual há anúncio entre fases | 6 | 3 a 50 |
 | `anuncio_carencia_min` | minutos sem anúncio entre fases depois de abrir o app | 5 | 2 a 30 |
 | `dobrar_por_dia` | vitórias por dia que podem dobrar as estrelas com vídeo | 10 | 0 a 20 |
+| `passe_pontos_nivel` | pontos (estrelas ganhas jogando) por nível do Passe do Capi; baixar só abre níveis, nada já pego some | 20 | 10 a 40 |
 | `versao_minima` | número de build mais antigo que ainda pode jogar | 0 (nenhum) | — |
 
 Um valor fora dos limites é trazido para o limite mais próximo: um erro de
