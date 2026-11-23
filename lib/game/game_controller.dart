@@ -18,6 +18,7 @@ import '../services/analytics.dart';
 import '../services/avaliacao.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
+import '../services/ranking_servidor.dart';
 import 'tutorial.dart';
 
 enum GameMode { levels, endless, daily, tutorial, blitz, duel }
@@ -539,7 +540,7 @@ class GameController extends ChangeNotifier {
       case GameMode.levels when won:
         if (!isReplay) {
           store.setLevel(level.number + 1);
-          Ranking.marcar(store, Quadro.fases, 1, DateTime.now());
+          _marcarNoRanking(Quadro.fases, 1);
         }
         store.setFailStreak(level.number, 0);
         _awardLevelStars();
@@ -588,7 +589,7 @@ class GameController extends ChangeNotifier {
               starsGained += n;
               if (!_disposed) notifyListeners();
             });
-        Ranking.marcar(store, Quadro.blitz, session.score, DateTime.now());
+        _marcarNoRanking(Quadro.blitz, session.score);
         if (session.score > store.blitzBestScore) {
           newBest = true;
           bestScore = session.score;
@@ -609,7 +610,7 @@ class GameController extends ChangeNotifier {
         starsGained = due - _endlessStarsGiven;
         _endlessStarsGiven = due;
         store.addStars(starsGained);
-        Ranking.marcar(store, Quadro.infinito, session.score, DateTime.now());
+        _marcarNoRanking(Quadro.infinito, session.score);
         if (session.score > store.bestScore) {
           newBest = true;
           bestScore = session.score;
@@ -816,6 +817,21 @@ class GameController extends ChangeNotifier {
     session.refreshStatus();
     if (session.status != SessionStatus.playing) _finish();
     notifyListeners();
+  }
+
+  /// This match's score on board [q] (see Ranking.marcar), sent to the
+  /// boards right away: the player is on them even when going from level
+  /// to level without passing by the menu. The records set right after
+  /// this call are kept before the send reads them.
+  void _marcarNoRanking(Quadro q, int pontos) {
+    unawaited(
+      Ranking.marcar(
+        store,
+        q,
+        pontos,
+        DateTime.now(),
+      ).then((_) => RankingSync.enviar(store)),
+    );
   }
 
   /// A friend's challenge beaten for the first time pays its stars. Duels

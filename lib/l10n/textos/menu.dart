@@ -383,6 +383,8 @@ const Map<String, String> enMenu = {
   'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Cards show what\'s new, the Shop flags today\'s deals, and Capi gives you one tip a day.',
   'Lembretes no iPhone': 'Reminders on iPhone',
   'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi now reminds you on iPhone too: your gift, your streak and the Pass rewards waiting.',
+  'Todo mundo no ranking': 'Everyone in the ranking',
+  'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!': "You now join the ranking from your very first game. Pick your name and climb this week's list!",
 };
 
 const Map<String, String> esMenu = {
@@ -773,4 +775,6 @@ const Map<String, String> esMenu = {
   'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Las tarjetas muestran las novedades, la Tienda avisa las ofertas del día y Capi da un consejo al día.',
   'Lembretes no iPhone': 'Recordatorios en iPhone',
   'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi ahora te avisa también en iPhone: tu regalo, tu racha y los premios del Pase que te esperan.',
+  'Todo mundo no ranking': 'Todos en el ranking',
+  'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!': '¡Ahora entras al ranking desde la primera partida. Elige tu nombre y sube en la lista de la semana!',
 };

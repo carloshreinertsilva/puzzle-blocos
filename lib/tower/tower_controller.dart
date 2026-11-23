@@ -1,6 +1,7 @@
 import '../core/daily_missions.dart';
 import '../core/ranking.dart';
 
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import '../services/analytics.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
+import '../services/ranking_servidor.dart';
 import 'roleta.dart';
 
 /// A static block placed in the tower.
@@ -496,7 +498,16 @@ class TowerController extends ChangeNotifier {
       });
     }
 
-    Ranking.marcar(store, Quadro.torre, finalHeight, DateTime.now());
+    // On the boards right away, even if the player keeps climbing without
+    // going back to the menu (the record below is kept before it goes).
+    unawaited(
+      Ranking.marcar(
+        store,
+        Quadro.torre,
+        finalHeight,
+        DateTime.now(),
+      ).then((_) => RankingSync.enviar(store)),
+    );
     if (finalHeight > bestHeight) {
       isNewBest = true;
       store.recordTowerHeight(finalHeight);

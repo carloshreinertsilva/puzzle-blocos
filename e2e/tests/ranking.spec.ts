@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openApp, snap, state } from './helpers';
+import { VETERAN, openApp, openFresh, snap, state } from './helpers';
 
 // Nos testes o ranking fica na memória, com três rivais em cada placar
 // (lib/testing/test_bridge.dart); nos celulares ele fica no Firebase.
@@ -78,5 +78,35 @@ test.describe('Ranking do jogo', () => {
     await expect(page.getByRole('group', { name: /Zeca/ })).toHaveCount(0);
     await expect(linha(page, '2º lugar: Lia_22, 12 andares')).toBeVisible();
     expect((await state(page)).ranking!.denuncias).toBe(1);
+  });
+
+  test('sem nome, o menu pede o nome (obrigatório) e as linhas vão com ele', async ({ page }) => {
+    // Nos testes a janela só abre sozinha com testar_nome; o presente do dia
+    // já abriu hoje.
+    const d = new Date();
+    await openFresh(page, {
+      ...VETERAN,
+      giftShown: d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(),
+      level: 21,
+      towerBestHeight: 30,
+      bestScore: 4000,
+      seen_testar_nome: true,
+    });
+    const campo = page.getByRole('textbox', { name: 'Nome no ranking' });
+    await expect(campo).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Seu nome no ranking')).toBeVisible();
+    // Não dá para pular.
+    await expect(page.getByRole('button', { name: 'Agora não' })).toHaveCount(0);
+    expect((await state(page)).ranking!.linhas).toEqual({});
+
+    await digitarNome(page, 'Capivara');
+    await expect(page.getByText('Seu nome no ranking')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
+    await expect
+      .poll(async () => (await state(page)).ranking!.linhas)
+      .toMatchObject({ torre_geral: 30, infinito_geral: 4000, fases_geral: 20 });
+    const s = await state(page);
+    expect(s.ranking!.nome).toBe('Capivara');
+    expect(s.ranking!.nomes).toEqual(['Capivara']);
   });
 });

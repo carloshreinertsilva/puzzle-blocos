@@ -8,9 +8,20 @@ import 'widgets.dart';
 
 /// Asks for the player's name (the ranking's, also shown to friends in
 /// duels). Returns the clean name, or null for "Agora não".
+///
+/// [obrigatorio]: there is no "Agora não" and the window doesn't close by
+/// going back; it only leaves with a valid name (show it with
+/// `barrierDismissible: false`, see [pedirNomeObrigatorio]).
 class NomeDialog extends StatefulWidget {
-  const NomeDialog({super.key, this.atual, this.titulo, this.texto});
+  const NomeDialog({
+    super.key,
+    this.atual,
+    this.titulo,
+    this.texto,
+    this.obrigatorio = false,
+  });
   final String? atual;
+  final bool obrigatorio;
 
   /// Defaults: the ranking's title and warning.
   final String? titulo;
@@ -51,7 +62,10 @@ class _NomeDialogState extends State<NomeDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => Dialog(
+  Widget build(BuildContext context) =>
+      PopScope(canPop: !widget.obrigatorio, child: _janela(context));
+
+  Widget _janela(BuildContext context) => Dialog(
     backgroundColor: Colors.transparent,
     insetPadding: const EdgeInsets.all(20),
     child: SingleChildScrollView(
@@ -108,16 +122,28 @@ class _NomeDialogState extends State<NomeDialog> {
               icon: Icons.check_rounded,
               onTap: _salvar,
             ),
-            const SizedBox(height: 8),
-            ChunkyButton(
-              label: tr('Agora não'),
-              color: Palette.panelEdge,
-              textColor: Colors.white,
-              onTap: () => Navigator.pop(context),
-            ),
+            if (!widget.obrigatorio) ...[
+              const SizedBox(height: 8),
+              ChunkyButton(
+                label: tr('Agora não'),
+                color: Palette.panelEdge,
+                textColor: Colors.white,
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
           ],
         ),
       ),
     ),
   );
 }
+
+/// The ranking's name, which the player has to choose to go on: no
+/// "Agora não", no closing by going back or tapping outside. Returns the
+/// clean name (null only if the window was taken away some other way).
+Future<String?> pedirNomeObrigatorio(BuildContext context) =>
+    showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const NomeDialog(obrigatorio: true),
+    );
