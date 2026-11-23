@@ -92,7 +92,7 @@ export type GameState = {
     fatorContinuar: number;
     topo: { dx: number; dy: number };
   };
-  ranking?: { nome: string | null; denuncias: number; linhas: Record<string, number> };
+  ranking?: { nome: string | null; denuncias: number; linhas: Record<string, number>; nomes: string[] };
   equippedHat?: string;
   passe?: { nivel: number; premium: boolean };
   unlockedHats?: string[];

@@ -234,9 +234,9 @@ const Map<String, String> enMenu = {
   'Desenvolvido por CHS TECNOLOGIA\nÚltima atualização: Novembro de 2026':
       'Developed by CHS TECNOLOGIA\nLast updated: November 2026',
   '1. Compromisso e Jogo Offline': '1. Our Commitment and Offline Play',
-  'O CapiBlocks foi feito para respeitar sua privacidade. O jogo funciona sem internet e não pede cadastro, senha nem dados como nome ou e-mail.': 'CapiBlocks was made to respect your privacy. The game works without internet and never asks for a sign-up, a password or data such as your name or email.',
+  'O CapiBlocks foi feito para respeitar sua privacidade. O jogo funciona sem internet e não pede cadastro, senha nem e-mail: só um apelido para o ranking, que pode ser inventado.': 'CapiBlocks was made to respect your privacy. The game works without internet and never asks for a sign-up, a password or an email: only a nickname for the ranking, which can be made up.',
   '2. Dados Pessoais': '2. Personal Data',
-  'Não coletamos, não vendemos e não transmitimos nenhum dado pessoal identificável (como nome, CPF, e-mail ou localização física) para servidores próprios.': 'We do not collect, sell or transmit any personally identifiable data (such as your name, national ID number (CPF), email or physical location) to our own servers.',
+  'Não coletamos nem vendemos dados pessoais identificáveis (como nome completo, CPF, e-mail ou localização física). O apelido que você escolhe e as suas pontuações ficam no ranking do jogo (Google Firebase), visíveis aos outros jogadores e ligados a um identificador anônimo.': 'We do not collect or sell personally identifiable data (such as your full name, national ID number (CPF), email or physical location). The nickname you choose and your scores are kept in the game\'s ranking (Google Firebase), visible to other players and tied to an anonymous identifier.',
   '3. Onde Fica seu Progresso': '3. Where Your Progress Is Kept',
   'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho. Se você entrar no Google Play Games, uma cópia também fica nos Jogos salvos da sua conta Google, numa pasta oculta do Google Drive que só o CapiBlocks usa, para você recuperar o progresso em outro celular.': "Your progress (levels, stars, Capi's Village items, records and preferences) is kept in your device's storage. If you sign in to Google Play Games, a copy is also kept in your Google account's Saved Games, in a hidden Google Drive folder used only by CapiBlocks, so you can restore it on another phone.",
   '4. Serviços Opcionais': '4. Optional Services',
@@ -383,6 +383,8 @@ const Map<String, String> enMenu = {
   'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Cards show what\'s new, the Shop flags today\'s deals, and Capi gives you one tip a day.',
   'Lembretes no iPhone': 'Reminders on iPhone',
   'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi now reminds you on iPhone too: your gift, your streak and the Pass rewards waiting.',
+  'Todo mundo no ranking': 'Everyone in the ranking',
+  'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!': "You now join the ranking from your very first game. Pick your name and climb this week's list!",
 };
 
 const Map<String, String> esMenu = {
@@ -620,9 +622,9 @@ const Map<String, String> esMenu = {
   'CapiBlocks: Blocos e Capivaras': 'CapiBlocks: Bloques y Capibaras',
   'Desenvolvido por CHS TECNOLOGIA\nÚltima atualização: Novembro de 2026': 'Desarrollado por CHS TECNOLOGIA\nÚltima actualización: noviembre de 2026',
   '1. Compromisso e Jogo Offline': '1. Compromiso y juego sin conexión',
-  'O CapiBlocks foi feito para respeitar sua privacidade. O jogo funciona sem internet e não pede cadastro, senha nem dados como nome ou e-mail.': 'CapiBlocks fue hecho para respetar tu privacidad. El juego funciona sin internet y no pide registro, contraseña ni datos como tu nombre o correo electrónico.',
+  'O CapiBlocks foi feito para respeitar sua privacidade. O jogo funciona sem internet e não pede cadastro, senha nem e-mail: só um apelido para o ranking, que pode ser inventado.': 'CapiBlocks fue hecho para respetar tu privacidad. El juego funciona sin internet y no pide registro, contraseña ni correo electrónico: solo un apodo para el ranking, que puede ser inventado.',
   '2. Dados Pessoais': '2. Datos personales',
-  'Não coletamos, não vendemos e não transmitimos nenhum dado pessoal identificável (como nome, CPF, e-mail ou localização física) para servidores próprios.': 'No recopilamos, no vendemos ni transmitimos ningún dato personal identificable (como nombre, número de identificación (CPF), correo electrónico o ubicación física) a servidores propios.',
+  'Não coletamos nem vendemos dados pessoais identificáveis (como nome completo, CPF, e-mail ou localização física). O apelido que você escolhe e as suas pontuações ficam no ranking do jogo (Google Firebase), visíveis aos outros jogadores e ligados a um identificador anônimo.': 'No recopilamos ni vendemos datos personales identificables (como nombre completo, número de identificación (CPF), correo electrónico o ubicación física). El apodo que eliges y tus puntuaciones se guardan en el ranking del juego (Google Firebase), visibles para los demás jugadores y vinculados a un identificador anónimo.',
   '3. Onde Fica seu Progresso': '3. Dónde se guarda tu progreso',
   'Seu progresso (fases, estrelas, itens da Vila do Capi, recordes e preferências) fica no armazenamento do seu aparelho. Se você entrar no Google Play Games, uma cópia também fica nos Jogos salvos da sua conta Google, numa pasta oculta do Google Drive que só o CapiBlocks usa, para você recuperar o progresso em outro celular.': 'Tu progreso (niveles, estrellas, objetos de la Aldea de Capi, récords y preferencias) se guarda en el almacenamiento de tu dispositivo. Si entras en Google Play Juegos, también se guarda una copia en los Juegos guardados de tu cuenta de Google, en una carpeta oculta de Google Drive que solo usa CapiBlocks, para que puedas recuperarlo en otro teléfono.',
   '4. Serviços Opcionais': '4. Servicios opcionales',
@@ -773,4 +775,6 @@ const Map<String, String> esMenu = {
   'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Las tarjetas muestran las novedades, la Tienda avisa las ofertas del día y Capi da un consejo al día.',
   'Lembretes no iPhone': 'Recordatorios en iPhone',
   'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi ahora te avisa también en iPhone: tu regalo, tu racha y los premios del Pase que te esperan.',
+  'Todo mundo no ranking': 'Todos en el ranking',
+  'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!': '¡Ahora entras al ranking desde la primera partida. Elige tu nombre y sube en la lista de la semana!',
 };

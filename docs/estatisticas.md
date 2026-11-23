@@ -63,6 +63,8 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `dica_capi` | o Capi deu a dica do dia no menu (uma por dia, sobre algo liberado e nunca usado) | tema |
 | `dica_capi_ver` | tocou em "Ver agora" na dica do dia | tema |
 | `menu_abertura` | o menu abriu janelas sozinho (no máximo 2 por abertura) | dialogos (quantas abriram) |
+| `ranking_nome_pergunta` | o menu pediu o nome do ranking (obrigatório, enquanto o jogador não tem um) | |
+| `ranking_nome` | o jogador salvou o nome do ranking | origem (`menu`, `ranking`) |
 
 O Firebase também mede sozinho: primeira abertura, sessões, retenção (quantos
 voltam no dia 1, 7 e 30), país e modelo do aparelho.

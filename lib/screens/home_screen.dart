@@ -38,6 +38,7 @@ import '../services/progress_store.dart';
 import '../testing/test_bridge.dart';
 import '../ui/capi.dart';
 import '../ui/menu_widgets.dart';
+import '../ui/nome_dialog.dart';
 import '../ui/oferta_nuvem.dart';
 import '../ui/palette.dart';
 import '../ui/placar_duelos.dart';
@@ -85,8 +86,12 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.services.loja.addListener(_lojaMudou);
     widget.services.feedback.musica.tocar(Trilha.menu);
     _talvezSugerir();
+    // Records not on the boards yet go now (a player from before the
+    // name was asked for, or a send that failed), then the menu's place.
+    unawaited(
+      RankingSync.enviar(widget.services.store).whenComplete(_lerPosicao),
+    );
     // Let the menu show first, then the gift (and any update) over it.
-    unawaited(_lerPosicao());
     _abertura = Timer(const Duration(milliseconds: 600), _abrirFila);
   }
 
@@ -105,11 +110,16 @@ class _HomeScreenState extends State<HomeScreen> {
       Future<bool> Function(bool cabe) abrir,
     ) async {
       if (!mounted) return;
-      if (await abrir(fila.cabe(d))) fila.mostrou(d);
+      // Not over another screen (a match started before the windows came).
+      final aqui = ModalRoute.of(context)?.isCurrent != false;
+      if (await abrir(fila.cabe(d) && (aqui || d.obrigatorio))) {
+        fila.mostrou(d);
+      }
     }
 
     try {
       await passo(DialogoAbertura.conviteRecebido, _conviteNaAbertura);
+      await passo(DialogoAbertura.nomeRanking, (_) => _garantirNome());
       await passo(DialogoAbertura.presente, _presenteDoDia);
       await passo(DialogoAbertura.novidades, _novidadesDaVersao);
       await passo(DialogoAbertura.nuvem, _progressoDaNuvem);
@@ -131,6 +141,46 @@ class _HomeScreenState extends State<HomeScreen> {
       // A quiet opening: room for Capi's tip of the day.
       _talvezDica();
     }
+  }
+
+  /// Whether the player still has to choose the ranking's name.
+  bool get _precisaNome {
+    final store = widget.services.store;
+    if (RankingServidor.atual == null || store.rankingNome != null) {
+      return false;
+    }
+    // Browser tests keep the menu clear, except the one about the name.
+    return !kTestBridge || store.hasSeen('testar_nome');
+  }
+
+  /// The name being asked for, so it is never asked twice at once.
+  Future<bool>? _pedindoNome;
+
+  /// Asks for the ranking's name (mandatory) while there is none: when the
+  /// menu opens and before any match. True when the window opened.
+  Future<bool> _garantirNome() {
+    if (!mounted || !_precisaNome) return Future.value(false);
+    return _pedindoNome ??= _pedirNome().whenComplete(
+      () => _pedindoNome = null,
+    );
+  }
+
+  Future<bool> _pedirNome() async {
+    final store = widget.services.store;
+    Analytics.event('ranking_nome_pergunta');
+    final nome = await pedirNomeObrigatorio(context);
+    if (nome == null) return true;
+    await store.setRankingNome(nome);
+    Analytics.event('ranking_nome', {'origem': 'menu'});
+    unawaited(RankingSync.enviar(store).whenComplete(_lerPosicao));
+    if (mounted) setState(() {});
+    return true;
+  }
+
+  /// Whether a match may start now: with the ranking's name chosen.
+  Future<bool> _podeJogar() async {
+    await _garantirNome();
+    return mounted && !_precisaNome;
   }
 
   /// A cloud save ahead of this phone's (the check also sends this phone's
@@ -638,6 +688,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int? duelTargetScore,
     String? duelRivalName,
   }) async {
+    if (!await _podeJogar() || !mounted) return;
     _sairDaFolha();
     widget.services.feedback.click();
     if (mode == GameMode.endless) {
@@ -713,6 +764,7 @@ class _HomeScreenState extends State<HomeScreen> {
   };
 
   Future<void> _openTower() async {
+    if (!await _podeJogar() || !mounted) return;
     _sairDaFolha();
     Analytics.event('screen_open', {'screen': 'tower'});
     widget.services.feedback.click();

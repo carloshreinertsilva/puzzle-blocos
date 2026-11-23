@@ -7,6 +7,10 @@ enum DialogoAbertura {
   /// A friend's invite from the Play Store (read once, on the first run).
   conviteRecebido,
 
+  /// The player's name for the ranking, while there is none. Mandatory:
+  /// every player is on the boards from the first match.
+  nomeRanking(obrigatorio: true),
+
   /// The daily gift.
   presente,
 

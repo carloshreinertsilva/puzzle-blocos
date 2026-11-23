@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:puzzle_blocos/core/fila_abertura.dart';
 import 'package:puzzle_blocos/core/ranking.dart';
 import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:puzzle_blocos/services/ranking_servidor.dart';
+import 'package:puzzle_blocos/ui/nome_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<ProgressStore> _store([Map<String, Object> salvo = const {}]) async {
@@ -99,4 +102,120 @@ void main() {
     expect(EntradaRanking.ler('x', {'nome': 'Bia'}), isNull);
     expect(EntradaRanking.ler('x', {'pontos': 3}), isNull);
   });
+
+  test('dois envios ao mesmo tempo mandam cada linha uma vez só', () async {
+    final store = await _store({'towerBestHeight': 9, 'rankingNome': 'Ana'});
+    final servidor = _Contador();
+    RankingServidor.atual = servidor;
+    addTearDown(() => RankingServidor.atual = null);
+    // O fim da partida e a volta ao menu, juntos.
+    await Future.wait([
+      RankingSync.enviar(store, quarta),
+      RankingSync.enviar(store, quarta),
+    ]);
+    expect(servidor.envios, 1, reason: 'só torre_geral tem pontos');
+    expect(servidor.quadros['torre_geral']!['eu']!.nome, 'Ana');
+  });
+
+  group('nome obrigatório', () {
+    test('a janela do nome vem logo depois do convite e não conta no '
+        'limite de janelas', () {
+      final ordem = DialogoAbertura.values;
+      expect(ordem.indexOf(DialogoAbertura.nomeRanking), 1);
+      expect(ordem.first, DialogoAbertura.conviteRecebido);
+      expect(DialogoAbertura.nomeRanking.obrigatorio, isTrue);
+      expect(
+        FilaAbertura.escolher({
+          DialogoAbertura.novidades,
+          DialogoAbertura.nomeRanking,
+          DialogoAbertura.presente,
+          DialogoAbertura.ofertaBoasVindas,
+        }),
+        [
+          DialogoAbertura.nomeRanking,
+          DialogoAbertura.presente,
+          DialogoAbertura.novidades,
+        ],
+      );
+      final fila = FilaAbertura(limite: 0);
+      expect(fila.cabe(DialogoAbertura.nomeRanking), isTrue);
+      fila.mostrou(DialogoAbertura.nomeRanking);
+      expect(fila.mostrados, 0);
+    });
+
+    Future<String? Function()> abrir(
+      WidgetTester t, {
+      bool obrigatorio = true,
+    }) async {
+      String? nome = 'nada';
+      await t.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async => nome = obrigatorio
+                  ? await pedirNomeObrigatorio(context)
+                  : await showDialog<String>(
+                      context: context,
+                      builder: (_) => const NomeDialog(),
+                    ),
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      );
+      return () => nome;
+    }
+
+    testWidgets('sem "Agora não", não fecha no voltar nem fora; só com um '
+        'nome válido', (t) async {
+      final nome = await abrir(t);
+      await t.tap(find.text('abrir'));
+      await t.pumpAndSettle();
+      expect(find.text('Seu nome no ranking'), findsWidgets);
+      expect(find.text('Agora não'), findsNothing);
+      // O campo vem vazio.
+      expect(t.widget<TextField>(find.byType(TextField)).controller!.text, '');
+
+      // Voltar (botão do Android) e tocar fora não fecham a janela.
+      await t.binding.handlePopRoute();
+      await t.pumpAndSettle();
+      await t.tapAt(const Offset(5, 5));
+      await t.pumpAndSettle();
+      expect(find.text('Seu nome no ranking'), findsWidgets);
+
+      // Nome curto não passa; um bom passa e fecha.
+      await t.enterText(find.byType(TextField), 'Zé');
+      await t.tap(find.text('Salvar'));
+      await t.pumpAndSettle();
+      expect(find.text('Seu nome no ranking'), findsWidgets);
+      await t.enterText(find.byType(TextField), 'Carlos');
+      await t.tap(find.text('Salvar'));
+      await t.pumpAndSettle();
+      expect(find.text('Seu nome no ranking'), findsNothing);
+      expect(nome(), 'Carlos');
+    });
+
+    testWidgets('fora do obrigatório, "Agora não" continua', (t) async {
+      final nome = await abrir(t, obrigatorio: false);
+      await t.tap(find.text('abrir'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Agora não'));
+      await t.pumpAndSettle();
+      expect(find.text('Seu nome no ranking'), findsNothing);
+      expect(nome(), isNull);
+    });
+  });
+}
+
+/// Counts what reaches the server.
+class _Contador extends RankingDeTeste {
+  int envios = 0;
+
+  @override
+  Future<void> enviar(String id, EntradaRanking entrada) async {
+    envios++;
+    // Some time on the network, so the two sends could overlap.
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    await super.enviar(id, entrada);
+  }
 }

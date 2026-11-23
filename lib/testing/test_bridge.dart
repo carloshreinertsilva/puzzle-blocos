@@ -132,6 +132,11 @@ class TestBridge {
       for (final e in ranking.quadros.entries)
         if (e.value[ranking.uid] != null) e.key: e.value[ranking.uid]!.pontos,
     },
+    // The names the player's lines went with (one, once a name is chosen).
+    'nomes': {
+      for (final q in ranking.quadros.values)
+        if (q[ranking.uid] != null) q[ranking.uid]!.nome,
+    }.toList(),
   };
   Map<String, Object?>? Function(int piece)? obraDrag;
 

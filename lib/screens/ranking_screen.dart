@@ -75,7 +75,8 @@ class _RankingScreenState extends State<RankingScreen> {
     final uid = await _servidor.entrar();
     if (!mounted) return;
     setState(() => _uid = uid);
-    if (_store.rankingNome == null) await _escolherNome();
+    // The name is mandatory: without one, it is asked for first.
+    if (_store.rankingNome == null) await _escolherNome(obrigatorio: true);
   }
 
   Future<_Lista> _ler(Quadro q, Periodo p) {
@@ -114,14 +115,16 @@ class _RankingScreenState extends State<RankingScreen> {
 
   void _recarregar() => setState(_lidas.clear);
 
-  Future<void> _escolherNome() async {
-    final nome = await showDialog<String>(
-      context: context,
-      builder: (_) => NomeDialog(atual: _store.rankingNome),
-    );
+  Future<void> _escolherNome({bool obrigatorio = false}) async {
+    final nome = obrigatorio
+        ? await pedirNomeObrigatorio(context)
+        : await showDialog<String>(
+            context: context,
+            builder: (_) => NomeDialog(atual: _store.rankingNome),
+          );
     if (nome == null || !mounted) return;
     await _store.setRankingNome(nome);
-    Analytics.event('ranking_nome');
+    Analytics.event('ranking_nome', {'origem': 'ranking'});
     await RankingSync.enviar(_store);
     if (mounted) _recarregar();
   }

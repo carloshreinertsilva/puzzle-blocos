@@ -123,6 +123,11 @@ abstract final class Novidades {
         'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.',
         DestinoNovidade.passe,
       ),
+      Novidade(
+        'Todo mundo no ranking',
+        'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!',
+        DestinoNovidade.ranking,
+      ),
     ],
   };
 

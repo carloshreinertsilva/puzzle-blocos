@@ -11,6 +11,19 @@ aparece: o botão Ranking mostra as estatísticas do jogador.
   recordes).
 - **Nome:** o jogador escolhe (3 a 16 letras). Passa por um filtro de
   palavrões (`lib/core/nome_filtro.dart`) e pode ser denunciado.
+- **O nome é obrigatório:** enquanto o jogador não tem um, o menu pede o
+  nome toda vez que abre (janela sem "Agora não", que não fecha no voltar),
+  e nenhuma partida começa pelo menu antes disso. A tela do Ranking também
+  pede, do mesmo jeito. Só o duelo continua com "Agora não" (lá o nome é o
+  que o amigo vê). Assim todo jogador entra no ranking desde a primeira
+  partida. Código: `_garantirNome` em `lib/screens/home_screen.dart` e
+  `pedirNomeObrigatorio` em `lib/ui/nome_dialog.dart`.
+- **Quando a linha é enviada:** ao abrir o menu (quem já tinha recordes
+  entra no próximo login), no fim de cada partida que conta no ranking
+  (Fases vencidas, Infinito, Blitz e Torre, mesmo sem voltar ao menu), ao
+  voltar de uma partida para o menu, ao salvar o nome e ao abrir a tela do
+  Ranking. Só vai o que mudou desde o último envio, e os envios esperam um
+  pelo outro (`RankingSync.enviar` em `lib/services/ranking_servidor.dart`).
 - **Código:** `lib/core/ranking.dart` (o que o celular decide),
   `lib/services/ranking_servidor.dart` (Firebase) e
   `lib/screens/ranking_screen.dart` (a tela). Regras em `firestore.rules`,
@@ -46,7 +59,15 @@ Se `config/ranking` ainda não existir, crie o documento com os campos
 
 ## Custos
 
-O plano gratuito do Firestore dá 50 mil leituras por dia. Abrir um placar
-lê no máximo 25 linhas e a lista fica guardada por 4 minutos no celular; a
-pontuação só é enviada quando muda. Dá para acompanhar o uso em **Firestore
-Database → Uso**.
+O plano gratuito do Firestore dá 50 mil leituras e 20 mil gravações por
+dia. Abrir um placar lê no máximo 25 linhas e a lista fica guardada por 4
+minutos no celular; a pontuação só é enviada quando muda.
+
+Com o nome obrigatório, **todo jogador grava no Firestore**, não só quem
+abria o Ranking. Cada partida com recorde novo da semana grava até 2 linhas
+(a da semana e, se for recorde de sempre, a de sempre); uma fase vencida
+sempre muda a linha da semana das Fases. Conta grosseira: 20 mil gravações
+por dia dão para uns 2 a 3 mil jogadores ativos por dia jogando várias
+partidas. Se passar disso, o Firestore recusa as gravações até o dia
+seguinte (o jogo continua funcionando; a linha vai no próximo envio).
+Dá para acompanhar o uso em **Firestore Database → Uso**.

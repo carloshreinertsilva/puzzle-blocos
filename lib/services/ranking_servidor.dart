@@ -138,9 +138,16 @@ abstract final class RankingSync {
     }
   }
 
+  /// The send under way, if any: calls wait for each other, so two of them
+  /// at once (end of a match, back on the menu) don't send a line twice.
+  static Future<void> _fila = Future.value();
+
   /// Sends the player's lines that changed (new record, new name, another
   /// hat). Nothing happens without a name or a connection.
-  static Future<void> enviar(ProgressStore store, [DateTime? quando]) async {
+  static Future<void> enviar(ProgressStore store, [DateTime? quando]) =>
+      _fila = _fila.then((_) => _enviar(store, quando));
+
+  static Future<void> _enviar(ProgressStore store, DateTime? quando) async {
     final s = RankingServidor.atual;
     if (s == null || store.rankingNome == null) return;
     try {
