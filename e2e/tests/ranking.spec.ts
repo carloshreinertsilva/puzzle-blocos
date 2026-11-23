@@ -99,7 +99,13 @@ test.describe('Ranking do jogo', () => {
     await expect(page.getByRole('button', { name: 'Agora não' })).toHaveCount(0);
     expect((await state(page)).ranking!.linhas).toEqual({});
 
-    await digitarNome(page, 'Capivara');
+    // O campo abre vazio. Por cima do menu animado cada tecla demora no
+    // navegador de teste, então aqui não se apaga antes (como o digitarNome
+    // faz): é só clicar e digitar.
+    await campo.click();
+    await page.keyboard.type('Capivara', { delay: 50 });
+    await expect(campo).toHaveValue('Capivara', { timeout: 20_000 });
+    await page.getByRole('button', { name: 'Salvar meu nome no ranking' }).click();
     await expect(page.getByText('Seu nome no ranking')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toBeVisible();
     await expect
