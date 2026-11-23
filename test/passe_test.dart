@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_blocos/core/passe.dart';
 import 'package:puzzle_blocos/core/wardrobe.dart';
+import 'package:puzzle_blocos/services/ajustes.dart';
 import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:puzzle_blocos/shop/produtos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,8 @@ final dezembro = DateTime(2026, 12, 10);
 final janeiro = DateTime(2027, 1, 10);
 
 void main() {
+  tearDown(() => Ajustes.atuais = const Ajustes());
+
   test('each calendar month is a season', () {
     expect(PasseDoCapi.temporada(DateTime(2026, 11, 1)), 1);
     expect(PasseDoCapi.temporada(DateTime(2026, 11, 30, 23)), 1);
@@ -26,6 +29,11 @@ void main() {
     expect(PasseDoCapi.fim(2), DateTime(2027, 1, 1));
     expect(PasseDoCapi.diasRestantes(DateTime(2026, 11, 30, 12)), 1);
     expect(PasseDoCapi.diasRestantes(DateTime(2026, 12, 1)), 31);
+    // The last day counts hours.
+    expect(PasseDoCapi.ultimoDia(DateTime(2026, 11, 29, 12)), isFalse);
+    expect(PasseDoCapi.ultimoDia(DateTime(2026, 11, 30, 0, 1)), isTrue);
+    expect(PasseDoCapi.horasRestantes(DateTime(2026, 11, 30, 20)), 4);
+    expect(PasseDoCapi.horasRestantes(DateTime(2026, 11, 30, 23, 50)), 1);
   });
 
   test('every season item is on its month\'s track, once', () {
@@ -81,8 +89,9 @@ void main() {
       final agora = DateTime.now();
       await store.addStars(65);
       await store.addBoughtStars(400);
+      expect(PasseDoCapi.pontosPorNivel, 20);
       expect(PasseDoCapi.pontos(store, agora), 65);
-      expect(PasseDoCapi.nivel(store, agora), 2);
+      expect(PasseDoCapi.nivel(store, agora), 3);
     },
   );
 
@@ -187,5 +196,65 @@ void main() {
       Wardrobe.visiveis(store, Slot.cabeca, janeiro).map((c) => c.id),
       isNot(contains('gorro_natal')),
     );
+  });
+
+  test('a lower pace only opens levels: nothing claimed is lost', () async {
+    // 95 points at the old pace (30 a level): level 3, all of it claimed.
+    Ajustes.atuais = Ajustes.de(const {Ajustes.chavePontosPasse: 30});
+    final store = await _store({'passPoints_1': 95});
+    final agora = novembro;
+    await store.setPassPremium(1);
+    expect(PasseDoCapi.nivel(store, agora), 3);
+    for (var n = 1; n <= 3; n++) {
+      await PasseDoCapi.pegar(store, agora, n, trilhaPremium: false);
+      await PasseDoCapi.pegar(store, agora, n, trilhaPremium: true);
+    }
+    expect(PasseDoCapi.prontas(store, agora), 0);
+    final estrelas = store.stars;
+
+    // The pace goes down to 20: level 4, with only level 4 to claim.
+    Ajustes.atuais = Ajustes.de(const {Ajustes.chavePontosPasse: 20});
+    expect(PasseDoCapi.nivel(store, agora), 4);
+    expect(PasseDoCapi.prontas(store, agora), 2);
+    for (var n = 1; n <= 3; n++) {
+      expect(store.passClaimed(1, n, premium: false), isTrue);
+      expect(store.passClaimed(1, n, premium: true), isTrue);
+      expect(
+        PasseDoCapi.podePegar(store, agora, n, trilhaPremium: false),
+        isFalse,
+      );
+      expect(
+        PasseDoCapi.podePegar(store, agora, n, trilhaPremium: true),
+        isFalse,
+      );
+    }
+    expect(PasseDoCapi.podePegar(store, agora, 4, trilhaPremium: true), isTrue);
+    expect(store.stars, estrelas, reason: 'nothing given or taken');
+  });
+
+  test('what buying now gives at once', () async {
+    final store = await _store({'passPoints_1': 40});
+    // Level 2 in November: 8 stars and 2 shovels, no item on purchase.
+    final nov = PasseDoCapi.naHora(store, novembro);
+    expect((nov.estrelas, nov.ferramentas, nov.itens), (8, 2, 0));
+    expect(nov.texto, '+8 estrelas e 2 ferramentas');
+    // Already claimed rewards (not possible before buying, but safe).
+    await store.markPassClaimed(1, 1, premium: true);
+    expect(PasseDoCapi.naHora(store, novembro).estrelas, 0);
+
+    // December's pass brings the Santa hat at once.
+    final dez = await _store({'passPoints_2': 0});
+    final d = PasseDoCapi.naHora(dez, dezembro);
+    expect((d.estrelas, d.ferramentas, d.itens), (0, 0, 1));
+    expect(d.texto, '1 item');
+    expect(
+      PasseDoCapi.naHora(await _store(), DateTime(2027, 3, 3)).vazio,
+      true,
+    );
+
+    final total = PasseDoCapi.totalPremium(novembro);
+    expect(total.itens, 3);
+    expect(total.estrelas, greaterThan(100));
+    expect(total.texto, contains(' e 3 itens'));
   });
 }

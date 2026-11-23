@@ -3,6 +3,36 @@
 // the Passe do Capi, the Mercado do Capi and the test ads.
 
 const Map<String, String> enLoja = {
+  // --- Passe do Capi: track, countdown and premium perks ---
+  'Trilha premium da temporada: itens exclusivos, mais estrelas e '
+          'ferramentas, +1 dica grátis por partida e estrelas em dobro no '
+          'Desafio diário.':
+      "This season's premium track: exclusive items, more stars and tools, "
+      '+1 free hint per game and double stars in the Daily Challenge.',
+  'na hora, com o premium': 'at once, with premium',
+  'nível {n} premium': 'level {n} premium',
+  'nível {n} grátis': 'level {n} free',
+  'Temporada {tema} · termina em {n} hora': '{tema} season · ends in {n} hour',
+  'Temporada {tema} · termina em {n} horas':
+      '{tema} season · ends in {n} hours',
+  'Temporada {t} · termina em {n} hora': 'Season {t} · ends in {n} hour',
+  'Temporada {t} · termina em {n} horas': 'Season {t} · ends in {n} hours',
+  '{item}, {raridade}: {origem}': '{item}, {raridade}: {origem}',
+  '{raridade} · já é seu': '{raridade} · already yours',
+  'Ver {item} no Capi': 'See {item} on Capi',
+  '+{n} dica grátis em cada partida': '+{n} free hint in every game',
+  '+{n} dicas grátis em cada partida': '+{n} free hints in every game',
+  'Estrelas em dobro no Desafio diário': 'Double stars in the Daily Challenge',
+  'Premium ativo nesta temporada': 'Premium on this season',
+  'Premium na temporada: {premios}.': 'Premium this season: {premios}.',
+  'Comprando agora, você recebe na hora: {premios}.':
+      'Buy now and get at once: {premios}.',
+  '{n} ferramenta': '{n} tool',
+  '{n} ferramentas': '{n} tools',
+  '{n} item': '{n} item',
+  '{n} itens': '{n} items',
+  '{a} e {b}': '{a} and {b}',
+  '{a}, {b} e {c}': '{a}, {b} and {c}',
   // --- Inviting friends ---
   "Presente de quem entra pelo convite de um amigo":
       "A gift for whoever joins through a friend's invite",
@@ -379,10 +409,6 @@ const Map<String, String> enLoja = {
   '3 martelos, 3 pás e 3 trocas de peças.':
       '3 hammers, 3 shovels and 3 piece swaps.',
   'Passe do Capi premium': 'Capi Pass Premium',
-  'Trilha premium da temporada: 1 lendário exclusivo, 2 raros exclusivos, '
-          '140 estrelas e ferramentas.':
-      "This season's premium track: 1 exclusive legendary, 2 exclusive "
-      'rares, 140 stars and tools.',
   'Item lendário do Capi.': 'A legendary Capi item.',
   'Pelagem Arco-Íris': 'Rainbow Fur',
   'Pelagem Galáxia': 'Galaxy Fur',
@@ -446,6 +472,40 @@ const Map<String, String> enLoja = {
 };
 
 const Map<String, String> esLoja = {
+  // --- Passe do Capi: track, countdown and premium perks ---
+  'Trilha premium da temporada: itens exclusivos, mais estrelas e '
+          'ferramentas, +1 dica grátis por partida e estrelas em dobro no '
+          'Desafio diário.':
+      'Ruta premium de la temporada: objetos exclusivos, más estrellas y '
+      'herramientas, +1 pista gratis por partida y estrellas dobles en el '
+      'Desafío diario.',
+  'na hora, com o premium': 'al instante, con el premium',
+  'nível {n} premium': 'nivel {n} premium',
+  'nível {n} grátis': 'nivel {n} gratis',
+  'Temporada {tema} · termina em {n} hora':
+      'Temporada {tema} · termina en {n} hora',
+  'Temporada {tema} · termina em {n} horas':
+      'Temporada {tema} · termina en {n} horas',
+  'Temporada {t} · termina em {n} hora': 'Temporada {t} · termina en {n} hora',
+  'Temporada {t} · termina em {n} horas':
+      'Temporada {t} · termina en {n} horas',
+  '{item}, {raridade}: {origem}': '{item}, {raridade}: {origem}',
+  '{raridade} · já é seu': '{raridade} · ya es tuyo',
+  'Ver {item} no Capi': 'Ver {item} en Capi',
+  '+{n} dica grátis em cada partida': '+{n} pista gratis en cada partida',
+  '+{n} dicas grátis em cada partida': '+{n} pistas gratis en cada partida',
+  'Estrelas em dobro no Desafio diário':
+      'Estrellas dobles en el Desafío diario',
+  'Premium ativo nesta temporada': 'Premium activo esta temporada',
+  'Premium na temporada: {premios}.': 'Premium en la temporada: {premios}.',
+  'Comprando agora, você recebe na hora: {premios}.':
+      'Si compras ahora, recibes al instante: {premios}.',
+  '{n} ferramenta': '{n} herramienta',
+  '{n} ferramentas': '{n} herramientas',
+  '{n} item': '{n} objeto',
+  '{n} itens': '{n} objetos',
+  '{a} e {b}': '{a} y {b}',
+  '{a}, {b} e {c}': '{a}, {b} y {c}',
   // --- Inviting friends ---
   "Presente de quem entra pelo convite de um amigo":
       "Regalo para quien entra con la invitación de un amigo",
@@ -832,10 +892,6 @@ const Map<String, String> esLoja = {
   '3 martelos, 3 pás e 3 trocas de peças.':
       '3 martillos, 3 palas y 3 cambios de piezas.',
   'Passe do Capi premium': 'Pase de Capi premium',
-  'Trilha premium da temporada: 1 lendário exclusivo, 2 raros exclusivos, '
-          '140 estrelas e ferramentas.':
-      'Ruta premium de la temporada: 1 legendario exclusivo, 2 raros '
-      'exclusivos, 140 estrellas y herramientas.',
   'Item lendário do Capi.': 'Objeto legendario de Capi.',
   'Pelagem Arco-Íris': 'Pelaje Arcoíris',
   'Pelagem Galáxia': 'Pelaje Galaxia',

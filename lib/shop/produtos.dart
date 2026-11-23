@@ -52,8 +52,9 @@ enum Produto {
   passeCapi(
     'passe_capi',
     'Passe do Capi premium',
-    'Trilha premium da temporada: 1 lendário exclusivo, 2 raros exclusivos, '
-        '140 estrelas e ferramentas.',
+    'Trilha premium da temporada: itens exclusivos, mais estrelas e '
+        'ferramentas, +1 dica grátis por partida e estrelas em dobro no '
+        'Desafio diário.',
     'R\$ 9,90',
   ),
 

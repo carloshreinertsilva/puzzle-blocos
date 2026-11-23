@@ -154,12 +154,12 @@ class _SettingsState extends State<_Settings> {
                   setState(() {});
                 },
               ),
-              // Daily reminders (Android, opt-in).
-              if (Avisos.suportado)
+              // Daily reminders (Android and iPhone, opt-in).
+              if (Avisos.lembretesSuportados)
                 SwitchListTile(
                   title: Text(tr('Lembretes diários'), style: bodyText(17)),
                   subtitle: Text(
-                    tr('O presente do dia e as missões, às 19h'),
+                    tr('O presente, as sequências e os prêmios, às 19h'),
                     style: bodyText(12, color: Palette.textDim),
                   ),
                   secondary: const Icon(Icons.notifications_rounded),

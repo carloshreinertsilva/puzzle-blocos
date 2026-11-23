@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import '../services/analytics.dart';
 import '../services/feedback.dart';
 import '../services/progress_store.dart';
+import 'roleta.dart';
 
 /// A static block placed in the tower.
 class TowerBlock {
@@ -173,6 +174,34 @@ class TowerController extends ChangeNotifier {
   /// Whether the one "continue" of this climb was used.
   bool continued = false;
 
+  /// How much the top block grew when the climb was continued (1: not at
+  /// all, or not continued yet).
+  double continueFactor = 1;
+
+  /// The bonus wheel's clock: seconds since the climb ended ([Roleta]).
+  double get wheelTime => max(0, time - overAt);
+
+  /// Where the player stopped the wheel ([wheelTime] then), while its
+  /// video runs; null while the needle moves.
+  double? wheelStoppedAt;
+
+  /// The needle's angle and the bonus under it right now.
+  double get wheelAngle => Roleta.angulo(wheelStoppedAt ?? wheelTime);
+  double get wheelFactor => Roleta.multiplicadorEm(wheelStoppedAt ?? wheelTime);
+
+  /// Stops the needle where it is, and returns the bonus it landed on.
+  double stopWheel() {
+    wheelStoppedAt ??= wheelTime;
+    notifyListeners();
+    return wheelFactor;
+  }
+
+  /// The video was not watched to the end: the needle moves again.
+  void releaseWheel() {
+    wheelStoppedAt = null;
+    notifyListeners();
+  }
+
   // What was already counted for this climb (a continued climb ends twice).
   int _starsDue = 0;
   int _floorsReported = 0;
@@ -237,6 +266,8 @@ class TowerController extends ChangeNotifier {
     recordToBeat = store.towerBestHeight;
     recordBeaten = false;
     continued = false;
+    continueFactor = 1;
+    wheelStoppedAt = null;
     _starsDue = 0;
     _floorsReported = 0;
     _gameCounted = false;
@@ -485,22 +516,47 @@ class TowerController extends ChangeNotifier {
   }
 
   /// The one second chance of a climb (after a video): the block that fell
-  /// comes back and the climb goes on from the same floor.
-  bool continueClimb() {
+  /// comes back and the climb goes on from the same floor. The top block
+  /// grows by [factor] (the wheel's bonus), never past the base block.
+  bool continueClimb([double factor = 1]) {
     if (!canContinue) return false;
     continued = true;
     gameOver = false;
     playing = true;
     combo = 0;
     fallingSlices.clear();
+    wheelStoppedAt = null;
+    continueFactor = factor;
+    _growTop(factor);
     height--;
     _spawnNext();
     final (tx, ty, tz) = top;
     fx.add(TowerFx(TowerFxKind.revive, time, x: tx, y: ty, z: tz));
     feedback.revive();
-    Analytics.event('tower_continue', {'height': height});
+    Analytics.event('tower_continue', {
+      'height': height,
+      'multiplicador': factor,
+    });
     notifyListeners();
     return true;
+  }
+
+  /// Grows the top floor around its middle, each side by [factor] and at
+  /// most to the base block's size.
+  void _growTop(double factor) {
+    if (factor <= 1 || blocks.length < 2) return;
+    final b = blocks.last;
+    final dx = Roleta.crescer(b.dx, factor, baseSize);
+    final dy = Roleta.crescer(b.dy, factor, baseSize);
+    blocks[blocks.length - 1] = TowerBlock(
+      x: b.x + (b.dx - dx) / 2,
+      y: b.y + (b.dy - dy) / 2,
+      z: b.z,
+      dx: dx,
+      dy: dy,
+      dz: b.dz,
+      colorIndex: b.colorIndex,
+    );
   }
 
   /// Deterministic debug placement for tests.

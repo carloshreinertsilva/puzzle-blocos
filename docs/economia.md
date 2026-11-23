@@ -10,7 +10,9 @@ Valores combinados com o dono em 02/11/2026, para a versão 1.3.0.
 | Regular (~25 min: 10 fases, missões, baú, desafio) | ~36★ | ~60★ |
 | Ativo (~1 h: 20 fases, Blitz, Torre, obras) | ~77★ | ~105★ |
 
-- Vencer uma fase dá 1 a 3★, a obra 1 a 3★ e o desafio diário 3★.
+- Vencer uma fase dá 1 a 3★, a obra 1 a 3★ e o desafio diário 3★ (6★
+  com o Passe premium da temporada; as 3 extras não contam pontos do passe
+  nem enchem o Cofrinho).
 - Blitz e Torre dão até 6★ por dia cada.
 - As missões dão 1 ou 2★ cada, e o baú diário 5★ mais 1 item.
 - Com vídeo: "dobrar" as estrelas da fase (**até 10 por dia**,
@@ -43,3 +45,11 @@ Muda todo dia à meia-noite, na mesma ordem para todos (sem sorteio,
 
 Os preços valem o que estiver na Play Console; a tabela completa está em
 `docs/loja.md`.
+
+## Passe do Capi
+
+Cada estrela ganha jogando é 1 ponto; um nível a cada 20 pontos
+(`passe_pontos_nivel`), 600 pontos para os 30 níveis. A trilha premium de
+novembro soma 141★, 24 usos de ferramentas e 3 itens; quem tem o premium
+ganha também +1 dica grátis por partida e estrelas em dobro no Desafio
+diário. Detalhes em `docs/passe.md`.

@@ -2,6 +2,12 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enJogo = {
+  // Vídeos recompensados: roleta do bônus na Torre.
+  'Roleta do bônus do vídeo': 'Video bonus wheel',
+  'Pare a seta: o bloco cresce até 3x':
+      'Stop the arrow: the block grows up to 3x',
+  'Bônus: {valor}': 'Bonus: {valor}',
+  'Bônus {valor}: bloco maior!': 'Bonus {valor}: bigger block!',
   // Torre do Capi: a subida até a Lua.
   'Por um fio!': 'By a hair!',
   'Em chamas!': 'On fire!',
@@ -303,6 +309,12 @@ const Map<String, String> enJogo = {
 };
 
 const Map<String, String> esJogo = {
+  // Vídeos recompensados: roleta do bônus na Torre.
+  'Roleta do bônus do vídeo': 'Ruleta del bono del video',
+  'Pare a seta: o bloco cresce até 3x':
+      'Detén la flecha: el bloque crece hasta 3x',
+  'Bônus: {valor}': 'Bono: {valor}',
+  'Bônus {valor}: bloco maior!': 'Bono {valor}: ¡bloque más grande!',
   // Torre do Capi: a subida até a Lua.
   'Por um fio!': '¡Por un pelo!',
   'Em chamas!': '¡En llamas!',

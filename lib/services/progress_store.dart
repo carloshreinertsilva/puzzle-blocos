@@ -708,6 +708,21 @@ class ProgressStore {
   Future<void> setNovidadesPendentes(List<String> v) =>
       _prefs.setStringList('novidadesPendentes', v);
 
+  // --- The menu (core/dica_do_dia.dart, core/menu_estado.dart) ---
+
+  /// The day (dayKey) the shop was last opened: its daily offers are new
+  /// until then.
+  int get lojaVistaDia => _prefs.getInt('lojaVistaDia') ?? 0;
+  Future<void> setLojaVistaDia(int dia) => _prefs.setInt('lojaVistaDia', dia);
+
+  /// Capi's last tip of the day: the day (dayKey) and the TemaDica name.
+  int get dicaDia => _prefs.getInt('dicaDia') ?? 0;
+  String? get dicaTema => _prefs.getString('dicaTema');
+  Future<void> setDica(int dia, String tema) async {
+    await _prefs.setInt('dicaDia', dia);
+    await _prefs.setString('dicaTema', tema);
+  }
+
   /// Lines the player reported: hidden on this phone from then on.
   List<String> get rankingDenunciados =>
       _prefs.getStringList('rkDenunciados') ?? const [];

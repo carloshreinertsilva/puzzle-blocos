@@ -2,7 +2,9 @@ import 'package:flutter/widgets.dart';
 
 import 'progress_store.dart';
 
-const suportado = false;
+const lembretesSuportados = false;
+
+const mensagensSuportadas = false;
 
 Future<void> iniciar(ProgressStore store) async {}
 

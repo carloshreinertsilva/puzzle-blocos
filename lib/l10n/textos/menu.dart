@@ -2,6 +2,47 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enMenu = {
+  // Menu: estados dos cartões, Loja e dica do dia.
+  "Sabia que dá para me vestir? Tem chapéus, óculos e muito mais no Guarda-Roupa!": "Did you know you can dress me up? There are hats, glasses and lots more in the Wardrobe!",
+  "A Loja troca as ofertas todo dia. Vem dar uma espiada!":
+      "The Shop changes its deals every day. Come take a peek!",
+  "No Passe do Capi as estrelas que você ganha jogando viram prêmios!":
+      "In the Capi Pass, the stars you earn playing turn into prizes!",
+  "Topa a Blitz? São 60 segundos para fazer o máximo de pontos!":
+      "Up for Blitz? You get 60 seconds to score as much as you can!",
+  "Veja no Ranking como você está contra os outros jogadores!":
+      "See in the Ranking how you stack up against other players!",
+  "Desafie um amigo no Duelo: as mesmas peças, quem fizer mais vence!":
+      "Challenge a friend in Duel: same pieces, highest score wins!",
+  "Todo dia tem missões novas, com um baú de prêmio no fim!":
+      "There are new missions every day, with a prize chest at the end!",
+  "Já subiu a Torre do Capi? Empilhe os blocos o mais alto que puder!":
+      "Have you climbed Capi's Tower yet? Stack the blocks as high as you can!",
+  "Já jogou o Infinito? Sem metas, só você e o seu recorde.":
+      "Have you played Endless? No goals, just you and your record.",
+  "Com as suas estrelas você constrói a minha vila. Vem ver!":
+      "With your stars you build my village. Come and see!",
+  "Experimente as Obras: um quebra-cabeça que vale até 3 estrelas!":
+      "Try Builds: a puzzle worth up to 3 stars!",
+  "O Desafio diário de hoje está esperando por você!":
+      "Today's Daily Challenge is waiting for you!",
+  "Seu cofrinho encheu!": "Your piggy bank is full!",
+  "Ofertas novas hoje!": "New deals today!",
+  "Duelo: resultado novo!": "Duel: new result!",
+  "Duelo: {n} resultados novos!": "Duel: {n} new results!",
+  "{modo} liberado!": "{modo} unlocked!",
+  "{n} modos novos": "{n} new modes",
+  "{modo}: novidade!": "{modo}: something new!",
+  "{n} modos na fase {fase}": "{n} modes at level {fase}",
+  "{modo} na fase {fase}": "{modo} at level {fase}",
+  "{modo}: {n} andares": "{modo}: {n} floors",
+  "{modo}: recorde {n}": "{modo}: record {n}",
+  "Mais jeitos de jogar": "More ways to play",
+  "{n} resultado novo": "{n} new result",
+  "{n} resultados novos": "{n} new results",
+  "Falta hoje · sequência {n}": "Play today · streak {n}",
+  "Ainda não jogado hoje": "Not played yet today",
+  "HOJE": "TODAY",
   // Novidades e posição no ranking.
   'O que há de novo': "What's new",
   'Ver agora': 'See it now',
@@ -332,9 +373,57 @@ const Map<String, String> enMenu = {
       "When they play, you'll see the result and your scoreboard.",
   'Atalhos no fim da fase': 'Shortcuts when you win',
   'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto falta para o próximo prêmio do Passe e o seu Cofrinho.': 'When you win a level, you see right away the mode you just unlocked, how far the next Pass reward is and your Piggy Bank.',
+  'Roleta na Torre': 'Tower bonus wheel',
+  'Pare a seta antes do vídeo e continue a subida com o bloco até 3x maior!': 'Stop the arrow before the video and keep climbing with a block up to 3x bigger!',
+  'Passe do Capi turbinado': 'Capi Pass, supercharged',
+  'Níveis mais rápidos, e o premium agora dá +1 dica grátis por partida e estrelas em dobro no Desafio diário.': 'Faster levels, and premium now gives +1 free hint per game and double stars in the Daily Challenge.',
+  'Dobre as estrelas em todos os modos': 'Double your stars in every mode',
+  'No Desafio diário, no Infinito, no Blitz e na Torre, um vídeo dobra as estrelas da partida.': 'In the Daily Challenge, Endless, Blitz and the Tower, a video doubles the stars you earned.',
+  'Menu mais esperto': 'A smarter menu',
+  'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Cards show what\'s new, the Shop flags today\'s deals, and Capi gives you one tip a day.',
+  'Lembretes no iPhone': 'Reminders on iPhone',
+  'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi now reminds you on iPhone too: your gift, your streak and the Pass rewards waiting.',
 };
 
 const Map<String, String> esMenu = {
+  // Menu: estados dos cartões, Loja e dica do dia.
+  "Sabia que dá para me vestir? Tem chapéus, óculos e muito mais no Guarda-Roupa!": "¿Sabías que puedes vestirme? ¡Hay sombreros, gafas y mucho más en el Armario!",
+  "A Loja troca as ofertas todo dia. Vem dar uma espiada!":
+      "La Tienda cambia sus ofertas cada día. ¡Ven a echar un vistazo!",
+  "No Passe do Capi as estrelas que você ganha jogando viram prêmios!": "¡En el Pase de Capi las estrellas que ganas jugando se convierten en premios!",
+  "Topa a Blitz? São 60 segundos para fazer o máximo de pontos!": "¿Te animas al Blitz? ¡Tienes 60 segundos para hacer el máximo de puntos!",
+  "Veja no Ranking como você está contra os outros jogadores!":
+      "¡Mira en la Clasificación cómo vas contra los demás jugadores!",
+  "Desafie um amigo no Duelo: as mesmas peças, quem fizer mais vence!":
+      "Reta a un amigo en el Duelo: las mismas piezas, ¡gana quien haga más!",
+  "Todo dia tem missões novas, com um baú de prêmio no fim!":
+      "¡Cada día hay misiones nuevas, con un cofre de premio al final!",
+  "Já subiu a Torre do Capi? Empilhe os blocos o mais alto que puder!": "¿Ya subiste la Torre de Capi? ¡Apila los bloques lo más alto que puedas!",
+  "Já jogou o Infinito? Sem metas, só você e o seu recorde.":
+      "¿Ya jugaste el Infinito? Sin metas, solo tú y tu récord.",
+  "Com as suas estrelas você constrói a minha vila. Vem ver!":
+      "Con tus estrellas construyes mi aldea. ¡Ven a verla!",
+  "Experimente as Obras: um quebra-cabeça que vale até 3 estrelas!":
+      "Prueba las Obras: ¡un rompecabezas que vale hasta 3 estrellas!",
+  "O Desafio diário de hoje está esperando por você!":
+      "¡El Desafío diario de hoy te está esperando!",
+  "Seu cofrinho encheu!": "¡Tu alcancía se llenó!",
+  "Ofertas novas hoje!": "¡Ofertas nuevas hoy!",
+  "Duelo: resultado novo!": "Duelo: ¡resultado nuevo!",
+  "Duelo: {n} resultados novos!": "Duelo: ¡{n} resultados nuevos!",
+  "{modo} liberado!": "¡{modo} desbloqueado!",
+  "{n} modos novos": "{n} modos nuevos",
+  "{modo}: novidade!": "{modo}: ¡novedad!",
+  "{n} modos na fase {fase}": "{n} modos en el nivel {fase}",
+  "{modo} na fase {fase}": "{modo} en el nivel {fase}",
+  "{modo}: {n} andares": "{modo}: {n} pisos",
+  "{modo}: recorde {n}": "{modo}: récord {n}",
+  "Mais jeitos de jogar": "Más formas de jugar",
+  "{n} resultado novo": "{n} resultado nuevo",
+  "{n} resultados novos": "{n} resultados nuevos",
+  "Falta hoje · sequência {n}": "Juega hoy · racha {n}",
+  "Ainda não jogado hoje": "Aún no jugado hoy",
+  "HOJE": "HOY",
   // Novidades e posição no ranking.
   'O que há de novo': 'Novedades',
   'Ver agora': 'Ver ahora',
@@ -673,4 +762,15 @@ const Map<String, String> esMenu = {
       'Cuando juegue, verás el resultado y el marcador entre ustedes.',
   'Atalhos no fim da fase': 'Atajos al terminar el nivel',
   'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto falta para o próximo prêmio do Passe e o seu Cofrinho.': 'Al ganar un nivel, ves al momento el modo que acabas de desbloquear, cuánto falta para el próximo premio del Pase y tu Alcancía.',
+  'Roleta na Torre': 'Ruleta en la Torre',
+  'Pare a seta antes do vídeo e continue a subida com o bloco até 3x maior!': '¡Detén la flecha antes del video y sigue subiendo con un bloque hasta 3x más grande!',
+  'Passe do Capi turbinado': 'Pase de Capi mejorado',
+  'Níveis mais rápidos, e o premium agora dá +1 dica grátis por partida e estrelas em dobro no Desafio diário.': 'Niveles más rápidos, y el premium ahora da +1 pista gratis por partida y estrellas dobles en el Desafío diario.',
+  'Dobre as estrelas em todos os modos':
+      'Duplica tus estrellas en todos los modos',
+  'No Desafio diário, no Infinito, no Blitz e na Torre, um vídeo dobra as estrelas da partida.': 'En el Desafío diario, Infinito, Blitz y la Torre, un video duplica las estrellas de la partida.',
+  'Menu mais esperto': 'Un menú más listo',
+  'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.': 'Las tarjetas muestran las novedades, la Tienda avisa las ofertas del día y Capi da un consejo al día.',
+  'Lembretes no iPhone': 'Recordatorios en iPhone',
+  'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi ahora te avisa también en iPhone: tu regalo, tu racha y los premios del Pase que te esperan.',
 };

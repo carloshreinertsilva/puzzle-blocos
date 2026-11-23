@@ -93,9 +93,34 @@ abstract final class Novidades {
     ],
     8: [
       Novidade(
+        'Roleta na Torre',
+        'Pare a seta antes do vídeo e continue a subida com o bloco até 3x maior!',
+        DestinoNovidade.torre,
+      ),
+      Novidade(
+        'Passe do Capi turbinado',
+        'Níveis mais rápidos, e o premium agora dá +1 dica grátis por partida e estrelas em dobro no Desafio diário.',
+        DestinoNovidade.passe,
+      ),
+      Novidade(
+        'Dobre as estrelas em todos os modos',
+        'No Desafio diário, no Infinito, no Blitz e na Torre, um vídeo dobra as estrelas da partida.',
+        DestinoNovidade.blitz,
+      ),
+      Novidade(
         'Atalhos no fim da fase',
         'Ao vencer uma fase, você já vê o modo que acabou de liberar, quanto '
             'falta para o próximo prêmio do Passe e o seu Cofrinho.',
+        DestinoNovidade.passe,
+      ),
+      Novidade(
+        'Menu mais esperto',
+        'Os cartões mostram o que há de novo, a Loja avisa as ofertas do dia e o Capi dá uma dica por dia.',
+        DestinoNovidade.loja,
+      ),
+      Novidade(
+        'Lembretes no iPhone',
+        'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.',
         DestinoNovidade.passe,
       ),
     ],
