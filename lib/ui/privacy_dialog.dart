@@ -97,11 +97,11 @@ class _PrivacySheet extends StatelessWidget {
                         const SizedBox(height: 14),
                         _section(
                           '1. Compromisso e Jogo Offline',
-                          'O CapiBlocks foi feito para respeitar sua privacidade. O jogo funciona sem internet e não pede cadastro, senha nem dados como nome ou e-mail.',
+                          'O CapiBlocks foi feito para respeitar sua privacidade. O jogo funciona sem internet e não pede cadastro, senha nem e-mail: só um apelido para o ranking, que pode ser inventado.',
                         ),
                         _section(
                           '2. Dados Pessoais',
-                          'Não coletamos, não vendemos e não transmitimos nenhum dado pessoal identificável (como nome, CPF, e-mail ou localização física) para servidores próprios.',
+                          'Não coletamos nem vendemos dados pessoais identificáveis (como nome completo, CPF, e-mail ou localização física). O apelido que você escolhe e as suas pontuações ficam no ranking do jogo (Google Firebase), visíveis aos outros jogadores e ligados a um identificador anônimo.',
                         ),
                         _section(
                           '3. Onde Fica seu Progresso',
