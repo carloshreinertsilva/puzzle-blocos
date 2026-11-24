@@ -26,6 +26,7 @@ import '../game/onboarding.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
+import '../services/avaliacao.dart';
 import '../services/avisos.dart';
 import '../services/convites_servidor.dart';
 import '../services/duelos_servidor.dart';
@@ -93,6 +94,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Let the menu show first, then the gift (and any update) over it.
     _abertura = Timer(const Duration(milliseconds: 600), _abrirFila);
+    if (Avaliacao.noCelular) {
+      _telaTimer = Timer.periodic(Avaliacao.passo, (_) => _contarTela());
+    }
+  }
+
+  Timer? _telaTimer;
+
+  /// Adds up the time with the game on the screen (this menu stays alive
+  /// under the matches) and, with the player here on the menu and nothing
+  /// over it, maybe asks for a rating in the store.
+  Future<void> _contarTela() async {
+    final viva =
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    if (!viva) return;
+    final store = widget.services.store;
+    await store.addTempoDeTela(Avaliacao.passo);
+    if (!mounted || _filaRodando) return;
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    await Avaliacao.talvezPedirNoMenu(store);
   }
 
   /// Whether the windows of the opening are still on their way.
@@ -584,6 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     widget.services.loja.removeListener(_lojaMudou);
     _abertura?.cancel();
+    _telaTimer?.cancel();
     _sugestaoTimer?.cancel();
     _dicaTimer?.cancel();
     super.dispose();
@@ -735,8 +756,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mode == GameMode.duel || mode == GameMode.blitz) {
       unawaited(_resultadosDuelo());
     } else if (atalho == null) {
-      // Back on the menu: maybe Capi's tip of the day.
-      _talvezDica();
+      // Back on the menu: maybe the store's rating window, or else Capi's
+      // tip of the day.
+      final pediu = await Avaliacao.talvezPedirNoMenu(store);
+      if (!mounted) return;
+      if (!pediu) _talvezDica();
     }
     if (atalho != null) await _irParaAtalho(atalho);
   }

@@ -648,6 +648,14 @@ class ProgressStore {
     return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
   }
 
+  /// Time with the game open on the screen, menu included (for the rating
+  /// request, see services/avaliacao.dart).
+  Duration get tempoDeTela =>
+      Duration(seconds: _prefs.getInt('tempoDeTelaSeg') ?? 0);
+
+  Future<void> addTempoDeTela(Duration d) =>
+      _prefs.setInt('tempoDeTelaSeg', tempoDeTela.inSeconds + d.inSeconds);
+
   Future<void> setAvaliacaoPedida(DateTime t) async {
     await _prefs.setInt('avaliacaoPedidaEm', t.millisecondsSinceEpoch);
     await _prefs.setInt('avaliacaoPedidos', avaliacaoPedidos + 1);
