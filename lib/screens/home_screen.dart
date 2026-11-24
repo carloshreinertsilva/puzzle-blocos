@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:async';
 
+import '../core/cartao_convite.dart';
 import '../core/convites.dart';
 import '../core/descoberta.dart';
 import '../core/dica_do_dia.dart';
@@ -50,6 +51,7 @@ import '../ui/typography.dart';
 import '../ui/widgets.dart';
 import '../shop/produtos.dart';
 import 'game_screen.dart';
+import 'cartao_convite_dialog.dart';
 import 'convites_sheet.dart';
 import 'loja_sheet.dart';
 import 'novidades_dialog.dart';
@@ -563,6 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DestinoNovidade.loja => _openLoja(),
     DestinoNovidade.blitz => _openBlitz(),
     DestinoNovidade.duelo => _openDuelo(),
+    DestinoNovidade.convites => _openConvites(),
   };
 
   /// Whether [destino] has news the player has not opened yet.
@@ -718,6 +721,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mode == GameMode.daily) {
       widget.services.store.markSeen(TemaDica.desafioDiario.aberto);
     }
+    // Whether the match ends well (a level won, a new record): the moment
+    // for the invite card.
+    final antes = MarcaPartida.of(widget.services.store);
     final atalho = await Navigator.of(context).push<Atalho>(
       PageRouteBuilder<Atalho>(
         transitionDuration: const Duration(milliseconds: 280),
@@ -756,11 +762,15 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mode == GameMode.duel || mode == GameMode.blitz) {
       unawaited(_resultadosDuelo());
     } else if (atalho == null) {
-      // Back on the menu: maybe the store's rating window, or else Capi's
-      // tip of the day.
+      // Back on the menu, one thing at most: the store's rating window,
+      // or else Capi's invite card (after a good match), or else his tip
+      // of the day.
       final pediu = await Avaliacao.talvezPedirNoMenu(store);
       if (!mounted) return;
-      if (!pediu) _talvezDica();
+      if (!pediu &&
+          !await _talvezCartaoConvite(CartaoConvite.momentoBom(antes, store))) {
+        if (mounted) _talvezDica();
+      }
     }
     if (atalho != null) await _irParaAtalho(atalho);
   }
@@ -1261,6 +1271,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _openConvites() async {
     widget.services.feedback.click();
+    _abriu(DestinoNovidade.convites);
     await showConvites(context, widget.services);
     if (mounted) setState(() {});
   }
@@ -1338,6 +1349,57 @@ class _HomeScreenState extends State<HomeScreen> {
     _sugestaoTimer?.cancel();
     setState(() => _sugestao = null);
     await _openWardrobe();
+  }
+
+  /// Capi asking the player to bring friends (core/cartao_convite.dart),
+  /// back on a quiet menu after a match won or a new record. True when the
+  /// card was shown.
+  Future<bool> _talvezCartaoConvite(bool momentoBom) async {
+    final store = widget.services.store;
+    // Browser tests keep the menu clear, except the one about the card.
+    if (kTestBridge && !store.hasSeen('testar_convite')) return false;
+    bool livre() =>
+        mounted &&
+        !_filaRodando &&
+        _capiLine == null &&
+        _sugestao == null &&
+        _dica == null &&
+        ModalRoute.of(context)?.isCurrent == true;
+    if (!livre()) return false;
+    if (!CartaoConvite.deveMostrar(
+      store,
+      DateTime.now(),
+      momentoBom: momentoBom,
+    )) {
+      return false;
+    }
+    // Let the menu come back first.
+    await Future<void>.delayed(const Duration(milliseconds: 700));
+    if (!livre()) return false;
+    final arte = await CartaoConvite.mostrado(store, DateTime.now());
+    Analytics.event('convite_cartao', {'arte': arte.name});
+    if (!mounted) return true;
+    final convidar = await mostrarCartaoConvite(context, store, arte);
+    if (convidar) {
+      Analytics.event('convite_cartao_convidar', {'arte': arte.name});
+      final copiou = await compartilharConvite(
+        widget.services,
+        dados: {'origem': 'cartao'},
+      );
+      // The code on the server, in case the menu's sync didn't get to it.
+      unawaited(_sincronizarConvites());
+      if (copiou && mounted) {
+        mostrarPremio(
+          context,
+          tr('Convite copiado! Cole no WhatsApp.'),
+          icon: Icons.share_rounded,
+        );
+      }
+    } else {
+      Analytics.event('convite_cartao_recusa', {'arte': arte.name});
+      await CartaoConvite.recusado(store);
+    }
+    return true;
   }
 
   /// Capi's tip of the day (core/dica_do_dia.dart): once a day, back on a

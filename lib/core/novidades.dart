@@ -10,6 +10,7 @@ enum DestinoNovidade {
   loja,
   blitz,
   duelo,
+  convites,
 }
 
 /// One thing that is new in the game, in Portuguese (shown through `tr`).
@@ -127,6 +128,14 @@ abstract final class Novidades {
         'Todo mundo no ranking',
         'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!',
         DestinoNovidade.ranking,
+      ),
+    ],
+    9: [
+      Novidade(
+        'Convide amigos e ganhe prêmios',
+        'Quem entra pelo seu convite ganha estrelas e um presente. E você '
+            'ganha estrelas, a Faixa de Embaixador e a Coroa de Amizade!',
+        DestinoNovidade.convites,
       ),
     ],
   };
