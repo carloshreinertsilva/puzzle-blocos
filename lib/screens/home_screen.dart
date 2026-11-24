@@ -26,6 +26,7 @@ import '../game/onboarding.dart';
 import '../l10n/idioma.dart';
 import '../main.dart';
 import '../services/analytics.dart';
+import '../services/avaliacao.dart';
 import '../services/avisos.dart';
 import '../services/convites_servidor.dart';
 import '../services/duelos_servidor.dart';
@@ -697,6 +698,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mode == GameMode.daily) {
       widget.services.store.markSeen(TemaDica.desafioDiario.aberto);
     }
+    final entrou = DateTime.now();
     final atalho = await Navigator.of(context).push<Atalho>(
       PageRouteBuilder<Atalho>(
         transitionDuration: const Duration(milliseconds: 280),
@@ -711,6 +713,9 @@ class _HomeScreenState extends State<HomeScreen> {
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
+    );
+    await widget.services.store.addTempoDeJogo(
+      DateTime.now().difference(entrou),
     );
     // Level, record and streak may have changed, and modes may unlock.
     unawaited(Placares.enviar(widget.services.store));
@@ -735,8 +740,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mode == GameMode.duel || mode == GameMode.blitz) {
       unawaited(_resultadosDuelo());
     } else if (atalho == null) {
-      // Back on the menu: maybe Capi's tip of the day.
-      _talvezDica();
+      // Back on the menu: maybe the store's rating window, or else Capi's
+      // tip of the day.
+      final pediu = await Avaliacao.talvezPedirNoMenu(store);
+      if (!mounted) return;
+      if (!pediu) _talvezDica();
     }
     if (atalho != null) await _irParaAtalho(atalho);
   }
@@ -770,6 +778,7 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.services.feedback.click();
     widget.services.store.markSeen('opened_tower');
     _abriu(DestinoNovidade.torre);
+    final entrou = DateTime.now();
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 280),
@@ -777,6 +786,9 @@ class _HomeScreenState extends State<HomeScreen> {
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
+    );
+    await widget.services.store.addTempoDeJogo(
+      DateTime.now().difference(entrou),
     );
     unawaited(Placares.enviar(widget.services.store));
     unawaited(RankingSync.enviar(widget.services.store));
