@@ -636,6 +636,25 @@ class ProgressStore {
     ]);
   }
 
+  /// The invite card on the menu (core/cartao_convite.dart): when it was
+  /// last shown, how many times the player said no, and which of its
+  /// pictures was the last one (-1 before the first).
+  DateTime? get conviteCartaoEm {
+    final ms = _prefs.getInt('conviteCartaoEm');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> setConviteCartaoEm(DateTime t) =>
+      _prefs.setInt('conviteCartaoEm', t.millisecondsSinceEpoch);
+
+  int get conviteCartaoRecusas => _prefs.getInt('conviteCartaoRecusas') ?? 0;
+  Future<void> addConviteCartaoRecusa() =>
+      _prefs.setInt('conviteCartaoRecusas', conviteCartaoRecusas + 1);
+
+  int get conviteCartaoArte => _prefs.getInt('conviteCartaoArte') ?? -1;
+  Future<void> setConviteCartaoArte(int i) =>
+      _prefs.setInt('conviteCartaoArte', i);
+
   /// Whether the Play Store's install referrer was read already.
   bool get conviteReferrerLido => _prefs.getBool('conviteReferrer') ?? false;
   Future<void> setConviteReferrerLido() =>

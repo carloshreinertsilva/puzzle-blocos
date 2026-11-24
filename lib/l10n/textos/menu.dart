@@ -385,6 +385,8 @@ const Map<String, String> enMenu = {
   'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi now reminds you on iPhone too: your gift, your streak and the Pass rewards waiting.',
   'Todo mundo no ranking': 'Everyone in the ranking',
   'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!': "You now join the ranking from your very first game. Pick your name and climb this week's list!",
+  'Convide amigos e ganhe prêmios': 'Invite friends and win prizes',
+  'Quem entra pelo seu convite ganha estrelas e um presente. E você ganha estrelas, a Faixa de Embaixador e a Coroa de Amizade!': 'Whoever joins with your invite gets stars and a gift. And you get stars, the Ambassador Sash and the Friendship Crown!',
 };
 
 const Map<String, String> esMenu = {
@@ -777,4 +779,6 @@ const Map<String, String> esMenu = {
   'O Capi agora avisa no iPhone também: seu presente, sua sequência e os prêmios do Passe esperando.': 'Capi ahora te avisa también en iPhone: tu regalo, tu racha y los premios del Pase que te esperan.',
   'Todo mundo no ranking': 'Todos en el ranking',
   'Agora você entra no ranking desde a primeira partida. Escolha o seu nome e suba na lista da semana!': '¡Ahora entras al ranking desde la primera partida. Elige tu nombre y sube en la lista de la semana!',
+  'Convide amigos e ganhe prêmios': 'Invita amigos y gana premios',
+  'Quem entra pelo seu convite ganha estrelas e um presente. E você ganha estrelas, a Faixa de Embaixador e a Coroa de Amizade!': 'Quien entra con tu invitación gana estrellas y un regalo. ¡Y tú ganas estrellas, la Banda de Embajador y la Corona de la Amistad!',
 };

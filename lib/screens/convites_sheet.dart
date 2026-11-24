@@ -33,6 +33,33 @@ Future<void> showConvites(BuildContext context, AppServices services) {
   );
 }
 
+/// Sends this player's invite: the phone's share sheet (WhatsApp & co.),
+/// or the clipboard where there is none. True when it was copied instead,
+/// so the caller can say so. [dados] go with the statistics event.
+Future<bool> compartilharConvite(
+  AppServices services, {
+  Map<String, Object> dados = const {},
+}) async {
+  final codigo = await Convites.meuCodigo(services.store);
+  services.feedback.click();
+  Analytics.event('convite_compartilhado', dados);
+  if (!kIsWeb) {
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: Convites.mensagem(codigo),
+          subject: tr('Vem jogar CapiBlocks comigo!'),
+        ),
+      );
+      return false;
+    } catch (_) {
+      // No share sheet: copy it instead.
+    }
+  }
+  await Clipboard.setData(ClipboardData(text: Convites.mensagem(codigo)));
+  return true;
+}
+
 class _Convites extends StatefulWidget {
   const _Convites({required this.services});
   final AppServices services;
@@ -75,24 +102,8 @@ class _ConvitesState extends State<_Convites> {
   }
 
   Future<void> _compartilhar() async {
-    final codigo = _codigo ?? await Convites.meuCodigo(_store);
-    widget.services.feedback.click();
-    Analytics.event('convite_compartilhado', {});
-    if (!kIsWeb) {
-      try {
-        await SharePlus.instance.share(
-          ShareParams(
-            text: Convites.mensagem(codigo),
-            subject: tr('Vem jogar CapiBlocks comigo!'),
-          ),
-        );
-        return;
-      } catch (_) {
-        // No share sheet: copy it instead.
-      }
-    }
-    await Clipboard.setData(ClipboardData(text: Convites.mensagem(codigo)));
-    if (mounted) {
+    final copiou = await compartilharConvite(widget.services);
+    if (copiou && mounted) {
       setState(() {
         _aviso = tr('Convite copiado! Cole no WhatsApp.');
         _avisoBom = true;

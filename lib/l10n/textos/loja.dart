@@ -88,6 +88,16 @@ const Map<String, String> enLoja = {
   "Corações dourados: 5 amigos na Vila do Capi.":
       "Golden hearts: 5 friends in Capi's Village.",
   "Convide 5 amigos para jogar": "Invite 5 friends to play",
+  // Invite card on the menu (core/cartao_convite.dart).
+  "Convide e ganhe prêmios": "Invite and win prizes",
+  "Um presente para o seu amigo": "A gift for your friend",
+  "Ajude a vila do Capi a crescer": "Help Capi's village grow",
+  "Com seus amigos você ganha {premios}. Cada amigo conta quando chega à fase {fase}.": "With your friends you get {premios}. Each friend counts once they reach level {fase}.",
+  "Quem entra pelo seu convite ganha {n} estrelas e o {item}.":
+      "Whoever joins with your invite gets {n} stars and the {item}.",
+  "Chame um amigo para jogar. Quanto mais gente, mais animada fica a vila!":
+      "Invite a friend to play. The more people, the livelier the village!",
+  "Convidar": "Invite",
   "Seus amigos ganham 50 estrelas!": "Your friends get 50 stars!",
   "Chame um amigo para a Vila!": "Bring a friend to the Village!",
   // --- Summer season (January) ---
@@ -563,6 +573,16 @@ const Map<String, String> esLoja = {
   "Corações dourados: 5 amigos na Vila do Capi.":
       "Corazones dorados: 5 amigos en la Villa de Capi.",
   "Convide 5 amigos para jogar": "Invita a 5 amigos a jugar",
+  // Invite card on the menu (core/cartao_convite.dart).
+  "Convide e ganhe prêmios": "Invita y gana premios",
+  "Um presente para o seu amigo": "Un regalo para tu amigo",
+  "Ajude a vila do Capi a crescer": "Ayuda a crecer la villa de Capi",
+  "Com seus amigos você ganha {premios}. Cada amigo conta quando chega à fase {fase}.": "Con tus amigos ganas {premios}. Cada amigo cuenta cuando llega al nivel {fase}.",
+  "Quem entra pelo seu convite ganha {n} estrelas e o {item}.":
+      "Quien entra con tu invitación gana {n} estrellas y el {item}.",
+  "Chame um amigo para jogar. Quanto mais gente, mais animada fica a vila!":
+      "Invita a un amigo a jugar. ¡Cuanta más gente, más animada la villa!",
+  "Convidar": "Invitar",
   "Seus amigos ganham 50 estrelas!": "¡Tus amigos ganan 50 estrellas!",
   "Chame um amigo para a Vila!": "¡Trae un amigo a la Villa!",
   // --- Summer season (January) ---

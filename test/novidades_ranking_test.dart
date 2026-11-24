@@ -29,37 +29,45 @@ void main() {
       expect(todas.first, Novidades.edicoes[Novidades.atual]!.first);
     });
 
-    test(
-      'quem viu a edição 1 recebe as três primeiras da edição mais nova',
-      () {
-        final novas = Novidades.pendentes(1);
-        expect(novas.map((n) => n.destino), [
-          DestinoNovidade.torre,
-          DestinoNovidade.passe,
-          DestinoNovidade.blitz,
-        ]);
-        expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
-        expect(
-          iconeDaNovidade(DestinoNovidade.duelo),
-          Icons.sports_kabaddi_rounded,
-        );
-      },
-    );
+    test('quem viu a edição 1 recebe as três mais novas, da edição mais nova '
+        'para trás', () {
+      final novas = Novidades.pendentes(1);
+      expect(novas.map((n) => n.destino), [
+        DestinoNovidade.convites,
+        DestinoNovidade.torre,
+        DestinoNovidade.passe,
+      ]);
+      expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
+      expect(
+        iconeDaNovidade(DestinoNovidade.duelo),
+        Icons.sports_kabaddi_rounded,
+      );
+    });
 
     test('quem viu a edição 2 recebe as três mais novas', () {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
+        'Convide amigos e ganhe prêmios',
         'Roleta na Torre',
         'Passe do Capi turbinado',
-        'Dobre as estrelas em todos os modos',
       ]);
     });
 
-    test('quem viu a edição 7 recebe só as três primeiras da edição 8', () {
+    test('quem viu a edição 8 recebe só a da edição 9', () {
+      expect(Novidades.pendentes(8).map((n) => n.destino), [
+        DestinoNovidade.convites,
+      ]);
+      expect(
+        iconeDaNovidade(DestinoNovidade.convites),
+        Icons.group_add_rounded,
+      );
+    });
+
+    test('quem viu a edição 7 recebe a da 9 e as primeiras da 8', () {
       expect(Novidades.edicoes[8]!.length, greaterThan(Novidades.porVez));
       expect(Novidades.pendentes(7).map((n) => n.titulo), [
+        'Convide amigos e ganhe prêmios',
         'Roleta na Torre',
         'Passe do Capi turbinado',
-        'Dobre as estrelas em todos os modos',
       ]);
     });
 

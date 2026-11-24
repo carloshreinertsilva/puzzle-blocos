@@ -62,6 +62,9 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `lembrete_aberto` | abriu o jogo tocando num lembrete | tipo (presente_sequencia, desafio_sequencia, passe_pronto, passe_perto, vila, presente, generico), dias de ausência |
 | `dica_capi` | o Capi deu a dica do dia no menu (uma por dia, sobre algo liberado e nunca usado) | tema |
 | `dica_capi_ver` | tocou em "Ver agora" na dica do dia | tema |
+| `convite_cartao` | o Capi mostrou o cartão chamando amigos, na volta ao menu depois de uma vitória ou de um recorde (fase 5 em diante, no máximo a cada 3 dias) | arte (`premios`, `presente`, `vila`) |
+| `convite_cartao_convidar` | tocou em "Convidar" no cartão (abre o compartilhamento, que conta também `convite_compartilhado` com origem `cartao`) | arte |
+| `convite_cartao_recusa` | fechou o cartão sem convidar ("Agora não" ou tocando fora); depois de 3, o cartão não volta | arte |
 | `menu_abertura` | o menu abriu janelas sozinho (no máximo 2 por abertura) | dialogos (quantas abriram) |
 | `ranking_nome_pergunta` | o menu pediu o nome do ranking (obrigatório, enquanto o jogador não tem um) | |
 | `ranking_nome` | o jogador salvou o nome do ranking | origem (`menu`, `ranking`) |
