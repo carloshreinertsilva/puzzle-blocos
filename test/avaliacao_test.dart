@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<ProgressStore> _store({int vencidas = 20, int segundos = 0}) async {
   SharedPreferences.setMockInitialValues({
     'levelsWon': vencidas,
-    'tempoDeJogoSeg': segundos,
+    'tempoDeTelaSeg': segundos,
   });
   return ProgressStore.load();
 }
@@ -22,17 +22,17 @@ void main() {
     expect(Avaliacao.devePedir(s, Avaliacao.faseMinima, agora), isTrue);
   });
 
-  test('at most every 60 days, and 3 times ever', () async {
+  test('at most every 4 days, and 3 times ever', () async {
     final s = await _store();
     await s.setAvaliacaoPedida(agora);
     expect(
-      Avaliacao.devePedir(s, 20, agora.add(const Duration(days: 59))),
+      Avaliacao.devePedir(s, 20, agora.add(const Duration(days: 3))),
       isFalse,
     );
-    var t = agora.add(const Duration(days: 60));
+    var t = agora.add(Avaliacao.intervalo);
     expect(Avaliacao.devePedir(s, 20, t), isTrue);
     await s.setAvaliacaoPedida(t);
-    t = t.add(const Duration(days: 60));
+    t = t.add(Avaliacao.intervalo);
     await s.setAvaliacaoPedida(t);
     expect(s.avaliacaoPedidos, 3);
     expect(
@@ -51,7 +51,7 @@ void main() {
     );
   });
 
-  test('on the menu: five minutes played and three levels won', () async {
+  test('on the menu: five minutes of screen and three levels won', () async {
     final pouco = await _store(vencidas: 3, segundos: 299);
     expect(Avaliacao.devePedirNoMenu(pouco, agora), isFalse);
     final poucas = await _store(vencidas: 2, segundos: 900);
@@ -64,10 +64,10 @@ void main() {
     expect(Avaliacao.devePedirNoMenu(s, amanha), isFalse);
   });
 
-  test('time in the matches adds up, half an hour at most per stay', () async {
+  test('time with the game open adds up', () async {
     final s = await _store();
-    await s.addTempoDeJogo(const Duration(minutes: 2));
-    await s.addTempoDeJogo(const Duration(hours: 5));
-    expect(s.tempoDeJogo, const Duration(minutes: 32));
+    await s.addTempoDeTela(Avaliacao.passo);
+    await s.addTempoDeTela(Avaliacao.passo);
+    expect(s.tempoDeTela, Avaliacao.passo * 2);
   });
 }

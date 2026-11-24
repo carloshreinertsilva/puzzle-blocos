@@ -94,6 +94,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     // Let the menu show first, then the gift (and any update) over it.
     _abertura = Timer(const Duration(milliseconds: 600), _abrirFila);
+    if (Avaliacao.noCelular) {
+      _telaTimer = Timer.periodic(Avaliacao.passo, (_) => _contarTela());
+    }
+  }
+
+  Timer? _telaTimer;
+
+  /// Adds up the time with the game on the screen (this menu stays alive
+  /// under the matches) and, with the player here on the menu and nothing
+  /// over it, maybe asks for a rating in the store.
+  Future<void> _contarTela() async {
+    final viva =
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    if (!viva) return;
+    final store = widget.services.store;
+    await store.addTempoDeTela(Avaliacao.passo);
+    if (!mounted || _filaRodando) return;
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    await Avaliacao.talvezPedirNoMenu(store);
   }
 
   /// Whether the windows of the opening are still on their way.
@@ -585,6 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     widget.services.loja.removeListener(_lojaMudou);
     _abertura?.cancel();
+    _telaTimer?.cancel();
     _sugestaoTimer?.cancel();
     _dicaTimer?.cancel();
     super.dispose();
@@ -698,7 +718,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mode == GameMode.daily) {
       widget.services.store.markSeen(TemaDica.desafioDiario.aberto);
     }
-    final entrou = DateTime.now();
     final atalho = await Navigator.of(context).push<Atalho>(
       PageRouteBuilder<Atalho>(
         transitionDuration: const Duration(milliseconds: 280),
@@ -713,9 +732,6 @@ class _HomeScreenState extends State<HomeScreen> {
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
-    );
-    await widget.services.store.addTempoDeJogo(
-      DateTime.now().difference(entrou),
     );
     // Level, record and streak may have changed, and modes may unlock.
     unawaited(Placares.enviar(widget.services.store));
@@ -778,7 +794,6 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.services.feedback.click();
     widget.services.store.markSeen('opened_tower');
     _abriu(DestinoNovidade.torre);
-    final entrou = DateTime.now();
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 280),
@@ -786,9 +801,6 @@ class _HomeScreenState extends State<HomeScreen> {
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
-    );
-    await widget.services.store.addTempoDeJogo(
-      DateTime.now().difference(entrou),
     );
     unawaited(Placares.enviar(widget.services.store));
     unawaited(RankingSync.enviar(widget.services.store));

@@ -5,21 +5,24 @@ import 'analytics.dart';
 import 'progress_store.dart';
 
 /// Asking for a rating in the store, with the store's own window (the
-/// player stays in the game). Only at a happy moment (after a level won, or
-/// back on the menu once the player has really played) and rarely: the stores
-/// also limit how often the window really shows.
+/// player stays in the game). After a level won, or on the menu once the
+/// player has spent some time in the game. The stores also limit how often
+/// the window really shows.
 abstract final class Avaliacao {
   /// Not before the player has won this many levels.
   static const faseMinima = 6;
 
   /// At least this long between two asks, and at most [maxPedidos] ever.
-  static const intervalo = Duration(days: 60);
+  static const intervalo = Duration(days: 4);
   static const maxPedidos = 3;
 
-  /// Back on the menu, sooner: this much time in the matches and this many
-  /// levels won are enough.
+  /// On the menu, sooner: this much time with the game open (menu
+  /// included) and this many levels won are enough.
   static const tempoNoMenu = Duration(minutes: 5);
   static const fasesNoMenu = 3;
+
+  /// How often the menu adds up the time with the game open.
+  static const passo = Duration(seconds: 30);
 
   /// Not right after a full-screen ad.
   static const depoisDeAnuncio = Duration(minutes: 3);
@@ -30,10 +33,10 @@ abstract final class Avaliacao {
     return _livre(store, agora);
   }
 
-  /// Whether to ask now, as the player comes back to the menu from a match.
+  /// Whether to ask now, with the player on the menu.
   static bool devePedirNoMenu(ProgressStore store, DateTime agora) {
     if (store.levelsWon < fasesNoMenu) return false;
-    if (store.tempoDeJogo < tempoNoMenu) return false;
+    if (store.tempoDeTela < tempoNoMenu) return false;
     return _livre(store, agora);
   }
 
@@ -49,6 +52,9 @@ abstract final class Avaliacao {
     return true;
   }
 
+  /// Only the phones have the stores' window.
+  static bool get noCelular => _celular;
+
   static bool get _celular =>
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
@@ -61,7 +67,7 @@ abstract final class Avaliacao {
     await _pedir(store, agora, {'level': fase, 'origem': 'fase'});
   }
 
-  /// Back on the menu from a match: asks, when [devePedirNoMenu] says so.
+  /// With the player on the menu: asks, when [devePedirNoMenu] says so.
   /// True when the window was asked for.
   static Future<bool> talvezPedirNoMenu(ProgressStore store) async {
     final agora = DateTime.now();

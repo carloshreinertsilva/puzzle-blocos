@@ -648,17 +648,13 @@ class ProgressStore {
     return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
   }
 
-  /// Time spent inside the matches, added up as the player comes back to
-  /// the menu (for the rating request, see services/avaliacao.dart).
-  Duration get tempoDeJogo =>
-      Duration(seconds: _prefs.getInt('tempoDeJogoSeg') ?? 0);
+  /// Time with the game open on the screen, menu included (for the rating
+  /// request, see services/avaliacao.dart).
+  Duration get tempoDeTela =>
+      Duration(seconds: _prefs.getInt('tempoDeTelaSeg') ?? 0);
 
-  /// One stay counts for at most half an hour: the game may have been left
-  /// open in the background.
-  Future<void> addTempoDeJogo(Duration d) {
-    final s = d.inSeconds.clamp(0, 30 * 60);
-    return _prefs.setInt('tempoDeJogoSeg', tempoDeJogo.inSeconds + s);
-  }
+  Future<void> addTempoDeTela(Duration d) =>
+      _prefs.setInt('tempoDeTelaSeg', tempoDeTela.inSeconds + d.inSeconds);
 
   Future<void> setAvaliacaoPedida(DateTime t) async {
     await _prefs.setInt('avaliacaoPedidaEm', t.millisecondsSinceEpoch);
