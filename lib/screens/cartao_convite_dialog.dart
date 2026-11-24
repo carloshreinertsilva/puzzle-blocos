@@ -7,6 +7,7 @@ import '../core/convites.dart';
 import '../core/wardrobe.dart';
 import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
+import '../ui/block_painter.dart';
 import '../ui/capi.dart';
 import '../ui/palette.dart';
 import '../ui/typography.dart';
@@ -44,10 +45,12 @@ class CartaoConviteDialog extends StatelessWidget {
 
   String get _texto => switch (arte) {
     ArteConvite.premios => tr(
-      'Com seus amigos você ganha {premios}. Cada amigo conta quando chega '
-      'à fase {fase}.',
+      'Ganhe {primeiro} já com o primeiro amigo e a {ultimo} com {n}. Conta '
+      'quem chegar à fase {fase}.',
       {
-        'premios': _lista([for (final m in Convites.metas) m.texto]),
+        'primeiro': Convites.metas.first.texto,
+        'ultimo': Convites.metas.last.texto,
+        'n': Convites.metas.last.amigos,
         'fase': Convites.faseQueConta,
       },
     ),
@@ -62,17 +65,6 @@ class CartaoConviteDialog extends StatelessWidget {
       'Chame um amigo para jogar. Quanto mais gente, mais animada fica a '
       'vila!',
     ),
-  };
-
-  static String _lista(List<String> itens) => switch (itens.length) {
-    0 => '',
-    1 => itens.first,
-    2 => tr('{a} e {b}', {'a': itens[0], 'b': itens[1]}),
-    _ => tr('{a}, {b} e {c}', {
-      'a': itens.sublist(0, itens.length - 2).join(', '),
-      'b': itens[itens.length - 2],
-      'c': itens.last,
-    }),
   };
 
   @override
@@ -260,14 +252,7 @@ class _Degrau extends StatelessWidget {
                       ),
                     ],
                   )
-                : CustomPaint(
-                    painter: CapiPainter(
-                      mood: CapiMood.happy,
-                      t: 0,
-                      hat: const CapiLook().wearing(item).hat,
-                      look: const CapiLook().wearing(item),
-                    ),
-                  ),
+                : CustomPaint(painter: _ItemSozinho(item.id)),
           ),
           const SizedBox(width: 4),
           Expanded(
@@ -332,11 +317,11 @@ class _ArtePresente extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 6),
-              const Icon(
-                Icons.card_giftcard_rounded,
-                color: Colors.white,
-                size: 48,
+              const SizedBox(height: 4),
+              const SizedBox(
+                width: 62,
+                height: 62,
+                child: CustomPaint(painter: _Presente()),
               ),
             ],
           ),
@@ -353,8 +338,8 @@ class _ArtePresente extends StatelessWidget {
   }
 }
 
-/// 3. Help the village grow: Capi carrying a block among new friends, with
-/// hills and little houses behind, on a blue sky.
+/// 3. Help the village grow: Capi carrying a game block over his head among
+/// new friends, with hills and little houses behind, on a blue sky.
 class _ArteVila extends StatelessWidget {
   const _ArteVila(this.pelagem);
   final String pelagem;
@@ -385,14 +370,23 @@ class _ArteVila extends StatelessWidget {
         ),
         Align(
           alignment: Alignment.bottomCenter,
-          child: Capi(
-            size: 132,
-            mood: CapiMood.carry,
-            look: CapiLook(pelagem: pelagem),
+          child: SizedBox.square(
+            dimension: 132,
+            child: Stack(
+              children: [
+                // Behind him: his hands come in front of it.
+                const Positioned.fill(child: CustomPaint(painter: _Bloco())),
+                Capi(
+                  size: 132,
+                  mood: CapiMood.carry,
+                  look: CapiLook(pelagem: pelagem),
+                ),
+              ],
+            ),
           ),
         ),
         const Align(
-          alignment: Alignment(0.42, -0.78),
+          alignment: Alignment(0.3, -0.84),
           child: Icon(
             Icons.favorite_rounded,
             color: Color(0xFFFF6B8B),
@@ -484,7 +478,7 @@ class _Colinas extends CustomPainter {
     final w = size.width;
     final h = size.height;
     canvas.drawCircle(
-      Offset(w * 0.86, h * 0.2),
+      Offset(w * 0.9, h * 0.17),
       16,
       Paint()..color = const Color(0xFFFFE066),
     );
@@ -503,15 +497,255 @@ class _Colinas extends CustomPainter {
       );
     }
 
-    casa(w * 0.18, h * 0.62, 20, const Color(0xFFFFF4E0));
-    casa(w * 0.70, h * 0.6, 24, const Color(0xFFFFE3B3));
     final fundo = Paint()..color = const Color(0xFF8CD867);
-    canvas.drawOval(Rect.fromLTWH(-w * 0.2, h * 0.55, w * 0.8, h * 0.7), fundo);
-    canvas.drawOval(Rect.fromLTWH(w * 0.4, h * 0.52, w * 0.85, h * 0.7), fundo);
+    canvas.drawOval(Rect.fromLTWH(-w * 0.2, h * 0.5, w * 0.8, h * 0.7), fundo);
+    canvas.drawOval(Rect.fromLTWH(w * 0.4, h * 0.47, w * 0.85, h * 0.7), fundo);
+    // On the hills, clear of the three Capis in front.
+    casa(w * 0.05, h * 0.52, 20, const Color(0xFFFFF4E0));
+    casa(w * 0.72, h * 0.47, 22, const Color(0xFFFFE3B3));
     canvas.drawRect(
       Rect.fromLTWH(0, h * 0.82, w, h * 0.18),
       Paint()..color = const Color(0xFF5DBB4A),
     );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// A reward item by itself, drawn like Capi wears it (the same shapes as in
+/// ui/capi.dart): the ambassador's sash or the friendship crown.
+class _ItemSozinho extends CustomPainter {
+  const _ItemSozinho(this.id);
+  final String id;
+
+  static final _linha = Paint()
+    ..color = const Color(0xAA4A2A12)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.2
+    ..strokeJoin = StrokeJoin.round;
+
+  static Paint _degrade(Rect r, List<Color> cores) => Paint()
+    ..shader = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: cores,
+    ).createShader(r);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // A 40x40 grid.
+    canvas.scale(size.width / 40);
+    if (id == 'faixa_embaixador') {
+      final faixa = Path()
+        ..moveTo(4, 4)
+        ..lineTo(13, 4)
+        ..lineTo(36, 30)
+        ..lineTo(36, 38)
+        ..lineTo(30, 38)
+        ..lineTo(4, 11)
+        ..close();
+      const r = Rect.fromLTWH(4, 4, 32, 34);
+      canvas.drawPath(
+        faixa,
+        _degrade(r, const [Color(0xFF74C0FC), Color(0xFF1864AB)]),
+      );
+      canvas.drawPath(faixa, _linha);
+      final selo = Rect.fromCircle(center: const Offset(19, 20), radius: 8);
+      canvas.drawOval(
+        selo,
+        _degrade(selo, const [Color(0xFFFFF3BF), Color(0xFFE0A100)]),
+      );
+      canvas.drawOval(selo, _linha);
+      canvas.drawPath(
+        _estrela(const Offset(19, 20), 5.4),
+        Paint()..color = Colors.white,
+      );
+    } else {
+      // The friendship crown: a gold band with hearts for points.
+      final banda = RRect.fromRectAndRadius(
+        const Rect.fromLTWH(3, 22, 34, 11),
+        const Radius.circular(3),
+      );
+      canvas.drawRRect(
+        banda,
+        _degrade(banda.outerRect, const [Color(0xFFFFF3BF), Color(0xFFE0A100)]),
+      );
+      canvas.drawRRect(banda, _linha);
+      for (final (x, y, r) in [
+        (9.0, 17.0, 5.0),
+        (20.0, 12.0, 7.0),
+        (31.0, 17.0, 5.0),
+      ]) {
+        final c = _coracao(Offset(x, y), r);
+        canvas.drawPath(c, Paint()..color = const Color(0xFFFF6B8A));
+        canvas.drawPath(
+          c,
+          Paint()
+            ..color = const Color(0xFFB0124A)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1,
+        );
+      }
+      for (final x in [11.0, 20.0, 29.0]) {
+        canvas.drawCircle(Offset(x, 27.5), 2, Paint()..color = Colors.white);
+      }
+    }
+  }
+
+  static Path _estrela(Offset c, double r) {
+    final p = Path();
+    for (var i = 0; i < 10; i++) {
+      final a = -pi / 2 + i * pi / 5;
+      final d = i.isEven ? r : r * 0.45;
+      final pt = c + Offset(cos(a) * d, sin(a) * d);
+      if (i == 0) {
+        p.moveTo(pt.dx, pt.dy);
+      } else {
+        p.lineTo(pt.dx, pt.dy);
+      }
+    }
+    return p..close();
+  }
+
+  static Path _coracao(Offset c, double r) => Path()
+    ..moveTo(c.dx, c.dy + r * 0.9)
+    ..cubicTo(
+      c.dx - r * 1.4,
+      c.dy - r * 0.1,
+      c.dx - r * 0.7,
+      c.dy - r * 1.1,
+      c.dx,
+      c.dy - r * 0.35,
+    )
+    ..cubicTo(
+      c.dx + r * 0.7,
+      c.dy - r * 1.1,
+      c.dx + r * 1.4,
+      c.dy - r * 0.1,
+      c.dx,
+      c.dy + r * 0.9,
+    )
+    ..close();
+
+  @override
+  bool shouldRepaint(covariant _ItemSozinho oldDelegate) =>
+      oldDelegate.id != id;
+}
+
+/// A wrapped gift: box, lid and a gold ribbon with a bow, a soft shadow
+/// underneath and a little shine, to sit with the painted Capis.
+class _Presente extends CustomPainter {
+  const _Presente();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // A 60x60 grid.
+    canvas.scale(size.width / 60);
+    canvas.drawOval(
+      const Rect.fromLTWH(8, 52, 44, 7),
+      Paint()
+        ..color = const Color(0x55300A40)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+    final caixa = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(10, 27, 40, 28),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(
+      caixa,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFF6B8A), Color(0xFFD6336C)],
+        ).createShader(caixa.outerRect),
+    );
+    final tampa = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(7, 19, 46, 11),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(
+      tampa,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFF8FAB), Color(0xFFE64980)],
+        ).createShader(tampa.outerRect),
+    );
+    final fita = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFE066), Color(0xFFF59F00)],
+      ).createShader(const Rect.fromLTWH(12, 6, 36, 49));
+    canvas.drawRect(const Rect.fromLTWH(26, 19, 8, 36), fita);
+    // The bow: two loops and a knot.
+    for (final lado in [-1.0, 1.0]) {
+      final laco = Path()
+        ..moveTo(30, 19)
+        ..cubicTo(30 + lado * 4, 6, 30 + lado * 18, 8, 30 + lado * 13, 17)
+        ..cubicTo(30 + lado * 10, 20, 30 + lado * 4, 20, 30, 19)
+        ..close();
+      canvas.drawPath(laco, fita);
+      canvas.drawPath(
+        laco,
+        Paint()
+          ..color = const Color(0xFFC77700)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+    }
+    canvas.drawCircle(
+      const Offset(30, 19),
+      3.6,
+      Paint()..color = const Color(0xFFF59F00),
+    );
+    final contorno = Paint()
+      ..color = const Color(0xAA6B0F2E)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    canvas.drawRRect(caixa, contorno);
+    canvas.drawRRect(tampa, contorno);
+    // Shine on the lid and the box.
+    final brilho = Paint()..color = const Color(0x88FFFFFF);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(10, 21, 12, 3),
+        const Radius.circular(1.5),
+      ),
+      brilho,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(13, 31, 3, 14),
+        const Radius.circular(1.5),
+      ),
+      brilho,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// The block Capi carries over his head in the "carrega" pose: four game
+/// cells resting on his raised hands (on CapiPainter's 100x100 grid the
+/// painted hands are at about x 22 and 78, from y 24 down to 36).
+class _Bloco extends CustomPainter {
+  const _Bloco();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 100);
+    // Four cells, wider than the helmet, so both ends show past it.
+    const lado = 21.0;
+    for (var i = 0; i < 4; i++) {
+      BlockPainter.block(
+        canvas,
+        Rect.fromLTWH(8 + i * lado, 5, lado, lado),
+        Palette.blocks[1 + i],
+      );
+    }
   }
 
   @override

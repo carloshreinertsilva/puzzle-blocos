@@ -92,7 +92,7 @@ const Map<String, String> enLoja = {
   "Convide e ganhe prêmios": "Invite and win prizes",
   "Um presente para o seu amigo": "A gift for your friend",
   "Ajude a vila do Capi a crescer": "Help Capi's village grow",
-  "Com seus amigos você ganha {premios}. Cada amigo conta quando chega à fase {fase}.": "With your friends you get {premios}. Each friend counts once they reach level {fase}.",
+  "Ganhe {primeiro} já com o primeiro amigo e a {ultimo} com {n}. Conta quem chegar à fase {fase}.": "Get {primeiro} with your first friend and the {ultimo} with {n}. Friends count once they reach level {fase}.",
   "Quem entra pelo seu convite ganha {n} estrelas e o {item}.":
       "Whoever joins with your invite gets {n} stars and the {item}.",
   "Chame um amigo para jogar. Quanto mais gente, mais animada fica a vila!":
@@ -577,7 +577,7 @@ const Map<String, String> esLoja = {
   "Convide e ganhe prêmios": "Invita y gana premios",
   "Um presente para o seu amigo": "Un regalo para tu amigo",
   "Ajude a vila do Capi a crescer": "Ayuda a crecer la villa de Capi",
-  "Com seus amigos você ganha {premios}. Cada amigo conta quando chega à fase {fase}.": "Con tus amigos ganas {premios}. Cada amigo cuenta cuando llega al nivel {fase}.",
+  "Ganhe {primeiro} já com o primeiro amigo e a {ultimo} com {n}. Conta quem chegar à fase {fase}.": "Gana {primeiro} con tu primer amigo y la {ultimo} con {n}. Cuenta quien llegue al nivel {fase}.",
   "Quem entra pelo seu convite ganha {n} estrelas e o {item}.":
       "Quien entra con tu invitación gana {n} estrellas y el {item}.",
   "Chame um amigo para jogar. Quanto mais gente, mais animada fica a vila!":
