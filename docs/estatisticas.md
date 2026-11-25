@@ -56,6 +56,12 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `tower_wheel` | parou a seta da roleta do bônus (tocou em "Continuar" na Torre), antes do vídeo | multiplicador (1, 1.2, 1.5 ou 3), altura |
 | `tower_continue` | continuou a Torre depois do vídeo | altura, multiplicador que aumentou o bloco de cima |
 | `screen_open` | abriu vila, torre, obras, guarda-roupa ou missões | tela |
+| `abertura` | o jogo apareceu na tela, depois da tela de abertura | ms (desde o início do app), primeira (1 se nunca jogou) |
+| `tutorial_begin` | começou o tutorial com o Capi (primeira abertura) | — |
+| `tutorial_passo` | acertou um passo do tutorial | passo (1, 2, …) |
+| `tutorial_fim` | terminou todos os passos do tutorial | segundos |
+| `tutorial_pulado` | tocou em "Pular" no tutorial | passo em que estava |
+| `primeira_peca` | pôs a primeira peça no tabuleiro, na vida do jogador | modo, segundos desde a primeira abertura |
 | `tutorial_complete` | terminou as fases de introdução | — |
 | `lembretes_pergunta` | respondeu à pergunta dos lembretes (depois do primeiro presente) | aceitou (1/0) |
 | `lembretes` | ligou ou desligou os lembretes | ligado (1/0), permissão do celular (1/0) |

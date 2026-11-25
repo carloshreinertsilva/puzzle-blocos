@@ -34,7 +34,11 @@ import 'ui/capi_arte.dart';
 import 'ui/palette.dart';
 import 'ui/typography.dart';
 
+/// From the app's start to the game on the screen (statistics).
+final _relogio = Stopwatch();
+
 Future<void> main() async {
+  _relogio.start();
   WidgetsFlutterBinding.ensureInitialized();
   // The phone's language until the saved choice is read (the opening
   // screen shows before that).
@@ -236,6 +240,10 @@ class _InicioState extends State<Inicio> with WidgetsBindingObserver {
       // The bar runs to the end while the game fades in.
       _pronto.value = true;
       setState(() => _services = services);
+      Analytics.event('abertura', {
+        'ms': _relogio.elapsedMilliseconds,
+        'primeira': services.store.gamesPlayed == 0 ? 1 : 0,
+      });
       _abrirLinkPendente();
       _depoisDeAbrir(services);
     } catch (e, pilha) {
