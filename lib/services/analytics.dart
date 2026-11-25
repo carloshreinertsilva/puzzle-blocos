@@ -16,12 +16,33 @@ abstract interface class AnalyticsBackend {
 abstract final class Analytics {
   static AnalyticsBackend? _backend;
 
-  /// Firebase on Android when configured, otherwise nothing.
-  static Future<void> start({required bool enabled}) async {
-    final backend = await impl.createFirebaseBackend();
-    if (backend != null) use(backend);
-    await _backend?.setEnabled(enabled);
+  /// Events from before [start] is done: the first screen (the tutorial,
+  /// on a first open) shows while Firebase is still starting.
+  static List<(String, Map<String, Object>)>? _espera = [];
+  static const maxEspera = 50;
+
+  /// Firebase on Android when configured, otherwise nothing. The events
+  /// that waited go out once statistics are on (and are dropped when the
+  /// player turned them off).
+  static Future<void> start({
+    required bool enabled,
+    Future<AnalyticsBackend?> Function() criar = impl.createFirebaseBackend,
+  }) async {
+    final backend = await criar();
+    if (backend != null) {
+      await backend.setEnabled(enabled);
+      use(backend);
+    }
+    final fila = _espera ?? const [];
+    _espera = null;
+    if (!enabled) return;
+    for (final (nome, dados) in fila) {
+      _backend?.log(nome, dados);
+    }
   }
+
+  /// Back to the first open (for tests).
+  static void reiniciarEspera() => _espera = [];
 
   static void use(AnalyticsBackend? backend) => _backend = backend;
 
@@ -31,6 +52,13 @@ abstract final class Analytics {
 
   static Future<void> setEnabled(bool on) async => _backend?.setEnabled(on);
 
-  static void event(String name, [Map<String, Object> params = const {}]) =>
-      _backend?.log(name, params);
+  static void event(String name, [Map<String, Object> params = const {}]) {
+    final backend = _backend;
+    if (backend != null) {
+      backend.log(name, params);
+      return;
+    }
+    final fila = _espera;
+    if (fila != null && fila.length < maxEspera) fila.add((name, params));
+  }
 }

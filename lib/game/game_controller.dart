@@ -362,8 +362,25 @@ class GameController extends ChangeNotifier {
     hintOffer = false;
     hintNudge = false;
     _idleHint = null;
-    if (tutorial) _loadTutorialStep(0);
+    if (tutorial) {
+      Analytics.event('tutorial_begin');
+      _loadTutorialStep(0);
+    }
     noteActivity();
+  }
+
+  /// The first piece the player ever puts on the board: how long it took
+  /// from the first open.
+  void _talvezPrimeiraPeca() {
+    if (store.hasSeen('primeira_peca')) return;
+    store.markSeen('primeira_peca');
+    final primeira = store.firstOpenAt;
+    Analytics.event('primeira_peca', {
+      'modo': mode.name,
+      'segundos': primeira == null
+          ? 0
+          : DateTime.now().difference(primeira).inSeconds,
+    });
   }
 
   void _loadTutorialStep(int index, {String? say}) {
@@ -426,6 +443,15 @@ class GameController extends ChangeNotifier {
     _tutorialWaiting = true;
     capiCheer = ok;
     _tutorialTimer?.cancel();
+    if (ok) {
+      final proximo = tutorialStep + 1;
+      Analytics.event('tutorial_passo', {'passo': proximo});
+      if (proximo >= Tutorial.steps.length) {
+        Analytics.event('tutorial_fim', {
+          'segundos': DateTime.now().difference(_startedAt).inSeconds,
+        });
+      }
+    }
     _tutorialTimer = Timer(Duration(milliseconds: ok ? 1100 : 700), () {
       ok
           ? _loadTutorialStep(tutorialStep + 1)
@@ -438,6 +464,7 @@ class GameController extends ChangeNotifier {
   void skipTutorial() {
     if (!tutorial) return;
     _tutorialTimer?.cancel();
+    Analytics.event('tutorial_pulado', {'passo': tutorialStep});
     _loadTutorialStep(Tutorial.steps.length);
     notifyListeners();
   }
@@ -463,6 +490,7 @@ class GameController extends ChangeNotifier {
     if (!playing || !session.canPlace(slot, r, c)) return;
     final piece = session.tray[slot]!;
     final result = session.place(slot, r, c);
+    _talvezPrimeiraPeca();
     // The tutorial deals its own pieces, step by step.
     if (tutorial) session.tray = [null, null, null];
 
