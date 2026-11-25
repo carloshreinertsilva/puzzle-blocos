@@ -56,4 +56,40 @@ void main() {
     Analytics.use(null);
     Analytics.event('level_start', {'level': 1});
   });
+
+  test('events from before the start wait for Firebase', () async {
+    Analytics.use(null);
+    Analytics.reiniciarEspera();
+    Analytics.event('tutorial_begin');
+    final novo = _Recorder();
+    await Analytics.start(enabled: true, criar: () async => novo);
+    expect(novo.events.map((e) => e.$1), ['tutorial_begin']);
+    Analytics.event('level_start', {'level': 1});
+    expect(novo.events.length, 2);
+  });
+
+  test('with statistics off, the waiting events are dropped', () async {
+    Analytics.use(null);
+    Analytics.reiniciarEspera();
+    Analytics.event('tutorial_begin');
+    final novo = _Recorder();
+    await Analytics.start(enabled: false, criar: () async => novo);
+    expect(novo.events, isEmpty);
+    expect(novo.enabled, isFalse);
+  });
+
+  test('the tutorial reports its start and a skip', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = await ProgressStore.load();
+    final game = GameController(
+      store: store,
+      feedback: GameFeedback(store),
+      mode: GameMode.tutorial,
+    );
+    expect(recorder.events.map((e) => e.$1), contains('tutorial_begin'));
+    game.skipTutorial();
+    final pulou = recorder.events.firstWhere((e) => e.$1 == 'tutorial_pulado');
+    expect(pulou.$2, {'passo': 0});
+    game.dispose();
+  });
 }
