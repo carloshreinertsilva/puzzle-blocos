@@ -75,6 +75,18 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `ranking_nome_pergunta` | o menu pediu o nome do ranking (obrigatório, enquanto o jogador não tem um) | |
 | `ranking_nome` | o jogador salvou o nome do ranking | origem (`menu`, `ranking`) |
 
+## Ver os números no terminal
+
+`python tool/estatisticas.py` mostra os últimos 7 dias (ou `28`, ou duas
+datas `2026-11-25 2026-11-26`; `--eventos` lista todos os eventos): resumo,
+primeiro minuto do jogador novo, origem (anúncio ou não), dia a dia, versões
+e retenção D1. Lê o Google Analytics pela API com a conta de serviço
+`capiblocks-estatisticas@capiblocks.iam.gserviceaccount.com`, que só tem o
+papel **Leitor** na propriedade do Analytics (nenhum papel no projeto do
+Google Cloud). A chave fica fora do git, em `tool/.ga-estatisticas.json` (ou
+no caminho de `GA_CHAVE`); para trocar, crie outra chave na conta de serviço
+(Google Cloud → IAM → Contas de serviço) e apague a antiga.
+
 O Firebase também mede sozinho: primeira abertura, sessões, retenção (quantos
 voltam no dia 1, 7 e 30), país e modelo do aparelho.
 
