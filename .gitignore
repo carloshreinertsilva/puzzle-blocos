@@ -50,3 +50,7 @@ app.*.map.json
 /build_release/
 tool/firestore/node_modules/
 tool/firestore/*-debug.log
+
+# Chaves locais (nunca no git)
+tool/.ga-estatisticas.json
+tool/.tiktok.env
