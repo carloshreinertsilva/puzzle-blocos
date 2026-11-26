@@ -142,6 +142,9 @@ void _depoisDeAbrir(AppServices services) {
   unawaited(Placares.iniciar(services.store));
 }
 
+/// How much the phone's font size setting can enlarge the game's texts.
+const escalaMaximaDoTexto = 1.3;
+
 /// The route name for a link, as MaterialApp makes it when it opens one.
 @visibleForTesting
 String rotaDoLink(Uri uri) => Uri.decodeComponent(
@@ -318,6 +321,12 @@ class App extends StatelessWidget {
         scaffoldBackgroundColor: Palette.bgTop,
         fontFamily: Fonts.body,
         useMaterial3: true,
+      ),
+      // Big system fonts still grow the texts, but only up to 30%: past
+      // that, buttons and cards made for a phone screen overflow.
+      builder: (context, child) => MediaQuery.withClampedTextScaling(
+        maxScaleFactor: escalaMaximaDoTexto,
+        child: child!,
       ),
       home: Root(services: services),
       // Android App Links: a challenge link (`/duelo?s=…&p=…`) arrives as a

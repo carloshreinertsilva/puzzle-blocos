@@ -90,7 +90,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
         child: Text(
           tr('Você já tem todos os itens do baú: ele dá 5 estrelas.'),
           textAlign: TextAlign.center,
-          style: bodyText(11, color: Palette.textDim),
+          style: bodyText(12, color: Palette.textDim),
         ),
       );
     }
@@ -663,7 +663,7 @@ class _DailyMissionsDialogState extends State<DailyMissionsDialog> {
             children: [
               Text(
                 tr(m.type.shortTitle),
-                style: bodyText(11, color: Palette.textDim),
+                style: bodyText(12, color: Palette.textDim),
               ),
               Text(
                 '$prog / ${m.target}',
@@ -723,7 +723,7 @@ class _PasseChip extends StatelessWidget {
                 ),
                 child: Text(
                   '$prontas',
-                  style: displayText(10, color: Colors.white),
+                  style: displayText(12, color: Colors.white),
                 ),
               ),
             ],

@@ -186,7 +186,7 @@ class RoundIconButton extends StatelessWidget {
                       badge!,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 9,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         height: 1,
                       ),

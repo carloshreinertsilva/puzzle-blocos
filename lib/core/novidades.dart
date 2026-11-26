@@ -11,6 +11,7 @@ enum DestinoNovidade {
   blitz,
   duelo,
   convites,
+  configuracoes,
 }
 
 /// One thing that is new in the game, in Portuguese (shown through `tr`).
@@ -136,6 +137,20 @@ abstract final class Novidades {
         'Quem entra pelo seu convite ganha estrelas e um presente. E você '
             'ganha estrelas, a Faixa de Embaixador e a Coroa de Amizade!',
         DestinoNovidade.convites,
+      ),
+    ],
+    10: [
+      Novidade(
+        'Efeitos mais suaves',
+        'O tremor de tela ficou mais macio e só vem nas jogadas grandes. '
+            'Prefere sem? Ligue "Reduzir efeitos" nas Configurações.',
+        DestinoNovidade.configuracoes,
+      ),
+      Novidade(
+        'Textos maiores',
+        'Os textos pequenos cresceram e o jogo agora acompanha o tamanho '
+            'de letra do seu celular.',
+        DestinoNovidade.configuracoes,
       ),
     ],
   };

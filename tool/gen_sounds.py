@@ -76,3 +76,5 @@ save("revive", seq([([note(s)], 0.35) for s in (-2, 3, 7, 12)], 0.06))
 save("praise2", seq([([note(s)], 0.3) for s in (10, 15, 19)], 0.05))
 save("praise3", seq([([note(s), note(s + 4)], 0.4) for s in (7, 12, 15, 19)], 0.07))
 save("praise4", seq([([note(s), note(s + 7)], 0.55) for s in (3, 7, 10, 15, 19, 22, 27)], 0.06))
+# "Não coube": two soft low notes going down, quieter than a placement.
+save("nope", seq([([note(-12)], 0.09), ([note(-16)], 0.13)], 0.075))

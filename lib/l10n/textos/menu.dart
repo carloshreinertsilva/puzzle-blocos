@@ -203,6 +203,13 @@ const Map<String, String> enMenu = {
   'Loja': 'Shop',
   'Sons': 'Sounds',
   'Vibração': 'Vibration',
+  'Reduzir efeitos': 'Reduce effects',
+  'Sem tremor de tela e sem clarões': 'No screen shake and no flashes',
+  'Efeitos mais suaves': 'Gentler effects',
+  'O tremor de tela ficou mais macio e só vem nas jogadas grandes. Prefere sem? Ligue "Reduzir efeitos" nas Configurações.': 'Screen shake is softer and only comes on big moves. Rather go without? Turn on "Reduce effects" in Settings.',
+  'Textos maiores': 'Bigger text',
+  'Os textos pequenos cresceram e o jogo agora acompanha o tamanho de letra do seu celular.':
+      "Small texts got bigger and the game now follows your phone's font size.",
   'Lembretes diários': 'Daily reminders',
   'O presente do dia e as missões, às 19h':
       'The daily gift and missions, at 7 p.m.',
@@ -593,6 +600,12 @@ const Map<String, String> esMenu = {
   'Loja': 'Tienda',
   'Sons': 'Sonidos',
   'Vibração': 'Vibración',
+  'Reduzir efeitos': 'Reducir efectos',
+  'Sem tremor de tela e sem clarões': 'Sin temblor de pantalla y sin destellos',
+  'Efeitos mais suaves': 'Efectos más suaves',
+  'O tremor de tela ficou mais macio e só vem nas jogadas grandes. Prefere sem? Ligue "Reduzir efeitos" nas Configurações.': 'El temblor de pantalla es más suave y solo llega en las jugadas grandes. ¿Lo prefieres sin? Activa "Reducir efectos" en Ajustes.',
+  'Textos maiores': 'Textos más grandes',
+  'Os textos pequenos cresceram e o jogo agora acompanha o tamanho de letra do seu celular.': 'Los textos pequeños crecieron y el juego ahora sigue el tamaño de letra de tu móvil.',
   'Lembretes diários': 'Recordatorios diarios',
   'O presente do dia e as missões, às 19h':
       'El regalo del día y las misiones, a las 19 h',
