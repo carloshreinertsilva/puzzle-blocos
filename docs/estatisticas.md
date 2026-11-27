@@ -62,7 +62,11 @@ e veja os eventos chegando em Firebase → Analytics → **DebugView**.
 | `tutorial_fim` | terminou todos os passos do tutorial | segundos |
 | `tutorial_pulado` | tocou em "Pular" no tutorial | passo em que estava |
 | `primeira_peca` | pôs a primeira peça no tabuleiro, na vida do jogador | modo, segundos desde a primeira abertura |
-| `tutorial_complete` | terminou as fases de introdução | — |
+| `tutorial_complete` | chegou ao menu pela primeira vez, logo depois do tutorial (até a 1.17 era ao vencer a fase 3, que emendava o tutorial) | — |
+| `guia_menu_passo` | o guia do Capi na primeira vez no menu mostrou um passo: 1 Vila, 2 Guarda-Roupa (com o presente), 3 botão de jogar | passo (1 a 3) |
+| `presente_inicial` | o guia deu o presente do Guarda-Roupa (uma vez na vida; vale também quando o guia é pulado) | item |
+| `guia_menu_pulado` | tocou em "Pular" no guia | passo em que estava (1 a 3) |
+| `guia_menu_fim` | terminou o guia (último passo, ou tocou no botão de jogar iluminado) | — |
 | `lembretes_pergunta` | respondeu à pergunta dos lembretes (depois do primeiro presente) | aceitou (1/0) |
 | `lembretes` | ligou ou desligou os lembretes | ligado (1/0), permissão do celular (1/0) |
 | `lembrete_aberto` | abriu o jogo tocando num lembrete | tipo (presente_sequencia, desafio_sequencia, passe_pronto, passe_perto, vila, presente, generico), dias de ausência |

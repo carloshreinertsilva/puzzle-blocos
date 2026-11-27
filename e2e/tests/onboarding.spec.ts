@@ -1,7 +1,13 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { dragPiece, inside, openFresh, snap, state, waitForState } from './helpers';
 
-test('primeira vez: tutorial com o Capi e direto para a fase 1, sem menu', async ({ page }, testInfo) => {
+/** A capture in the report and as a file (test-results/…/<name>.png). */
+async function foto(page: Page, testInfo: TestInfo, name: string) {
+  await page.screenshot({ path: testInfo.outputPath(`${name}.png`) });
+  await snap(page, testInfo, name);
+}
+
+test('primeira vez: tutorial com o Capi e direto para o menu, com o guia', async ({ page }, testInfo) => {
   await openFresh(page);
   await expect(page.getByText(/Eu sou o Capi/)).toBeVisible();
   await snap(page, testInfo, `tutorial-${testInfo.project.name}`);
@@ -17,40 +23,93 @@ test('primeira vez: tutorial com o Capi e direto para a fase 1, sem menu', async
   expect(inside((await go.boundingBox())!, page.viewportSize()!.width, page.viewportSize()!.height)).toBe(true);
   await go.click();
 
-  const s = await waitForState(page, (x) => x.screen === 'game' && x.mode === 'levels' && x.status === 'playing', 'fase 1');
-  expect(s.level).toBe(1);
-  // While onboarding there is no way to the menu yet.
-  await page.getByRole('button', { name: 'Pausar' }).click();
-  await expect(page.getByRole('button', { name: 'Continuar' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Menu' })).toHaveCount(0);
+  // Straight to the menu (no levels in between), with Capi's guide.
+  await waitForState(page, (x) => x.screen === 'home', 'menu');
+  const pular = page.getByRole('button', { name: 'Pular', exact: true });
+  const continuar = page.getByRole('button', { name: 'Continuar' });
+  const vw = page.viewportSize()!.width;
+  const vh = page.viewportSize()!.height;
+
+  // a) The village.
+  await expect(page.getByText(/constrói a minha vila/)).toBeVisible();
+  await expect(pular).toBeVisible();
+  expect(inside((await pular.boundingBox())!, vw, vh)).toBe(true);
+  expect(inside((await continuar.boundingBox())!, vw, vh)).toBe(true);
+  // While the guide is up, the menu underneath can't be reached.
+  await expect(page.getByRole('button', { name: /^Jogar · Fase/ })).toHaveCount(0);
+  await page.waitForTimeout(400);
+  await foto(page, testInfo, `guia-a-vila-${testInfo.project.name}`);
+
+  // b) The wardrobe, with the gift on Capi.
+  await continuar.click();
+  await expect(page.getByText(/Um presente pra você: Óculos de Sol/)).toBeVisible();
+  expect((await state(page)).unlockedHats).toContain('oculos_sol');
+  expect(inside((await continuar.boundingBox())!, vw, vh)).toBe(true);
+  await page.waitForTimeout(400);
+  await foto(page, testInfo, `guia-b-guarda-roupa-${testInfo.project.name}`);
+
+  // c) The levels.
+  await continuar.click();
+  await expect(page.getByText('Vamos para a fase 1?')).toBeVisible();
+  expect(inside((await continuar.boundingBox())!, vw, vh)).toBe(true);
+  await page.waitForTimeout(400);
+  await foto(page, testInfo, `guia-c-jogar-${testInfo.project.name}`);
+
+  // Then the menu is free.
+  await continuar.click();
+  await expect(pular).toHaveCount(0);
+  await startLevel1(page);
 });
 
-test('"Pular" encerra o tutorial', async ({ page }) => {
+async function startLevel1(page: Page) {
+  await page.getByRole('button', { name: /^Jogar · Fase 1/ }).click();
+  const s = await waitForState(page, (x) => x.screen === 'game' && x.mode === 'levels', 'fase 1');
+  expect(s.level).toBe(1);
+}
+
+test('"Pular" encerra o tutorial e o guia; o guia não volta', async ({ page }) => {
   await openFresh(page);
   await page.getByRole('button', { name: 'Pular tutorial' }).click();
   await page.getByRole('button', { name: 'Bora!' }).click();
-  await waitForState(page, (x) => x.mode === 'levels' && x.level === 1, 'fase 1');
+  await waitForState(page, (x) => x.screen === 'home', 'menu');
+  await expect(page.getByText(/constrói a minha vila/)).toBeVisible();
+  await page.getByRole('button', { name: 'Pular', exact: true }).click();
+  await expect(page.getByRole('button', { name: /^Jogar · Fase 1/ })).toBeVisible();
+  // The gift came anyway.
+  expect((await state(page)).unlockedHats).toContain('oculos_sol');
+
+  // Opening the game again: the menu, without the guide.
+  await page.reload();
+  await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
+  await expect(page.getByRole('button', { name: /^Jogar · Fase 1/ })).toBeVisible();
+  await expect(page.getByText(/constrói a minha vila/)).toHaveCount(0);
 });
 
-test('depois da fase 3 o menu aparece com o Capi; modos liberam por fase', async ({ page }, testInfo) => {
+test('quem estava no meio das fases de introdução vai para o menu', async ({ page }) => {
+  // A player from before, between levels 1 and 3, never saw the menu.
   await openFresh(page, { seen_tutorial: true, level: 3 });
-  await waitForState(page, (x) => x.screen === 'game' && x.level === 3, 'fase 3 sem menu');
-  await page.getByRole('button', { name: 'Entendi!' }).click();
-  await page.evaluate(() => (window as any).__bb.win());
-  await page.getByRole('button', { name: 'Próxima fase' }).click();
-
   await waitForState(page, (x) => x.screen === 'home', 'menu');
-  await expect(page.getByText(/Essa é a nossa estrada/)).toBeVisible();
-  await snap(page, testInfo, `menu-capi-${testInfo.project.name}`);
-  await page.getByRole('button', { name: 'Bora!' }).click();
-  // Then Capi introduces his village.
   await expect(page.getByText(/constrói a minha vila/)).toBeVisible();
-  await page.getByRole('button', { name: 'Bora!' }).click();
-  await expect(page.getByRole('button', { name: /^Jogar · Fase 4/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByText('Vamos para a fase 3?')).toBeVisible();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByRole('button', { name: /^Jogar · Fase 3/ })).toBeVisible();
+});
 
+test('modo liberado: o Capi aponta o cartão; modos travados avisam a fase', async ({ page }, testInfo) => {
+  await openFresh(page, { seen_tutorial: true, seen_menu: true, seen_guia_menu: true, level: 4 });
+  await expect(page.getByRole('button', { name: /^Jogar · Fase 4/ })).toBeVisible();
   await page.getByRole('button', { name: 'Modos' }).click();
   await page.getByRole('button', { name: 'Infinito' }).click();
   await expect(page.getByText(/fase 5 que eu libero o Infinito/)).toBeVisible();
   await page.getByRole('button', { name: 'Beleza!' }).click();
   expect((await state(page)).screen).toBe('home');
+
+  await openFresh(page, { seen_tutorial: true, seen_menu: true, seen_guia_menu: true, level: 5 });
+  await expect(page.getByText(/Liberei o modo Infinito/)).toBeVisible();
+  await page.waitForTimeout(400);
+  await snap(page, testInfo, `menu-modo-liberado-${testInfo.project.name}`);
+  await page.getByRole('button', { name: 'Bora!' }).click();
+  await expect(page.getByRole('button', { name: /^Jogar · Fase 5/ })).toBeVisible();
 });

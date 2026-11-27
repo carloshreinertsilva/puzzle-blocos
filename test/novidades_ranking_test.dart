@@ -35,7 +35,7 @@ void main() {
       expect(novas.map((n) => n.destino), [
         DestinoNovidade.configuracoes,
         DestinoNovidade.configuracoes,
-        DestinoNovidade.convites,
+        DestinoNovidade.modos,
       ]);
       expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
       expect(
@@ -48,7 +48,7 @@ void main() {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
         'Efeitos mais suaves',
         'Textos maiores',
-        'Convide amigos e ganhe prêmios',
+        'O Capi mostra o caminho',
       ]);
     });
 
@@ -56,7 +56,12 @@ void main() {
       expect(Novidades.pendentes(9).map((n) => n.destino), [
         DestinoNovidade.configuracoes,
         DestinoNovidade.configuracoes,
+        DestinoNovidade.modos,
       ]);
+      expect(
+        iconeDaNovidade(DestinoNovidade.modos),
+        Icons.sports_esports_rounded,
+      );
       expect(
         iconeDaNovidade(DestinoNovidade.configuracoes),
         Icons.settings_rounded,
@@ -67,12 +72,12 @@ void main() {
       );
     });
 
-    test('quem viu a edição 7 recebe as da 10 e a da 9, antes das da 8', () {
+    test('quem viu a edição 7 recebe as da 10, antes das da 9 e da 8', () {
       expect(Novidades.edicoes[8]!.length, greaterThan(Novidades.porVez));
       expect(Novidades.pendentes(7).map((n) => n.titulo), [
         'Efeitos mais suaves',
         'Textos maiores',
-        'Convide amigos e ganhe prêmios',
+        'O Capi mostra o caminho',
       ]);
     });
 

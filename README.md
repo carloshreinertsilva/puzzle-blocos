@@ -29,9 +29,11 @@ jogador 10 s parado a lâmpada pisca, e aos 15 s ela abre perguntando "Quer
 dica?", sem nunca cobrir o tabuleiro nem as peças. Só nas fases 1 a 3 o Capi
 mostra a jogada sozinho aos 10 s.
 
-Depois vêm as fases 1 a 3 seguidas,
-sem menu; o menu aparece ao vencer a fase 3. Infinito libera na fase 5 e o
-Desafio diário na fase 7.
+Depois do tutorial vem o menu, com o guia do Capi na primeira vez
+(`lib/ui/destaque.dart`): ele ilumina a Vila, o Guarda-Roupa (com um
+presente, os Óculos de Sol, `lib/core/presente_inicial.dart`) e o botão de
+jogar. Infinito libera na fase 5, Obras na 6, o Desafio diário na 7, Blitz e
+Duelo na 8 e a Torre na 9; quando um modo libera, o Capi aponta o cartão dele.
 
 Estrelas (`lib/core/missions.dart`): cada fase tem 3 desafios (vencer; limpar
 2 linhas de uma vez até a fase 10, depois um combo x3; vencer sem usar o

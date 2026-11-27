@@ -82,5 +82,5 @@ abstract final class Tutorial {
   static String get retry =>
       tr('Quase! Encaixe a peça onde a mãozinha mostra.');
   static String get done =>
-      tr('Você pegou o jeito! Agora é pra valer: vamos à Fase 1?');
+      tr('Você pegou o jeito! Vem comigo que eu te mostro o que tem por aqui.');
 }
