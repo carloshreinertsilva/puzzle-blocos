@@ -599,7 +599,7 @@ class MenuCard extends StatelessWidget {
                         child: Text(
                           subtitle,
                           maxLines: 1,
-                          style: bodyText(11, color: const Color(0xEEFFFFFF)),
+                          style: bodyText(12, color: const Color(0xEEFFFFFF)),
                         ),
                       ),
                     ],
@@ -618,7 +618,7 @@ class MenuCard extends StatelessWidget {
                   color: Palette.danger,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(badge!, style: displayText(11)),
+                child: Text(badge!, style: displayText(12)),
               ),
             ),
         ],

@@ -20,6 +20,7 @@ import 'game_controller.dart';
 import 'hint_hand.dart';
 import 'pup_rescue.dart';
 import 'tray_piece.dart';
+import 'tremor.dart';
 
 /// The play area: board, tray and effects. Menus and the HUD are Flutter
 /// widgets layered on top; this scene only draws the game itself.
@@ -71,8 +72,17 @@ class PuzzleGame extends FlameGame {
   int _demoTier = 0;
 
   bool _announcePending = false;
-  double _shake = 0;
-  double _shakePower = 0;
+  final _tremor = Tremor();
+
+  /// Less motion: no shake and no white flash (Settings, or the phone's own
+  /// "reduce motion").
+  bool get _menosEfeitos => controller.feedback.store.reduzirEfeitos;
+
+  /// Shakes the stage; [quanto] from 0 to 1 adds to a shake already going.
+  void _tremer(double quanto) {
+    if (!_menosEfeitos) _tremor.somar(quanto);
+  }
+
   final _rng = Random();
 
   @override
@@ -242,15 +252,11 @@ class PuzzleGame extends FlameGame {
         _demoTier,
       );
     }
-    if (_shake > 0) {
-      _shake = max(0, _shake - dt);
-      final a = _shakePower * (_shake / 0.3);
-      stage.position = Vector2(
-        (_rng.nextDouble() - 0.5) * 2 * a,
-        (_rng.nextDouble() - 0.5) * 2 * a,
-      );
-    } else if (stage.position != Vector2.zero()) {
-      stage.position = Vector2.zero();
+    if (!_tremor.parado) {
+      final o = _tremor.avancar(dt, cellSize * 0.24);
+      stage.position.setValues(o.dx, o.dy);
+    } else if (!stage.position.isZero()) {
+      stage.position.setZero();
     }
   }
 
@@ -311,13 +317,18 @@ class PuzzleGame extends FlameGame {
       )..priority = 40,
     );
     if (praise.tier >= 3) {
-      add(
-        ScreenFlash(Offset.zero & size.toSize(), strength: 0.12 * praise.tier),
-      );
+      if (!_menosEfeitos) {
+        add(
+          ScreenFlash(
+            Offset.zero & size.toSize(),
+            strength: 0.12 * praise.tier,
+          ),
+        );
+      }
       sparks?.confetti(boardRect, count: 25 + 15 * (praise.tier - 2));
     }
-    _shake = 0.3 + 0.05 * praise.tier;
-    _shakePower = cellSize * 0.05 * praise.tier;
+    // One line is routine: it gets sound, sparks and the word, no shake.
+    if (praise.tier >= 2) _tremer(const [0.55, 0.78, 1.0][praise.tier - 2]);
     controller.feedback.praise(praise.tier);
     if (kTestBridge) TestBridge.instance.praises.add(praise.text);
   }
@@ -325,8 +336,7 @@ class PuzzleGame extends FlameGame {
   void _onToolUsed(CapiTool tool, List<ClearedCell> cleared) {
     if (cleared.isEmpty) return;
     _clearEffects(cleared, [for (final c in cleared) (c.row, c.col)]);
-    _shake = 0.2;
-    _shakePower = cellSize * 0.04;
+    _tremer(0.45);
   }
 
   void _onPieceRotated(int slot) {

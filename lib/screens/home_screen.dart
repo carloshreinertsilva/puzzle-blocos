@@ -566,6 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DestinoNovidade.blitz => _openBlitz(),
     DestinoNovidade.duelo => _openDuelo(),
     DestinoNovidade.convites => _openConvites(),
+    DestinoNovidade.configuracoes => showSettings(context, widget.services),
   };
 
   /// Whether [destino] has news the player has not opened yet.
@@ -2071,7 +2072,7 @@ class _Destaque extends StatelessWidget {
                           Text(
                             subtitulo,
                             maxLines: 1,
-                            style: bodyText(11, color: const Color(0xDDFFFFFF)),
+                            style: bodyText(12, color: const Color(0xDDFFFFFF)),
                           ),
                           if (seta != 0)
                             Icon(
@@ -2174,7 +2175,7 @@ class _SugestaoBalao extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   acao ?? tr('Ver no guarda-roupa ›'),
-                  style: bodyText(11, color: const Color(0xFF7048E8)),
+                  style: bodyText(12, color: const Color(0xFF7048E8)),
                 ),
               ],
             ),

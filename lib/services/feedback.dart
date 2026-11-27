@@ -29,6 +29,7 @@ class GameFeedback {
     'praise2.wav',
     'praise3.wav',
     'praise4.wav',
+    'nope.wav',
   ];
 
   Future<void> preload() async {
@@ -51,6 +52,12 @@ class GameFeedback {
 
   void place() {
     _play('place.wav', volume: 0.6);
+    if (store.hapticsOn) HapticFeedback.lightImpact();
+  }
+
+  /// The piece was let go over the board where it does not fit.
+  void naoCoube() {
+    _play('nope.wav', volume: 0.45);
     if (store.hapticsOn) HapticFeedback.lightImpact();
   }
 

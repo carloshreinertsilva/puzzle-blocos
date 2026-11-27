@@ -33,9 +33,9 @@ void main() {
         'para trás', () {
       final novas = Novidades.pendentes(1);
       expect(novas.map((n) => n.destino), [
+        DestinoNovidade.configuracoes,
+        DestinoNovidade.configuracoes,
         DestinoNovidade.convites,
-        DestinoNovidade.torre,
-        DestinoNovidade.passe,
       ]);
       expect(iconeDaNovidade(DestinoNovidade.blitz), Icons.bolt_rounded);
       expect(
@@ -46,28 +46,33 @@ void main() {
 
     test('quem viu a edição 2 recebe as três mais novas', () {
       expect(Novidades.pendentes(2).map((n) => n.titulo), [
+        'Efeitos mais suaves',
+        'Textos maiores',
         'Convide amigos e ganhe prêmios',
-        'Roleta na Torre',
-        'Passe do Capi turbinado',
       ]);
     });
 
-    test('quem viu a edição 8 recebe só a da edição 9', () {
-      expect(Novidades.pendentes(8).map((n) => n.destino), [
-        DestinoNovidade.convites,
+    test('quem viu a edição 9 recebe só as da edição 10', () {
+      expect(Novidades.pendentes(9).map((n) => n.destino), [
+        DestinoNovidade.configuracoes,
+        DestinoNovidade.configuracoes,
       ]);
+      expect(
+        iconeDaNovidade(DestinoNovidade.configuracoes),
+        Icons.settings_rounded,
+      );
       expect(
         iconeDaNovidade(DestinoNovidade.convites),
         Icons.group_add_rounded,
       );
     });
 
-    test('quem viu a edição 7 recebe a da 9 e as primeiras da 8', () {
+    test('quem viu a edição 7 recebe as da 10 e a da 9, antes das da 8', () {
       expect(Novidades.edicoes[8]!.length, greaterThan(Novidades.porVez));
       expect(Novidades.pendentes(7).map((n) => n.titulo), [
+        'Efeitos mais suaves',
+        'Textos maiores',
         'Convide amigos e ganhe prêmios',
-        'Roleta na Torre',
-        'Passe do Capi turbinado',
       ]);
     });
 

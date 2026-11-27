@@ -238,7 +238,7 @@ class _Dia extends StatelessWidget {
           premio.texto,
           textAlign: TextAlign.center,
           maxLines: 2,
-          style: bodyText(11, color: Palette.text),
+          style: bodyText(12, color: Palette.text),
         ),
       ],
     ),

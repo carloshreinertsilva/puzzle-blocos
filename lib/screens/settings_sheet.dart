@@ -154,6 +154,19 @@ class _SettingsState extends State<_Settings> {
                   setState(() {});
                 },
               ),
+              SwitchListTile(
+                title: Text(tr('Reduzir efeitos'), style: bodyText(17)),
+                subtitle: Text(
+                  tr('Sem tremor de tela e sem clarões'),
+                  style: bodyText(13, color: Palette.textDim),
+                ),
+                secondary: const Icon(Icons.motion_photos_off_rounded),
+                value: store.reduzirEfeitos,
+                onChanged: (v) async {
+                  await store.setReduzirEfeitos(v);
+                  setState(() {});
+                },
+              ),
               // Daily reminders (Android and iPhone, opt-in).
               if (Avisos.lembretesSuportados)
                 SwitchListTile(

@@ -657,7 +657,7 @@ class _Linha extends StatelessWidget {
                           const SizedBox(width: 3),
                           Text(
                             tr('Embaixador'),
-                            style: bodyText(11, color: const Color(0xFFFF8FAB)),
+                            style: bodyText(12, color: const Color(0xFFFF8FAB)),
                           ),
                         ],
                       ),
@@ -672,7 +672,7 @@ class _Linha extends StatelessWidget {
                   Text(pontos, style: displayText(17, color: Palette.accent)),
                   Text(
                     tr(unidade),
-                    style: bodyText(10, color: Palette.textDim),
+                    style: bodyText(12, color: Palette.textDim),
                   ),
                 ],
               ),

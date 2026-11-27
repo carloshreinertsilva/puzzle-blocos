@@ -750,7 +750,7 @@ class _Categoria extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(slot.label, style: displayText(13, color: cor)),
               ),
-              Text('$tem/$total', style: bodyText(11, color: Palette.textDim)),
+              Text('$tem/$total', style: bodyText(12, color: Palette.textDim)),
             ],
           ),
         ),
@@ -921,7 +921,7 @@ class _Selo extends StatelessWidget {
           Icon(icone, color: cor, size: 11),
           const SizedBox(width: 2),
         ],
-        Text(texto, style: displayText(11, color: cheio ? Colors.white : cor)),
+        Text(texto, style: displayText(12, color: cheio ? Colors.white : cor)),
       ],
     ),
   );

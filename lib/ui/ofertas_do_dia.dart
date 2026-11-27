@@ -226,6 +226,6 @@ class RaridadeChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(6),
       border: Border.all(color: r.color),
     ),
-    child: Text(r.label, style: displayText(10, color: r.color)),
+    child: Text(r.label, style: displayText(12, color: r.color)),
   );
 }

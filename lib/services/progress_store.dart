@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' show PlatformDispatcher;
 
 import '../core/ofertas.dart' show Cofrinho, OfertaBoasVindas;
 import '../core/passe.dart' show PasseDoCapi;
@@ -61,6 +62,7 @@ class ProgressStore {
   static const _soDoAparelho = {
     'analyticsOn',
     'hapticsOn',
+    'reduzirEfeitos',
     'soundOn',
     'musicOn',
     'idioma',
@@ -132,6 +134,13 @@ class ProgressStore {
 
   bool get hapticsOn => _prefs.getBool('hapticsOn') ?? true;
   Future<void> setHapticsOn(bool v) => _prefs.setBool('hapticsOn', v);
+
+  /// Less motion: no screen shake and no white flash on big moves.
+  /// Until the player chooses, it follows the phone's "reduce motion".
+  bool get reduzirEfeitos =>
+      _prefs.getBool('reduzirEfeitos') ??
+      PlatformDispatcher.instance.accessibilityFeatures.disableAnimations;
+  Future<void> setReduzirEfeitos(bool v) => _prefs.setBool('reduzirEfeitos', v);
   bool get analyticsOn => _prefs.getBool('analyticsOn') ?? true;
   Future<void> setAnalyticsOn(bool v) => _prefs.setBool('analyticsOn', v);
 

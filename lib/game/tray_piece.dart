@@ -166,7 +166,7 @@ class TrayPiece extends PositionComponent
   @override
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
-    _release();
+    _release(avisar: true);
   }
 
   @override
@@ -193,8 +193,17 @@ class TrayPiece extends PositionComponent
     priority = 10;
   }
 
-  void _release() {
+  /// Whether the piece is over the board (with half a cell of slack): a
+  /// drop there was meant to place it; anywhere else it is just put back.
+  bool get _sobreOTabuleiro => game.boardRect
+      .inflate(game.cellSize * 0.5)
+      .contains((position + _center).toOffset());
+
+  void _release({bool avisar = false}) {
     if (!_dragging) return;
+    if (avisar && _snap == null && _sobreOTabuleiro) {
+      game.controller.feedback.naoCoube();
+    }
     _dragging = false;
     game.activeDrag = null;
     game.boardView.preview = null;

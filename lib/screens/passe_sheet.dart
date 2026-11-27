@@ -385,7 +385,7 @@ class _PasseState extends State<_Passe> {
                             : '${item.raridade.label} · ${escolhido.origem}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: bodyText(11, color: Palette.textDim),
+                        style: bodyText(12, color: Palette.textDim),
                       ),
                     ],
                   ),
@@ -402,7 +402,7 @@ class _PasseState extends State<_Passe> {
                 Text(
                   tr('Só neste mês. Depois, é seu para sempre.'),
                   maxLines: 2,
-                  style: bodyText(10, color: Palette.textDim),
+                  style: bodyText(12, color: Palette.textDim),
                 ),
               ],
             ),
@@ -746,7 +746,7 @@ class _PasseState extends State<_Passe> {
               r.texto,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: bodyText(11, color: Palette.text),
+              style: bodyText(12, color: Palette.text),
             ),
           ),
           if (pegou)

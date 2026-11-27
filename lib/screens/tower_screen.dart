@@ -781,7 +781,7 @@ class _Marca extends StatelessWidget {
             nome,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: bodyText(11, color: Palette.textDim),
+            style: bodyText(12, color: Palette.textDim),
           ),
         ],
       ),
