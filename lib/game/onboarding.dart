@@ -2,11 +2,10 @@ import '../l10n/idioma.dart';
 import '../services/progress_store.dart';
 
 /// How a new player is brought in: a guided tutorial with Capi, then the
-/// first levels back to back (no menu), then the menu, with the other modes
+/// menu, where Capi shows the way once (the guide, ui/destaque.dart: the
+/// village, a gift in the wardrobe, the levels), with the other modes
 /// unlocking as the player goes.
 abstract final class Onboarding {
-  /// Levels played one after the other before the menu shows up.
-  static const railLevels = 3;
   static const endlessAt = 5;
   static const obrasAt = 6;
   static const dailyAt = 7;
@@ -17,8 +16,12 @@ abstract final class Onboarding {
   static bool tutorialDone(ProgressStore s) =>
       s.hasSeen('tutorial') || s.level > 1 || s.gamesPlayed > 0;
 
-  static bool menuUnlocked(ProgressStore s) =>
-      s.hasSeen('menu') || s.level > railLevels;
+  /// The menu's guide (seen once): for whoever reaches the menu for the
+  /// first time. Players from before it, who heard Capi's old welcome on
+  /// the menu, already know the way.
+  static const guiaVisto = 'guia_menu';
+  static bool guiaPendente(ProgressStore s) =>
+      !s.hasSeen(guiaVisto) && !s.hasSeen('news_welcome');
 
   static bool endlessUnlocked(ProgressStore s) => s.level >= endlessAt;
   static bool obrasUnlocked(ProgressStore s) => s.level >= obrasAt;
@@ -29,8 +32,6 @@ abstract final class Onboarding {
 
   /// Capi's lines on the menu that the player has not seen yet, in order.
   static List<MenuNews> pendingNews(ProgressStore s) => [
-    if (!s.hasSeen(MenuNews.welcome.key)) MenuNews.welcome,
-    if (!s.hasSeen(MenuNews.village.key)) MenuNews.village,
     if (endlessUnlocked(s) && !s.hasSeen(MenuNews.endless.key))
       MenuNews.endless,
     if (obrasUnlocked(s) && !s.hasSeen(MenuNews.obras.key)) MenuNews.obras,
@@ -42,11 +43,6 @@ abstract final class Onboarding {
 }
 
 enum MenuNews {
-  welcome(
-    'news_welcome',
-    'Essa é a nossa estrada! Cada fase que você vence abre a próxima. '
-        'Toque em Jogar para seguir.',
-  ),
   blitz(
     'news_blitz',
     'Novo modo Blitz! Você tem 60 segundos para fazer o máximo de pontos e combos.',
@@ -54,11 +50,6 @@ enum MenuNews {
   duel(
     'news_duel',
     'Novo modo Duelo! Desafie seus amigos com links e comparem quem pontua mais.',
-  ),
-  village(
-    'news_village',
-    'E tem mais: com as estrelas das fases você constrói a minha vila! '
-        'Toque em Vila do Capi para ver.',
   ),
   endless(
     'news_endless',

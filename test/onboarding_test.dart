@@ -7,34 +7,43 @@ import 'package:puzzle_blocos/services/progress_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  test('a new player gets the tutorial, then the first levels, then the '
-      'menu; modes unlock as levels go up', () async {
+  test('a new player gets the tutorial, then the menu with the guide; '
+      'modes unlock as levels go up', () async {
     SharedPreferences.setMockInitialValues({});
     final s = await ProgressStore.load();
     expect(Onboarding.tutorialDone(s), isFalse);
-    expect(Onboarding.menuUnlocked(s), isFalse);
 
     await s.markSeen('tutorial');
     expect(Onboarding.tutorialDone(s), isTrue);
-    expect(Onboarding.menuUnlocked(s), isFalse);
-
-    await s.setLevel(Onboarding.railLevels + 1);
-    expect(Onboarding.menuUnlocked(s), isTrue);
-    expect(Onboarding.pendingNews(s), [MenuNews.welcome, MenuNews.village]);
+    expect(Onboarding.guiaPendente(s), isTrue);
+    // Capi's guide tells about the village: no lines left before level 5.
+    expect(Onboarding.pendingNews(s), isEmpty);
     expect(Onboarding.endlessUnlocked(s), isFalse);
 
     await s.setLevel(Onboarding.dailyAt);
     expect(Onboarding.pendingNews(s), [
-      MenuNews.welcome,
-      MenuNews.village,
       MenuNews.endless,
       MenuNews.obras,
       MenuNews.daily,
     ]);
-    await s.markSeen(MenuNews.welcome.key);
-    await s.markSeen(MenuNews.village.key);
-    expect(Onboarding.pendingNews(s).first, MenuNews.endless);
+    await s.markSeen(MenuNews.endless.key);
+    expect(Onboarding.pendingNews(s).first, MenuNews.obras);
+
+    await s.markSeen(Onboarding.guiaVisto);
+    expect(Onboarding.guiaPendente(s), isFalse);
   });
+
+  test(
+    'players from before, who heard the old welcome, get no guide',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'seen_tutorial': true,
+        'seen_news_welcome': true,
+        'level': 4,
+      });
+      expect(Onboarding.guiaPendente(await ProgressStore.load()), isFalse);
+    },
+  );
 
   test('players who already played skip the tutorial', () async {
     SharedPreferences.setMockInitialValues({'level': 2});

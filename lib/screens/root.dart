@@ -10,8 +10,8 @@ import '../ui/palette.dart';
 import 'game_screen.dart';
 import 'home_screen.dart';
 
-/// Picks where the app opens: the tutorial for a new player, then the first
-/// levels back to back, and the menu once those are done. A challenge link
+/// Picks where the app opens: the tutorial for a new player, and the menu
+/// once it is done (or skipped), where Capi's guide shows the way. A challenge link
 /// (`?duelo=<seed>&p=<points>[&m=blitz]`) opens that match on top, once;
 /// leaving it goes back to wherever the player would normally be.
 class Root extends StatefulWidget {
@@ -73,13 +73,6 @@ class _RootState extends State<Root> {
         key: const ValueKey('tutorial'),
         services: widget.services,
         mode: GameMode.tutorial,
-        onDone: _advance,
-      );
-    } else if (!Onboarding.menuUnlocked(store)) {
-      child = GameScreen(
-        key: const ValueKey('first-levels'),
-        services: widget.services,
-        mode: GameMode.levels,
         onDone: _advance,
       );
     } else {

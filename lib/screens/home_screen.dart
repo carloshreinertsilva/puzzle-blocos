@@ -13,6 +13,7 @@ import '../core/novidades.dart';
 import '../core/ofertas.dart';
 import '../core/passe.dart';
 import '../core/presente_diario.dart';
+import '../core/presente_inicial.dart';
 import '../core/wardrobe.dart';
 import '../core/daily_missions.dart';
 import 'daily_missions_dialog.dart';
@@ -39,6 +40,7 @@ import '../services/ranking_servidor.dart';
 import '../services/progress_store.dart';
 import '../testing/test_bridge.dart';
 import '../ui/capi.dart';
+import '../ui/destaque.dart';
 import '../ui/menu_widgets.dart';
 import '../ui/nome_dialog.dart';
 import '../ui/oferta_nuvem.dart';
@@ -86,16 +88,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    final store = widget.services.store;
     widget.services.loja.addListener(_lojaMudou);
     widget.services.feedback.musica.tocar(Trilha.menu);
-    _talvezSugerir();
+    // The first time on the menu, straight from the tutorial (or, for a
+    // player from before, from the first levels).
+    if (!store.hasSeen('menu')) {
+      unawaited(store.markSeen('menu'));
+      Analytics.event('tutorial_complete');
+    }
     // Records not on the boards yet go now (a player from before the
     // name was asked for, or a send that failed), then the menu's place.
-    unawaited(
-      RankingSync.enviar(widget.services.store).whenComplete(_lerPosicao),
-    );
-    // Let the menu show first, then the gift (and any update) over it.
-    _abertura = Timer(const Duration(milliseconds: 600), _abrirFila);
+    unawaited(RankingSync.enviar(store).whenComplete(_lerPosicao));
+    if (Onboarding.guiaPendente(store)) {
+      // Capi's guide, alone: the windows of the opening wait for it.
+      _comecarGuia();
+    } else {
+      _talvezSugerir();
+      // Let the menu show first, then the gift (and any update) over it.
+      _abertura = Timer(const Duration(milliseconds: 600), _abrirFila);
+    }
     if (Avaliacao.noCelular) {
       _telaTimer = Timer.periodic(Avaliacao.passo, (_) => _contarTela());
     }
@@ -121,12 +133,13 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _filaRodando = false;
 
   /// What opens by itself with the menu, most important first and at most
-  /// [FilaAbertura.limitePadrao] windows (see core/fila_abertura.dart); the
-  /// others keep their conditions and come next time. The syncs behind
-  /// them (invites, duels, cloud save) run every time.
-  Future<void> _abrirFila() async {
+  /// [limite] windows (see core/fila_abertura.dart); the others keep their
+  /// conditions and come next time. The syncs behind them (invites, duels,
+  /// cloud save) run every time. After Capi's guide the limit is 0: only
+  /// what can't wait (the ranking's name, an update) opens, and no tip.
+  Future<void> _abrirFila({int limite = FilaAbertura.limitePadrao}) async {
     _filaRodando = true;
-    final fila = FilaAbertura();
+    final fila = FilaAbertura(limite: limite);
     Future<void> passo(
       DialogoAbertura d,
       Future<bool> Function(bool cabe) abrir,
@@ -159,11 +172,132 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     if (fila.mostrados > 0) {
       Analytics.event('menu_abertura', {'dialogos': fila.mostrados});
-    } else {
+    } else if (limite > 0) {
       // A quiet opening: room for Capi's tip of the day.
       _talvezDica();
     }
   }
+
+  // Capi's guide, the first time on the menu (ui/destaque.dart): the
+  // village, a gift in the wardrobe, the levels. Once in a player's life.
+  final _alvoVila = GlobalKey(debugLabel: 'vila');
+  final _alvoGuardaRoupa = GlobalKey(debugLabel: 'guarda-roupa');
+  final _alvoJogar = GlobalKey(debugLabel: 'jogar');
+  final _alvoModos = GlobalKey(debugLabel: 'modos');
+  final _alvoDiario = GlobalKey(debugLabel: 'diario');
+
+  /// The guide's step on screen (0 to 2), or null.
+  int? _guia;
+  static const _passosGuia = 3;
+
+  /// The gift the guide gave (null until it is given, or if it had been).
+  Cosmetic? _presente;
+  bool _guiaOcupado = false;
+
+  /// Capi has the floor: his guide or a line of his.
+  bool get _falando => _guia != null || _capiLine != null;
+
+  void _comecarGuia() {
+    final store = widget.services.store;
+    _guia = 0;
+    // Seen from the start: it never comes back, even if the app closes.
+    unawaited(store.markSeen(Onboarding.guiaVisto));
+    // The gift is the player's from now on (worn on step 2, or at the end
+    // if the guide is skipped before it).
+    unawaited(
+      PresenteInicial.dar(store).then((c) {
+        if (c != null && mounted) setState(() => _presente = c);
+      }),
+    );
+    Analytics.event('guia_menu_passo', {'passo': 1});
+  }
+
+  ({GlobalKey alvo, String texto}) _passoDoGuia(int passo) {
+    final store = widget.services.store;
+    final presente = _presente;
+    return switch (passo) {
+      0 => (
+        alvo: _alvoVila,
+        texto: tr('Com as estrelas das fases você constrói a minha vila!'),
+      ),
+      1 => (
+        alvo: _alvoGuardaRoupa,
+        texto: presente != null
+            ? tr(
+                'Um presente pra você: {item}! No Guarda-Roupa você me veste '
+                'do seu jeito.',
+                {'item': presente.label},
+              )
+            : tr('No Guarda-Roupa você me veste do seu jeito!'),
+      ),
+      _ => (
+        alvo: _alvoJogar,
+        texto: tr('Vamos para a fase {n}?', {'n': store.level}),
+      ),
+    };
+  }
+
+  Future<void> _avancarGuia() async {
+    final passo = _guia;
+    if (passo == null || _guiaOcupado) return;
+    widget.services.feedback.click();
+    final proximo = passo + 1;
+    if (proximo >= _passosGuia) return _encerrarGuia(pulado: false);
+    _guiaOcupado = true;
+    try {
+      if (proximo == 1) {
+        // The gift goes on Capi right as he tells about it.
+        await PresenteInicial.dar(widget.services.store);
+        await PresenteInicial.vestir(widget.services.store);
+      }
+    } finally {
+      _guiaOcupado = false;
+    }
+    if (!mounted || _guia != passo) return;
+    setState(() => _guia = proximo);
+    Analytics.event('guia_menu_passo', {'passo': proximo + 1});
+  }
+
+  Future<void> _encerrarGuia({required bool pulado}) async {
+    final passo = _guia;
+    if (passo == null) return;
+    setState(() => _guia = null);
+    if (pulado) {
+      widget.services.feedback.click();
+      Analytics.event('guia_menu_pulado', {'passo': passo + 1});
+    } else {
+      Analytics.event('guia_menu_fim');
+    }
+    final store = widget.services.store;
+    // Skipped before the wardrobe: the gift is still the player's, on Capi.
+    if (passo < 1) {
+      await PresenteInicial.dar(store);
+      await PresenteInicial.vestir(store);
+      final presente = _presente;
+      if (mounted && presente != null) {
+        mostrarPremio(
+          context,
+          tr('Presente do Capi no Guarda-Roupa: {item}!', {
+            'item': presente.label,
+          }),
+          icon: Icons.checkroom_rounded,
+        );
+      }
+    }
+    if (!mounted) return;
+    setState(() {});
+    unawaited(_abrirFila(limite: 0));
+  }
+
+  /// On the last step, a tap on the lit "Jogar" button plays.
+  Future<void> _jogarDoGuia() async {
+    await _encerrarGuia(pulado: false);
+    if (mounted) await _open(GameMode.levels);
+  }
+
+  /// What a mode's line from Capi points at: the card that opens it.
+  GlobalKey _alvoDaNoticia(MenuNews n) =>
+      n == MenuNews.daily ? _alvoDiario : _alvoModos;
 
   /// Whether the player still has to choose the ranking's name.
   bool get _precisaNome {
@@ -567,6 +701,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DestinoNovidade.duelo => _openDuelo(),
     DestinoNovidade.convites => _openConvites(),
     DestinoNovidade.configuracoes => showSettings(context, widget.services),
+    DestinoNovidade.modos => _openModos(),
   };
 
   /// Whether [destino] has news the player has not opened yet.
@@ -1172,6 +1307,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /// A mode the player has unlocked but never opened: "NOVO" on Modos.
   bool _modoNovo(ProgressStore store) =>
       _resultadosDueloNovos(store) > 0 ||
+      _pendente(DestinoNovidade.modos) ||
       (Onboarding.endlessUnlocked(store) && !store.hasSeen('opened_endless')) ||
       (Onboarding.blitzUnlocked(store) &&
           (!store.hasSeen('opened_blitz') ||
@@ -1187,6 +1323,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openModos() async {
     Analytics.event('screen_open', {'screen': 'modos'});
     widget.services.feedback.click();
+    _abriu(DestinoNovidade.modos);
     final store = widget.services.store;
     await showModalBottomSheet<void>(
       context: context,
@@ -1319,7 +1456,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Browser tests keep Capi as he is (they look at the menu around him).
     if (kTestBridge || _menus++ % 3 != 0) return;
     _sugestaoTimer = Timer(const Duration(seconds: 7), () {
-      if (!mounted || _capiLine != null || _dica != null) return;
+      if (!mounted || _falando || _dica != null) return;
       if (ModalRoute.of(context)?.isCurrent != true) return;
       final item = _escolherSugestao(widget.services.store);
       if (item == null) return;
@@ -1362,7 +1499,7 @@ class _HomeScreenState extends State<HomeScreen> {
     bool livre() =>
         mounted &&
         !_filaRodando &&
-        _capiLine == null &&
+        !_falando &&
         _sugestao == null &&
         _dica == null &&
         ModalRoute.of(context)?.isCurrent == true;
@@ -1415,7 +1552,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_filaRodando) return;
     _dicaTimer?.cancel();
     _dicaTimer = Timer(const Duration(milliseconds: 1200), () async {
-      if (!mounted || _capiLine != null || _sugestao != null) return;
+      if (!mounted || _falando || _sugestao != null) return;
       if (_dica != null || ModalRoute.of(context)?.isCurrent != true) return;
       final agora = DateTime.now();
       final tema = DicaDoDia.paraHoje(
@@ -1539,13 +1676,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             if (widget.services.loja.existe) ...[
                               SizedBox(width: buttonGap),
                               _LojaBotao(
+                                // While Capi talks the shop keeps quiet and
+                                // dim like the rest (no glow over the guide).
+                                quieto: _falando,
                                 badge: motivoLoja != null ? '!' : null,
                                 fala:
-                                    MenuEstado.lojaChama(
-                                      motivoLoja,
-                                      lojaVistaDia: store.lojaVistaDia,
-                                      hoje: hoje,
-                                    )
+                                    !_falando &&
+                                        MenuEstado.lojaChama(
+                                          motivoLoja,
+                                          lojaVistaDia: store.lojaVistaDia,
+                                          hoje: hoje,
+                                        )
                                     ? motivoLoja!.fala
                                     : null,
                                 onTap: _openLoja,
@@ -1570,15 +1711,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: _Destaque(
-                                icon: Icons.checkroom_rounded,
-                                cor: const Color(0xFFE8590C),
-                                titulo: tr('Guarda-Roupa'),
-                                subtitulo: tr('Vista o Capi'),
-                                pendente: _pendente(
-                                  DestinoNovidade.guardaRoupa,
+                              child: KeyedSubtree(
+                                key: _alvoGuardaRoupa,
+                                child: _Destaque(
+                                  icon: Icons.checkroom_rounded,
+                                  cor: const Color(0xFFE8590C),
+                                  titulo: tr('Guarda-Roupa'),
+                                  subtitulo: tr('Vista o Capi'),
+                                  pendente: _pendente(
+                                    DestinoNovidade.guardaRoupa,
+                                  ),
+                                  onTap: _openWardrobe,
                                 ),
-                                onTap: _openWardrobe,
                               ),
                             ),
                             SizedBox(width: buttonGap + 2),
@@ -1697,6 +1841,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         ChunkyButton(
+                          key: _alvoJogar,
                           big: true,
                           icon: Icons.play_arrow_rounded,
                           label: tr('Jogar · Fase {n}', {'n': store.level}),
@@ -1705,45 +1850,54 @@ class _HomeScreenState extends State<HomeScreen> {
                         SizedBox(height: isSmall ? 10 : 18),
                         Row(
                           children: [
-                            Expanded(child: _villageCard(store)),
+                            Expanded(
+                              child: KeyedSubtree(
+                                key: _alvoVila,
+                                child: _villageCard(store),
+                              ),
+                            ),
                             SizedBox(width: buttonGap + 4),
                             Expanded(
-                              child: dailyOpen
-                                  ? MenuCard(
-                                      compact: true,
-                                      icon: dailyDone
-                                          ? Icons.check_circle_rounded
-                                          : Icons.calendar_today_rounded,
-                                      color: Palette.blocks[0],
-                                      title: tr('Desafio diário'),
-                                      // Not played today: said plainly.
-                                      subtitle: dailyDone
-                                          ? tr('Feito! Volte amanhã')
-                                          : streak > 0
-                                          ? tr('Falta hoje · sequência {n}', {
-                                              'n': streak,
-                                            })
-                                          : tr('Ainda não jogado hoje'),
-                                      badge: dailyDone ? null : tr('HOJE'),
-                                      onTap: () => _open(GameMode.daily),
-                                    )
-                                  : MenuCard(
-                                      compact: true,
-                                      icon: Icons.lock_rounded,
-                                      color: Palette.panelEdge,
-                                      title: tr('Desafio diário'),
-                                      subtitle: tr('Libera na fase {n}', {
-                                        'n': Onboarding.dailyAt,
-                                      }),
-                                      onTap: () => _locked(
-                                        'Desafio diário',
-                                        Onboarding.dailyAt,
+                              child: KeyedSubtree(
+                                key: _alvoDiario,
+                                child: dailyOpen
+                                    ? MenuCard(
+                                        compact: true,
+                                        icon: dailyDone
+                                            ? Icons.check_circle_rounded
+                                            : Icons.calendar_today_rounded,
+                                        color: Palette.blocks[0],
+                                        title: tr('Desafio diário'),
+                                        // Not played today: said plainly.
+                                        subtitle: dailyDone
+                                            ? tr('Feito! Volte amanhã')
+                                            : streak > 0
+                                            ? tr('Falta hoje · sequência {n}', {
+                                                'n': streak,
+                                              })
+                                            : tr('Ainda não jogado hoje'),
+                                        badge: dailyDone ? null : tr('HOJE'),
+                                        onTap: () => _open(GameMode.daily),
+                                      )
+                                    : MenuCard(
+                                        compact: true,
+                                        icon: Icons.lock_rounded,
+                                        color: Palette.panelEdge,
+                                        title: tr('Desafio diário'),
+                                        subtitle: tr('Libera na fase {n}', {
+                                          'n': Onboarding.dailyAt,
+                                        }),
+                                        onTap: () => _locked(
+                                          'Desafio diário',
+                                          Onboarding.dailyAt,
+                                        ),
                                       ),
-                                    ),
+                              ),
                             ),
                             SizedBox(width: buttonGap + 4),
                             Expanded(
                               child: MenuCard(
+                                key: _alvoModos,
                                 compact: true,
                                 icon: Icons.sports_esports_rounded,
                                 color: Palette.blocks[5],
@@ -1766,14 +1920,41 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            if (capiLine != null)
+            if (_guia case final passo?)
+              Positioned.fill(
+                child: Destaque(
+                  alvo: _passoDoGuia(passo).alvo,
+                  texto: _passoDoGuia(passo).texto,
+                  onAvancar: _avancarGuia,
+                  onPular: () => _encerrarGuia(pulado: true),
+                  onAlvo: passo == _passosGuia - 1 ? _jogarDoGuia : null,
+                  acao: passo == _passosGuia - 1 ? tr('Bora!') : null,
+                  look: CapiLook.of(store),
+                  passo: passo + 1,
+                  total: _passosGuia,
+                  pulsar: !store.reduzirEfeitos,
+                ),
+              )
+            else if (capiLine != null && _news.isNotEmpty)
+              // A mode just unlocked: Capi points at the card that opens it.
+              Positioned.fill(
+                child: Destaque(
+                  alvo: _alvoDaNoticia(_news.first),
+                  texto: capiLine,
+                  acao: tr('Bora!'),
+                  onAvancar: _dismissCapi,
+                  look: CapiLook.of(store),
+                  mood: CapiMood.cheer,
+                  pulsar: !store.reduzirEfeitos,
+                ),
+              )
+            else if (capiLine != null) ...[
               Positioned.fill(
                 child: GestureDetector(
                   onTap: _dismissCapi,
                   child: const ColoredBox(color: Color(0x88080A20)),
                 ),
               ),
-            if (capiLine != null)
               Positioned(
                 left: 16,
                 right: 16,
@@ -1784,12 +1965,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: CapiSays(
                       text: capiLine,
                       capiSize: 96,
-                      action: _news.isNotEmpty ? tr('Bora!') : tr('Beleza!'),
+                      action: tr('Beleza!'),
                       onAction: _dismissCapi,
                     ),
                   ),
                 ),
               ),
+            ],
           ],
         ),
       ),
@@ -1800,9 +1982,17 @@ class _HomeScreenState extends State<HomeScreen> {
 /// The shop button: glows gold, unlike the others, and now and then Capi's
 /// balloon calls the player to it.
 class _LojaBotao extends StatefulWidget {
-  const _LojaBotao({required this.onTap, this.badge, this.fala});
+  const _LojaBotao({
+    required this.onTap,
+    this.badge,
+    this.fala,
+    this.quieto = false,
+  });
   final VoidCallback onTap;
   final String? badge;
+
+  /// No glow (Capi has the floor, under his spotlight).
+  final bool quieto;
 
   /// What the balloon says, while there is something new in the shop
   /// (core/menu_estado.dart); null keeps it quiet.
@@ -1828,6 +2018,7 @@ class _LojaBotaoState extends State<_LojaBotao>
   @override
   void initState() {
     super.initState();
+    if (widget.quieto) _brilho.stop();
     // The first call comes soon after opening the menu, then every so often.
     _timer = Timer(const Duration(seconds: 4), _chamar);
   }
@@ -1853,6 +2044,17 @@ class _LojaBotaoState extends State<_LojaBotao>
         _timer = Timer(const Duration(seconds: 90), _chamar);
       });
     });
+  }
+
+  @override
+  void didUpdateWidget(_LojaBotao old) {
+    super.didUpdateWidget(old);
+    if (widget.quieto == old.quieto) return;
+    if (widget.quieto) {
+      _brilho.stop();
+    } else {
+      _brilho.repeat(reverse: true);
+    }
   }
 
   @override
@@ -1899,6 +2101,7 @@ class _LojaBotaoState extends State<_LojaBotao>
         child: AnimatedBuilder(
           animation: _brilho,
           builder: (context, child) {
+            if (widget.quieto) return child!;
             final t = Curves.easeInOut.transform(_brilho.value);
             final borda = BorderRadius.circular(14);
             return Container(

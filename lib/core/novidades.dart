@@ -12,6 +12,7 @@ enum DestinoNovidade {
   duelo,
   convites,
   configuracoes,
+  modos,
 }
 
 /// One thing that is new in the game, in Portuguese (shown through `tr`).
@@ -151,6 +152,12 @@ abstract final class Novidades {
         'Os textos pequenos cresceram e o jogo agora acompanha o tamanho '
             'de letra do seu celular.',
         DestinoNovidade.configuracoes,
+      ),
+      Novidade(
+        'O Capi mostra o caminho',
+        'Quando um modo novo libera, o Capi aponta no menu onde ele fica. E '
+            'quem chega ganha um passeio pelo menu e um presente!',
+        DestinoNovidade.modos,
       ),
     ],
   };

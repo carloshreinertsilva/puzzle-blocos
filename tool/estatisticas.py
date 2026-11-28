@@ -36,8 +36,12 @@ FUNIL = [
     ("tutorial_passo", "acertou um passo do tutorial"),
     ("tutorial_fim", "terminou o tutorial"),
     ("tutorial_pulado", "pulou o tutorial"),
+    ("tutorial_complete", "chegou ao menu (depois do tutorial)"),
+    ("guia_menu_passo", "viu um passo do guia do menu"),
+    ("presente_inicial", "ganhou o presente do guia"),
+    ("guia_menu_pulado", "pulou o guia do menu"),
+    ("guia_menu_fim", "terminou o guia do menu"),
     ("level_end", "terminou uma fase"),
-    ("tutorial_complete", "terminou as fases de introdução"),
 ]
 
 

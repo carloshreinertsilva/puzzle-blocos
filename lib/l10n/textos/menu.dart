@@ -2,6 +2,20 @@
 // Portuguese original (see lib/l10n/idioma.dart).
 
 const Map<String, String> enMenu = {
+  // Guia do menu (a primeira vez no menu) e a novidade dele.
+  'Com as estrelas das fases você constrói a minha vila!':
+      'With the stars from levels you build my village!',
+  'Um presente pra você: {item}! No Guarda-Roupa você me veste do seu jeito.':
+      'A gift for you: {item}! In the Wardrobe you dress me your way.',
+  'No Guarda-Roupa você me veste do seu jeito!':
+      'In the Wardrobe you dress me your way!',
+  'Vamos para a fase {n}?': 'Shall we go to level {n}?',
+  'Presente do Capi no Guarda-Roupa: {item}!':
+      "Capi's gift in the Wardrobe: {item}!",
+  'O Capi mostra o caminho': 'Capi shows the way',
+  'Quando um modo novo libera, o Capi aponta no menu onde ele fica. E quem chega ganha um passeio pelo menu e um presente!':
+      'When a new mode unlocks, Capi points to where it is on the menu. And '
+      'newcomers get a tour of the menu and a gift!',
   // Menu: estados dos cartões, Loja e dica do dia.
   "Sabia que dá para me vestir? Tem chapéus, óculos e muito mais no Guarda-Roupa!": "Did you know you can dress me up? There are hats, glasses and lots more in the Wardrobe!",
   "A Loja troca as ofertas todo dia. Vem dar uma espiada!":
@@ -397,6 +411,20 @@ const Map<String, String> enMenu = {
 };
 
 const Map<String, String> esMenu = {
+  // Guia do menu (a primeira vez no menu) e a novidade dele.
+  'Com as estrelas das fases você constrói a minha vila!':
+      '¡Con las estrellas de los niveles construyes mi aldea!',
+  'Um presente pra você: {item}! No Guarda-Roupa você me veste do seu jeito.':
+      '¡Un regalo para ti: {item}! En el Armario me vistes a tu manera.',
+  'No Guarda-Roupa você me veste do seu jeito!':
+      '¡En el Armario me vistes a tu manera!',
+  'Vamos para a fase {n}?': '¿Vamos al nivel {n}?',
+  'Presente do Capi no Guarda-Roupa: {item}!':
+      '¡Regalo de Capi en el Armario: {item}!',
+  'O Capi mostra o caminho': 'Capi te muestra el camino',
+  'Quando um modo novo libera, o Capi aponta no menu onde ele fica. E quem chega ganha um passeio pelo menu e um presente!':
+      'Cuando se desbloquea un modo nuevo, Capi señala en el menú dónde está. '
+      '¡Y quien llega recibe un paseo por el menú y un regalo!',
   // Menu: estados dos cartões, Loja e dica do dia.
   "Sabia que dá para me vestir? Tem chapéus, óculos e muito mais no Guarda-Roupa!": "¿Sabías que puedes vestirme? ¡Hay sombreros, gafas y mucho más en el Armario!",
   "A Loja troca as ofertas todo dia. Vem dar uma espiada!":

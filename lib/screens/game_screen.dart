@@ -23,7 +23,6 @@ import '../services/duelo_link.dart';
 import '../core/missions.dart';
 import '../l10n/idioma.dart';
 import '../game/game_controller.dart';
-import '../game/onboarding.dart';
 import '../game/puzzle_game.dart';
 import '../main.dart';
 import '../testing/test_bridge.dart';
@@ -412,13 +411,6 @@ class _GameScreenState extends State<GameScreen> {
     _dobradoNaPartida = false;
     widget.services.feedback.click();
     await widget.services.ads.betweenLevels(context, controller.level.number);
-    if (_onboarding && controller.level.number >= Onboarding.railLevels) {
-      // The first levels are done: on to the menu.
-      await widget.services.store.markSeen('menu');
-      Analytics.event('tutorial_complete');
-      widget.onDone!();
-      return;
-    }
     controller.restart();
   });
 

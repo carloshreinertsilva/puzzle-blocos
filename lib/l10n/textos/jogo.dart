@@ -249,20 +249,12 @@ const Map<String, String> enJogo = {
       'Wow! Now two lines at once: worth way more points!',
   'Quase! Encaixe a peça onde a mãozinha mostra.':
       'Almost! Drop the piece where the little hand points.',
-  'Você pegou o jeito! Agora é pra valer: vamos à Fase 1?':
-      "You've got the hang of it! Now it's for real: on to Level 1?",
+  'Você pegou o jeito! Vem comigo que eu te mostro o que tem por aqui.':
+      "You've got the hang of it! Come with me and I'll show you around.",
 
   // Novidades do menu (falas do Capi)
-  'Essa é a nossa estrada! Cada fase que você vence abre a próxima. '
-          'Toque em Jogar para seguir.':
-      'This is our road! Every level you beat opens the next one. '
-      'Tap Play to keep going.',
   'Novo modo Blitz! Você tem 60 segundos para fazer o máximo de pontos e combos.': 'New Blitz mode! You have 60 seconds to rack up as many points and combos as you can.',
   'Novo modo Duelo! Desafie seus amigos com links e comparem quem pontua mais.': 'New Duel mode! Challenge your friends with links and see who scores more.',
-  'E tem mais: com as estrelas das fases você constrói a minha vila! '
-          'Toque em Vila do Capi para ver.':
-      "There's more: with the stars from levels you build my village! "
-      "Tap Capi's Village to see it.",
   'Novidade! Liberei o modo Infinito: sem metas, só você e o seu recorde.': "Surprise! I unlocked Endless mode: no goals, just you and your best score.",
   'Abri o modo Obras! É um quebra-cabeça: encaixe todas as peças no '
           'desenho, sem sobrar buraco. Cada obra vale até 3 estrelas.':
@@ -561,20 +553,11 @@ const Map<String, String> esJogo = {
       '¡Guau! Ahora dos líneas a la vez: ¡vale muchos más puntos!',
   'Quase! Encaixe a peça onde a mãozinha mostra.':
       '¡Casi! Coloca la pieza donde señala la manito.',
-  'Você pegou o jeito! Agora é pra valer: vamos à Fase 1?':
-      '¡Ya le agarraste la mano! Ahora va en serio: ¿vamos al Nivel 1?',
+  'Você pegou o jeito! Vem comigo que eu te mostro o que tem por aqui.': '¡Ya le agarraste la mano! Ven conmigo que te muestro lo que hay por aquí.',
 
   // Novidades do menu (falas do Capi)
-  'Essa é a nossa estrada! Cada fase que você vence abre a próxima. '
-          'Toque em Jogar para seguir.':
-      '¡Este es nuestro camino! Cada nivel que ganas abre el siguiente. '
-      'Toca Jugar para seguir.',
   'Novo modo Blitz! Você tem 60 segundos para fazer o máximo de pontos e combos.': '¡Nuevo modo Blitz! Tienes 60 segundos para hacer todos los puntos y combos que puedas.',
   'Novo modo Duelo! Desafie seus amigos com links e comparem quem pontua mais.': '¡Nuevo modo Duelo! Reta a tus amigos con enlaces y comparen quién suma más.',
-  'E tem mais: com as estrelas das fases você constrói a minha vila! '
-          'Toque em Vila do Capi para ver.':
-      '¡Y hay más: con las estrellas de los niveles construyes mi aldea! '
-      'Toca Aldea de Capi para verla.',
   'Novidade! Liberei o modo Infinito: sem metas, só você e o seu recorde.':
       '¡Novedad! Desbloqueé el modo Infinito: sin metas, solo tú y tu récord.',
   'Abri o modo Obras! É um quebra-cabeça: encaixe todas as peças no '
