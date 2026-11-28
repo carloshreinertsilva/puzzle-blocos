@@ -32,6 +32,17 @@ O herói. Capivara construtora, calma, otimista, de capacete amarelo. Não
 briga: resolve construindo. É quem fala com o jogador, como já faz no
 tutorial e no menu.
 
+### Mãe Capi
+
+A família completa: a mãe dos filhotes, companheira do Capi.
+
+- **Papel:** ela não é levada. Ela é o "lar" para onde os filhotes
+  voltam. Cuida da vila enquanto o Capi está na estrada, manda as encomendas
+  das Obras e recebe cada filhote resgatado com um abraço, que é a cena
+  emocional de cada capítulo.
+- **Clímax:** no Capítulo 5, ela vai atrás do Capi até o resort e enfrenta o
+  jacaré junto com ele na fase final.
+
 ### Os filhotes
 
 Cinco filhotes, o mesmo número que cabe na vila ao mesmo tempo
@@ -67,17 +78,31 @@ Os nomes não se traduzem (são nomes próprios), mas as falas sim.
   5 ele é desmascarado, pede desculpas meio sem jeito e vira o vizinho
   encrenqueiro da vila, que volta nos eventos.
 
-## Prólogo (a cena da primeira abertura)
+## Prólogo (antes do tutorial)
 
-Três quadros, que podem ser pulados, antes do tutorial ou logo depois dele:
+O prólogo vem **antes do tutorial**, para o jogador se comprometer com a
+história desde o primeiro toque. A lógica é: para libertar a família é
+preciso passar pelas fases, e para passar pelas fases existe o tutorial.
 
-1. A vila do Capi ao entardecer. Os filhotes brincam de empilhar blocos.
+São três quadros, cerca de 10 segundos no total. Um toque avança e
+"Pular" aparece desde o primeiro quadro:
+
+1. A vila do Capi ao entardecer. A mãe Capi e os filhotes brincam de
+   empilhar blocos.
 2. Um barulho no rio. Na manhã seguinte não há mais blocos nem filhotes, só
    pegadas de jacaré e um cartaz: "EM BREVE: JACARELÂNDIA RESORT".
-3. O Capi põe o capacete: "Ele levou meus filhotes. Me ajuda a buscar eles?"
+3. O Capi põe o capacete: "O jacaré levou nossos filhotes! Para chegar até
+   eles, vou reconstruir a estrada, bloco por bloco. Me ajuda?" O toque leva
+   direto ao tabuleiro do tutorial.
 
-O tutorial continua igual: é o Capi ensinando o jogador a "construir a
-estrada".
+O tutorial continua igual, com uma fala de abertura que o liga à história:
+"Primeiro, deixa eu te ensinar a construir." Ao terminar, o guia do menu
+mostra a estrada e diz onde está a Pipoca.
+
+**Risco:** hoje cerca de 72% de quem abre o jogo começa o tutorial. Antes e
+depois do prólogo, medir a passagem `abertura` → `tutorial_begin`. Se cair,
+encurtar para dois quadros ou mostrar o terceiro quadro sobre o próprio
+tabuleiro.
 
 ## Como a história explica o que já existe
 
@@ -144,12 +169,35 @@ Em ordem de prioridade, do mais simples ao mais trabalhoso. Cada item é um PR.
 
 ## Arte necessária
 
-- **Jacaré Trambiqueiro:** poses neutra, rindo, assustado, pedindo desculpas.
-  Mesmo estilo 2.5D do Capi. Pode sair do mesmo fluxo do Capi 3D (Tripo).
+Toda a arte da história é **2D**, no mesmo estilo das ilustrações atuais do
+Capi e do filhote (pintadas, com volume de 2.5D). As ilustrações saem do
+**Gemini**. O Tripo fica para o Capi 3D que já está em andamento.
+
+- **Jacaré Trambiqueiro:** poses neutra, rindo, assustado e pedindo
+  desculpas.
+- **Mãe Capi:** poses neutra, abraçando um filhote e acenando.
 - **Filhotes com nome:** a arte atual (`assets/capi/filhote.webp`) com o laço
   de cada cor. Talvez um acessório próprio por filhote no futuro.
-- **Cenas:** fundos simples por capítulo (rio, campo, mata, canteiro, resort).
+- **Prólogo:** os três quadros.
+- **Cenas de capítulo:** fundos simples por capítulo (rio, campo, mata,
+  canteiro, resort).
 - **Cartaz "Jacarelândia Resort"** para o prólogo e para o menu.
+
+### Como manter o estilo igual
+
+- Em todo pedido ao Gemini, anexe como referência `assets/capi/filhote.webp`
+  e uma pose do Capi de `assets/capi/poses/`.
+- Use sempre o mesmo texto de estilo:
+
+  > Ilustração 2D para jogo mobile infantil, estilo cartoon fofo e
+  > arredondado, com volume suave (aparência 2.5D), contornos marrons finos,
+  > sombras macias, brilho leve no topo das formas, cores quentes e
+  > saturadas. Mesmo estilo e proporções das imagens de referência. Sem
+  > texto, sem marca d'água.
+
+- Personagens soltos vão em fundo transparente (PNG) e depois são
+  convertidos para `.webp`, como as poses atuais.
+- Guarde as fontes em `art/historia/` e só as versões finais em `assets/`.
 
 ## Medição
 
@@ -166,11 +214,10 @@ O que acompanhar:
 - quantos pulam as cenas. Se a maioria pular, as cenas ficam ainda mais
   curtas.
 
-## Em aberto
+## Decidido
 
-- Os nomes dos filhotes e do jacaré estão bons?
-- Os filhotes têm mãe na história, ou o Capi cria a família sozinho?
-- O prólogo vem antes do tutorial (mais impacto) ou depois (o jogador chega
-  mais rápido ao tabuleiro)? A recomendação é depois, porque o tutorial vai
-  bem e não vale atrasá-lo.
-- A arte do jacaré sai do Tripo (3D) ou é desenhada em 2D como o filhote?
+- Nomes: Pipoca, Jujuba, Tico, Fubá, Mel e o Jacaré Trambiqueiro.
+- A família tem a Mãe Capi. Ela não é levada: fica na vila, recebe os
+  filhotes e entra na fase final do Capítulo 5 com o Capi.
+- O prólogo vem antes do tutorial.
+- Toda a arte da história é 2D, gerada no Gemini.
