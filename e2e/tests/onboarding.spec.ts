@@ -53,12 +53,15 @@ test('primeira vez: tutorial com o Capi e direto para o menu, com o guia', async
   // c) The levels.
   await continuar.click();
   await expect(page.getByText('Vamos para a fase 1?')).toBeVisible();
-  expect(inside((await continuar.boundingBox())!, vw, vh)).toBe(true);
+  // The last step's button says "Bora!"; "Pular" sits inside the balloon.
+  const bora = page.getByRole('button', { name: 'Bora!' });
+  expect(inside((await bora.boundingBox())!, vw, vh)).toBe(true);
+  expect(inside((await pular.boundingBox())!, vw, vh)).toBe(true);
   await page.waitForTimeout(400);
   await foto(page, testInfo, `guia-c-jogar-${testInfo.project.name}`);
 
   // Then the menu is free.
-  await continuar.click();
+  await bora.click();
   await expect(pular).toHaveCount(0);
   await startLevel1(page);
 });
@@ -100,7 +103,7 @@ test('quem estava no meio das fases de introdução vai para o menu', async ({ p
   await page.getByRole('button', { name: 'Continuar' }).click();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await expect(page.getByText('Vamos para a fase 3?')).toBeVisible();
-  await page.getByRole('button', { name: 'Continuar' }).click();
+  await page.getByRole('button', { name: 'Bora!' }).click();
   await expect(page.getByRole('button', { name: /^Jogar · Fase 3/ })).toBeVisible();
 });
 

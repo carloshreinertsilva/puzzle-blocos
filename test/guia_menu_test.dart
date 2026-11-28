@@ -103,6 +103,9 @@ void main() {
     await tester.tap(find.text('Continuar'));
     await _passa(tester);
     expect(find.text('Vamos para a fase 1?'), findsOneWidget);
+    // The last step's button says "Bora!".
+    expect(find.text('Bora!'), findsOneWidget);
+    expect(find.text('Continuar'), findsNothing);
     await tester.tapAt(const Offset(20, 300));
     await _passa(tester);
     expect(find.byType(Destaque), findsNothing);

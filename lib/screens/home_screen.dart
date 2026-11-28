@@ -1676,6 +1676,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             if (widget.services.loja.existe) ...[
                               SizedBox(width: buttonGap),
                               _LojaBotao(
+                                // While Capi talks the shop keeps quiet and
+                                // dim like the rest (no glow over the guide).
+                                quieto: _falando,
                                 badge: motivoLoja != null ? '!' : null,
                                 fala:
                                     !_falando &&
@@ -1925,6 +1928,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onAvancar: _avancarGuia,
                   onPular: () => _encerrarGuia(pulado: true),
                   onAlvo: passo == _passosGuia - 1 ? _jogarDoGuia : null,
+                  acao: passo == _passosGuia - 1 ? tr('Bora!') : null,
                   look: CapiLook.of(store),
                   passo: passo + 1,
                   total: _passosGuia,
@@ -1978,9 +1982,17 @@ class _HomeScreenState extends State<HomeScreen> {
 /// The shop button: glows gold, unlike the others, and now and then Capi's
 /// balloon calls the player to it.
 class _LojaBotao extends StatefulWidget {
-  const _LojaBotao({required this.onTap, this.badge, this.fala});
+  const _LojaBotao({
+    required this.onTap,
+    this.badge,
+    this.fala,
+    this.quieto = false,
+  });
   final VoidCallback onTap;
   final String? badge;
+
+  /// No glow (Capi has the floor, under his spotlight).
+  final bool quieto;
 
   /// What the balloon says, while there is something new in the shop
   /// (core/menu_estado.dart); null keeps it quiet.
@@ -2006,6 +2018,7 @@ class _LojaBotaoState extends State<_LojaBotao>
   @override
   void initState() {
     super.initState();
+    if (widget.quieto) _brilho.stop();
     // The first call comes soon after opening the menu, then every so often.
     _timer = Timer(const Duration(seconds: 4), _chamar);
   }
@@ -2031,6 +2044,17 @@ class _LojaBotaoState extends State<_LojaBotao>
         _timer = Timer(const Duration(seconds: 90), _chamar);
       });
     });
+  }
+
+  @override
+  void didUpdateWidget(_LojaBotao old) {
+    super.didUpdateWidget(old);
+    if (widget.quieto == old.quieto) return;
+    if (widget.quieto) {
+      _brilho.stop();
+    } else {
+      _brilho.repeat(reverse: true);
+    }
   }
 
   @override
@@ -2077,6 +2101,7 @@ class _LojaBotaoState extends State<_LojaBotao>
         child: AnimatedBuilder(
           animation: _brilho,
           builder: (context, child) {
+            if (widget.quieto) return child!;
             final t = Curves.easeInOut.transform(_brilho.value);
             final borda = BorderRadius.circular(14);
             return Container(

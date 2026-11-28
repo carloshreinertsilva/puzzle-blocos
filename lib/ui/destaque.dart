@@ -157,7 +157,6 @@ class _DestaqueState extends State<Destaque> with TickerProviderStateMixin {
     // The glow breathes in the painter alone; the balloon keeps still.
     final borda = rect.inflate(9);
     final emBaixo = rect.center.dy > tela.height * 0.5;
-    final seguro = MediaQuery.paddingOf(context);
     return Stack(
       children: [
         Positioned.fill(
@@ -202,44 +201,20 @@ class _DestaqueState extends State<Destaque> with TickerProviderStateMixin {
                   mood: widget.mood,
                   passo: widget.passo,
                   total: widget.total,
+                  onPular: widget.onPular,
                 ),
               ),
             ),
           ),
         ),
-        if (widget.onPular != null)
-          Positioned(
-            top: seguro.top + 6,
-            right: 8,
-            child: Semantics(
-              button: true,
-              label: tr('Pular'),
-              excludeSemantics: true,
-              onTap: widget.onPular,
-              child: GestureDetector(
-                onTap: widget.onPular,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  constraints: const BoxConstraints(
-                    minHeight: 44,
-                    minWidth: 64,
-                  ),
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    tr('Pular'),
-                    style: displayText(18, color: Palette.text),
-                  ),
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
 }
 
-/// Capi and his balloon, with the button.
+/// Capi and his balloon: the text, the button and, under it, the steps'
+/// dots and a discreet "Pular" (inside the balloon, so it never sits over
+/// the menu's own buttons).
 class _Balao extends StatelessWidget {
   const _Balao({
     super.key,
@@ -250,6 +225,7 @@ class _Balao extends StatelessWidget {
     required this.mood,
     required this.passo,
     required this.total,
+    required this.onPular,
   });
 
   final String texto;
@@ -259,11 +235,14 @@ class _Balao extends StatelessWidget {
   final CapiMood mood;
   final int? passo;
   final int? total;
+  final VoidCallback? onPular;
 
   @override
   Widget build(BuildContext context) {
     final passo = this.passo;
     final total = this.total;
+    final onPular = this.onPular;
+    final pontos = passo != null && total != null;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -294,34 +273,58 @@ class _Balao extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    if (passo != null && total != null)
-                      ExcludeSemantics(
-                        child: Row(
-                          children: [
-                            for (var i = 1; i <= total; i++)
-                              Container(
-                                width: 8,
-                                height: 8,
-                                margin: const EdgeInsets.only(right: 5),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: i == passo
-                                      ? Palette.accentDeep
-                                      : const Color(0xFFD9D4EE),
+                ChunkyButton(label: acao, onTap: onAcao),
+                if (pontos || onPular != null)
+                  Row(
+                    children: [
+                      if (pontos)
+                        ExcludeSemantics(
+                          child: Row(
+                            children: [
+                              for (var i = 1; i <= total; i++)
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  margin: const EdgeInsets.only(right: 5),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: i == passo
+                                        ? Palette.accentDeep
+                                        : const Color(0xFFD9D4EE),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      const Spacer(),
+                      if (onPular != null)
+                        Semantics(
+                          button: true,
+                          label: tr('Pular'),
+                          excludeSemantics: true,
+                          onTap: onPular,
+                          child: GestureDetector(
+                            onTap: onPular,
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              constraints: const BoxConstraints(
+                                minHeight: 40,
+                                minWidth: 56,
+                              ),
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                tr('Pular'),
+                                style: bodyText(
+                                  15,
+                                  color: const Color(0xFF6E6496),
+                                  weight: 700,
                                 ),
                               ),
-                          ],
+                            ),
+                          ),
                         ),
-                      ),
-                    if (passo != null && total != null)
-                      const SizedBox(width: 12),
-                    Expanded(
-                      child: ChunkyButton(label: acao, onTap: onAcao),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ],
             ),
           ),
