@@ -8,6 +8,8 @@ async function foto(page: Page, testInfo: TestInfo, name: string) {
 }
 
 test('primeira vez: tutorial com o Capi e direto para o menu, com o guia', async ({ page }, testInfo) => {
+  // The whole first minute: tutorial, guide and the first level.
+  test.setTimeout(240_000);
   await openFresh(page);
   await expect(page.getByText(/Eu sou o Capi/)).toBeVisible();
   await snap(page, testInfo, `tutorial-${testInfo.project.name}`);
@@ -78,10 +80,15 @@ test('"Pular" encerra o tutorial e o guia; o guia não volta', async ({ page }) 
   // The gift came anyway.
   expect((await state(page)).unlockedHats).toContain('oculos_sol');
 
-  // Opening the game again: the menu, without the guide.
+  // Opening the game again: the menu (with the daily gift, which waited for
+  // the guide), without the guide.
   await page.reload();
   await page.waitForFunction(() => (window as any).__bb !== undefined, null, { timeout: 30_000 });
-  await expect(page.getByRole('button', { name: /^Jogar · Fase 1/ })).toBeVisible();
+  await expect(
+    page
+      .getByRole('button', { name: /^Pegar o presente do dia/ })
+      .or(page.getByRole('button', { name: /^Jogar · Fase 1/ })),
+  ).toBeVisible();
   await expect(page.getByText(/constrói a minha vila/)).toHaveCount(0);
 });
 
@@ -98,7 +105,10 @@ test('quem estava no meio das fases de introdução vai para o menu', async ({ p
 });
 
 test('modo liberado: o Capi aponta o cartão; modos travados avisam a fase', async ({ page }, testInfo) => {
-  await openFresh(page, { seen_tutorial: true, seen_menu: true, seen_guia_menu: true, level: 4 });
+  // The daily gift already opened by itself today.
+  const d = new Date();
+  const giftShown = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  await openFresh(page, { seen_tutorial: true, seen_menu: true, seen_guia_menu: true, giftShown, level: 4 });
   await expect(page.getByRole('button', { name: /^Jogar · Fase 4/ })).toBeVisible();
   await page.getByRole('button', { name: 'Modos' }).click();
   await page.getByRole('button', { name: 'Infinito' }).click();
@@ -106,7 +116,7 @@ test('modo liberado: o Capi aponta o cartão; modos travados avisam a fase', asy
   await page.getByRole('button', { name: 'Beleza!' }).click();
   expect((await state(page)).screen).toBe('home');
 
-  await openFresh(page, { seen_tutorial: true, seen_menu: true, seen_guia_menu: true, level: 5 });
+  await openFresh(page, { seen_tutorial: true, seen_menu: true, seen_guia_menu: true, giftShown, level: 5 });
   await expect(page.getByText(/Liberei o modo Infinito/)).toBeVisible();
   await page.waitForTimeout(400);
   await snap(page, testInfo, `menu-modo-liberado-${testInfo.project.name}`);

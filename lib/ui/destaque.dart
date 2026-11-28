@@ -128,7 +128,7 @@ class _DestaqueState extends State<Destaque> with TickerProviderStateMixin {
       child: BlockSemantics(
         child: LayoutBuilder(
           builder: (context, box) => AnimatedBuilder(
-            animation: Listenable.merge([_pulso, _mover]),
+            animation: _mover,
             builder: (context, _) => _conteudo(box.biggest),
           ),
         ),
@@ -138,26 +138,24 @@ class _DestaqueState extends State<Destaque> with TickerProviderStateMixin {
 
   Widget _conteudo(Size tela) {
     final alvo = _rectDoAlvo();
+    // The target lays out in this same frame (it may have moved, or not be
+    // there yet): look again once it has, and follow it if it moved.
+    if (!_esperando) {
+      _esperando = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _esperando = false;
+        if (mounted && _rectDoAlvo() != alvo) setState(() {});
+      });
+    }
     if (alvo == null) {
-      // The target lays out in this same frame: look again on the next.
-      if (!_esperando) {
-        _esperando = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _esperando = false;
-          if (mounted) setState(() {});
-        });
-      }
       return const SizedBox.expand(child: ColoredBox(color: Color(0xD0080A20)));
     }
     final de = _de;
     final t = Curves.easeOutCubic.transform(_mover.value);
     final rect = de == null ? alvo : Rect.lerp(de, alvo, t)!;
     _ultimo = rect;
-    final p = Curves.easeInOut.transform(_pulso.value);
-    final furo = RRect.fromRectAndRadius(
-      rect.inflate(6 + 3 * p),
-      Radius.circular(min(24.0, rect.shortestSide / 2 + 6)),
-    );
+    // The glow breathes in the painter alone; the balloon keeps still.
+    final borda = rect.inflate(9);
     final emBaixo = rect.center.dy > tela.height * 0.5;
     final seguro = MediaQuery.paddingOf(context);
     return Stack(
@@ -166,21 +164,20 @@ class _DestaqueState extends State<Destaque> with TickerProviderStateMixin {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTapUp: (d) {
-              if (widget.onAlvo != null &&
-                  furo.outerRect.contains(d.localPosition)) {
+              if (widget.onAlvo != null && borda.contains(d.localPosition)) {
                 widget.onAlvo!();
               } else {
                 widget.onAvancar();
               }
             },
-            child: CustomPaint(painter: _Recorte(furo, p)),
+            child: CustomPaint(painter: _Recorte(rect, _pulso)),
           ),
         ),
         Positioned(
           left: 16,
           right: 16,
-          top: emBaixo ? null : furo.bottom + 14,
-          bottom: emBaixo ? tela.height - furo.top + 14 : null,
+          top: emBaixo ? null : borda.bottom + 14,
+          bottom: emBaixo ? tela.height - borda.top + 14 : null,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: menuMaxWidth),
@@ -334,14 +331,20 @@ class _Balao extends StatelessWidget {
   }
 }
 
-/// The dimmed screen with the glowing hole.
+/// The dimmed screen with the glowing hole. The glow's breathing only
+/// repaints this layer (nothing is built again each frame).
 class _Recorte extends CustomPainter {
-  _Recorte(this.furo, this.pulso);
-  final RRect furo;
-  final double pulso;
+  _Recorte(this.alvo, this.animacao) : super(repaint: animacao);
+  final Rect alvo;
+  final Animation<double> animacao;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final pulso = Curves.easeInOut.transform(animacao.value);
+    final furo = RRect.fromRectAndRadius(
+      alvo.inflate(6 + 3 * pulso),
+      Radius.circular(min(24.0, alvo.shortestSide / 2 + 6)),
+    );
     final escuro = Path()
       ..fillType = PathFillType.evenOdd
       ..addRect(Offset.zero & size)
@@ -365,5 +368,6 @@ class _Recorte extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_Recorte old) => old.furo != furo || old.pulso != pulso;
+  bool shouldRepaint(_Recorte old) =>
+      old.alvo != alvo || old.animacao != animacao;
 }
